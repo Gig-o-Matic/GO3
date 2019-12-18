@@ -1,0 +1,16 @@
+asgiref==3.2.3
+astroid==2.3.3
+certifi==2019.11.28
+Django==3.0
+django-extensions==2.2.5
+isort==4.3.21
+lazy-object-proxy==1.4.3
+MarkupSafe==1.1.1
+mccabe==0.6.1
+mysql-connector-python==1.1.6
+mysqlclient==1.4.6
+pylint==2.4.4
+pytz==2019.3
+six==1.13.0
+sqlparse==0.3.0
+wrapt==1.11.2

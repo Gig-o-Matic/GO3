@@ -1,0 +1,186 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-119115876-1"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-119115876-1');
+        </script>
+
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="icon" type="image/png" href="/images/gigo.png" />
+        <link rel="shortcut icon" href="/images/gigo.png">
+
+        <title>Gig-o-Matic | {% block title %}{% endblock title %}</title>
+
+
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <!-- Custom styles for datepicker -->
+        <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.css" rel="stylesheet"> -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet">
+
+        <!-- Custom styles for calendar -->
+        <link href='/fullcalendar/fullcalendar.css' rel='stylesheet' />
+        <link href='/fullcalendar/fullcalendar.print.css' rel='stylesheet' media='print' />
+
+        <!-- font awesome -->
+
+<!--        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
+        <script src="https://kit.fontawesome.com/97a9d560b1.js"></script>
+
+        <!--[if lt IE 9]>
+            <script src="../../assets/js/html5shiv.js"></script>
+            <script src="../../assets/js/respond.min.js"></script>
+        <![endif]-->
+
+        <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/css/jqueryui-editable.css" rel="stylesheet"/>
+{% block headcontent %}
+{% endblock headcontent %}
+
+
+        <!-- Custom styles for this template -->
+        <link href="/css/gigo.css" rel="stylesheet">
+
+
+        <!-- Don't cache anything. Ever. -->
+        <meta http-equiv="cache-control" content="max-age=0" />
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta http-equiv="cache-control" content="no-store" />
+        <meta http-equiv="expires" content="0" />
+        <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+        <meta http-equiv="pragma" content="no-cache" />
+
+    </head>
+
+    <body
+        {% block bodyclass %}
+        {% endblock bodyclass %}        
+    >
+        <div id="wrap"
+            {% block wrapclass %}
+            {% endblock wrapclass %}        
+        >
+            {% block navbar %}
+                {% include 'base/navbar.html' %}
+            {% endblock navbar %}
+
+            <div class="container">
+                    <div class="inner-container">
+                            {% if the_user %}
+                                {% block welcome %}
+                                    {% include 'welcome.html' %}
+                                {% endblock welcome %}
+                                {% block motd %}
+                                    {% include 'motd.html' %}
+                                {% endblock motd %}
+                            {% endif %}
+                            {% block content %}
+                            {% endblock content %}
+                    </div> <!-- /.inner-container -->
+            </div><!-- /.container -->
+        </div> <!-- /.wrap -->
+        {% block footer %}
+            {% if the_user %}
+                <div id="footer">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-12 text-left">
+                                <a href="/privacy"><p class="text-muted credit">{% trans "Privacy & Security" %}</p></a>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-12 text-right">
+                                <a href="/credits"><p class="text-muted credit">{% trans "Who made this thing?" %}</p></a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            {% endif %}
+        {% endblock footer %}
+        {% block modal %}
+        {% endblock modal %}
+    </body>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>   
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+
+    <!-- <script src="/bootstrap3-editable/js/bootstrap-editable.js"></script>     -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
+
+<script type="text/javascript">
+
+function stopRKey(evt) {
+  var evt = (evt) ? evt : ((event) ? event : null);
+  var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+  if (evt.keyCode == 13 && (node.type != "textarea") && (node.type != "submit"))  {return false;}
+}
+
+document.onkeypress = stopRKey;
+
+</script> 
+
+    {% block localscripts %}
+    {% endblock localscripts %}
+    {% block navbarscripts %}
+        {% if the_user %}
+            <script>
+                function updateNavbarBands() {
+                    $.post('/member_get_bands',
+                    {
+                        mk: '{{the_user.id}}'
+                    },
+                    function(responseTxt,statusTxt,xhr){
+                        if(statusTxt=="success")
+                            tmp=document.getElementById('bandlinks')
+                            if (tmp) {
+                                tmp.innerHTML=responseTxt;
+                            }
+                        if(statusTxt=="error")
+                            alert("Error: "+xhr.status+": "+xhr.statusText);
+                    });
+                }
+                function updateNavbarAddGig() {
+                    $.post('/member_get_add_gig_bands',
+                    {
+                        mk: '{{the_user.id}}'
+                    },
+                    function(responseTxt,statusTxt,xhr){
+                        if(statusTxt=="success")
+                            tmp=document.getElementById('addgigbandlinks')
+                            if (tmp) {
+                                tmp.innerHTML=responseTxt;
+                            }
+                        if(statusTxt=="error")
+                            alert("Error: "+xhr.status+": "+xhr.statusText);
+                    });
+                }
+        
+                $(document).ready(function() {
+                    $('#motd-alert').bind('closed.bs.alert', function () {
+                        $.post("/seen_motd",{ mk:"{{the_user.id}}" })
+                    });
+                    $('#welcome-alert').bind('closed.bs.alert', function () {
+                        $.post("/seen_welcome",{ mk:"{{the_user.id}}" })
+                    });
+                    updateNavbarBands();
+                    updateNavbarAddGig();
+                });
+            </script>
+        {% endif %}
+    {% endblock navbarscripts %}
+</html>

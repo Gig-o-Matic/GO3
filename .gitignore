@@ -1,0 +1,13 @@
+.DS_Store
+*.py[cod]
+jquery
+*~
+font-awesome
+*.graffle
+*.mo
+.idea
+Crypto
+.well-known
+*.db
+*.code-workspace
+db.sqlite3

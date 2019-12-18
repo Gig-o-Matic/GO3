@@ -1,0 +1,641 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Band Info" %}{% endblock title %}
+
+{% block headcontent %}
+
+{% endblock headcontent %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+
+        <div class="page-header">
+            {{ band.name }}
+            {% if the_user_is_associated and band.shortname %}
+                <br>
+                ({% trans "a.k.a." %}&nbsp;{{ band.shortname }})
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-4">
+                        {% trans "Info" %}
+                    </div>
+                    {% if the_user_is_band_admin or the_user_is_superuser %}
+                        <div class="ml-auto">
+                            <a class="btn btn-primary btn-sm" href="band_edit.html?bk={{ band.id }}">{% trans "Edit" %}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        {% if band.description %}
+                            {{ band.description | linebreaksbr }}
+                        {% else %}
+                            {% trans "A Band of Mystery..." %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if band.hometown %}
+                    <div>&nbsp;</div>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Hometown" %}</div>
+                        <div class="col-sm-9 col-12">
+                            <a href="http://maps.google.com?q={{band.hometown}}" target="new">{{ band.hometown }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if band.website %}
+                    <div>&nbsp;</div>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Website" %}</div>
+                        <div class="col-sm-9 col-12">
+                            <a href="http://{{band.website|escape}}" target="new">{{ band.website|escape }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if the_user_is_associated or the_user_is_superuser %}
+                    <div>&nbsp;</div>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Resources" %}</div>
+                        <div class="col-sm-9 col-12">
+                                {% if the_member_links %}
+                                    {% for l in the_member_links %}
+                                        <a href="{{l.1}}" target="_new">{{ l.0 }}</a><br>
+                                    {% endfor %}
+                                {% endif %}
+                                <a href="/band_gig_archive?bk={{ band.id }}">{% trans "Gig Archive" %}</a><br>
+                                {% if the_user_is_superuser or the_user_is_band_admin %}
+                                    <a href="/band_gig_trashcan?bk={{ band.id }}">{% trans "Gig Trashcan" %}</a><br>
+                                {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            &nbsp;
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Public Profile" %}</div>
+                        <div class="col-sm-9 col-12">
+                                <a href="http://www.gig-o-matic.com/band/{{band.condensed_name}}" target="new">http://www.gig-o-matic.com/band/{{ band.condensed_name }}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            &nbsp;
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Public Gig Calendar Feed" %}</div>
+                        <div class="col-sm-9 col-12">
+                                <a href="http://www.gig-o-matic.com/cal/p/{{band.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
+                        </div>
+                    </div>
+                    {% if band.rss_feed %}
+                        <div class="row">
+                            <div class="col-12">
+                                &nbsp;
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3 col-12">{% trans "Public Gig RSS" %}</div>
+                            <div class="col-sm-9 col-12">
+                                    <a href="http://www.gig-o-matic.com/rss/{{band.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if the_user_is_superuser %}
+                        <div class="row">
+                            <div class="col-12">
+                                &nbsp;
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3 col-12">{% trans "Calendar URL for Members" %}</div>
+                            <div class="col-sm-9 col-12">
+                                    <a href="http://www.gig-o-matic.com/cal/b/{{band.id}}" onclick="return false;">{% trans "Copy this link's URL and use it to subscribe in google or iCal or whatever" %}</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}                    
+            </div> <!-- card-body -->
+        </div> <!-- card -->
+
+        {% if band.images %}
+            <div>&nbsp;</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Pictures Of Us" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="pictures">
+                    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                      <div class="carousel-inner" role="listbox">
+                        {% for i in band.images %}
+                            <div class="carousel-item{% if loop.index == 1 %} active{% endif %}">
+                              <img class="d-block img-fluid" src="{{i}}">
+                            </div>
+                        {% endfor %}
+                      </div>
+                      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                        <i class="fas fa-chevron-left fa-2x" style="color:gray;" aria-hidden="true"></i>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                        <i class="fas fa-chevron-right fa-2x" style="color:gray;" aria-hidden="true"></i>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    </div>
+
+                </div>
+            </div>
+        {% endif %}
+
+        {% if the_user_is_associated is False and the_user_is_superuser is False %}
+            {% if band.share_gigs %}
+                <div>&nbsp;</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row titlerow">
+                            <div class="col-12">
+                                {% trans "Upcoming Gigs" %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" id="upcoming-gigs">
+                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                    </div>
+                </div>
+            {% endif %}
+            {% if the_user %}
+                <div>&nbsp;</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row titlerow"><div class="col-12">
+                            {% trans "Members With Public Profiles" %}
+                        </div></div>
+                    </div>
+                    <div class="card-body" id="public-members">
+                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                    </div>
+                </div>
+            {% endif %}
+        {% elif the_user_is_confirmed == False and the_user_is_superuser == False %}
+            {% trans "Your membership is pending - ask a band member to confirm you!" %}
+        {% else %}
+            {% if the_pending_members %}
+                <div>&nbsp;</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row titlerow"><div class="col-12">
+                            {% trans "Pending Members" %} <span class="badge badge-pill badge-secondary">{{the_pending_members|length}}</span>
+                        </div></div>
+                    </div>
+                    <div class="card-body">
+                        {% for m in the_pending_members %}
+                        <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                            <div class="col-md-2 col-sm-2 col-12">
+                                <a href="/member_info.html?mk={{m.id}}">{{ m.name|escape }}</a>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-12">
+                                {{ m.email_address|escape }}
+                            </div>
+                            <div class="col-md-6 col-sm-6 col-12">
+                                <a class="btn btn-primary btn-sm" href="/band_confirm_member?do=1&mk={{m.id}}&bk={{band.id}}">{% trans "yes, confirm member!" %}</a>
+                                <a class="btn btn-secondary btn-sm" href="/band_removemember?mk={{m.id}}&bk={{band.id}}">{% trans "no, reject!" %}</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div> <!-- panel -->
+            {% endif %}
+
+            {% if the_invited_members %}
+                <div>&nbsp;</div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row titlerow"><div class="col-12">
+                            {% trans "Invited Members" %} <span class="badge badge-pill badge-secondary">{{the_invited_members|length}}</span>
+                        </div></div>
+                    </div>
+                    <div class="card-body">
+                        {% for m in the_invited_members %}
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-4">
+                                {{ m.1 }}
+                            </div>
+                            <div class="col-md-3 col-sm-3 col-3">
+                                <a href="/member_delete_invite?ak={{m.0}}">{% trans "forget the invite" %}</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div> <!-- panel -->
+            {% endif %}
+            <div>&nbsp;</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        {% if num_sections == 0 %}
+                            <div class="col-4">
+                                {% trans "Members" %}
+                                {% if the_user_is_band_admin or the_user_is_superuser %}
+                                    <button class="btn btn-primary btn-sm" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></button>
+                                {% endif %}
+                            </div>
+                            {% if the_user_is_band_admin or the_user_is_superuser %}
+                                <div class="ml-auto">
+                                    <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="col-3">
+                                {% trans "Sections" %}
+                            </div>
+                            <div class="col-5">
+                                {% trans "Members" %}
+                                    {% if the_user_is_band_admin or the_user_is_superuser %}
+                                        <a class="btn btn-primary btn-sm" href="#" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></a>
+                                    {% endif %}
+                            </div>
+                            {% if the_user_is_band_admin or the_user_is_superuser %}
+                                <div class="ml-auto">
+                                    <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12" id="sectionlist">
+                        	{% for s in band.sections %}
+                        	    <div class="row" id="section{{loop.index0}}" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                            		<div class="col-12">
+                            			<i class="fas fa-spinner fa-pulse fa-lg"></i>
+                            		</div>
+                           	    </div>
+                        	{% endfor %}
+{% comment %}
+                    	    <div class="row" id="sectionNone" style="padding-top: 5px; padding-bottom: 5px; {% if band.sections | length is odd %}background:#f5f5f5;{% endif %}">
+{% endcomment %}
+                                <div class="row" id="sectionNone" style="padding-top: 5px; padding-bottom: 5px;">
+                        		<div class="col-12">
+                        			<i class="fas fa-spinner fa-pulse fa-lg"></i>
+                        		</div>
+                       	    </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% if the_user_is_superuser or the_user_is_band_admin %}
+                            <div class="col-md-4">
+                                <br>
+                                <a href='/band_setup_sections?bk={{band.id}}' class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div> <!-- panel -->
+
+            {% if the_user_is_band_admin or the_user_is_superuser %}
+                <div>&nbsp;</div>
+                <div class="accordion" id="accordion">
+                    <div class="card">
+                        <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                            <a class="card-title titlerow">
+                                {% trans "Member Admin" %}
+                            </a>
+                        </div>
+                        <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
+                                        <a class="btn btn-primary btn-sm" href="member_spreadsheet?bk={{band.id}}">{% trans "Download Member List" %}</a>
+                                        <a class="btn btn-primary btn-sm" href="member_emails?bk={{band.id}}">{% trans "Get Member Emails" %}</a>
+
+                                    </div>
+                                    <hr>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12" id="memberlist">
+                                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block modal %}
+{% endblock modal %}
+
+{% block localscripts %}
+<script src="/js/jquery.validate.js"></script>
+<script>
+function updateUpcoming() {
+    if (document.getElementById('upcoming-gigs')) {
+        $.post('/band_get_upcoming',
+            {
+                bk: '{{ band.id }}'
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    document.getElementById('upcoming-gigs').innerHTML=responseTxt;
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+    }
+}
+
+function updatePublic() {
+    if (document.getElementById('public-members')) {
+        $.post('/band_get_public_members',
+            {
+                bk: '{{ band.id }}'
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    document.getElementById('public-members').innerHTML=responseTxt;
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+    }
+}
+
+function updateMembers() {
+    if (document.getElementById('memberlist')) {
+        $.post('/band_get_members',
+                {
+                    bk: '{{ band.id }}'
+                },
+                function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        document.getElementById('memberlist').innerHTML=responseTxt;
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                });
+    }
+}
+
+
+var len_sections = {{ band.sections | length }};
+
+function updateSections() {
+	updateSection(0);
+}
+
+function updateSection(i) {
+	if (i >= len_sections) {
+		updateNoneSection()
+	} else {
+		updateOneSection(i)
+	}
+}
+
+function updateOneSection(i) {
+    $.post('/band_get_sections',
+            {
+                bk: '{{ band.id }}',
+                ski: i
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    document.getElementById('section'+i).innerHTML=responseTxt;
+                	if (i != "None") {
+                		updateSection(i+1)
+                	}
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function updateNoneSection() {
+
+    $.post('/band_get_sections',
+        {
+            bk: '{{ band.id }}',
+            ski: 'None'
+        },
+        function(responseTxt,statusTxt,xhr){
+            if(statusTxt=="success")
+            	if (responseTxt=="None") {
+            		$('#sectionNone').hide()
+            		$('#sectionNone').css('padding-top','0px')
+            		$('#sectionNone').css('padding-bottom','0px')
+            	} else {
+                	document.getElementById('sectionNone').innerHTML=responseTxt;
+                }
+            if(statusTxt=="error")
+                alert("Error: "+xhr.status+": "+xhr.statusText);
+        });
+}
+
+function handle_new_section() {
+    $('#newsectionmodal').modal('hide');
+    name=document.getElementById('newsectioninput').value;
+    $('#newsectioninput').val(''); // reset the placeholder
+    $.post("/band_new_section",
+            {
+                bk: "{{band.id}}",
+                section_name: name
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    updateSections();
+                if(statusTxt=="error")
+                  alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+
+    return false;
+}
+
+function move(dir,sk) {
+    $.post("/band_move_section",
+            {
+                dir: dir,
+                sk: sk
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    updateSections();
+                if(statusTxt=="error")
+                  alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+
+    return false;
+}
+
+function delete_section(name, sk) {
+    $('#deletesectionname').html(name);
+    $('#delsectionmodal').data('sectionkey',sk);
+    $('#delsectionmodal').modal('show');
+}
+
+function do_delete() {
+    $('#delsectionmodal').modal('hide');
+    sk=$('#delsectionmodal').data('sectionkey');
+
+    $.post("/band_delete_section",
+            {
+                sk: sk
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    updateSections();
+                if(statusTxt=="error")
+                  alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+
+    return false;
+}
+
+function rename_section(name, sk) {
+    $('#renamesectioninput').attr('value',name);
+    $('#renamesectionmodal').data('sectionkey',sk);
+    $('#renamesectionmodal').modal('show');
+}
+
+function handle_rename_section() {
+    $('#renamesectionmodal').modal('hide');
+    sk=$('#renamesectionmodal').data('sectionkey');
+    newname=$('#renamesectioninput').val();
+
+    $.post("/band_rename_section",
+            {
+                sk: sk,
+                newname: newname
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    updateSections();
+                if(statusTxt=="error")
+                  alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+
+    return false;
+}
+
+
+function member_section(mk, sk) {
+    var bk='{{band.id}}';
+    $.post('/member_set_section',
+            {
+                mk: mk,
+                sk: sk,
+                bk: bk
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    setTimeout(function(){updateSections(); updateMembers();}, 1000);
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function multi_select(mk) {
+    elem=document.getElementById("msbk-"+mk)
+    var bk='{{band.id}}';
+    $.post('/member_set_multi',
+            {
+                mk: mk,
+                bk: bk,
+                do: elem.checked
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function admin_select(ak) {
+    elem=document.getElementById("aak-"+ak)
+    $.post('/band_makeadmin',
+            {
+                ak: ak,
+                do: elem.checked
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function occasional_select(ak) {
+    elem=document.getElementById("oak-"+ak)
+    $.post('/band_makeoccasional',
+            {
+                ak: ak,
+                do: elem.checked
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+
+var nicknames=true;
+function toggle_names() {
+    nicknames = !nicknames;
+    if (nicknames) {
+        $('.the_nickname').show();
+        $('.the_longname').hide();
+    } else {
+        $('.the_nickname').hide();
+        $('.the_longname').show();
+    };
+}
+
+$(document).ready(function() {
+    updateMembers();
+    updateSections();
+    updateUpcoming();
+    updatePublic();
+
+    $("#newsection-modal-form").validate({
+        rules: {
+            new_section: {
+                required: true
+            }
+        },
+        messages: {
+            new_section: {
+                required: "{% trans "This field is required!" %}"
+            }
+        },
+        submitHandler: handle_new_section
+    });
+
+    $("#rename-modal-form").validate({
+        rules: {
+            new_section_name: {
+                required: true
+            }
+        },
+        messages: {
+            new_section_name: {
+                required: "{% trans "This field is required!" %}"
+            }
+        },
+        submitHandler: handle_rename_section
+    });
+
+});
+</script>
+{% endblock localscripts %}
