@@ -1,0 +1,6 @@
+{% if motd %}
+<div id="motd-alert" class="alert alert-info fade show">
+    {{ motd  | safe }}
+    <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+</div>
+{% endif %}

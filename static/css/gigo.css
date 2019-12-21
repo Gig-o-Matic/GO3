@@ -1,0 +1,205 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+  /* The html and body elements cannot have any padding or margin. */
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  /* Negative indent footer by its height */
+  margin: 0 auto -40px;
+  /* Pad bottom by footer height */
+  padding: 0 0 60px;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+  height: 40px;
+  background-color: #f5f5f5;
+}
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+#wrap > .container {
+  padding: 20px 15px 0;
+}
+
+.container .credit {
+  margin: 10px 0;
+}
+
+#footer > .container {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+.plan-comment-input {
+    margin-bottom: 0px;
+}
+
+.table tbody > tr > td.plan-cell {
+    vertical-align: middle;
+}
+
+.icon-display {
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.empty-comment {
+    color: black;
+}
+
+.landingwrap {
+/*     background-image:url('/images/bone.png'); */
+}
+
+#landingpage_content {
+    margin-top: 200px;
+    padding: 20px;
+    border: 1px solid;
+    border-color: black;
+    background-color: white;
+    opacity: .95;
+}
+
+#landingpage_bigcontent {
+    margin-top: 100px;
+    padding: 20px;
+    border: 1px solid;
+    border-color: black;
+    background-color: white;
+    opacity: .95;
+}
+
+
+.icon::before {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom page CSS
+-------------------------------------------------- */
+
+a {
+    color: #428bca;
+}
+
+.navbar {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.dropdown-menu {
+  margin-top: 0px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+}
+
+.h5, h5 {
+    font-size: 1.2rem;
+}
+
+.h3, h3 {
+    font-size: 1.1rem;
+}
+
+.page-header {
+    font-size: 150%;
+    border-bottom: none;
+}
+
+.gomlabel {
+    font-weight:bold;
+}
+
+.page-header small {
+    font-size: 16px;
+}
+
+.comment-intro {
+    font-style:italic;
+}
+
+.comment-comment {
+}
+
+.panel-group .panel-overflowable {
+    overflow:visible;
+}
+
+.validation-error {
+    margin-bottom: 20px;
+}
+
+.validation-error .fa-exclamation-triangle {
+    color: firebrick;
+}
+
+/* override calendar event border thickness */
+.fc-event { /* non-theme */
+	border: 2px solid;
+}
+
+.card-header {
+  padding-top: .2rem;
+  padding-bottom: .2rem;
+}
+
+.card-header h5 {
+  margin-bottom: 0px;
+}
+
+.card-header .titlerow {
+  margin-top:auto;
+  margin-bottom:auto;
+}
+
+.btn-group-sm>.btn, .btn-sm {
+    padding: .0rem .5rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #428bca;
+    border-color: #007bff;
+}
+
+.accordion .card-header:after {
+    font-family: 'Font Awesome 5 Pro';  
+    font-weight: 900;
+    content: "\f068";
+    padding-right: .5rem;
+    float: left; 
+}
+.accordion .card-header.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\f067"; 
+}
+
+
+.d-event[class*="fa-"]::before {
+    background-color: transparent;
+    font-family: 'Font Awesome 5 Pro';
+    font-weight: 900;
+    font-size: smaller;
+    content: '\f001';
+}

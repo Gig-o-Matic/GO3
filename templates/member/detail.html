@@ -1,0 +1,388 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Profile" %}{% endblock title %}
+
+{% block headcontent %}
+{% endblock headcontent %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+        <div class="page-header">
+            {% trans "Profile" %}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-4">
+                        {% trans "Info" %}
+                    </div>
+                    {% if member_is_me or the_user_is_superuser %}
+                        <div class="ml-auto">
+                            <a class="btn btn-primary btn-sm" href="member_edit.html?mk={{ the_member.id }}">{% trans "Edit" %}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-3 col-12">{% trans "Name" %}</div>
+                    <div class="col-sm-9 col-12">{{ the_member.name|escape }}
+                        {% if the_member.nickname %}
+                            ({{ the_member.nickname | escape }})
+                        {% endif %}
+                    </div>
+                </div>
+                {% if show_email %}
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Email" %}</div>
+                        <div class="col-sm-9 col-12"><a href="mailto:{{the_member.email_address}}">{{ the_member.email_address }}</a>
+                        {% if email_change_msg %}<br>{{ email_change_msg }}{% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if show_phone %}
+                    {% if the_member.phone %}
+                        <div class="row">
+                            <div class="col-sm-3 col-12">{% trans "Phone" %}</div>
+                            <div class="col-sm-9 col-12">{{ the_member.phone|escape }}</div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                {% if the_member.statement %}
+	                <div>&nbsp;</div>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Personal Statement" %}</div>
+                        <div class="col-sm-9 col-12">{{ the_member.statement|escape }}</div>
+                    </div>
+                {% endif %}
+                {% if not member_is_me %}
+	                <div>&nbsp;</div>
+		            <div class="row">
+		                <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
+		                <div class="col-sm-9 col-12">
+{% comment %}                            
+		                    {% for band_key in the_band_keys %}
+		                        {% set the_band = band_key.get() %}
+		                        <a href="/band_info.html?bk={{ the_band.id }}">{{ the_band.name }}</a>{% if loop.last == False %}, {% endif %}
+		                    {% endfor %}
+{% endcomment %}
+                        </div>
+		            </div>
+		        {% endif %}
+		    </div>
+		</div>
+
+        {% if the_member.images %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Pictures Of Me" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="pictures">
+                    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                      <div class="carousel-inner" role="listbox">
+                        {% for i in the_member.images %}
+                            <div class="carousel-item{% if loop.index == 1 %} active{% endif %}">
+                              <img class="d-block img-fluid" src="{{i}}">
+                            </div>
+                        {% endfor %}
+                      </div>
+                      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                        <i class="fas fa-chevron-left fa-2x" style="color:gray;" aria-hidden="true"></i>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                        <i class="fas fa-chevron-right fa-2x" style="color:gray;" aria-hidden="true"></i>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    </div>
+
+                </div>
+            </div>
+            <div>&nbsp;</div>
+        {% endif %}            
+
+        {% if member_is_me or the_user_is_superuser %}
+	        <div>&nbsp;</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Bands" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">        
+                    <div id="bandlist">
+                        <i class="fas fa-spinner fa-pulse"></i>
+                    </div>
+                    <div id="bandpopup">
+                    </div>
+                </div>
+            </div>
+
+	        <div>&nbsp;</div>
+            <div class="card">
+	            <div class="card-header">
+	                <div class="row titlerow">
+	                    <div class="col-4">
+	                        {% trans "Preferences" %}
+	                    </div>
+                        {% if member_is_me or the_user_is_superuser %}
+	                        <div class="ml-auto">
+	                            <a class="btn btn-primary btn-sm" href="member_edit.html?mk={{ the_member.id }}">{% trans "Edit" %}</a>
+	                        </div>
+	                    {% endif %}
+	                </div>
+	            </div>
+	            <div class="card-body">
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Hide canceled gigs" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=the_member.preferences.hide_canceled_gigs %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=the_member.preferences.hide_canceled_gigs %}</div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Share my profile" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.share_profile %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Share my profile" %}: {% include "base/tf.html" with value=the_member.preferences.share_profile %}</div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Share my email" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.share_email %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Share my email" %}: {% include "base/tf.html" with value=the_member.preferences.share_email %}</div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Calendar URL for My Bands" %}</div>
+                        <div class="col-sm-9 col-12">
+                                <a href="http://www.gig-o-matic.com/cal/m/{{the_member.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="/calhelp">{% trans "click here for help" %}</a>]
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Calendar shows only confirmed gigs" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.calendar_show_only_confirmed %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Calendar shows only confirmed gigs" %}: {% include "base/tf.html" with value=the_member.preferences.calendar_show_only_confirmed %}</div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.calendar_show_only_committed %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=the_member.preferences.calendar_show_only_committed %}</div>
+                    </div>
+                    {% if the_user_is_superuser %}
+	                    <br>
+	                    <div class="row">
+	                        <div class="col-sm-3 col-12">Verified:</div>
+	                        <div class="col-sm-9 col-12">
+	                        	{{ the_member.verified }}
+	                        	{% if the_member.verified == False %}
+	                        		<a class="btn btn-primary btn-sm" href="/verify_member?mk={{ the_member.id }}">verify</a>
+	                        	{% endif %}
+	                        </div>
+	                    </div>
+	                    <br>
+	                    <div class="row">
+	                        <div class="col-sm-3 col-12">{% trans "Last Activity:" %}</div>
+	                        <div class="col-sm-9 col-12">
+	                            {% if the_member.last_activity %}
+	                                {{ the_member.last_activity }}
+	                            {% else %}
+	                                None since 2014-10-18
+	                            {% endif %}
+	                        </div>
+	                    </div>
+                    {% endif %}
+	            </div>
+	        </div> <!-- card -->
+	    {% endif %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block modal %}
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans "Do you really want to leave" %} <span id='band-name'></span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{% trans "Don't Leave" %}</button>
+                    <a class="btn btn-primary btn-sm" id="leave-ak" href="/member_delete_assoc.html?ak=">{% trans "Yes, Leave" %}</a>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+{% endblock modal %}
+
+{% block localscripts %}
+<script>
+function updateBands() {
+    $.post('/member_get_assocs',
+            {
+                mk: '{{ the_member.id }}'
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    $('#bandlist').html(responseTxt);
+                    updateBandlist()
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function updateBandlist() {
+    $.post('/member_get_other_bands',
+            {
+                mk: '{{ the_member.id }}'
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    $('#bandpopup').html(responseTxt);
+                    setupClick();
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+
+function section_select(bk, sk, name) {
+    var mk='{{the_member.id}}';
+    $.post('/member_set_section',
+            {
+                mk: mk,
+                sk: sk,
+                bk: bk
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    $('#sbk-'+bk).html(name+ " <span class='caret'></span>")
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function color_select(ak, c) {
+    $.post('/member_set_color',
+            {
+                ak: ak,
+                c: c
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    test=$('#color-'+c).html();
+                    $('#cbk-'+ak).html(test + " <span class='caret'></span>");
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function email_select(ak, em) {
+    $('#mailbk-'+ak).html("<i class=\"fas fa-spinner fa-pulse fa-lg\"></i>");
+    $.post('/member_set_get_email',
+            {
+                ak: ak,
+                em: em
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success") {
+                    if (em) {
+                        test=$('#mail_true').html();
+                    } else {
+                        test=$('#mail_false').html();
+                    }
+                    $('#mailbk-'+ak).html(test + " <span class='caret'></span>");
+                }
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+
+function multi_select(bk) {
+    elem=document.getElementById("msbk-"+bk)
+    var mk='{{the_member.id}}';
+    $.post('/member_set_multi',
+            {
+                mk: mk,
+                bk: bk,
+                do: elem.checked
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function occ_select(ak) {
+    elem=document.getElementById("oak-"+ak)
+    $.post('/band_makeoccasional',
+            {
+                ak: ak,
+                do: elem.checked
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function hide_select(ak) {
+    elem=document.getElementById("hideak-"+ak)
+    $.post('/member_set_hide_from_schedule',
+            {
+                ak: ak,
+                do: elem.checked
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+}
+
+function leave_band(ak, bandname) {
+    $('#band-name').html(bandname);
+    $('#leave-ak').attr('href','/member_delete_assoc.html?ak='+ak);
+    $('#deleteModal').modal('show');
+}
+
+function setupClick() {
+    $("a.band-click").click(function(){
+        var mk='{{the_member.id}}';
+        var bk=$(this).attr("id");
+        $.post("/member_new_assoc",
+                    {
+                        mk: mk,
+                        bk: bk
+                    },
+                    function(responseTxt,statusTxt,xhr){
+                        if(statusTxt=="success")
+                            $('#bandlist').html('<i class="fas fa-spinner fa-pulse"></i>');
+                            $('#bandpopup').html('');
+                            setTimeout(function() {
+                                updateBands()
+                            }, 500); // delay to let database catch up
+                        if(statusTxt=="error")
+                          alert("Error: "+xhr.status+": "+xhr.statusText);
+                    });
+    });
+}
+
+$(document).ready(function() {
+    updateBands();
+    setupClick();    
+});
+</script>
+{% endblock localscripts %}
+

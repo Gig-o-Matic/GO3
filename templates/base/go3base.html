@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -50,7 +51,7 @@
 
 
         <!-- Custom styles for this template -->
-        <link href="/css/gigo.css" rel="stylesheet">
+        <link href={% static "css/gigo.css" %} rel="stylesheet">
 
 
         <!-- Don't cache anything. Ever. -->
@@ -77,12 +78,12 @@
 
             <div class="container">
                     <div class="inner-container">
-                            {% if the_user %}
+                            {% if user %}
                                 {% block welcome %}
-                                    {% include 'welcome.html' %}
+                                    {% include 'base/welcome.html' %}
                                 {% endblock welcome %}
                                 {% block motd %}
-                                    {% include 'motd.html' %}
+                                    {% include 'base/motd.html' %}
                                 {% endblock motd %}
                             {% endif %}
                             {% block content %}
@@ -91,7 +92,7 @@
             </div><!-- /.container -->
         </div> <!-- /.wrap -->
         {% block footer %}
-            {% if the_user %}
+            {% if user %}
                 <div id="footer">
                     <div class="container">
                         <div class="row">
@@ -137,12 +138,12 @@ document.onkeypress = stopRKey;
     {% block localscripts %}
     {% endblock localscripts %}
     {% block navbarscripts %}
-        {% if the_user %}
+        {% if user %}
             <script>
                 function updateNavbarBands() {
                     $.post('/member_get_bands',
                     {
-                        mk: '{{the_user.id}}'
+                        mk: '{{user.id}}'
                     },
                     function(responseTxt,statusTxt,xhr){
                         if(statusTxt=="success")
@@ -157,7 +158,7 @@ document.onkeypress = stopRKey;
                 function updateNavbarAddGig() {
                     $.post('/member_get_add_gig_bands',
                     {
-                        mk: '{{the_user.id}}'
+                        mk: '{{user.id}}'
                     },
                     function(responseTxt,statusTxt,xhr){
                         if(statusTxt=="success")
@@ -172,10 +173,10 @@ document.onkeypress = stopRKey;
         
                 $(document).ready(function() {
                     $('#motd-alert').bind('closed.bs.alert', function () {
-                        $.post("/seen_motd",{ mk:"{{the_user.id}}" })
+                        $.post("/seen_motd",{ mk:"{{user.id}}" })
                     });
                     $('#welcome-alert').bind('closed.bs.alert', function () {
-                        $.post("/seen_welcome",{ mk:"{{the_user.id}}" })
+                        $.post("/seen_welcome",{ mk:"{{user.id}}" })
                     });
                     updateNavbarBands();
                     updateNavbarAddGig();
