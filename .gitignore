@@ -11,3 +11,4 @@ Crypto
 *.db
 *.code-workspace
 db.sqlite3
+*/migrations/*
