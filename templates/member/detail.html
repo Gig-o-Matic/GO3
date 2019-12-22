@@ -19,9 +19,9 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if member_is_me or the_user_is_superuser %}
+                    {% if user.id == request.user.id or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="member_edit.html?mk={{ the_member.id }}">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="member_edit.html?mk={{  member.id }}">{% trans "Edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -29,33 +29,33 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-sm-3 col-12">{% trans "Name" %}</div>
-                    <div class="col-sm-9 col-12">{{ the_member.name|escape }}
-                        {% if the_member.nickname %}
-                            ({{ the_member.nickname | escape }})
+                    <div class="col-sm-9 col-12">{{  member.name|escape }}
+                        {% if  member.nickname %}
+                            ({{  member.nickname | escape }})
                         {% endif %}
                     </div>
                 </div>
                 {% if show_email %}
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Email" %}</div>
-                        <div class="col-sm-9 col-12"><a href="mailto:{{the_member.email_address}}">{{ the_member.email_address }}</a>
+                        <div class="col-sm-9 col-12"><a href="mailto:{{ member.email_address}}">{{  member.email_address }}</a>
                         {% if email_change_msg %}<br>{{ email_change_msg }}{% endif %}
                         </div>
                     </div>
                 {% endif %}
                 {% if show_phone %}
-                    {% if the_member.phone %}
+                    {% if  member.phone %}
                         <div class="row">
                             <div class="col-sm-3 col-12">{% trans "Phone" %}</div>
-                            <div class="col-sm-9 col-12">{{ the_member.phone|escape }}</div>
+                            <div class="col-sm-9 col-12">{{  member.phone|escape }}</div>
                         </div>
                     {% endif %}
                 {% endif %}
-                {% if the_member.statement %}
+                {% if  member.statement %}
 	                <div>&nbsp;</div>
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Personal Statement" %}</div>
-                        <div class="col-sm-9 col-12">{{ the_member.statement|escape }}</div>
+                        <div class="col-sm-9 col-12">{{  member.statement|escape }}</div>
                     </div>
                 {% endif %}
                 {% if not member_is_me %}
@@ -75,7 +75,7 @@
 		    </div>
 		</div>
 
-        {% if the_member.images %}
+        {% if  member.images %}
             <div class="card">
                 <div class="card-header">
                     <div class="row titlerow">
@@ -87,7 +87,7 @@
                 <div class="card-body" id="pictures">
                     <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
                       <div class="carousel-inner" role="listbox">
-                        {% for i in the_member.images %}
+                        {% for i in  member.images %}
                             <div class="carousel-item{% if loop.index == 1 %} active{% endif %}">
                               <img class="d-block img-fluid" src="{{i}}">
                             </div>
@@ -136,7 +136,7 @@
 	                    </div>
                         {% if member_is_me or the_user_is_superuser %}
 	                        <div class="ml-auto">
-	                            <a class="btn btn-primary btn-sm" href="member_edit.html?mk={{ the_member.id }}">{% trans "Edit" %}</a>
+	                            <a class="btn btn-primary btn-sm" href="member_edit.html?mk={{  member.id }}">{% trans "Edit" %}</a>
 	                        </div>
 	                    {% endif %}
 	                </div>
@@ -144,46 +144,46 @@
 	            <div class="card-body">
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Hide canceled gigs" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=the_member.preferences.hide_canceled_gigs %}</div>
-                        <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=the_member.preferences.hide_canceled_gigs %}</div>
+                        <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                     </div>
                     <br>
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Share my profile" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.share_profile %}</div>
-                        <div class="col-12 d-sm-none">{% trans "Share my profile" %}: {% include "base/tf.html" with value=the_member.preferences.share_profile %}</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.share_profile %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Share my profile" %}: {% include "base/tf.html" with value=member.preferences.share_profile %}</div>
                     </div>
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Share my email" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.share_email %}</div>
-                        <div class="col-12 d-sm-none">{% trans "Share my email" %}: {% include "base/tf.html" with value=the_member.preferences.share_email %}</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.share_email %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Share my email" %}: {% include "base/tf.html" with value=member.preferences.share_email %}</div>
                     </div>
                     <br>
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Calendar URL for My Bands" %}</div>
                         <div class="col-sm-9 col-12">
-                                <a href="http://www.gig-o-matic.com/cal/m/{{the_member.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="/calhelp">{% trans "click here for help" %}</a>]
+                                <a href="http://www.gig-o-matic.com/cal/m/{{ member.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="/calhelp">{% trans "click here for help" %}</a>]
                         </div>
                     </div>
                     <br>
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Calendar shows only confirmed gigs" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.calendar_show_only_confirmed %}</div>
-                        <div class="col-12 d-sm-none">{% trans "Calendar shows only confirmed gigs" %}: {% include "base/tf.html" with value=the_member.preferences.calendar_show_only_confirmed %}</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Calendar shows only confirmed gigs" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
                     </div>
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=the_member.preferences.calendar_show_only_committed %}</div>
-                        <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=the_member.preferences.calendar_show_only_committed %}</div>
+                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                     </div>
                     {% if the_user_is_superuser %}
 	                    <br>
 	                    <div class="row">
 	                        <div class="col-sm-3 col-12">Verified:</div>
 	                        <div class="col-sm-9 col-12">
-	                        	{{ the_member.verified }}
-	                        	{% if the_member.verified == False %}
-	                        		<a class="btn btn-primary btn-sm" href="/verify_member?mk={{ the_member.id }}">verify</a>
+	                        	{{  member.verified }}
+	                        	{% if  member.verified == False %}
+	                        		<a class="btn btn-primary btn-sm" href="/verify_member?mk={{  member.id }}">verify</a>
 	                        	{% endif %}
 	                        </div>
 	                    </div>
@@ -191,8 +191,8 @@
 	                    <div class="row">
 	                        <div class="col-sm-3 col-12">{% trans "Last Activity:" %}</div>
 	                        <div class="col-sm-9 col-12">
-	                            {% if the_member.last_activity %}
-	                                {{ the_member.last_activity }}
+	                            {% if  member.last_activity %}
+	                                {{  member.last_activity }}
 	                            {% else %}
 	                                None since 2014-10-18
 	                            {% endif %}
@@ -231,7 +231,7 @@
 function updateBands() {
     $.post('/member_get_assocs',
             {
-                mk: '{{ the_member.id }}'
+                mk: '{{  member.id }}'
             },
             function(responseTxt,statusTxt,xhr){
                 if(statusTxt=="success")
@@ -245,7 +245,7 @@ function updateBands() {
 function updateBandlist() {
     $.post('/member_get_other_bands',
             {
-                mk: '{{ the_member.id }}'
+                mk: '{{  member.id }}'
             },
             function(responseTxt,statusTxt,xhr){
                 if(statusTxt=="success")
@@ -258,7 +258,7 @@ function updateBandlist() {
 
 
 function section_select(bk, sk, name) {
-    var mk='{{the_member.id}}';
+    var mk='{{ member.id}}';
     $.post('/member_set_section',
             {
                 mk: mk,
@@ -312,7 +312,7 @@ function email_select(ak, em) {
 
 function multi_select(bk) {
     elem=document.getElementById("msbk-"+bk)
-    var mk='{{the_member.id}}';
+    var mk='{{ member.id}}';
     $.post('/member_set_multi',
             {
                 mk: mk,
@@ -359,7 +359,7 @@ function leave_band(ak, bandname) {
 
 function setupClick() {
     $("a.band-click").click(function(){
-        var mk='{{the_member.id}}';
+        var mk='{{ member.id}}';
         var bk=$(this).attr("id");
         $.post("/member_new_assoc",
                     {
