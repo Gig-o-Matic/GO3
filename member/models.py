@@ -53,11 +53,11 @@ class Member(AbstractUser):
     nickname = models.CharField(max_length=100, blank=True )
     phone = models.CharField(max_length=100, blank=True)
     statement = models.TextField(blank=True)
-    seen_motd_time = models.DateTimeField(null=True, default=None)
+    seen_motd_time = models.DateTimeField(null=True, blank=True, default=None)
     seen_welcome = models.BooleanField(default=False)
     show_long_agenda = models.BooleanField(default=True)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
-    images = models.CharField(max_length=500, blank=True)
+    images = models.TextField(max_length=500, blank=True)
     cal_feed_dirty = models.BooleanField(default=True)
 
     @property

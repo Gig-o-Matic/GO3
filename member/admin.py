@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 # from django.contrib.auth.models import User
-from member.models import Member
+from .models import Member
 from django.utils.translation import gettext, gettext_lazy as _
 
 # # Define an inline admin descriptor for Employee model
@@ -20,14 +20,14 @@ from django.utils.translation import gettext, gettext_lazy as _
 # admin.site.register(User, UserAdmin)
 
 class MemberAdmin(BaseUserAdmin):
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        (_('Personal info'), {'fields': ('username', 'nickname')}),
-        (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
-        }),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
-    )
+    # fieldsets = (
+    #     (None, {'fields': ('email', 'password')}),
+    #     (_('Personal info'), {'fields': ('username', 'nickname')}),
+    #     (_('Permissions'), {
+    #         'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+    #     }),
+    #     (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    # )
 
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
@@ -36,7 +36,11 @@ class MemberAdmin(BaseUserAdmin):
     list_filter = ()
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('username','nickname')}),
+        ('Personal info', {'fields': ('username','nickname','phone')}),
+        ('Other stuff', {'classes': ('collapse',),
+                         'fields': ('statement', 'seen_motd_time', 'seen_welcome', 
+                                    'show_long_agenda', 'images', 'cal_feed_dirty',
+                                    )}),
     )
   
     search_fields = ('email',)

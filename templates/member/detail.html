@@ -38,7 +38,7 @@
                 {% if show_email %}
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Email" %}</div>
-                        <div class="col-sm-9 col-12"><a href="mailto:{{ member.email_address}}">{{  member.email_address }}</a>
+                        <div class="col-sm-9 col-12"><a href="mailto:{{ member.email_address}}">{{  member.email }}</a>
                         {% if email_change_msg %}<br>{{ email_change_msg }}{% endif %}
                         </div>
                     </div>
@@ -51,24 +51,21 @@
                         </div>
                     {% endif %}
                 {% endif %}
-                {% if  member.statement %}
+                {% if member.statement %}
 	                <div>&nbsp;</div>
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Personal Statement" %}</div>
                         <div class="col-sm-9 col-12">{{  member.statement|escape }}</div>
                     </div>
                 {% endif %}
-                {% if not member_is_me %}
+                {% if not member_is_me or True %}
 	                <div>&nbsp;</div>
 		            <div class="row">
 		                <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
 		                <div class="col-sm-9 col-12">
-{% comment %}                            
-		                    {% for band_key in the_band_keys %}
-		                        {% set the_band = band_key.get() %}
+		                    {% for the_band in the_member_bands %}
 		                        <a href="/band_info.html?bk={{ the_band.id }}">{{ the_band.name }}</a>{% if loop.last == False %}, {% endif %}
 		                    {% endfor %}
-{% endcomment %}
                         </div>
 		            </div>
 		        {% endif %}
