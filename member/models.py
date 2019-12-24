@@ -90,7 +90,7 @@ class MemberPreferences(models.Model):
 
     email_new_gig = models.BooleanField(default=True)
     hide_canceled_gigs = models.BooleanField(default=False)
-    locale = models.CharField(max_length=200)
+    locale = models.CharField(max_length=200, default='en')
     share_profile = models.BooleanField(default=True)
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=True)
