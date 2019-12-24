@@ -2,13 +2,15 @@ from django.http import HttpResponse
 from .models import Member
 from band.models import Band
 from django.views import generic
+from django.views.generic.edit import UpdateView
+from django.urls import reverse
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
 
 class DetailView(generic.DetailView):
     model = Member
-    template_name = 'member/detail.html'
+    template_name = 'member/member_detail.html'
 
     def get_context_data(self, **kwargs):
 
@@ -79,3 +81,10 @@ class DetailView(generic.DetailView):
         # }
 
         return context
+
+
+class UpdateView(UpdateView):
+    model = Member
+    fields = ['email','username']
+    def get_success_url(self):
+        return reverse('member-detail', kwargs={'pk': self.object.id})
