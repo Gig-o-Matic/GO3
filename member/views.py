@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from .models import Member
 from band.models import Band
 from django.views import generic
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.urls import reverse
 
 def index(request):
@@ -83,8 +83,11 @@ class DetailView(generic.DetailView):
         return context
 
 
-class UpdateView(UpdateView):
+class UpdateView(BaseUpdateView):
     model = Member
-    fields = ['email','username']
+    fields = ['email','username','nickname','phone','statement','images']
     def get_success_url(self):
+        print('\n\nfoo\n\n')
         return reverse('member-detail', kwargs={'pk': self.object.id})
+
+ 

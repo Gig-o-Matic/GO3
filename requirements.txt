@@ -3,7 +3,9 @@ astroid==2.3.3
 certifi==2019.11.28
 Django==3.0
 django-extensions==2.2.5
+django-widget-tweaks==1.4.5
 isort==4.3.21
+Jinja2==2.10.3
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1

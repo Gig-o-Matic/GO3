@@ -52,7 +52,7 @@ class Member(AbstractUser):
     username = models.CharField(max_length=200)
     nickname = models.CharField(max_length=100, blank=True )
     phone = models.CharField(max_length=100, blank=True)
-    statement = models.TextField(blank=True)
+    statement = models.CharField(max_length=200, blank=True)
     seen_motd_time = models.DateTimeField(null=True, blank=True, default=None)
     seen_welcome = models.BooleanField(default=False)
     show_long_agenda = models.BooleanField(default=True)

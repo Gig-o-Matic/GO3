@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import UserCreationForm
 # from django.contrib.auth.models import User
 from .models import Member, MemberPreferences
+
+class MemberCreateForm(UserCreationForm):
+    class Meta:
+        model = Member
+        fields = ('email', 'username')
 
 class PreferencesInline(admin.StackedInline):
     model = MemberPreferences
@@ -31,6 +37,8 @@ class MemberAdmin(BaseUserAdmin):
     inlines = [
         PreferencesInline,
     ]
+
+    add_form = MemberCreateForm
 
     search_fields = ('email',)
     ordering = ('email',)
