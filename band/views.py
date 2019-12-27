@@ -7,5 +7,7 @@ def index(request):
 
 class DetailView(generic.DetailView):
     model = Band
-    template_name = 'band/detail.html'
+    fields = ['name', 'hometown']
+    def get_success_url(self):
+        return reverse('member-detail', kwargs={'pk': self.object.id})
 

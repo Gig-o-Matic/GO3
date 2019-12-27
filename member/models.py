@@ -58,6 +58,8 @@ class Member(AbstractUser):
     show_long_agenda = models.BooleanField(default=True)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
     images = models.TextField(max_length=500, blank=True)
+
+    # flag to determine whether to recompute calendar feed
     cal_feed_dirty = models.BooleanField(default=True)
 
     @property
