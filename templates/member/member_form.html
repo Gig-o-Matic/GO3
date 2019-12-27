@@ -59,8 +59,18 @@
                 paste it here.)
  -->
             </div>
-
-            <input type="submit" value="Update">
+            <div>&nbsp;</div>
+            <div class="row">
+                {% if request.user.is_superuser %}
+                    <div class="form-group col-12 col-md-6">
+                        <a data-toggle="modal" href="#deleteModal" class="btn btn-secondary">{% trans "Delete" %}</a>
+                    </div>
+                {% endif %}
+                <div class="form-group col-12 col-md-6 ml-auto text-right">
+                    <a class="btn btn-secondary" href="{% url 'member-detail' pk=1 %}">{% trans "Cancel" %}</a>
+                    <button value="Update" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+                </div>
+            </div>        
         </form>
     </div>
 </div>

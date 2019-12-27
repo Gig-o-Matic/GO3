@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from .models import Member
+from .models import Member, MemberPreferences
 from band.models import Band
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
@@ -87,7 +87,14 @@ class UpdateView(BaseUpdateView):
     model = Member
     fields = ['email','username','nickname','phone','statement','images']
     def get_success_url(self):
-        print('\n\nfoo\n\n')
         return reverse('member-detail', kwargs={'pk': self.object.id})
+
+class PreferencesUpdateView(BaseUpdateView):
+    model = MemberPreferences
+    fields = ['hide_canceled_gigs','locale','share_profile','share_email','calendar_show_only_confirmed', 
+              'calendar_show_only_committed']
+    def get_success_url(self):
+        return reverse('member-detail', kwargs={'pk': self.object.id})
+
 
  

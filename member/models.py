@@ -88,7 +88,6 @@ class MemberPreferences(models.Model):
     """ class to hold user preferences """
     member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
 
-    email_new_gig = models.BooleanField(default=True)
     hide_canceled_gigs = models.BooleanField(default=False)
     locale = models.CharField(max_length=200, default='en')
     share_profile = models.BooleanField(default=True)
