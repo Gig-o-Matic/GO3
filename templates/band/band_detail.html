@@ -8,6 +8,8 @@
 {% endblock headcontent %}
 
 {% block content %}
+assoc: {{ the_user_is_associated }}<br>
+admin: {{ the_user_is_band_admin }}<br>
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
@@ -25,9 +27,9 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if the_user_is_band_admin or the_user_is_superuser %}
+                    {% if the_user_is_band_admin or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="band_edit.html?bk={{ band.id }}">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="/band/update/{{ band.id }}">{% trans "Edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -60,7 +62,7 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if the_user_is_associated or the_user_is_superuser %}
+                {% if the_user_is_associated or request.user.is_superuser %}
                     <div>&nbsp;</div>
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Resources" %}</div>
@@ -71,7 +73,7 @@
                                     {% endfor %}
                                 {% endif %}
                                 <a href="/band_gig_archive?bk={{ band.id }}">{% trans "Gig Archive" %}</a><br>
-                                {% if the_user_is_superuser or the_user_is_band_admin %}
+                                {% if request.user.is_superuser or the_user_is_band_admin %}
                                     <a href="/band_gig_trashcan?bk={{ band.id }}">{% trans "Gig Trashcan" %}</a><br>
                                 {% endif %}
                         </div>
@@ -111,7 +113,7 @@
                             </div>
                         </div>
                     {% endif %}
-                    {% if the_user_is_superuser %}
+                    {% if request.user.is_superuser %}
                         <div class="row">
                             <div class="col-12">
                                 &nbsp;
@@ -161,7 +163,7 @@
             </div>
         {% endif %}
 
-        {% if the_user_is_associated is False and the_user_is_superuser is False %}
+        {% if the_user_is_associated is False and request.user.is_superuser is False %}
             {% if band.share_gigs %}
                 <div>&nbsp;</div>
                 <div class="card">
@@ -190,7 +192,7 @@
                     </div>
                 </div>
             {% endif %}
-        {% elif the_user_is_confirmed == False and the_user_is_superuser == False %}
+        {% elif the_user_is_confirmed == False and request.user.is_superuser == False %}
             {% trans "Your membership is pending - ask a band member to confirm you!" %}
         {% else %}
             {% if the_pending_members %}
@@ -249,11 +251,11 @@
                         {% if num_sections == 0 %}
                             <div class="col-4">
                                 {% trans "Members" %}
-                                {% if the_user_is_band_admin or the_user_is_superuser %}
+                                {% if the_user_is_band_admin or request.user.is_superuser %}
                                     <button class="btn btn-primary btn-sm" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></button>
                                 {% endif %}
                             </div>
-                            {% if the_user_is_band_admin or the_user_is_superuser %}
+                            {% if the_user_is_band_admin or request.user.is_superuser %}
                                 <div class="ml-auto">
                                     <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
                                 </div>
@@ -264,11 +266,11 @@
                             </div>
                             <div class="col-5">
                                 {% trans "Members" %}
-                                    {% if the_user_is_band_admin or the_user_is_superuser %}
+                                    {% if the_user_is_band_admin or request.user.is_superuser %}
                                         <a class="btn btn-primary btn-sm" href="#" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></a>
                                     {% endif %}
                             </div>
-                            {% if the_user_is_band_admin or the_user_is_superuser %}
+                            {% if the_user_is_band_admin or request.user.is_superuser %}
                                 <div class="ml-auto">
                                     <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
                                 </div>
@@ -297,7 +299,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        {% if the_user_is_superuser or the_user_is_band_admin %}
+                        {% if request.user.is_superuser or the_user_is_band_admin %}
                             <div class="col-md-4">
                                 <br>
                                 <a href='/band_setup_sections?bk={{band.id}}' class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
@@ -307,7 +309,7 @@
                 </div>
             </div> <!-- panel -->
 
-            {% if the_user_is_band_admin or the_user_is_superuser %}
+            {% if the_user_is_band_admin or request.user.is_superuser %}
                 <div>&nbsp;</div>
                 <div class="accordion" id="accordion">
                     <div class="card">

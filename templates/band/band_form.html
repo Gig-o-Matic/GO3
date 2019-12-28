@@ -1,0 +1,34 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Edit Band" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+        <div class="page-header">
+            {% trans "Edit Band" %}
+        </div>
+
+        <form method="post" class="form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.errors }}
+            {{ form }}
+            <div>&nbsp;</div>
+            <div class="row">
+                {% if request.user.is_superuser %}
+                    <div class="form-group col-12 col-md-6">
+                        <a data-toggle="modal" href="#deleteModal" class="btn btn-secondary">{% trans "Delete" %}</a>
+                    </div>
+                {% endif %}
+                <div class="form-group col-12 col-md-6 ml-auto text-right">
+                    <a class="btn btn-secondary" href="{% url 'band-detail' pk=1 %}">{% trans "Cancel" %}</a>
+                    <button value="Update" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+                </div>
+            </div>        
+        </form>
+    </div>
+</div>
+{% endblock content %}
