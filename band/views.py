@@ -15,14 +15,16 @@ class DetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         the_band = self.object
         the_user = self.request.user
+
+        context = super().get_context_data(**kwargs)
+
         assocs = Assoc.objects.filter(band=the_band, member=the_user)
         if len(assocs) != 1:
-            # todo handle can't find assoc
-            raise LookupError("can't find an assoc for member and band")
+            context['the_user_is_associated'] = False
         else:
+            context['the_user_is_associated'] = True
             a = assocs[0]
-        context = super().get_context_data(**kwargs)
-        context['the_user_is_band_admin'] = a.is_band_admin
+            context['the_user_is_band_admin'] = a.is_band_admin
         return context
 
     def get_success_url(self):

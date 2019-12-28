@@ -10,6 +10,7 @@
 {% block content %}
 assoc: {{ the_user_is_associated }}<br>
 admin: {{ the_user_is_band_admin }}<br>
+super: {{ request.user.is_superuser }}<br>
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
