@@ -71,3 +71,15 @@ class Assoc(models.Model):
     def __str__(self):
         return "{0} in {1}".format(self.member, self.band)
 
+
+
+class Section(models.Model):
+    name = models.CharField(max_length=100)
+    order = models.IntegerField(default=0)
+    band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order']
