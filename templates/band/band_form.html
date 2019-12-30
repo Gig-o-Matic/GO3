@@ -23,8 +23,8 @@
             </div>
 
             <div class="form-group">
-                {{ formshortnameerrors }}
-                {{ formshortnamelabel_tag }}
+                {{ form.shortname.errors }}
+                {{ form.shortname.label_tag }}
                 {% render_field form.shortname class+="form-control" %}
             </div>
 
@@ -52,8 +52,8 @@
             <div class="form-group">
                 {{ form.new_member_message.errors }}
                 {{ form.new_member_message.label_tag }}
-                {% render_field form.new_member_message class+="form-control" %}
                 <button type="button" class="btn btn-secondary btn-sm" onclick="test_new_member_email();">test</button><span id="testedtext"></span>
+                {% render_field form.new_member_message class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.thumbnail_img.errors }}
@@ -64,9 +64,9 @@
             <div class="form-group">
                 {{ form.images.errors }}
                 {{ form.images.label_tag }}
-                {% render_field form.images class+="form-control" placeholder='{% trans "put urls to images on their own lines..." %}' %}
+                {% render_field form.images class+="form-control" %}
                 ({% trans "imagelink_instructions" %})
-            </div>
+            </div> <!-- placeholder='put urls to images on their own lines...' -->
             <div class="form-group">
                 {{ form.timezone.errors }}
                 {{ form.timezone.label_tag }}
@@ -74,53 +74,43 @@
             </div>
             <div class="form-group">
                 {{ form.anyone_can_create_gigs.errors }}
+                {% render_field form.anyone_can_create_gigs %}
                 {{ form.anyone_can_create_gigs.label_tag }}
-                {% render_field form.anyone_can_create_gigs class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.anyone_can_manage_gigs.errors }}
+                {% render_field form.anyone_can_manage_gigs %}
                 {{ form.anyone_can_manage_gigs.label_tag }}
-                {% render_field form.anyone_can_manage_gigs class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.share_gigs.errors }}
+                {% render_field form.share_gigs %}
                 {{ form.share_gigs.label_tag }}
-                {% render_field form.share_gigs class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.send_updates_by_default.errors }}
+                {% render_field form.send_updates_by_default %}
                 {{ form.send_updates_by_default.label_tag }}
-                {% render_field form.send_updates_by_default class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.rss_feed.errors }}
+                {% render_field form.rss_feed %}
                 {{ form.rss_feed.label_tag }}
-                {% render_field form.rss_feed class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.simple_planning.errors }}
+                {% render_field form.simple_planning %}
                 {{ form.simple_planning.label_tag }}
-                {% render_field form.simple_planning class+="form-control" %}
             </div>
             <div class="form-group">
                 {{ form.plan_feedback.errors }}
                 {{ form.plan_feedback.label_tag }}
                 {% render_field form.plan_feedback class+="form-control" %}
             </div>
-            <div class="form-group">
-                <div class="text-right">
-                    {% if the_member==None or is_new %}
-                        <a class="btn btn-secondary" href="/">{% trans %}Cancel{% endtrans %}</a>
-                    {% else %}
-                        <a class="btn btn-secondary" href="band_info.html?bk={{the_band.key.urlsafe()}}">{% trans %}Cancel{% endtrans %}</a>
-                    {% endif %}
-                    <button type="submit" class="btn btn-primary">{% trans %}Save{% endtrans %}</button>
-                </div>
-            </div>
-            {% if the_member==None or is_new%}
+            {% if request.user is None or is_new%}
                 <input type="hidden" name="bk" value="0">
             {% else %}
-                <input type="hidden" name="bk" value="{{the_band.key.urlsafe()}}">
+                <input type="hidden" name="bk" value="{{the_band.id}}">
             {% endif %}
 
 
