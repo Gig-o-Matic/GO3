@@ -8,9 +8,6 @@
 {% endblock headcontent %}
 
 {% block content %}
-assoc: {{ the_user_is_associated }}<br>
-admin: {{ the_user_is_band_admin }}<br>
-super: {{ request.user.is_superuser }}<br>
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
@@ -577,15 +574,15 @@ function admin_select(ak) {
 
 function occasional_select(ak) {
     elem=document.getElementById("oak-"+ak)
-    $.post('/band_makeoccasional',
-            {
-                ak: ak,
-                do: elem.checked
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+    $.ajax({
+        method: 'POST',
+        url: '/band/assoc/occasional/'+ak+'/'+elem.checked,
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
 }
 
 
