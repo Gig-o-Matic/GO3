@@ -561,22 +561,22 @@ function multi_select(mk) {
 
 function admin_select(ak) {
     elem=document.getElementById("aak-"+ak)
-    $.post('/band_makeadmin',
-            {
-                ak: ak,
-                do: elem.checked
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+    $.ajax({
+            method: 'POST',
+            url: '/band/assoc/param/'+ak+'/is_band_admin/'+elem.checked,
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            success: function(responseTxt,statusTxt,xhr){
+                        if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
 }
 
 function occasional_select(ak) {
     elem=document.getElementById("oak-"+ak)
     $.ajax({
         method: 'POST',
-        url: '/band/assoc/occasional/'+ak+'/'+elem.checked,
+        url: '/band/assoc/param/'+ak+'/is_occasional/'+elem.checked,
         headers: { "X-CSRFToken": "{{csrf_token}}" },
         success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="error")

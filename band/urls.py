@@ -9,5 +9,5 @@ urlpatterns = [
     path('update/<int:pk>/', views.UpdateView.as_view(), name='band-update'),
     path('<int:pk>/members/', views.AllMembersView.as_view(), name='all-members'),
 
-    path('assoc/occasional/<int:ak>/<str:truefalse>', helpers.set_occasional),
+    path('assoc/param/<int:ak>/<str:param>/<str:truefalse>', helpers.set_param),
 ]
