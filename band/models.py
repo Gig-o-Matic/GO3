@@ -15,8 +15,6 @@ class Band(models.Model):
     member_links = models.TextField(max_length=500, null=True, blank=True)
     thumbnail_img = models.CharField(max_length=200, null=True, blank=True)
 
-    # sections = ndb.KeyProperty(repeated=True)  # instrumental sections
-
     timezone = models.CharField(max_length=200, default='UTC')
 
     # # sent to new members when they join
@@ -48,15 +46,26 @@ class Band(models.Model):
 def my_handler(sender, instance, **kwargs):
     instance.condensed_name = ''.join(instance.name.split()).lower()
 
+class Section(models.Model):
+    name = models.CharField(max_length=100)
+    order = models.IntegerField(default=0)
+    band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '{0} in {1}'.format(self.name, self.band.name)
+
+    class Meta:
+        ordering = ['order']
+
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
+    default_section = models.ForeignKey(Section, null=True, related_name="default_section", on_delete=models.SET_NULL)
 
     is_confirmed = models.BooleanField( default=False )
     is_invited = models.BooleanField( default=False )
     is_band_admin = models.BooleanField( default = False )
 
-    # default_section = ndb.KeyProperty( default=None )
     # default_section_index = ndb.IntegerProperty( default=None )
 
     is_multisectional = models.BooleanField( default = False )
@@ -73,13 +82,3 @@ class Assoc(models.Model):
 
 
 
-class Section(models.Model):
-    name = models.CharField(max_length=100)
-    order = models.IntegerField(default=0)
-    band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['order']
