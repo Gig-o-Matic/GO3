@@ -289,10 +289,7 @@ super: {{ request.user.is_superuser }}<br>
                             		</div>
                            	    </div>
                         	{% endfor %}
-{% comment %}
-                    	    <div class="row" id="sectionNone" style="padding-top: 5px; padding-bottom: 5px; {% if band.sections | length is odd %}background:#f5f5f5;{% endif %}">
-{% endcomment %}
-                                <div class="row" id="sectionNone" style="padding-top: 5px; padding-bottom: 5px;">
+                    	    <div class="row" id="sectionNone" style="padding-top: 5px; padding-bottom: 5px; {% if band.sections.all|length is odd %}background:#f5f5f5;{% endif %}">
                         		<div class="col-12">
                         			<i class="fas fa-spinner fa-pulse fa-lg"></i>
                         		</div>
@@ -383,9 +380,8 @@ function updatePublic() {
 
 function updateMembers() {
     if (document.getElementById('memberlist')) {
-        $.post('/band_get_members',
+        $.get('/band/{{band.id}}/members',
                 {
-                    bk: '{{ band.id }}'
                 },
                 function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="success")

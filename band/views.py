@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from .models import Band, Assoc
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
+from django.views.generic.base import TemplateView
 from django.urls import reverse
 from .forms import BandForm
 
@@ -31,8 +32,17 @@ class DetailView(generic.DetailView):
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
+
 class UpdateView(BaseUpdateView):
     model = Band
     form_class = BandForm
     def get_success_url(self):
         return reverse('band-detail', kwargs={'pk': self.object.id})
+
+
+class AllMembersView(TemplateView):
+    template_name='band/band_all_members.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['member_assocs'] = Assoc.objects.filter(band__id=self.kwargs['pk']).filter(is_confirmed=True)
+        return context

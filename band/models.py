@@ -60,7 +60,7 @@ class Section(models.Model):
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
-    default_section = models.ForeignKey(Section, null=True, related_name="default_section", on_delete=models.SET_NULL)
+    default_section = models.ForeignKey(Section, null=True, blank=True, related_name="default_section", on_delete=models.SET_NULL)
 
     is_confirmed = models.BooleanField( default=False )
     is_invited = models.BooleanField( default=False )
