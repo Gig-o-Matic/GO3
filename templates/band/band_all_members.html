@@ -9,7 +9,7 @@
         <div class="col-md-3 col-6">
             <div class="form-group">
                 <label class="form-check">  
-                    <input class="form-check-input" type="checkbox" id='oak-{{ the_assoc.id}}' onclick="option_select('is_occasional','band/assoc','{{ the_assoc.id }}','oak-{{ the_assoc.id}}')"
+                    <input class="form-check-input" type="checkbox" id='oak-{{ the_assoc.id}}' onclick="option_tf_select('is_occasional','band/assoc','{{ the_assoc.id }}','oak-{{ the_assoc.id}}')"
                     {% if the_assoc.is_occasional %}
                         checked
                     {% endif %}
@@ -19,6 +19,7 @@
             </div>
         </div>
         {% if the_assoc.band.sections.all|length > 0 %}
+        {% comment %}TODO{% endcomment %}
             <div class="col-md-2">
                 <div class="dropdown">
                     <a class="btn btn-outline-secondary btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown" id="dropdownMenu{{loop.index}}" aria-haspopup="true" aria-expanded="false">
@@ -29,15 +30,16 @@
                         {% endif %}
                     </a>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenu{{loop.index}}">
-                         {% for a_section in the_assoc.band.sections.all %}
-                             <a class="dropdown-item" onclick="member_section('{{ the_assoc.member.id}}','{{a_section.id}}')">{{ a_section.name }}</a>
+                        <a class="dropdown-item" onclick="section_select('band/assoc','{{ the_assoc.id }}','0')">{% trans "section" %}...</a>
+                        {% for a_section in the_assoc.band.sections.all %}
+                             <a class="dropdown-item" onclick="section_select('band/assoc','{{ the_assoc.id }}','{{ a_section.id }}')">{{ a_section.name }}</a>
                          {% endfor %}
                     </div>
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id='msbk-{{ the_assoc.id }}' onclick="option_select('is_multisectional','band/assoc','{{ the_assoc.id }}','msbk-{{ the_assoc.id}}')"
+                    <input class="form-check-input" type="checkbox" id='msbk-{{ the_assoc.id }}' onclick="option_tf_select('is_multisectional','band/assoc','{{ the_assoc.id }}','msbk-{{ the_assoc.id}}')"
 
                     {% if the_assoc.is_multisectional %}
                         checked
@@ -51,7 +53,7 @@
         {% if the_assoc.member.id != request.user.key %}
             <div class="col-md-2">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id='aak-{{ the_assoc.id }}' onclick="admin_select('{{ the_assoc.id }}')"
+                    <input class="form-check-input" type="checkbox" id='aak-{{ the_assoc.id }}' onclick="option_tf_select('is_band_admin','band/assoc','{{ the_assoc.id }}','aak-{{ the_assoc.id}}')"
                     {% if the_assoc.is_band_admin %}
                         checked
                     {% endif %}
