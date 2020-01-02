@@ -1,11 +1,12 @@
 from django.http import HttpResponse
 from .models import Assoc, Section
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def set_assoc_tfparam(request, ak, param, truefalse):
+    """ set a true/false parameter on an assoc """
     a = Assoc.objects.filter(id=ak)
 
-    # todo make sure this is us, or we're superuser
     if len(a) != 1:
         raise ValueError('altering an assoc that does not exist')
     else:
@@ -22,7 +23,9 @@ def set_assoc_tfparam(request, ak, param, truefalse):
     return HttpResponse()
 
 
+@login_required
 def set_assoc_section(request, ak, sk):
+    """ set a default section on an assoc """
     a = Assoc.objects.filter(id=ak)
 
     # todo make sure this is us, or we're superuser

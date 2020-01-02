@@ -280,13 +280,13 @@
                     <div class="row">
                         <div class="col-12" id="sectionlist">
                         	{% for s in band.sections.all %}
-                        	    <div class="row" id="section{{loop.counter0}}" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                        	    <div class="row" id="section{{forloop.counter0}}" data-section="{{s.id}}" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                             		<div class="col-12">
                             			<i class="fas fa-spinner fa-pulse fa-lg"></i>
                             		</div>
                            	    </div>
                         	{% endfor %}
-                    	    <div class="row" id="sectionNone" style="padding-top: 5px; padding-bottom: 5px; {% if band.sections.all|length is odd %}background:#f5f5f5;{% endif %}">
+                    	    <div class="row" id="sectionNone" data-section="0" style="padding-top: 5px; padding-bottom: 5px; {% if band.sections.all|length is odd %}background:#f5f5f5;{% endif %}">
                         		<div class="col-12">
                         			<i class="fas fa-spinner fa-pulse fa-lg"></i>
                         		</div>
@@ -377,27 +377,28 @@ function updatePublic() {
 
 function updateMembers() {
     if (document.getElementById('memberlist')) {
-        $.get('/band/{{band.id}}/members',
-                {
-                },
-                function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        document.getElementById('memberlist').innerHTML=responseTxt;
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                });
+        $.ajax({
+            method: 'GET',
+            url: '/band/{{band.id}}/members',
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            success: function(responseTxt,statusTxt,xhr){
+                        if(statusTxt=="success")
+                            document.getElementById('memberlist').innerHTML=responseTxt;
+                        if(statusTxt=="error")
+                            alert("Error: "+xhr.status+": "+xhr.statusText);
+            },
+        });
     }
 }
 
-
-var len_sections = {{ band.sections | length }};
 
 function updateSections() {
 	updateSection(0);
 }
 
+var num_sections = Number({{ band.sections.all|length }});
 function updateSection(i) {
-	if (i >= len_sections) {
+	if (i >= num_sections) {
 		updateNoneSection()
 	} else {
 		updateOneSection(i)
@@ -405,30 +406,32 @@ function updateSection(i) {
 }
 
 function updateOneSection(i) {
-    $.post('/band_get_sections',
-            {
-                bk: '{{ band.id }}',
-                ski: i
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    document.getElementById('section'+i).innerHTML=responseTxt;
-                	if (i != "None") {
-                		updateSection(i+1)
-                	}
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+    sectionid = $('#section'+i).attr('data-section');
+    $.ajax({
+        method: 'GET',
+        url: '/band/{{ band.id }}/section/'+sectionid,
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success") {
+                        document.getElementById('section'+i).innerHTML=responseTxt;
+                        if (i != "None") {
+                            updateSection(i+1);
+                        }
+                    }
+                    if(statusTxt=="error") {
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                    }
+                },
+    });
 }
 
 function updateNoneSection() {
 
-    $.post('/band_get_sections',
-        {
-            bk: '{{ band.id }}',
-            ski: 'None'
-        },
-        function(responseTxt,statusTxt,xhr){
+    $.ajax({
+        method: 'GET',
+        url: '/band/{{ band.id }}/section/0',
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
             if(statusTxt=="success")
             	if (responseTxt=="None") {
             		$('#sectionNone').hide()
@@ -437,111 +440,11 @@ function updateNoneSection() {
             	} else {
                 	document.getElementById('sectionNone').innerHTML=responseTxt;
                 }
-            if(statusTxt=="error")
+            if(statusTxt=="error") {
                 alert("Error: "+xhr.status+": "+xhr.statusText);
-        });
-}
-
-function handle_new_section() {
-    $('#newsectionmodal').modal('hide');
-    name=document.getElementById('newsectioninput').value;
-    $('#newsectioninput').val(''); // reset the placeholder
-    $.post("/band_new_section",
-            {
-                bk: "{{band.id}}",
-                section_name: name
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    updateSections();
-                if(statusTxt=="error")
-                  alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
-
-    return false;
-}
-
-function move(dir,sk) {
-    $.post("/band_move_section",
-            {
-                dir: dir,
-                sk: sk
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    updateSections();
-                if(statusTxt=="error")
-                  alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
-
-    return false;
-}
-
-function delete_section(name, sk) {
-    $('#deletesectionname').html(name);
-    $('#delsectionmodal').data('sectionkey',sk);
-    $('#delsectionmodal').modal('show');
-}
-
-function do_delete() {
-    $('#delsectionmodal').modal('hide');
-    sk=$('#delsectionmodal').data('sectionkey');
-
-    $.post("/band_delete_section",
-            {
-                sk: sk
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    updateSections();
-                if(statusTxt=="error")
-                  alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
-
-    return false;
-}
-
-function rename_section(name, sk) {
-    $('#renamesectioninput').attr('value',name);
-    $('#renamesectionmodal').data('sectionkey',sk);
-    $('#renamesectionmodal').modal('show');
-}
-
-function handle_rename_section() {
-    $('#renamesectionmodal').modal('hide');
-    sk=$('#renamesectionmodal').data('sectionkey');
-    newname=$('#renamesectioninput').val();
-
-    $.post("/band_rename_section",
-            {
-                sk: sk,
-                newname: newname
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    updateSections();
-                if(statusTxt=="error")
-                  alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
-
-    return false;
-}
-
-
-function member_section(mk, sk) {
-    var bk='{{band.id}}';
-    $.post('/member_set_section',
-            {
-                mk: mk,
-                sk: sk,
-                bk: bk
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    setTimeout(function(){updateSections(); updateMembers();}, 1000);
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+            }
+        },
+    });
 }
 
 function option_tf_select(option, objecttype, objectid, elementid) {
@@ -571,6 +474,8 @@ function section_select(objecttype, objectid, value) {
     });
 }
 
+
+
 var nicknames=true;
 function toggle_names() {
     nicknames = !nicknames;
@@ -588,35 +493,6 @@ $(document).ready(function() {
     updateSections();
     updateUpcoming();
     updatePublic();
-
-    $("#newsection-modal-form").validate({
-        rules: {
-            new_section: {
-                required: true
-            }
-        },
-        messages: {
-            new_section: {
-                required: "{% trans "This field is required!" %}"
-            }
-        },
-        submitHandler: handle_new_section
-    });
-
-    $("#rename-modal-form").validate({
-        rules: {
-            new_section_name: {
-                required: true
-            }
-        },
-        messages: {
-            new_section_name: {
-                required: "{% trans "This field is required!" %}"
-            }
-        },
-        submitHandler: handle_rename_section
-    });
-
 });
 </script>
 {% endblock localscripts %}

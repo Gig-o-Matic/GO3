@@ -1,0 +1,36 @@
+{% load i18n %}
+{% if has_sections %}
+    <div class="col-3 gomlabel">
+        {% if the_section %}
+            {{the_section.name}}
+        {% else %}
+            {% trans "No Section" %}
+        {% endif %}
+    </div>
+{% endif %}
+    <div class="col-9">
+    {% for the_assoc in the_assocs %}
+        {% with the_member=the_assoc.member %}
+        <div class="row">
+        	<div class="col-md-5 col-sm-12">
+                {% if the_user_is_band_admin or request.user.is_superuser %}
+                    <a href='/member/{{the_member.id}}'>{% if the_member.nickname %}<span class="the_nickname">{{the_member.nickname}}</span><span class="the_longname" style="display:none;">{{ the_member.username }}</span>{% else %}{{ the_member.username }}{% endif %}</a>
+                {% else %}
+                    <a href='/member/{{the_member.id}}'>{% if the_member.nickname %}{{the_member.nickname}}{% else %}{{ the_member.username }}{% endif %}</a>
+                {% endif %}
+                {% if the_assoc.is_occasional %}
+                    ({% trans "occasional" %})
+                {% endif %}
+{% comment %} TODO
+                {% if the_assoc.is_new and false %}
+                    <i class="fas fa-star" style="color:green"></i>
+                {% endif %}
+{% endcomment %}
+            </div>
+        	<div class="col-md-7 ml-md-0 col-10 ml-2">
+        		<a href="mailto:{{the_member.email}}">{{ the_member.email }}</a>
+        	</div>
+        </div>
+        {% endwith %}
+    {% endfor %}
+</div>
