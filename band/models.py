@@ -72,7 +72,7 @@ class Assoc(models.Model):
     is_occasional = models.BooleanField( default = False )
     # commitment_number = ndb.IntegerProperty(default=0)
     # commitment_total = ndb.IntegerProperty(default=0)
-    # color = ndb.IntegerProperty(default=0) # see colors.py
+    color = models.IntegerField(default=0) # see colors.py
     email_me = models.BooleanField (default=True)
     hide_from_schedule = models.BooleanField (default=False)
 

@@ -1,0 +1,125 @@
+{% load i18n %}
+{% if assocs|length %}
+    {% for assoc in assocs %}
+        <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+            {% if not assoc.is_confirmed %}
+                <div class="col-12">
+                    <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
+                    ({% trans "pending" %})
+                </div>
+            {% else %}
+                <div class="col-3">
+                    <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
+                </div>
+                <div class="col-9">
+{% comment %}
+                    {% if the_info.sections|length > 0 %}
+                        <div class="row" style="padding-bottom: 5px;">
+                            <div class="col-6">
+                                <div class="dropdown">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='sbk-{{assoc.band.id}}'>
+                                        {% if assoc.default_section == None %}
+                                            {% trans "section" %}...  <span class="caret"></span>
+                                        {% else %}
+                                            {{assoc.default_section.get().name}} <span class="caret"></span>
+                                        {% endif %}
+                                    </button>
+                                    <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
+                                        {% for section_key in the_info.sections %}
+                                            <a class="dropdown-item" onclick="section_select('{{assoc.band.id}}','{{section_id}}','{{section_key.get().name}}')">{{ section_key.get().name }}</a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id='msbk-{{assoc.band.id}}' onclick="multi_select('{{assoc.band.id}}')"
+                                    {% if assoc.is_multisectional %}
+                                        checked
+                                    {% endif %}
+                                    >
+                                    <label class="form-check-label" for="msbk-{{assoc.band.id}}">{% trans "other sections, too" %}</label>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+{% endcomment %}
+                    <div class="row" style="padding-bottom: 5px;">
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}' onclick="occ_select('{{assoc.id}}')"
+                                {% if assoc.is_occasional %}
+                                    checked
+                                {% endif %}
+                                >
+                                <label class="form-check-label" for="oak-{{assoc.id}}">{% trans "occasional" %}</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}' onclick="hide_select('{{assoc.id}}')"
+                                {% if assoc.hide_from_schedule %}
+                                    checked
+                                {% endif %}
+                                >
+                                <label class="form-check-label" for="hideak-{{assoc.id}}">{% trans "hide from calendar" %}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='mailbk-{{assoc.id}}'>
+                                            {% if assoc.email_me == True %}
+                                                <i class="far fa-envelope"></i>
+                                            {% else %}
+                                                <i class="fas fa-ban" style="color:Tomato"></i>
+                                            {% endif %}
+                                            <span class="caret"></span>
+                                        </button>
+                                        <div class="dropdown-menu" role="menu" aria-labelledby="mailbk-{{assoc.band.id}}" style="min-width:10px">
+                                            <a class="dropdown-item" onclick="email_select('{{assoc.id}}',true)", id="mail_true">
+                                                <i class="far fa-envelope"></i>
+                                            </a>
+                                            <a class="dropdown-item" onclick="email_select('{{assoc.id}}',false)", id="mail_false">
+                                                    <i class="fas fa-ban" style="color:Tomato"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
+                                            {% if assoc.color == 0 %}
+                                                <i class="far fa-square"></i>
+                                            {% else %}
+                                                <i class="fas fa-square" style="color:{{ the_colors.assoc.color }};"></i>
+                                            {% endif %}
+                                            <span class="caret"></span>
+                                        </button>
+                                        <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
+                                            {% for c in the_colors %}
+                                                {% if c == '#ffffff' %}
+                                                    <a class="dropdown-item" onclick="color_select('{{assoc.id}}',{{forloop.index0}})", id="color-{{forloop.index0}}"><i class="far fa-square"></i></a>
+                                                {% else %}
+                                                    <a class="dropdown-item" onclick="color_select('{{assoc.id}}',{{forloop.index0}})", id="color-{{forloop.index0}}"><i class="fas fa-square" style="color:{{c}};"></i></a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Leave Band" %}</button>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    {% trans "You need to add a band!" %}
+{% endif %}

@@ -1,0 +1,18 @@
+{% load i18n %}
+{% if bands %}
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">                        
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-secondary dropdown-toggle text-center" data-toggle="dropdown">
+                    <i class="fas fa-plus-square"></i> {% trans "Add Band" %}
+                </button>
+                <div class="dropdown-menu">
+                    {% for a_band in bands %}
+                        <a class="dropdown-item band-click" role="presentation" id="{{a_band.id}}"role="menuitem" tabindex="-1" href="#">{{a_band.name}}</a>
+                    {% endfor %}
+                </div>
+            </div> <!-- dropdown -->
+        </div>
+    </div> <!-- row -->
+{% endif %}

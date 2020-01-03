@@ -1,9 +1,11 @@
 from django.http import HttpResponse
 from .models import Member, MemberPreferences
-from band.models import Band
+from band.models import Band, Assoc
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.urls import reverse
+from django.views.generic.base import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
@@ -26,8 +28,7 @@ class DetailView(generic.DetailView):
             is_me = False
             
         # # find the bands this member is associated with
-        # the_band_keys=assoc.get_band_keys_of_member_key(the_member_key=the_member.id, confirmed_only=True)
-        the_member_bands = Band.objects.filter(id__in = [x.id for x in the_member.assocs.all()]) # TODO only show confirmed
+        the_member_bands = [a.band for a in the_member.assocs.all()]
 
         if is_me == False:
             # are we at least in the same band, or superuser?
@@ -71,14 +72,6 @@ class DetailView(generic.DetailView):
         context['show_email'] = show_email
         context['show_phone'] = show_phone
         context['member_is_me'] = the_user.id == the_member.id
-        # template_args = {
-        #     'the_member' : the_member,
-        #     'the_band_keys' : the_band_keys,
-        #     'member_is_me' : the_user == the_member,
-        #     'email_change_msg' : email_change_msg,
-        #     'show_email' : show_email,
-        #     'show_phone' : show_phone
-        # }
 
         return context
 
@@ -97,4 +90,17 @@ class PreferencesUpdateView(BaseUpdateView):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
 
- 
+class AssocsView(LoginRequiredMixin, TemplateView):
+    template_name='member/member_assocs.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['assocs'] = Assoc.objects.filter(member__id = self.kwargs['pk'])
+        context['the_colors'] = ['black'] # todo fix colors
+        return context
+
+class OtherBandsView(LoginRequiredMixin, TemplateView):
+    template_name='member/member_band_popup.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
+        return context

@@ -227,31 +227,33 @@
 {% block localscripts %}
 <script>
 function updateBands() {
-    $.post('/member_get_assocs',
-            {
-                mk: '{{  member.id }}'
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    $('#bandlist').html(responseTxt);
-                    updateBandlist()
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+    $.ajax({
+        method: 'GET',
+        url: '/member/{{ member.id }}/assocs',
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        $('#bandlist').html(responseTxt);
+                        updateBandlist()
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                }
+    });
 }
 
 function updateBandlist() {
-    $.post('/member_get_other_bands',
-            {
-                mk: '{{  member.id }}'
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    $('#bandpopup').html(responseTxt);
-                    setupClick();
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+    $.ajax({
+        method: 'GET',
+        url: '/member/{{ member.id }}/otherbands',
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        $('#bandpopup').html(responseTxt);
+                        setupClick();
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                }
+    });
 }
 
 
