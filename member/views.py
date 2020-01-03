@@ -98,6 +98,7 @@ class AssocsView(LoginRequiredMixin, TemplateView):
         context['the_colors'] = ['black'] # todo fix colors
         return context
 
+
 class OtherBandsView(LoginRequiredMixin, TemplateView):
     template_name='member/member_band_popup.html'
     def get_context_data(self, **kwargs):
