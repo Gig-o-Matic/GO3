@@ -21,7 +21,7 @@
                     </div>
                     {% if user.id == request.user.id or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="/member/update/{{  member.id }}">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="/member/{{  member.id }}/update">{% trans "Edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -134,7 +134,7 @@
 	                    </div>
                         {% if user.id == request.user.id or request.user.is_superuser %}
 	                        <div class="ml-auto">
-	                            <a class="btn btn-primary btn-sm" href="/member/preferences/update/{{  member.id }}">{% trans "Edit" %}</a>
+	                            <a class="btn btn-primary btn-sm" href="/member/{{  member.id }}/preferences/update/">{% trans "Edit" %}</a>
 	                        </div>
 	                    {% endif %}
 	                </div>

@@ -27,7 +27,7 @@
                     </div>
                     {% if the_user_is_band_admin or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="/band/update/{{ band.id }}">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="/band/{{ band.id }}/update">{% trans "Edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -454,7 +454,7 @@ function option_tf_select(option, objecttype, objectid, elementid) {
     elem=document.getElementById(elementid)
     $.ajax({
         method: 'POST',
-        url: '/'+objecttype+'/tfparam/'+objectid+'/'+option+'/'+elem.checked,
+        url: '/'+objecttype+'/'+objectid+'/tfparam/'+option+'/'+elem.checked,
         headers: { "X-CSRFToken": "{{csrf_token}}" },
         success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="error")
@@ -466,7 +466,7 @@ function option_tf_select(option, objecttype, objectid, elementid) {
 function section_select(objecttype, objectid, value) {
     $.ajax({
         method: 'POST',
-        url: '/'+objecttype+'/section/'+objectid+'/'+value,
+        url: '/'+objecttype+'/'+objectid+'/section/'+value,
         headers: { "X-CSRFToken": "{{csrf_token}}" },
         success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="success")
