@@ -12,8 +12,7 @@
                     <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
                 </div>
                 <div class="col-9">
-{% comment %}
-                    {% if the_info.sections|length > 0 %}
+                    {% if assoc.band.sections.all|length > 0 %}
                         <div class="row" style="padding-bottom: 5px;">
                             <div class="col-6">
                                 <div class="dropdown">
@@ -21,12 +20,12 @@
                                         {% if assoc.default_section == None %}
                                             {% trans "section" %}...  <span class="caret"></span>
                                         {% else %}
-                                            {{assoc.default_section.get().name}} <span class="caret"></span>
+                                            {{assoc.default_section.name}} <span class="caret"></span>
                                         {% endif %}
                                     </button>
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
-                                        {% for section_key in the_info.sections %}
-                                            <a class="dropdown-item" onclick="section_select('{{assoc.band.id}}','{{section_id}}','{{section_key.get().name}}')">{{ section_key.get().name }}</a>
+                                        {% for section in assoc.band.sections.all %}
+                                            <a class="dropdown-item" onclick="section_select('{{assoc.band.id}}','{{section.id}}','{{section.name}}')">{{ section.name }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -43,7 +42,6 @@
                             </div>
                         </div>
                     {% endif %}
-{% endcomment %}
                     <div class="row" style="padding-bottom: 5px;">
                         <div class="col-6">
                             <div class="form-check">

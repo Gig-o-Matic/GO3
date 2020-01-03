@@ -94,7 +94,7 @@ class AssocsView(LoginRequiredMixin, TemplateView):
     template_name='member/member_assocs.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['assocs'] = Assoc.objects.filter(member__id = self.kwargs['pk'])
+        context['assocs'] = Assoc.objects.select_related('band').filter(member__id = self.kwargs['pk'])
         context['the_colors'] = ['black'] # todo fix colors
         return context
 
