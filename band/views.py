@@ -44,7 +44,7 @@ class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member_assocs'] = Assoc.objects.filter(band__id=self.kwargs['pk']).filter(is_confirmed=True)
+        context['member_assocs'] = Assoc.objects.filter(band__id=self.kwargs['pk'], is_confirmed=True, member__is_active=True)
         return context
 
 
@@ -59,17 +59,26 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
             raise ValueError('getting section info on a band that does not exist')
         b = b[0]
 
+        # make sure I'm in the band or am superuser
+        u = self.request.user
+        # if not u.is_superuser or len(b.assocs.filter(member=u))!=1:
+        if len(b.assocs.filter(member=u, is_confirmed=True, member__is_active=True))!=1:
+            raise ValueError('user {0} accessing section members for non-member band'.format(u.email))
+
         if self.kwargs['sk']:
             s = Section.objects.filter(id=self.kwargs['sk'])
             if len(s) != 1:
                 raise ValueError('getting info on a section that does not exist')
+
             s = s[0]
+
+            if s.band != b:
+                raise ValueError('accessing a section by wrong band')
         else:
             s = None
 
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
-        context['the_assocs'] = b.assocs.filter(default_section = s).all()
-        print('\n\n{0}\n\n'.format(context['the_assocs']))
+        context['the_assocs'] = b.assocs.filter(default_section=s, is_confirmed=True, member__is_active=True).all()
         return context
 

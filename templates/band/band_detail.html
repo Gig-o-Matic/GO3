@@ -345,6 +345,8 @@
 {% block localscripts %}
 <script src="/js/jquery.validate.js"></script>
 <script>
+
+// TODO
 function updateUpcoming() {
     if (document.getElementById('upcoming-gigs')) {
         $.post('/band_get_upcoming',
@@ -360,6 +362,7 @@ function updateUpcoming() {
     }
 }
 
+// TODO
 function updatePublic() {
     if (document.getElementById('public-members')) {
         $.post('/band_get_public_members',
