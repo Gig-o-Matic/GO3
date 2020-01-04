@@ -10,6 +10,12 @@ class MemberTest(TestCase):
         Assoc.objects.create(band=b, member=m)
         Band.objects.create(name='another band')
 
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+
     def test_member_bands(self):
         """ test some basics of member creation """
         m = Member.objects.all()
@@ -20,9 +26,10 @@ class MemberTest(TestCase):
         self.assertEqual(b.name, 'test band')
 
     def test_memberassocsview(self):
-        request = RequestFactory().get('/member/1/assocs/')
+        m = Member.objects.first()
+        request = RequestFactory().get('/member/{}/assocs/'.format(m.id))
         view = AssocsView()
-        view.setup(request, pk='1')
+        view.setup(request, pk='{}'.format(m.id))
 
         context = view.get_context_data()
         self.assertIn('assocs', context)
@@ -30,13 +37,14 @@ class MemberTest(TestCase):
         self.assertEqual(context['assocs'][0].band.name, 'test band')
 
     def test_member_otherbandsview(self):
-        request = RequestFactory().get('/member/1/otherbands/')
-        view = AssocsView()
-        view.setup(request, pk='1')
+        m = Member.objects.first()
+        request = RequestFactory().get('/member/{}/otherbands/'.format(m.id))
+        view = OtherBandsView()
+        view.setup(request, pk='{}'.format(m.id))
 
         context = view.get_context_data()
         self.assertIn('bands', context)
         self.assertEqual(len(context['bands']),1)
-        self.assertEqual(context['bands'][0].band.name, 'another band')
+        self.assertEqual(context['bands'][0].name, 'another band')
 
 

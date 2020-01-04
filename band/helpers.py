@@ -70,3 +70,17 @@ def set_assoc_color(request, ak, colorindex):
         a.save()
 
     return HttpResponse()
+
+
+@login_required
+def delete_assoc(request, ak):
+    a = Assoc.objects.get(id=ak)
+
+    # todo make sure this is us, or we're superuser
+    if request.user != a.member and not request.user.is_superuser:
+        raise PermissionError('tying to delete an assoc which is not owned by user {0}'.format(request.user.username))
+    
+    a.delete()
+
+    return HttpResponse()
+

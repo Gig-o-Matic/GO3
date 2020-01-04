@@ -21,7 +21,7 @@
                     </div>
                     {% if user.id == request.user.id or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="/member/{{  member.id }}/update">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="/member/{{  member.id }}/update">{% trans "edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -217,7 +217,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{% trans "Don't Leave" %}</button>
-                    <a class="btn btn-primary btn-sm" id="leave-ak" href="/member_delete_assoc.html?ak=">{% trans "Yes, Leave" %}</a>
+                    <a class="btn btn-primary btn-sm" href="#" id="leave-ak">{% trans "Yes, Leave" %}</a>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -256,37 +256,20 @@ function updateBandlist() {
     });
 }
 
-
-function section_select(bk, sk, name) {
-    var mk='{{ member.id}}';
-    $.post('/member_set_section',
-            {
-                mk: mk,
-                sk: sk,
-                bk: bk
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    $('#sbk-'+bk).html(name+ " <span class='caret'></span>")
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
+function section_select(associd, value) {
+    $.ajax({
+        method: 'POST',
+        url: '/band/assoc/'+associd+'/section/'+value,
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        setTimeout(function(){updateBands()}, 1000);
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
 }
 
-function color_selectX(ak, c) {
-    $.post('/member_set_color',
-            {
-                ak: ak,
-                c: c
-            },
-            function(responseTxt,statusTxt,xhr){
-                if(statusTxt=="success")
-                    test=$('#color-'+c).html();
-                    $('#cbk-'+ak).html(test + " <span class='caret'></span>");
-                if(statusTxt=="error")
-                    alert("Error: "+xhr.status+": "+xhr.statusText);
-            });
-}
 
 function color_select(objectid, color) {
     $.ajax({
@@ -322,8 +305,23 @@ function option_tf_select(option, objecttype, objectid, elementid) {
 
 function leave_band(ak, bandname) {
     $('#band-name').html(bandname);
-    $('#leave-ak').attr('href','/member_delete_assoc.html?ak='+ak);
+    $('#leave-ak').attr('onclick',"do_delete("+ak+")");
     $('#deleteModal').modal('show');
+}
+
+function do_delete(ak){
+    $('#deleteModal').modal('hide');
+    $.ajax({
+        method: 'POST',
+        url: '/band/assoc/'+ak+'/delete',
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        setTimeout(function(){updateBands()}, 1000);
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
 }
 
 function setupClick() {

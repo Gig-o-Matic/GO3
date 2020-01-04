@@ -4,10 +4,14 @@
     {% for assoc in assocs %}
         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
             {% if not assoc.is_confirmed %}
-                <div class="col-12">
+                <div class="col-6">
                     <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
                     ({% trans "pending" %})
                 </div>
+                <div class="col-6">
+                    <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Leave Band" %}</button>
+                </div>
+
             {% else %}
                 <div class="col-3">
                     <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
@@ -25,8 +29,10 @@
                                         {% endif %}
                                     </button>
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
+                                        <a class="dropdown-item" onclick="section_select('{{ assoc.id }}','0')">{% trans "None" %}</a>
                                         {% for section in assoc.band.sections.all %}
-                                            <a class="dropdown-item" onclick="section_select('{{assoc.band.id}}','{{section.id}}','{{section.name}}')">{{ section.name }}</a>
+                                            <a class="dropdown-item" 
+                                            onclick="section_select('{{assoc.id}}','{{section.id}}')">{{ section.name }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
