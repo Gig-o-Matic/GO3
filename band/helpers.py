@@ -50,3 +50,23 @@ def set_assoc_section(request, ak, sk):
         a.default_section=s
         a.save()
     return HttpResponse()
+
+
+@login_required
+def set_assoc_color(request, ak, colorindex):
+    """ set a default section on an assoc """
+    a = Assoc.objects.filter(id=ak)
+
+    # todo make sure this is us, or we're superuser
+    if len(a) != 1:
+        raise ValueError('altering an assoc that does not exist')
+    else:
+        a=a[0]
+
+        if request.user != a.member and not request.user.is_superuser:
+            raise PermissionError('tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
+
+        a.color = colorindex
+        a.save()
+
+    return HttpResponse()

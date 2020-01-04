@@ -11,5 +11,6 @@ urlpatterns = [
     path('<int:pk>/section/<int:sk>', views.SectionMembersView.as_view(), name='section-members'),
 
     path('assoc/<int:ak>/tfparam/<str:param>/<str:truefalse>', helpers.set_assoc_tfparam, name='assoc-tfparam'),
+    path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),
     path('assoc/<int:ak>/section/<int:sk>', helpers.set_assoc_section, name='assoc-section'),
 ]
