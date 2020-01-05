@@ -56,7 +56,7 @@ class Member(AbstractUser):
     nickname = models.CharField(max_length=100, blank=True )
     phone = models.CharField(max_length=100, blank=True)
     statement = models.CharField(max_length=200, blank=True)
-    seen_motd_time = models.DateTimeField(null=True, blank=True, default=None)
+    motd_dirty = models.BooleanField(default=True)
     seen_welcome = models.BooleanField(default=False)
     show_long_agenda = models.BooleanField(default=True)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
@@ -84,8 +84,10 @@ class Member(AbstractUser):
 
     @property
     def motd(self):
-        time = self.seen_motd_time if self.seen_motd_time else datetime.datetime(year=2020, month=1, day=1, tzinfo=timezone.utc)
-        the_motd = MOTD.objects.filter(updated__gt=time).first()
+        if self.motd_dirty:
+            the_motd = MOTD.objects.first()
+        else:
+            the_motd = None
         return the_motd.text if the_motd else None
 
     objects = MemberManager()

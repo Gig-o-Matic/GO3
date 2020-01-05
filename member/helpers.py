@@ -8,7 +8,7 @@ def motd_seen(request, pk):
     if request.user.id != pk:
         raise PermissionError('trying to mark MOTD seen for another user')
 
-    request.user.seen_motd_time = timezone.now()
+    request.user.motd_dirty = False
     request.user.save()
 
     return HttpResponse()
