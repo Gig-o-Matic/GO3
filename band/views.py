@@ -12,7 +12,7 @@ def index(request):
 
 class DetailView(generic.DetailView):
     model = Band
-    fields = ['name', 'hometown']
+    # fields = ['name', 'hometown']
 
     def get_context_data(self, **kwargs):
         the_band = self.object
@@ -20,13 +20,12 @@ class DetailView(generic.DetailView):
 
         context = super().get_context_data(**kwargs)
 
-        assocs = Assoc.objects.filter(band=the_band, member=the_user)
-        if len(assocs) != 1:
+        assoc = Assoc.objects.filter(band=the_band, member=the_user).first()
+        if assoc is None:
             context['the_user_is_associated'] = False
         else:
             context['the_user_is_associated'] = True
-            a = assocs[0]
-            context['the_user_is_band_admin'] = a.is_band_admin
+            context['the_user_is_band_admin'] = assoc.is_band_admin
 
             context['the_pending_members'] = Assoc.objects.filter(band=the_band, is_confirmed=False)
         return context
