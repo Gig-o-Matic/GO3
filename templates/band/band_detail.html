@@ -211,7 +211,7 @@
                                 {{ m.email_address|escape }}
                             </div>
                             <div class="col-md-6 col-sm-6 col-12">
-                                <a class="btn btn-primary btn-sm" href="/band_confirm_member?do=1&mk={{m.id}}&bk={{band.id}}">{% trans "yes, confirm member!" %}</a>
+                                <a class="btn btn-primary btn-sm" href="#" onclick="do_confirm({{assoc.id}});">{% trans "yes, confirm member!" %}</a>
                                 <a class="btn btn-secondary btn-sm" href="#" onclick="do_delete({{assoc.id}});">{% trans "no, reject!" %}</a>
                             </div>
                         </div>
@@ -481,6 +481,21 @@ function do_delete(ak){
     $.ajax({
         method: 'POST',
         url: '/band/assoc/'+ak+'/delete',
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        // setTimeout(function(){updateBands()}, 1000);
+                        location.reload();
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
+}
+
+function do_confirm(ak){
+    $.ajax({
+        method: 'POST',
+        url: '/band/assoc/'+ak+'/confirm',
         headers: { "X-CSRFToken": "{{csrf_token}}" },
         success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="success")

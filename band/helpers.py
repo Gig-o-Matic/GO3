@@ -76,10 +76,17 @@ def set_assoc_color(request, ak, colorindex):
 @login_required
 def create_assoc(request, bk, mk):
     b = Band.objects.get(id=bk)
-    m = Member.objects.get(id=mk)
 
-    # todo make sure this is us, or we're superuser
-    if request.user != m and not request.user.is_superuser:
+    if (mk == request.user.id):
+        m = request.user
+    else:
+        m = Member.objects.get(id=mk)
+
+    # todo make sure this is us, or we're superuser, or band_admin
+    is_self = (request.user == m)
+    is_super = (request.user.is_superuser)
+    is_band_admin = Assoc.objects.filter(member=request.user, band=b, is_band_admin=True).count() == 1
+    if not (is_self or is_super or is_band_admin):
         raise PermissionError('tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
     # OK, create the assoc
@@ -87,16 +94,33 @@ def create_assoc(request, bk, mk):
 
     return HttpResponse()
 
-
 @login_required
 def delete_assoc(request, ak):
     a = Assoc.objects.get(id=ak)
 
-    # todo make sure this is us, or we're superuser
-    if request.user != a.member and not request.user.is_superuser:
+    # todo make sure this is us, or band_admin, or we're superuser
+    is_self = (request.user == a.member)
+    is_super = (request.user.is_superuser)
+    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_band_admin=True).count() == 1)
+    if not (is_self or is_super or is_band_admin):
         raise PermissionError('tying to delete an assoc which is not owned by user {0}'.format(request.user.username))
     
     a.delete()
 
     return HttpResponse()
 
+@login_required
+def confirm_assoc(request, ak):
+    a = Assoc.objects.get(id=ak)
+
+    # todo make sure this is a band_admin, or we're superuser
+    is_super = (request.user.is_superuser)
+    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_band_admin=True).count() == 1)
+    if not (is_super or is_band_admin):
+        raise PermissionError('tying to confirm an assoc which is not admin by user {0}'.format(request.user.username))
+
+    # OK, confirm the assoc
+    a.is_confirmed=True
+    a.save()
+
+    return HttpResponse()

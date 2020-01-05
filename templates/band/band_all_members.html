@@ -61,7 +61,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <a class="btn btn-primary btn-sm" href="/band_removemember?mk={{ the_assoc.member.id }}&bk={{the_assoc.band.id}}">{% trans "remove from band" %}</a>
+                <a class="btn btn-primary btn-sm" href="#" onclick="do_delete({{ the_assoc.id }})">{% trans "remove from band" %}</a>
             </div>
         {% endif %}
     </div>
