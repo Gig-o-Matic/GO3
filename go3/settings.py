@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['localhost']
 INSTALLED_APPS = [
     'member.apps.MemberConfig',
     'band.apps.BandConfig',
+    'motd.apps.MotdConfig',
     'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',

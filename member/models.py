@@ -4,7 +4,10 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from band.models import Band, Assoc
+from motd.models import MOTD
 from django.utils.translation import gettext_lazy as _
+import datetime
+from django.utils import timezone
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -78,6 +81,12 @@ class Member(AbstractUser):
     @property
     def confirmed_assocs(self):
         return self.assocs.filter(is_confirmed=True)
+
+    @property
+    def motd(self):
+        time = self.seen_motd_time if self.seen_motd_time else datetime.datetime(year=2020, month=1, day=1, tzinfo=timezone.utc)
+        the_motd = MOTD.objects.filter(updated__gt=time).first()
+        return the_motd.text if the_motd else None
 
     objects = MemberManager()
     USERNAME_FIELD = 'email'
