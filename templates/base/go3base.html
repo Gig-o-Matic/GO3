@@ -173,7 +173,7 @@ document.onkeypress = stopRKey;
         
                 $(document).ready(function() {
                     $('#motd-alert').bind('closed.bs.alert', function () {
-                        $.post("/seen_motd",{ mk:"{{user.id}}" })
+                        $.ajax({method:"POST", url:"/member/{{user.id}}/motd_seen",headers: {"X-CSRFToken": "{{csrf_token}}"}})
                     });
                     $('#welcome-alert').bind('closed.bs.alert', function () {
                         $.post("/seen_welcome",{ mk:"{{user.id}}" })

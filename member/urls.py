@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import helpers
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -9,5 +10,7 @@ urlpatterns = [
 
     path('<int:pk>/assocs/', views.AssocsView.as_view(), name='member-assocs'),
     path('<int:pk>/otherbands/', views.OtherBandsView.as_view(), name='member-otherbands'),
+
+    path('<int:pk>/motd_seen',helpers.motd_seen)
 
 ]
