@@ -328,12 +328,11 @@ function setupClick() {
     $("a.band-click").click(function(){
         var mk='{{ member.id}}';
         var bk=$(this).attr("id");
-        $.post("/member_new_assoc",
-                    {
-                        mk: mk,
-                        bk: bk
-                    },
-                    function(responseTxt,statusTxt,xhr){
+        $.ajax({
+            method: 'POST',
+            url: "/band/assoc/create/"+bk+"/"+mk,
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            success: function(responseTxt,statusTxt,xhr){
                         if(statusTxt=="success")
                             $('#bandlist').html('<i class="fas fa-spinner fa-pulse"></i>');
                             $('#bandpopup').html('');
@@ -342,7 +341,8 @@ function setupClick() {
                             }, 500); // delay to let database catch up
                         if(statusTxt=="error")
                           alert("Error: "+xhr.status+": "+xhr.statusText);
-                    });
+                    }
+        });
     });
 }
 

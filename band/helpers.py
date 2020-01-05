@@ -1,5 +1,6 @@
 from django.http import HttpResponse
-from .models import Assoc, Section
+from .models import Band, Assoc, Section
+from member.models import Member
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -68,6 +69,21 @@ def set_assoc_color(request, ak, colorindex):
 
         a.color = colorindex
         a.save()
+
+    return HttpResponse()
+
+
+@login_required
+def create_assoc(request, bk, mk):
+    b = Band.objects.get(id=bk)
+    m = Member.objects.get(id=mk)
+
+    # todo make sure this is us, or we're superuser
+    if request.user != m and not request.user.is_superuser:
+        raise PermissionError('tying to create an assoc which is not owned by user {0}'.format(request.user.username))
+
+    # OK, create the assoc
+    a = Assoc.objects.get_or_create(band=b, member=m)
 
     return HttpResponse()
 
