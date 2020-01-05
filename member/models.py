@@ -66,10 +66,14 @@ class Member(AbstractUser):
     def display_name(self):
         if self.nickname:
             return self.nickname
-        elif self.name:
+        elif self.username:
             return self.username
         else:
             return self.email
+
+    @property
+    def member_name(self):
+        return self.username if self.username else self.email
 
     objects = MemberManager()
     USERNAME_FIELD = 'email'
