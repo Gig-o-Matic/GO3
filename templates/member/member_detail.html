@@ -63,9 +63,9 @@
 		            <div class="row">
 		                <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
 		                <div class="col-sm-9 col-12">
-		                    {% for the_band in the_member_bands %}
-		                        <a href="{% url 'band-detail' pk=the_band.id %}">{{ the_band.name }}</a>{% if loop.last == False %}, {% endif %}
-		                    {% endfor %}
+                            {% for the_band in the_member_bands %}
+		                        <a href="{% url 'band-detail' pk=the_band.id %}">{{ the_band.name }}</a>{% if forloop.last == False %}, {% endif %}
+                            {% endfor %}
                         </div>
 		            </div>
 		        {% endif %}
