@@ -202,17 +202,17 @@
                         </div></div>
                     </div>
                     <div class="card-body">
-                        {% for m in the_pending_members %}
+                        {% for assoc in the_pending_members %}
                         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                             <div class="col-md-2 col-sm-2 col-12">
-                                <a href="/member_info.html?mk={{m.id}}">{{ m.name|escape }}</a>
+                                <a href="/member/{{assoc.member.id}}">{{ assoc.member.username|escape }}</a>
                             </div>
                             <div class="col-md-4 col-sm-4 col-12">
                                 {{ m.email_address|escape }}
                             </div>
                             <div class="col-md-6 col-sm-6 col-12">
                                 <a class="btn btn-primary btn-sm" href="/band_confirm_member?do=1&mk={{m.id}}&bk={{band.id}}">{% trans "yes, confirm member!" %}</a>
-                                <a class="btn btn-secondary btn-sm" href="/band_removemember?mk={{m.id}}&bk={{band.id}}">{% trans "no, reject!" %}</a>
+                                <a class="btn btn-secondary btn-sm" href="#" onclick="do_delete({{assoc.id}});">{% trans "no, reject!" %}</a>
                             </div>
                         </div>
                         {% endfor %}
@@ -477,7 +477,20 @@ function section_select(objecttype, objectid, value) {
     });
 }
 
-
+function do_delete(ak){
+    $.ajax({
+        method: 'POST',
+        url: '/band/assoc/'+ak+'/delete',
+        headers: { "X-CSRFToken": "{{csrf_token}}" },
+        success: function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        // setTimeout(function(){updateBands()}, 1000);
+                        location.reload();
+                    if(statusTxt=="error")
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
+}
 
 var nicknames=true;
 function toggle_names() {

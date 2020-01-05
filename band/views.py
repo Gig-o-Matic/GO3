@@ -27,6 +27,8 @@ class DetailView(generic.DetailView):
             context['the_user_is_associated'] = True
             a = assocs[0]
             context['the_user_is_band_admin'] = a.is_band_admin
+
+            context['the_pending_members'] = Assoc.objects.filter(band=the_band, is_confirmed=False)
         return context
 
     def get_success_url(self):
@@ -55,14 +57,15 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         b = Band.objects.filter(id=self.kwargs['pk'])
+        # prefetching seems to his the database more
+        # b = Band.objects.prefetch_related('assocs').filter(id=self.kwargs['pk'])
         if len(b) != 1:
             raise ValueError('getting section info on a band that does not exist')
         b = b[0]
 
         # make sure I'm in the band or am superuser
         u = self.request.user
-        # if not u.is_superuser or len(b.assocs.filter(member=u))!=1:
-        if len(b.assocs.filter(member=u, is_confirmed=True, member__is_active=True))!=1:
+        if  u.is_superuser is False and len(b.assocs.filter(member=u, is_confirmed=True, member__is_active=True))!=1:
             raise ValueError('user {0} accessing section members for non-member band'.format(u.email))
 
         if self.kwargs['sk']:
