@@ -75,6 +75,10 @@ class Member(AbstractUser):
     def member_name(self):
         return self.username if self.username else self.email
 
+    @property
+    def confirmed_assocs(self):
+        return self.assocs.filter(is_confirmed=True)
+
     objects = MemberManager()
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

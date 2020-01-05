@@ -25,7 +25,19 @@
         </a>
 
         <div class="dropdown-menu" aria-labelledby="navbarBandsMenuLink" id="bandlinks">
-          <a class="dropdown-item" href="#">{% trans "No bands yet!" %}</a>
+        {% with the_assocs=request.user.confirmed_assocs.all %}
+          {% if the_assocs|length > 0 %}
+            {% for assoc in the_assocs %}
+              {% with band=assoc.band %}
+                <a class="dropdown-item" href="/band/{{ band.id }}">{{ band.name }}</a>
+              {% endwith %}
+            {% endfor %}
+            <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/band_nav.html">{% trans "Band Navigator" %}</a>
+          {% else %}
+	          <a class="dropdown-item" href="#">{% trans "No bands yet!" %}</a>
+          {% endif %}
+        {% endwith %}
         </div>
       </li>
           

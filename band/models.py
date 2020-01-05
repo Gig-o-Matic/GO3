@@ -57,6 +57,11 @@ class Section(models.Model):
     class Meta:
         ordering = ['order']
 
+
+class ConfirmedAssocManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_confirmed=True)
+
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
@@ -76,6 +81,8 @@ class Assoc(models.Model):
     email_me = models.BooleanField (default=True)
     hide_from_schedule = models.BooleanField (default=False)
 
+    objects = models.Manager()
+    confirmed = ConfirmedAssocManager()
 
     def __str__(self):
         return "{0} in {1}".format(self.member, self.band)
