@@ -82,7 +82,7 @@
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarUserMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {% if user.nickname %}{{user.nickname}}{% else %}{{ user.member.name }}{% endif %}
+              {{ user.display_name }}
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserMenuLink">
             <a class="dropdown-item" href="/member/{{user.id}}">{% trans "My Profile" %}</a>
