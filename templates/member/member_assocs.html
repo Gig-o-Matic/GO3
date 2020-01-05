@@ -4,12 +4,12 @@
     {% for assoc in assocs %}
         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
             {% if not assoc.is_confirmed %}
-                <div class="col-6">
+                <div class="col-3">
                     <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
                     ({% trans "pending" %})
                 </div>
-                <div class="col-6">
-                    <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Leave Band" %}</button>
+                <div class="col-9">
+                    <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Cancel" %}</button>
                 </div>
 
             {% else %}
