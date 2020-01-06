@@ -16,6 +16,8 @@
 """
 from django.shortcuts import render
 from django.views import generic
+from django.views.generic.edit import UpdateView as BaseUpdateView
+from django.urls import reverse
 from .models import Gig
 
 class DetailView(generic.DetailView):
@@ -26,3 +28,9 @@ class DetailView(generic.DetailView):
 
         return context
 
+class UpdateView(BaseUpdateView):
+    model = Gig
+    fields = ['title','contact','status','is_private','date','enddate','calltime','settime','endtime','address','dress','paid','postgig',
+                'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
+    def get_success_url(self):
+        return reverse('gig-detail', kwargs={'pk': self.object.id})

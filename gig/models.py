@@ -78,7 +78,7 @@ class Gig(models.Model):
     hide_from_calendar = models.BooleanField(default=False)
     default_to_attending = models.BooleanField( default=False )
 
-    # rss_description = ndb.TextProperty( default=None )
+    rss_description = models.TextField( null=True, blank=True )
     trashed_date = models.DateTimeField( blank=True, null=True )
 
     @property

@@ -21,4 +21,6 @@ from . import views
 
 urlpatterns = [
     path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
+    path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
+ 
 ]

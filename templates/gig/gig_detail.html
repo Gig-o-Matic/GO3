@@ -36,7 +36,7 @@
                     {% if user_can_edit %}
                         <div class="ml-auto">
                             {% if user_can_edit %}
-                                <a class="btn btn-primary btn-sm" href="gig_edit.html?gk={{ gig.id }}">{% trans "Edit" %}</a>
+                                <a class="btn btn-primary btn-sm" href="/gig/{{ gig.id }}/update">{% trans "Edit" %}</a>
                             {% endif %}
                             {% if user_can_create %}
                                 <a class="btn btn-primary btn-sm" href="gig_edit.html?gk={{ gig.id }}&dupe=1">{% trans "Duplicate" %}</a>
