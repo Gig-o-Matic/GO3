@@ -16,9 +16,11 @@
 """
 from django.db import models
 from member.models import Member
+from band.models import Band
 
 class Gig(models.Model):
     title = models.CharField(max_length=200)
+    band = models.ForeignKey(Band, related_name="gigs", on_delete=models.CASCADE)
 
     # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
     contact = models.ForeignKey(Member, null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
@@ -27,7 +29,7 @@ class Gig(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
-    date = models.DateField(null=True, blank=True)
+    date = models.DateField()
     enddate = models.DateField(null=True, blank=True)
 
     calltime = models.TimeField(null=True, blank=True)
@@ -39,7 +41,7 @@ class Gig(models.Model):
     paid = models.TextField(null=True, blank=True)
     postgig = models.TextField(null=True, blank=True)
 
-    leader = models.ForeignKey(Member, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
+    leader = models.ForeignKey(Member, blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
 
     # todo manage these
     # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
@@ -53,11 +55,11 @@ class Gig(models.Model):
     status = models.IntegerField(choices=StatusOptions.choices, default=StatusOptions.UNKNOWN)
 
     @property
-    def is_canceled():
+    def is_canceled(self):
         self.status=StatusOptions.CANCELLED
 
     @property
-    def is_confirmed():
+    def is_confirmed(self):
         self.status=StatusOptions.CONFIRMED
 
     # todo archive
@@ -80,5 +82,9 @@ class Gig(models.Model):
     trashed_date = models.DateTimeField( blank=True, null=True )
 
     @property
-    def is_in_trash():
+    def is_in_trash(self):
         return self.trashed_date is not None
+
+    def __str__(self):
+        return self.title
+

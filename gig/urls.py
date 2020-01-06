@@ -14,9 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.shortcuts import render
-from django.views import generic
-from .models import Gig
 
-class DetailView(generic.DetailView):
-    model = Gig
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
+]
