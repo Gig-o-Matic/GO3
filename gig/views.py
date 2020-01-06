@@ -20,3 +20,9 @@ from .models import Gig
 
 class DetailView(generic.DetailView):
     model = Gig
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_can_edit'] = self.request.user.is_superuser # todo or band members, admins etc.
+
+        return context
+
