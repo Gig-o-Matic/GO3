@@ -34,11 +34,33 @@ class DetailView(generic.DetailView):
 class CreateView(generic.CreateView):
     model = Gig
     form_class = GigForm
+    
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_new'] = True
+        context['the_band'] = Band.objects.get(id=self.kwargs['bk'])
+        return context
+
     def form_valid(self, form):
-        form.instance.band = Band.objects.get(id=self.kwargs['bk'])
+
+        # make sure we're allowed to make a gig for this band
+        has_permission = False
+        is_superuser = self.request.user.is_superuser
+        band = Band.objects.get(id=self.kwargs['bk'])
+        anyone_can_create = band.anyone_can_create_gigs
+        if is_superuser or anyone_can_create:
+            has_permission = True
+        else:
+            if band.assocs.filter(member=self.request.user, is_band_admin=True).count() == 1:
+                has_permission = True
+
+        if has_permission == False:
+            raise(PermissionError, "Trying to create a gig without permission: {}".format(self.request.user.email))
+
+        form.instance.band = band
         return super(CreateView, self).form_valid(form)
 
 class UpdateView(generic.UpdateView):

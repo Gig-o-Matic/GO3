@@ -12,7 +12,7 @@
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
         <div class="page-header">
-            {% if newgig_is_active %}
+            {% if is_new %}
                 {% trans "New Gig for " %}{{ the_band.name }}
             {% else %}
                 {% trans "Gig Edit" %}
@@ -60,7 +60,7 @@
                 </div>
             </div>
 {% comment %}                    
-            {% if newgig_is_active %}
+            {% if is_new %}
                 <div class="form-group">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="newgig-isseries" name="newgig_isseries" onClick="setSeries();">
@@ -146,7 +146,7 @@
                     <input class="form-check-input" type="checkbox" id="newgig_notifymembers" name="gig_notifymembers" 
                     {% if the_band.send_updates_by_default %}checked{% endif %}>
                     <label class="form-check-label" for="newgig_notifymembers"> 
-                        {% if newgig_is_active or is_dupe %}
+                        {% if is_new or is_dupe %}
                             {% trans "Email members about this new gig" %}
                         {% else %}
                             {% trans "Email members about change" %}  
@@ -160,7 +160,7 @@
                         {% if the_band.send_updates_by_default %}checked{% endif %}                        
                         >
                     <label class="form-check-label" for="gig_invite_occasionals">
-                        {% if newgig_is_active or is_dupe %}
+                        {% if is_new or is_dupe %}
                             {% trans "Invite occasional members" %}
                         {% else %}
                             {% trans "Also send update to occasional members" %}  
@@ -178,7 +178,7 @@
                     </label>
                 </div>
             </div>
-            {% if newgig_is_active %}
+            {% if is_new %}
                 <div class="form-group">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="default_to_attend" name="default_to_attend">
@@ -406,7 +406,7 @@ function updateContactList(bk) {
                         {% endif %}
                         for(i=0; i<obj.length; i++) {
                             inner=inner+"<option value='"+obj[i][1]+"'"
-                            {% if newgig_is_active %}
+                            {% if is_new %}
                                 if (obj[i][1] == '{{the_user.id}}') {
                                     inner=inner+" SELECTED"
                                 }
