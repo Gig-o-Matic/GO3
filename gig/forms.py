@@ -15,13 +15,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.urls import path
+from django import forms
+from .models import Gig
+from django.utils.translation import gettext_lazy as _
 
-from . import views
+class GigForm(forms.ModelForm):
+    def __init__(self, **kwargs):
+        super().__init__(
+            label_suffix='',
+            **kwargs
+        )
 
-urlpatterns = [
-    path('create/<int:bk>', views.CreateView.as_view(), name='gig-create'),
-    path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
-    path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
- 
-]
+    class Meta:
+        model = Gig
+        fields = ['title','contact','status','is_private','date','enddate','calltime','settime','endtime','address','dress','paid','postgig',
+                'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
+
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': _('required')}),
+        }

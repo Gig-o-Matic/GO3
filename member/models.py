@@ -119,7 +119,7 @@ class Member(AbstractUser):
         verbose_name_plural = _('members')
 
     def __str__(self):
-        return '{0}'.format(self.email)
+        return '{0}'.format(self.display_name)
 
 
 class MemberPreferences(models.Model):

@@ -18,62 +18,48 @@
                 {% trans "Gig Edit" %}
             {% endif %}
         </div>
-        <form class="form" id="infoform" role="form" method="post" action="gig_edit.html">
-            <input type="hidden" name="gig_band" value="{{the_band.id}}">
+
+        <form method="post" class="form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.errors }}
+
             <div class="form-group">
-                <label for="gigtitleinput" class="col-form-label">{% trans "Gig Title" %}</label>
-                <input type="text" class="form-control" id="gigtitleinput" placeholder="({% trans 'required' %})" value="{% if is_dupe %}{% trans 'Copy of' %} {% endif %}{{gig.title}}" name="gig_title">
+                {{ form.title.errore }}
+                {{ form.title.label_tag }}
+                {% render_field form.title class="form-control" %}
             </div>
             <div class="row">
                 <div class="form-group col-6">
-                    <label for="gigcontact" class="col-form-label">{% trans "Contact" %}</label>
-                    <select class="form-control" name="gig_contact" id="gig-contacts">
-                    </select>
+                    {{ form.contact.errore }}
+                    {{ form.contact.label_tag }}
+                    {% render_field form.contact class="form-control" %}
                 </div>
                 <div class="form-group col-6">
-                    <label for="gigstatusinput" class="col-form-label">{% trans "Status" %}</label>
-                        <select class="form-control" id="gigstatusinput" name="gig_status">
-                            <option value="0"
-                            {% if gig.status == 0 %}selected{% endif %}
-                            >{% trans "Unconfirmed" %}</option>
-                            <option value="1"
-                            {% if gig.status == 1 %}selected{% endif %}
-                            >{% trans "Confirmed!" %}</option>
-                            <option value="2"
-                            {% if gig.status == 2 %}selected{% endif %}
-                            >{% trans "Cancelled!" %}</option>
-                        </select>
+                    {{ form.status.errore }}
+                    {{ form.status.label_tag }}
+                    {% render_field form.status class="form-control" %}
                 </div>
             </div>
             <div class="form-group">
-                <div class="form-check">  
-                    <input class="form-check-input" type="checkbox" id="gig_private" name="gig_private"
-                    {% if gig.is_private %}
-                    checked
-                    {% endif %}
-                    >
-                    <label class="form-check-label" for="gig_private">{% trans "Hide From Public Page" %}</label>
-                </div>  
+                {{ form.is_private.errore }}
+                {% render_field form.is_private %}
+                {{ form.is_private.label_tag }}
             </div>
              
             <div class="row">
                 <div class="form-group col-4">
-                    <label for="gigdateinput" class="col-form-label">{% trans "Date" %}</label>
-{% comment %}                    
-                    <input type="text" class="datepicker form-control" id="gigdateinput" name="gig_date" placeholder="({% trans 'required' %})" 
-                    {% if gig != None %} value="{{ the_date_formatter(the_user, gig.date, 'datepicker')}}" {% endif %}
-                    name="gig_date">
-{% endcomment %}
+                    {{ form.date.errore }}
+                    {{ form.date.label_tag }}
+                    {% render_field form.date class="form-control" %}
                 </div>
                 <div class="form-group col-4">
-                    <label for="gigenddateinput" class="col-form-label">{% trans "End Date" %}</label>
-{% comment %}                    
-                    <input type="text" class="datepicker form-control" id="gigenddateinput" name="gig_enddate" placeholder="({% trans "if multi-day" %})" 
-                    {% if gig != None  and gig.enddate != None %} value="{{ the_date_formatter(the_user, gig.enddate, 'datepicker')}}" {% endif %}
-                    name="gig_enddate">
-{% endcomment %}
+                    {{ form.enddate.errore }}
+                    {{ form.enddate.label_tag }}
+                    {% render_field form.enddate class="form-control" %}
                 </div>
             </div>
+{% comment %}                    
             {% if newgig_is_active %}
                 <div class="form-group">
                     <div class="form-check">
@@ -84,14 +70,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label for="newgig_seriescount" class="col-form-label">{% trans "Total Number Of Gigs" %}</label>
-{% comment %}
                                 <select class="form-control" id="newgigseriescount" name="newgig_seriescount">
                                     <option value="2" selected>2</option>
                                     {% for num in range(3,11) %}
                                         <option value="{{ num }}">{{ num }}</option>
                                     {% endfor %}
                                 </select>
-{% endcomment %}
                             </div>
                             <div class="col-md-6">
                                 <label for="newgig_seriesperiod" class="col-form-label">{% trans "Repeat Every" %}</label>
@@ -204,6 +188,7 @@
                     </div>
                 </div>
             {% endif %}
+{% endcomment %}
             <div class="row">
                 <div class="form-group col-md-6 col-12 ml-auto text-left">
                     {% if gig and not is_dupe%}
@@ -224,17 +209,20 @@
                         <button type="submit" id="savebutton" class="btn btn-primary">{% trans "Save" %}</button>
                 </div>
             </div>
+{% comment %}            
             {% if not gig or is_dupe %}
                 <input type="hidden" name="gk" value="0">
             {% else %}
                 <input type="hidden" name="gk" value="{{gig.id}}">
             {% endif %}
+{% endcomment %}            
         </form>
     </div>
 </div>
 {% endblock content %}        
 
 {% block modal %}
+{% comment %}
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -274,9 +262,11 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+{% endcomment %}    
 {% endblock modal %}
 
 {% block localscripts %}
+{% comment %}
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.css"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
 {% if the_user.preferences.locale == 'en_GB' %}
@@ -293,13 +283,11 @@
 {% endif %}
 <script>
 
-{% comment %}
 {% if the_user.preferences.locale == 'en_GB' %}
     {% set locale_fix = 'en-GB' %}
 {% else %}
     {% set locale_fix = the_user.preferences.locale %}
 {% endif %}
-{% endcomment %}
 
 $(document).ready(function () {
     $('#gigdateinput').datepicker({
@@ -336,7 +324,6 @@ $(document).ready(function () {
         },
         "{% trans "Please enter a date in the format mm/dd/yyyy." %}"
     );
-      
     $("#infoform").validate({
         rules: {
             gig_title: {
@@ -372,7 +359,6 @@ $(document).ready(function () {
           }
 
     });
-
     $('#gigcallinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
     $('#gigsetinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
     $('#gigendinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
@@ -450,5 +436,6 @@ function setSeries() {
 };
 
 </script>
+{% endcomment %}
 {% endblock localscripts %}
 

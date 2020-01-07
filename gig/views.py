@@ -16,9 +16,11 @@
 """
 from django.shortcuts import render
 from django.views import generic
-from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.urls import reverse
 from .models import Gig
+from .forms import GigForm
+from band.models import Band
+
 
 class DetailView(generic.DetailView):
     model = Gig
@@ -29,9 +31,18 @@ class DetailView(generic.DetailView):
 
         return context
 
-class UpdateView(BaseUpdateView):
+class CreateView(generic.CreateView):
     model = Gig
-    fields = ['title','contact','status','is_private','date','enddate','calltime','settime','endtime','address','dress','paid','postgig',
-                'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
+    form_class = GigForm
+    def get_success_url(self):
+        return reverse('gig-detail', kwargs={'pk': self.object.id})
+
+    def form_valid(self, form):
+        form.instance.band = Band.objects.get(id=self.kwargs['bk'])
+        return super(CreateView, self).form_valid(form)
+
+class UpdateView(generic.UpdateView):
+    model = Gig
+    form_class = GigForm
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
