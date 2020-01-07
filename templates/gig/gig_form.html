@@ -1,4 +1,454 @@
-<form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Update">
-</form>
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Gig Edit" %}{% endblock title %}
+
+{% block headcontent %}
+<link href="/timepicker/jquery.timepicker.css" rel="stylesheet" />
+{% endblock headcontent %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
+        <div class="page-header">
+            {% if newgig_is_active %}
+                {% trans "New Gig for " %}{{ the_band.name }}
+            {% else %}
+                {% trans "Gig Edit" %}
+            {% endif %}
+        </div>
+        <form class="form" id="infoform" role="form" method="post" action="gig_edit.html">
+            <input type="hidden" name="gig_band" value="{{the_band.id}}">
+            <div class="form-group">
+                <label for="gigtitleinput" class="col-form-label">{% trans "Gig Title" %}</label>
+                <input type="text" class="form-control" id="gigtitleinput" placeholder="({% trans 'required' %})" value="{% if is_dupe %}{% trans 'Copy of' %} {% endif %}{{gig.title}}" name="gig_title">
+            </div>
+            <div class="row">
+                <div class="form-group col-6">
+                    <label for="gigcontact" class="col-form-label">{% trans "Contact" %}</label>
+                    <select class="form-control" name="gig_contact" id="gig-contacts">
+                    </select>
+                </div>
+                <div class="form-group col-6">
+                    <label for="gigstatusinput" class="col-form-label">{% trans "Status" %}</label>
+                        <select class="form-control" id="gigstatusinput" name="gig_status">
+                            <option value="0"
+                            {% if gig.status == 0 %}selected{% endif %}
+                            >{% trans "Unconfirmed" %}</option>
+                            <option value="1"
+                            {% if gig.status == 1 %}selected{% endif %}
+                            >{% trans "Confirmed!" %}</option>
+                            <option value="2"
+                            {% if gig.status == 2 %}selected{% endif %}
+                            >{% trans "Cancelled!" %}</option>
+                        </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">  
+                    <input class="form-check-input" type="checkbox" id="gig_private" name="gig_private"
+                    {% if gig.is_private %}
+                    checked
+                    {% endif %}
+                    >
+                    <label class="form-check-label" for="gig_private">{% trans "Hide From Public Page" %}</label>
+                </div>  
+            </div>
+             
+            <div class="row">
+                <div class="form-group col-4">
+                    <label for="gigdateinput" class="col-form-label">{% trans "Date" %}</label>
+{% comment %}                    
+                    <input type="text" class="datepicker form-control" id="gigdateinput" name="gig_date" placeholder="({% trans 'required' %})" 
+                    {% if gig != None %} value="{{ the_date_formatter(the_user, gig.date, 'datepicker')}}" {% endif %}
+                    name="gig_date">
+{% endcomment %}
+                </div>
+                <div class="form-group col-4">
+                    <label for="gigenddateinput" class="col-form-label">{% trans "End Date" %}</label>
+{% comment %}                    
+                    <input type="text" class="datepicker form-control" id="gigenddateinput" name="gig_enddate" placeholder="({% trans "if multi-day" %})" 
+                    {% if gig != None  and gig.enddate != None %} value="{{ the_date_formatter(the_user, gig.enddate, 'datepicker')}}" {% endif %}
+                    name="gig_enddate">
+{% endcomment %}
+                </div>
+            </div>
+            {% if newgig_is_active %}
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="newgig-isseries" name="newgig_isseries" onClick="setSeries();">
+                        <label class="form-check-label" for="newgig-isseries">{% trans "Add A Series Of Copies" %}</label>
+                    </div>
+                    <div id="gignumberseriesinput" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="newgig_seriescount" class="col-form-label">{% trans "Total Number Of Gigs" %}</label>
+{% comment %}
+                                <select class="form-control" id="newgigseriescount" name="newgig_seriescount">
+                                    <option value="2" selected>2</option>
+                                    {% for num in range(3,11) %}
+                                        <option value="{{ num }}">{{ num }}</option>
+                                    {% endfor %}
+                                </select>
+{% endcomment %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="newgig_seriesperiod" class="col-form-label">{% trans "Repeat Every" %}</label>
+                                <select class="form-control" id="newgigseriesperiod" name="newgig_seriesperiod">
+                                    <option value="day">{% trans "day" %}</option>
+                                    <option value="week" selected>{% trans "week" %}</option>
+                                    <option value="month">{% trans "month (on same day of month)" %}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}        
+            <div class="row">
+                <div class="form-group col-4">
+                    <label for="gigcallinput" class="col-form-label">{% trans "Call Time" %}</label>
+                    <input type="text" class="form-control" id="gigcallinput" placeholder="4:20" value="{{gig.calltime}}" name="gig_call">
+                </div>
+                <div class="form-group col-4">
+                    <label for="gigsetinput" class="col-form-label">{% trans "Set Time" %}</label>
+                    <input type="text" class="form-control" id="gigsetinput" placeholder="" value="{{gig.settime}}" name="gig_set">
+                </div>
+                <div class="form-group col-4">
+                    <label for="gigendinput" class="col-form-label">{% trans "End Time" %}</label>
+                    <input type="text" class="form-control" id="gigendinput" placeholder="" value="{{gig.endtime}}" name="gig_end">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-4 col-md-4 col-12">
+                    <label for="gigaddressinput" class="col-form-label">{% trans "Address" %}</label>
+                    <input type="text" class="form-control" id="gigaddressinput" placeholder="{% trans "location_placeholder" %}" value="{{gig.address}}" name="gig_address">
+                </div>
+                <div class="form-group col-4">
+                    <label for="gigdressinput" class="col-form-label">{% trans "What To Wear" %}</label>
+                    <input type="text" class="form-control" id="gigdressinput" placeholder="{% trans "Pants Optional" %}" value="{{gig.dress}}" name="gig_dress">
+                </div>
+                <div class="form-group col-4">
+                    <label for="gigpaidinput" class="col-form-label">{% trans "Pay Deal" %}</label>
+                    <input type="text" class="form-control" id="gigpaidinput" placeholder="{% trans "As If" %}" value="{{gig.paid}}" name="gig_paid">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-lg-4 col-md-4 col-12">
+                    <label for="gigleaderinput" class="col-form-label">{% trans "Leader" %}</label>
+                    <input type="text" class="form-control" id="gigleaderinput" placeholder="{% trans "leader_placeholder" %}" value="{{gig.leader}}" name="gig_leader">
+                </div>
+                <div class="form-group col-lg-8 col-md-8 col-12">
+                    <label for="gigpostgiginput" class="col-form-label">{% trans "Post-gig Plans" %}</label>
+                    <input type="text" class="form-control" id="gigpostgiginput" placeholder="{% trans "postgig_placeholder" %}" value="{{gig.postgig}}" name="gig_postgig">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="gigdetailsinput" class="col-form-label">{% trans "More Details" %}</label>
+                <textarea class="form-control" rows="10" id="gigdetailsinput" placeholder="{% trans "who? what? where? when? why?" %}" name="gig_details">{{gig.details}}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="gigsetlistinput" class="col-form-label">{% trans "Setlist" %}</label>
+                <textarea class="form-control" rows="10" id="gigsetlistinput" placeholder="{% trans "setlist here" %}" name="gig_setlist">{{gig.setlist}}</textarea>
+            </div>
+            {% if the_band.rss_feed %}
+                <div class="form-group">
+                    <label for="gigrssdescriptioninput" class="col-form-label">{% trans "Description for RSS feed" %}</label>
+                    <textarea class="form-control" rows="10" id="gigrssdescriptioninput" placeholder="{% trans "description here" %}" name="gig_rssdescription">{{gig.rss_description}}</textarea>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="newgig_notifymembers" name="gig_notifymembers" 
+                    {% if the_band.send_updates_by_default %}checked{% endif %}>
+                    <label class="form-check-label" for="newgig_notifymembers"> 
+                        {% if newgig_is_active or is_dupe %}
+                            {% trans "Email members about this new gig" %}
+                        {% else %}
+                            {% trans "Email members about change" %}  
+                        {% endif %}
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="gig_invite_occasionals" name="gig_invite_occasionals" 
+                        {% if the_band.send_updates_by_default %}checked{% endif %}                        
+                        >
+                    <label class="form-check-label" for="gig_invite_occasionals">
+                        {% if newgig_is_active or is_dupe %}
+                            {% trans "Invite occasional members" %}
+                        {% else %}
+                            {% trans "Also send update to occasional members" %}  
+                        {% endif %}
+                    </label>  
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="gig_hide_from_calendar" name="gig_hide_from_calendar" 
+                        {% if gig.hide_from_calendar %}checked{% endif %}                        
+                        >
+                    <label class="form-check-label" for="gig_hide_from_calendar">
+                        {% trans "Hide gig from calendars" %}
+                    </label>
+                </div>
+            </div>
+            {% if newgig_is_active %}
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="default_to_attend" name="default_to_attend">
+                        <label class="form-check-label" for="default_to_attend">
+                            {% trans "Default to definitely attending" %}
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="form-group col-md-6 col-12 ml-auto text-left">
+                    {% if gig and not is_dupe%}
+                        {% if not gig.is_in_trash %}
+                            <a data-toggle="modal" href="#deleteModal" class="btn btn-secondary">{% trans "Move To Trash" %}</a>
+                        {% else %}
+                            <a class="btn btn-secondary" href="/gig_restore_trashed?gk={{ gig.id }}">{% trans "Restore Gig" %}</a>
+                        {% endif %}
+                        <a data-toggle="modal" href="#archiveModal" class="btn btn-secondary">{% trans "Archive" %}</a>
+                    {% endif %}   
+                </div>
+                <div class="form-group col-12 col-md-6 ml-auto text-right">
+                        {% if gig %}
+                            <a class="btn btn-secondary" href="gig_info.html?gk={{ gig.id }}">{% trans "Cancel" %}</a>
+                        {% else %}
+                            <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
+                        {% endif %}
+                        <button type="submit" id="savebutton" class="btn btn-primary">{% trans "Save" %}</button>
+                </div>
+            </div>
+            {% if not gig or is_dupe %}
+                <input type="hidden" name="gk" value="0">
+            {% else %}
+                <input type="hidden" name="gk" value="{{gig.id}}">
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock content %}        
+
+{% block modal %}
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">{% trans "Confirm Trash" %}</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    {% trans "Do you really want to move this gig to the trash?" %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Cancel" %}</button>
+                    {% if gig %}
+                        <a class="btn btn-primary" id="opener" href="gig_delete?&gk={{ gig.id }}">{% trans "Trash it!" %}</a>
+                    {% endif %}
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade" id="archiveModal" tabindex="-1" role="dialog" aria-labelledby="archiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">{% trans "Confirm archive" %}</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    {% trans "Do you really want to archive this gig?" %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Don't Archive" %}</button>
+                    {% if gig %}
+                        <a class="btn btn-primary" id="opener" href="gig_archive?&gk={{ gig.id }}">{% trans "Archive" %}</a>
+                    {% endif %}
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+{% endblock modal %}
+
+{% block localscripts %}
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.css"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
+{% if the_user.preferences.locale == 'en_GB' %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.en-GB.min.js"></script>
+{% elif the_user.preferences.locale != 'en' %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.{{ the_user.preferences.locale }}.min.js"></script>
+{% endif %}
+<script src="/js/jquery.validate.js"></script>
+<script src="/timepicker/jquery.timepicker.min.js"></script>
+{% if the_user.preferences.locale == 'en' %}
+<script src='/js/moment.min.js'></script>
+{% else %}
+<script src='/js/moment-with-locales.min.js'></script>
+{% endif %}
+<script>
+
+{% comment %}
+{% if the_user.preferences.locale == 'en_GB' %}
+    {% set locale_fix = 'en-GB' %}
+{% else %}
+    {% set locale_fix = the_user.preferences.locale %}
+{% endif %}
+{% endcomment %}
+
+$(document).ready(function () {
+    $('#gigdateinput').datepicker({
+                language: '{{ locale_fix }}'
+            });
+    $('#gigdateinput')
+      .on('changeDate', function(ev){
+        $('#gigdateinput').datepicker('hide')
+      });
+      
+    $('#gigenddateinput').datepicker({
+                language: '{{ locale_fix }}'
+            });
+    $('#gigenddateinput')
+      .on('changeDate', function(ev){
+        $('#gigenddateinput').datepicker('hide')
+      });
+
+
+    $.validator.addMethod(
+        "gigoDate",
+        function(value, element) {
+            if (value=="") {
+                return true;
+            } else {
+                // put your own logic here, this is just a (crappy) example
+                var q = new RegExp("^\\d\\d?\\"+
+                                   "{% trans "date_separator" %}"+
+                                   "\\d\\d?\\"+
+                                   "{% trans "date_separator" %}"+
+                                   "\\d\\d\\d\\d$");
+                return value.match(q);
+            }
+        },
+        "{% trans "Please enter a date in the format mm/dd/yyyy." %}"
+    );
+      
+    $("#infoform").validate({
+        rules: {
+            gig_title: {
+                required: true
+            },
+            gig_date: {
+                required: true,
+                gigoDate: true,
+                inFuture: true
+            },
+            gig_enddate: {
+                gigoDate: true,
+                greaterThan: "#gigdateinput"
+            }
+        },
+        messages: {
+            gig_title: {
+                required: "{% trans "This field is required!" %}"                
+            },            
+            gig_date: {
+                required: "{% trans "This field is required!" %}"                
+            },            
+            gig_enddate: {
+                required: "{% trans "This field is required!" %}"                
+            }            
+        },
+        submitHandler: function(form) {
+            // make the save button a spinner
+            var mybutton = "#savebutton";
+            $(mybutton).prop("disabled",true);
+            $(mybutton).html("<i class='fas fa-spinner fa-pulse fa-lg'></i>");
+            form.submit();
+          }
+
+    });
+
+    $('#gigcallinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
+    $('#gigsetinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
+    $('#gigendinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
+      
+    updateContactList('{{the_band.id}}');
+});
+
+jQuery.validator.addMethod("greaterThan", 
+function(value, element, params) {
+
+    if (value=="") {
+        return true;
+    }
+
+    moment.lang('{{ locale_fix }}');
+    d1 = moment(value,moment.langData('{{ locale_fix }}').longDateFormat("L"));
+    d2 = moment($(params).val(),moment.langData('{{ locale_fix }}').longDateFormat("L"));
+
+    return d1 > d2;
+},'{% trans "Must be later than start date!" %}');
+
+jQuery.validator.addMethod("inFuture", 
+function(value, element, params) {
+    today = moment();
+    today.hour(0);
+    today.minute(0);
+    today.second(0);
+    today.millisecond(0);
+    moment.lang('{{locale_fix}}');
+    d1 = moment(value,moment.langData('{{ locale_fix }}').longDateFormat("L"));
+    return d1 >= today;
+},'{% trans "Must be in the future!" %}');
+
+function updateContactList(bk) {
+    $.post("/band_get_member_list",
+                {
+                    bk: bk
+                },
+                function(responseTxt,statusTxt,xhr){
+                    if(statusTxt=="success")
+                        obj = JSON && JSON.parse(responseTxt) || $.parseJSON(responseTxt);
+                        inner=""
+                        {% if gig.contact == None %}
+                            inner = inner+"<option value=''>??</option>"
+                        {% endif %}
+                        for(i=0; i<obj.length; i++) {
+                            inner=inner+"<option value='"+obj[i][1]+"'"
+                            {% if newgig_is_active %}
+                                if (obj[i][1] == '{{the_user.id}}') {
+                                    inner=inner+" SELECTED"
+                                }
+                            {% elif gig.contact %}
+                                if (obj[i][1] == '{{gig.contact.id}}') {
+                                    inner=inner+" SELECTED"
+                                }
+                            {% endif %}
+                            inner=inner+">"+obj[i][0]+"</option>"
+                        }
+                        $('#gig-contacts').html(inner);
+                    if(statusTxt=="error")
+                      alert("{% trans "Error" %}: "+xhr.status+": "+xhr.statusText);
+                });
+}
+
+function handleBandChange(sel) {
+    var bk=sel.value;
+    updateContactList(bk);
+};
+
+function setSeries() {
+    if($('#newgig-isseries').prop('checked'))
+        $('#gignumberseriesinput').show();
+    else
+        $('#gignumberseriesinput').hide();
+};
+
+</script>
+{% endblock localscripts %}
+
