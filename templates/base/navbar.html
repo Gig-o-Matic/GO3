@@ -52,8 +52,12 @@
               {% trans "Add Gig" %}
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarAddgigMenuLink" id="addgigbandlinks">
-              <a class="dropdown-item" href="#">{% trans "No bands yet!" %}</a>
-            </div>
+              {% for assoc in the_assocs %}
+                {% with band=assoc.band %}
+                  <a class="dropdown-item" href="/gig/create/{{ band.id }}">{{ band.name }}</a>
+                {% endwith %}
+              {% endfor %}
+              </div>
           </li>
         {% endif %}
       {% endwith %}

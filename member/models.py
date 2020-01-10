@@ -116,6 +116,7 @@ class Member(AbstractUser):
         return the_motd.text if the_motd else None
 
     objects = MemberManager()
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
