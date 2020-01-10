@@ -19,6 +19,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
+from django.db.models import Q
 from django.dispatch import receiver
 from band.models import Band, Assoc
 from motd.models import MOTD
@@ -98,6 +99,13 @@ class Member(AbstractUser):
     @property
     def confirmed_assocs(self):
         return self.assocs.filter(is_confirmed=True)
+
+    @property
+    def add_gig_assocs(self):
+        if self.is_superuser:
+            return self.assocs
+        else:
+            return self.assocs.filter( Q(is_confirmed=True) & (Q(is_band_admin=True) | Q(band__anyone_can_create_gigs=True)) )
 
     @property
     def motd(self):

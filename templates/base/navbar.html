@@ -41,12 +41,12 @@
         </div>
       </li>
           
-      {% if user_addgigbandlist %}
-        {% if user_addgigbandlist|length == 1 %}
+      {% with the_assocs=request.user.add_gig_assocs.all %}
+        {% if the_assocs|length == 1 %}
           <li class="nav-item {% if newgig_is_active %} active{% endif %} mr-2">
-            <a class="nav-link" href="/gig_edit.html?new=1&bk={{ user_addgigbandlist.0.id }}">{% trans "Add Gig" %}</a>
+            <a class="nav-link" href="/gig/create/{{ the_assocs.0.band.id }}">{% trans "Add Gig" %}</a>
           </li>
-        {% else %}
+        {% elif the_assocs|length > 1 %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarAddgigMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               {% trans "Add Gig" %}
@@ -56,9 +56,9 @@
             </div>
           </li>
         {% endif %}
-      {% endif %}
+      {% endwith %}
               
-      {% if user_is_superuser %}
+      {% if request.user.is_superuser %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarAdminMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {% trans "Admin" %}
