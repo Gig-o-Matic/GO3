@@ -18,6 +18,28 @@ from django.db import models
 from member.models import Member
 from band.models import Band
 
+class Plan(models.Model):
+    """ Models a gig-o-matic plan """
+    gig = models.ForeignKey("Gig", related_name="plans", on_delete=models.CASCADE)
+    assoc = models.ForeignKey("band.Assoc", verbose_name="assoc", related_name="plans", on_delete=models.CASCADE)
+
+    class StatusChoices(models.IntegerChoices):
+        NO_PLAN = 0, "No Plan"
+        DEFINITELY = 1, "Definitely"
+        PROBABLY = 2, "Probably"
+        DONT_KNOW = 3, "Don't Know"
+        PROBABLY_NOT = 4, "Probably Not"
+        CANT_DO_IT = 5, "Can't Do It"
+        NOT_INTERESTED = 6, "Not Interested"
+
+    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NO_PLAN)
+
+    feedback_value = models.IntegerField(null=True)
+    comment = models.CharField(max_length=200, blank=True, null=True)
+    section = models.ForeignKey("band.Section", verbose_name="section", on_delete=models.SET_NULL, null=True)
+    last_update = models.DateTimeField(auto_now=True)
+    snooze_until = models.DateTimeField(null=True)
+
 class Gig(models.Model):
     title = models.CharField(max_length=200)
     band = models.ForeignKey(Band, related_name="gigs", on_delete=models.CASCADE)
@@ -85,27 +107,17 @@ class Gig(models.Model):
     def is_in_trash(self):
         return self.trashed_date is not None
 
+    @property
+    def member_plans(self):
+        # find any members that don't have plans yet
+        absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
+        Plan.objects.bulk_create(
+            [Plan(gig=self, assoc=a) for a in absent]
+        )
+        # now that we have one fo every member, return the manager
+        return self.plans
+
+
     def __str__(self):
         return self.title
 
-class Plan(models.Model):
-    """ Models a gig-o-matic plan """
-    gig = models.ForeignKey(Gig, related_name="plans", on_delete=models.CASCADE)
-    member = models.ForeignKey("member.Member", verbose_name="member", related_name="plans", on_delete=models.CASCADE)
-
-    class StatusChoices(models.IntegerChoices):
-        NO_PLAN = 0, "No Plan"
-        DEFINITELY = 1, "Definitely"
-        PROBABLY = 2, "Probably"
-        DONT_KNOW = 3, "Don't Know"
-        PROBABLY_NOT = 4, "Probably Not"
-        CANT_DO_IT = 5, "Can't Do It"
-        NOT_INTERESTED = 6, "Not Interested"
-
-    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NO_PLAN)
-
-    feedback_value = models.IntegerField()
-    comment = models.CharField(max_length=200, blank=True, null=True)
-    section = models.ForeignKey("band.Section", verbose_name="section", on_delete=models.SET_NULL, null=True)
-    last_update = models.DateTimeField(auto_now=True)
-    snooze_until = models.DateTimeField(null=True)
