@@ -1,0 +1,98 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Schedule" %}{% endblock title %}
+
+{% block content %}
+{% comment %}
+    {% import 'agenda_plan_edit.html' as plan_edit with context %}
+{% endcomment %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+        <div class="page-header">
+            {% trans "Schedule" %}: {% if the_user.nickname %}{{the_user.nickname}}{%else%}{{the_user.name}}{% endif %}
+            {% if the_user.preferences.default_view != 0 %}
+                <small>(<a href="/?default=0">{% trans "Make this my default view!" %}</a>)</small>
+            {% endif %}
+        </div>
+
+        {% if weighin_plans %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Future Gigs: Weigh In!" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="weighinevents">
+                        {% for plan_info in weighin_plans %}
+                            <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
+                                <div class="col-12">
+{% comment %}                                    
+                                    {{ plan_edit.plan_edit(plan_info) }}
+{% endcomment %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div>&nbsp;</div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-8">
+                        {% if user.preferences.show_long_agenda %}
+                            {% trans "All Upcoming Gigs" %}
+                        {% else %}
+                            {% trans "My Next Few Gigs" %}
+                        {% endif %}
+                    </div>
+                    <div class="ml-auto">
+                        <a class="btn btn-primary btn-sm" href="/agenda_switch"><i class="fas fa-sync fs-lg"></i>
+                            {% if user.preferences.show_long_agenda %}
+                                {% trans "show brief" %}
+                            {% else %}
+                                {% trans "show all" %}
+                            {% endif %}</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="upcomingevents">
+                    {% if upcoming_plans %}
+                        {% for plan_info in upcoming_plans %}
+                            <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                                <div class="col-md-12">
+{% comment %}                                    
+                                    {{ plan_edit.plan_edit(plan_info) }}
+{% endcomment %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% trans "Nothing coming up!" %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block localscripts %}
+<script src="/js/plan_buttons.js"></script>
+<script>
+
+$(document).ready(function() {
+    $('.popcomment').tooltip({ 'trigger':'hover click' })
+});
+</script>
+{% endblock localscripts %}
+
+

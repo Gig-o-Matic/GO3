@@ -76,7 +76,6 @@ class Member(AbstractUser):
     statement = models.CharField(max_length=200, blank=True)
     motd_dirty = models.BooleanField(default=True)
     seen_welcome = models.BooleanField(default=False)
-    show_long_agenda = models.BooleanField(default=True)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
     images = models.TextField(max_length=500, blank=True)
 
@@ -143,6 +142,8 @@ class MemberPreferences(models.Model):
     calendar_show_only_committed = models.BooleanField(default=True)
     default_view = models.IntegerField(default=0) # 0 = agenda, 1 = calendar, 2 = grid
     agenda_show_time = models.BooleanField(default=False)
+    show_long_agenda = models.BooleanField(default=True)
+
 
 
 # signals to make sure a set of preferences is created for every user
