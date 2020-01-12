@@ -11,4 +11,5 @@ Crypto
 *.db
 *.code-workspace
 db.sqlite3
+.vscode
 
