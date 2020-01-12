@@ -77,16 +77,28 @@ class Section(models.Model):
 
 class ConfirmedAssocManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(is_confirmed=True)
+        return super().get_queryset().filter(status=Assoc.StatusChoices.CONFIRMED)
 
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
     default_section = models.ForeignKey(Section, null=True, blank=True, related_name="default_section", on_delete=models.SET_NULL)
 
-    is_confirmed = models.BooleanField( default=False )
-    is_invited = models.BooleanField( default=False )
-    is_band_admin = models.BooleanField( default = False )
+    class StatusChoices(models.IntegerChoices):
+        NOT_CONFIRMED = 0, "Not Confirmed"
+        CONFIRMED = 1, "Confirmed"
+        INVITED = 2, "Invited"
+        ALUMNI = 3, "Alumni"
+        PENDING = 4, "Pending"
+
+    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NOT_CONFIRMED)
+
+    is_admin = models.BooleanField(default=False)
+    is_occasional = models.BooleanField(default=False)
+
+    @property
+    def is_confirmed(self):
+        return self.status == Assoc.StatusChoices.CONFIRMED
 
     # default_section_index = ndb.IntegerProperty( default=None )
 

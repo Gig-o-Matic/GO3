@@ -21,5 +21,5 @@ class AgendaView(LoginRequiredMixin, TemplateView):
     template_name='agenda/agenda.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['member_assocs'] = Assoc.objects.filter(band__id=self.kwargs['pk'], is_confirmed=True, member__is_active=True)
+        # context['member_assocs'] = Assoc.confirmed.filter(band__id=self.kwargs['pk'], member__is_active=True)
         return context

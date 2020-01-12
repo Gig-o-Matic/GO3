@@ -333,7 +333,7 @@ function setupClick() {
         var bk=$(this).attr("id");
         $.ajax({
             method: 'POST',
-            url: "/band/assoc/create/"+bk+"/"+mk,
+            url: "/band/"+bk+"/join/"+mk,
             headers: { "X-CSRFToken": "{{csrf_token}}" },
             success: function(responseTxt,statusTxt,xhr){
                         if(statusTxt=="success")

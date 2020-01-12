@@ -91,7 +91,7 @@ def set_assoc_color(request, ak, colorindex):
 
 
 @login_required
-def create_assoc(request, bk, mk):
+def join_assoc(request, bk, mk):
     b = Band.objects.get(id=bk)
 
     if (mk == request.user.id):
@@ -102,7 +102,7 @@ def create_assoc(request, bk, mk):
     # todo make sure this is us, or we're superuser, or band_admin
     is_self = (request.user == m)
     is_super = (request.user.is_superuser)
-    is_band_admin = Assoc.objects.filter(member=request.user, band=b, is_band_admin=True).count() == 1
+    is_band_admin = Assoc.objects.filter(member=request.user, band=b, is_admin=True).count() == 1
     if not (is_self or is_super or is_band_admin):
         raise PermissionError('tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
@@ -118,7 +118,7 @@ def delete_assoc(request, ak):
     # todo make sure this is us, or band_admin, or we're superuser
     is_self = (request.user == a.member)
     is_super = (request.user.is_superuser)
-    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_band_admin=True).count() == 1)
+    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_admin=True).count() == 1)
     if not (is_self or is_super or is_band_admin):
         raise PermissionError('tying to delete an assoc which is not owned by user {0}'.format(request.user.username))
     
@@ -132,12 +132,12 @@ def confirm_assoc(request, ak):
 
     # todo make sure this is a band_admin, or we're superuser
     is_super = (request.user.is_superuser)
-    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_band_admin=True).count() == 1)
+    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_admin=True).count() == 1)
     if not (is_super or is_band_admin):
         raise PermissionError('tying to confirm an assoc which is not admin by user {0}'.format(request.user.username))
 
     # OK, confirm the assoc
-    a.is_confirmed=True
+    a.status = Assoc.StatusChoices.CONFIRMED
     a.save()
 
     return HttpResponse()

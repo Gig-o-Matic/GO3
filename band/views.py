@@ -25,9 +25,9 @@ class DetailView(generic.DetailView):
             context['the_user_is_associated'] = False
         else:
             context['the_user_is_associated'] = True
-            context['the_user_is_band_admin'] = assoc.is_band_admin
+            context['the_user_is_band_admin'] = assoc.is_admin
 
-            context['the_pending_members'] = Assoc.objects.filter(band=the_band, is_confirmed=False)
+            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=Assoc.StatusChoices.PENDING)
         return context
 
     def get_success_url(self):
@@ -45,10 +45,8 @@ class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member_assocs'] = Assoc.objects.filter(band__id=self.kwargs['pk'], is_confirmed=True, member__is_active=True)
+        context['member_assocs'] = Assoc.confirmed.filter(band__id=self.kwargs['pk'], member__is_active=True)
         return context
-
-
 
 class SectionMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_section_members.html'
@@ -64,7 +62,7 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         # make sure I'm in the band or am superuser
         u = self.request.user
-        if  u.is_superuser is False and len(b.assocs.filter(member=u, is_confirmed=True, member__is_active=True))!=1:
+        if  u.is_superuser is False and len(b.assocs.confirmed.filter(member=u, member__is_active=True))!=1:
             raise ValueError('user {0} accessing section members for non-member band'.format(u.email))
 
         if self.kwargs['sk']:
@@ -81,6 +79,6 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
-        context['the_assocs'] = b.assocs.filter(default_section=s, is_confirmed=True, member__is_active=True).all()
+        context['the_assocs'] = b.assocs.filter(status=Assoc.StatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
         return context
 

@@ -97,14 +97,14 @@ class Member(AbstractUser):
 
     @property
     def confirmed_assocs(self):
-        return self.assocs.filter(is_confirmed=True)
+        return self.assocs.filter(status=Assoc.StatusChoices.CONFIRMED)
 
     @property
     def add_gig_assocs(self):
         if self.is_superuser:
             return self.assocs
         else:
-            return self.assocs.filter( Q(is_confirmed=True) & (Q(is_band_admin=True) | Q(band__anyone_can_create_gigs=True)) )
+            return self.assocs.filter( Q(status=Assoc.StatusChoices.CONFIRMED) & (Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)) )
 
     @property
     def motd(self):

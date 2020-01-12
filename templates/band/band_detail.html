@@ -190,7 +190,7 @@
                     </div>
                 </div>
             {% endif %}
-        {% elif the_user_is_confirmed == False and request.user.is_superuser == False %}
+        {% elif the_user in the_pending_members and request.user.is_superuser == False %}
             {% trans "Your membership is pending - ask a band member to confirm you!" %}
         {% else %}
             {% if the_pending_members %}
