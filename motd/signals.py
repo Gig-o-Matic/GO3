@@ -14,14 +14,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import MOTD
+from member.models import Member
 
-from django.apps import AppConfig
-import logging
-
-class BandConfig(AppConfig):
-    name = 'band'
-
-    @staticmethod
-    def ready():
-        logging.debug("loaded band signals")
-        from . import signals
+@receiver(post_save, sender=MOTD)
+def make_users_dirty(sender, instance, created, **kwargs):
+    """ make sure everyone sees the motd """
+    # m = apps.get_model('member', 'Member')
+    Member.objects.all().update(motd_dirty=True)

@@ -14,14 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from .models import Band
 
-from django.apps import AppConfig
-import logging
-
-class BandConfig(AppConfig):
-    name = 'band'
-
-    @staticmethod
-    def ready():
-        logging.debug("loaded band signals")
-        from . import signals
+@receiver(pre_save, sender=Band)
+def my_handler(sender, instance, **kwargs):
+    instance.condensed_name = ''.join(instance.name.split()).lower()

@@ -18,9 +18,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
 from django.db.models import Q
-from django.dispatch import receiver
 from band.models import Band, Assoc
 from motd.models import MOTD
 from django.utils.translation import gettext_lazy as _
@@ -144,15 +142,4 @@ class MemberPreferences(models.Model):
     agenda_show_time = models.BooleanField(default=False)
     show_long_agenda = models.BooleanField(default=True)
 
-
-
-# signals to make sure a set of preferences is created for every user
-@receiver(post_save, sender=Member)
-def create_user_preferences(sender, instance, created, **kwargs):
-    if created:
-        MemberPreferences.objects.create(member=instance)
-
-@receiver(post_save, sender=Member)
-def save_user_preferences(sender, instance, **kwargs):
-    instance.preferences.save()
 

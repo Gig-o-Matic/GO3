@@ -15,7 +15,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.apps import AppConfig
-
+import logging
 
 class GigConfig(AppConfig):
     name = 'gig'
+
+    @staticmethod
+    def ready():
+        logging.debug("loaded gig signals")
+        from . import signals

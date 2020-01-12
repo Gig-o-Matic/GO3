@@ -19,3 +19,8 @@ from django.apps import AppConfig
 
 class MotdConfig(AppConfig):
     name = 'motd'
+
+    @staticmethod
+    def ready():
+        print("loaded motd signals") # todo make debug pring
+        from . import signals

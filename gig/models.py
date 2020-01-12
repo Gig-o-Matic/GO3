@@ -17,8 +17,6 @@
 from django.db import models
 from member.models import Member
 from band.models import Band
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 class Plan(models.Model):
     """ Models a gig-o-matic plan """
@@ -126,8 +124,3 @@ class Gig(models.Model):
 
     def __str__(self):
         return self.title
-
-@receiver(post_save, sender=Gig)
-def new_gig_handler(sender, instance, created, **kwargs):
-    """ if this is a new gig, make sure there's a plan for every member """
-    x = instance.member_plans

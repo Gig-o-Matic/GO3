@@ -14,14 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import Member, MemberPreferences
 
-from django.apps import AppConfig
-import logging
+# signals to make sure a set of preferences is created for every user
+@receiver(post_save, sender=Member)
+def create_user_preferences(sender, instance, created, **kwargs):
+    if created:
+        MemberPreferences.objects.create(member=instance)
 
-class BandConfig(AppConfig):
-    name = 'band'
-
-    @staticmethod
-    def ready():
-        logging.debug("loaded band signals")
-        from . import signals
+@receiver(post_save, sender=Member)
+def save_user_preferences(sender, instance, **kwargs):
+    instance.preferences.save()

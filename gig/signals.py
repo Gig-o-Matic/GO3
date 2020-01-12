@@ -14,14 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import Gig
 
-from django.apps import AppConfig
-import logging
-
-class BandConfig(AppConfig):
-    name = 'band'
-
-    @staticmethod
-    def ready():
-        logging.debug("loaded band signals")
-        from . import signals
+@receiver(post_save, sender=Gig)
+def new_gig_handler(sender, instance, created, **kwargs):
+    """ if this is a new gig, make sure there's a plan for every member """
+    x = instance.member_plans

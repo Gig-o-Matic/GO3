@@ -16,8 +16,6 @@
 """
 
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 
 class Band(models.Model):
     name = models.CharField(max_length=200)
@@ -59,9 +57,6 @@ class Band(models.Model):
     def __str__(self):
         return self.name
 
-@receiver(pre_save, sender=Band)
-def my_handler(sender, instance, **kwargs):
-    instance.condensed_name = ''.join(instance.name.split()).lower()
 
 class Section(models.Model):
     name = models.CharField(max_length=100)
