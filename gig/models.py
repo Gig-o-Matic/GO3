@@ -17,6 +17,8 @@
 from django.db import models
 from member.models import Member
 from band.models import Band
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Plan(models.Model):
     """ Models a gig-o-matic plan """
@@ -118,10 +120,14 @@ class Gig(models.Model):
         Plan.objects.bulk_create(
             [Plan(gig=self, assoc=a) for a in absent]
         )
-        # now that we have one fo every member, return the manager
+        # now that we have one for every member, return the list
         return self.plans
 
 
     def __str__(self):
         return self.title
 
+@receiver(post_save, sender=Gig)
+def new_gig_handler(sender, instance, created, **kwargs):
+    """ if this is a new gig, make sure there's a plan for every member """
+    x = instance.member_plans
