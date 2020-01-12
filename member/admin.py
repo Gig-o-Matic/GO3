@@ -56,7 +56,12 @@ class MemberAdmin(BaseUserAdmin):
     ]
 
     add_form = MemberCreateForm
-
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'username','password1', 'password2'),
+        }),
+    )
     search_fields = ('email',)
     ordering = ('email',)
     filter_horizontal = ()
