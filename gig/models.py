@@ -34,11 +34,15 @@ class Plan(models.Model):
 
     status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NO_PLAN)
 
-    feedback_value = models.IntegerField(null=True)
+    feedback_value = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, blank=True, null=True)
-    section = models.ForeignKey("band.Section", verbose_name="section", on_delete=models.SET_NULL, null=True)
+    section = models.ForeignKey("band.Section", verbose_name="section", on_delete=models.SET_NULL, null=True, blank=True)
     last_update = models.DateTimeField(auto_now=True)
-    snooze_until = models.DateTimeField(null=True)
+    snooze_until = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return '{0} for {1}'.format(self.assoc.member.display_name, self.gig.title)
+
 
 class Gig(models.Model):
     title = models.CharField(max_length=200)
