@@ -104,6 +104,14 @@ class Member(AbstractUser):
         return Assoc.member_assocs.add_gig_assocs(self.id)
 
     @property
+    def future_plans(self):
+        return Plan.member_plans.future_plans(self.id).exclude(status=Plan.StatusChoices.NO_PLAN)
+
+    @property
+    def future_noplans(self):
+        return Plan.member_plans.future_plans(self.id).filter(status=Plan.StatusChoices.NO_PLAN)
+
+    @property
     def motd(self):
         if self.motd_dirty:
             the_motd = MOTD.objects.first()
