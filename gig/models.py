@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.db import models
-from band.models import Band
+from band.models import Band, Assoc
 import datetime
 
 class MemberPlanManager(models.Manager):
