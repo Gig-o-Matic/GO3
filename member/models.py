@@ -18,9 +18,9 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Q
 from band.models import Band, Assoc
 from motd.models import MOTD
+from gig.models import Plan
 from django.utils.translation import gettext_lazy as _
 import datetime
 from django.utils import timezone
@@ -95,14 +95,13 @@ class Member(AbstractUser):
 
     @property
     def confirmed_assocs(self):
-        return self.assocs.filter(status=Assoc.StatusChoices.CONFIRMED)
+        """ return gigs for bands the member is confirmed """
+        return Assoc.member_assocs.confirmed_assocs(self.id)
 
     @property
     def add_gig_assocs(self):
-        if self.is_superuser:
-            return self.assocs
-        else:
-            return self.assocs.filter( Q(status=Assoc.StatusChoices.CONFIRMED) & (Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)) )
+        """ return the assocs for bands the member can create gigs for """
+        return Assoc.member_assocs.add_gig_assocs(self.id)
 
     @property
     def motd(self):

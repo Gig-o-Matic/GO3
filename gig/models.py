@@ -15,8 +15,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.db import models
-from member.models import Member
 from band.models import Band
+import datetime
+
+class MemberPlanManager(models.Manager):
+    def future_plans(self, member_id):
+        return super().get_queryset().filter(assoc__member__id=member_id, 
+                                             assoc__status=Assoc.StatusChoices.CONFIRMED,
+                                             gig__date__gt=datetime.datetime.now())
 
 class Plan(models.Model):
     """ Models a gig-o-matic plan """
@@ -40,6 +46,9 @@ class Plan(models.Model):
     last_update = models.DateTimeField(auto_now=True)
     snooze_until = models.DateTimeField(null=True, blank=True)
 
+    objects = models.Manager()
+    member_plans = MemberPlanManager()
+
     def __str__(self):
         return '{0} for {1}'.format(self.assoc.member.display_name, self.gig.title)
 
@@ -49,7 +58,7 @@ class Gig(models.Model):
     band = models.ForeignKey(Band, related_name="gigs", on_delete=models.CASCADE)
 
     # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
-    contact = models.ForeignKey(Member, null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
+    contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
     details = models.TextField(null=True, blank=True)
     setlist = models.TextField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
@@ -67,7 +76,7 @@ class Gig(models.Model):
     paid = models.TextField(null=True, blank=True)
     postgig = models.TextField(null=True, blank=True)
 
-    leader = models.ForeignKey(Member, blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
+    leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
 
     # todo manage these
     # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
@@ -97,7 +106,7 @@ class Gig(models.Model):
     # todo what's this?
     # comment_id = ndb.TextProperty( default = None)
 
-    creator = models.ForeignKey(Member, null=True, related_name="creator_gigs", on_delete=models.SET_NULL)
+    creator = models.ForeignKey('member.Member', null=True, related_name="creator_gigs", on_delete=models.SET_NULL)
 
     invite_occasionals = models.BooleanField(default=True)
     was_reminded = models.BooleanField(default=False)

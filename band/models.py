@@ -16,6 +16,7 @@
 """
 
 from django.db import models
+from django.db.models import Q
 
 class Band(models.Model):
     name = models.CharField(max_length=200)
@@ -70,9 +71,18 @@ class Section(models.Model):
         ordering = ['order']
 
 
-class ConfirmedAssocManager(models.Manager):
-    def get_queryset(self):
+class MemberAssocManager(models.Manager):
+    def confirmed_assocs(self, member_id):
+        """ returns the asocs for bands we're confirmed for """
         return super().get_queryset().filter(status=Assoc.StatusChoices.CONFIRMED)
+
+    def add_gig_assocs(self, member_id):
+        """ return the assocs for bands the member can create gigs for """
+        return super().get_queryset().filter(
+                            Q(member__id=member_id) & Q(status=Assoc.StatusChoices.CONFIRMED) & (
+                                Q(member__is_superuser=True) | Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)
+                            )
+                        )
 
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
@@ -106,7 +116,7 @@ class Assoc(models.Model):
     hide_from_schedule = models.BooleanField (default=False)
 
     objects = models.Manager()
-    confirmed = ConfirmedAssocManager()
+    member_assocs = MemberAssocManager()
 
     def __str__(self):
         return "{0} in {1}".format(self.member, self.band)
