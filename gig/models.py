@@ -50,7 +50,7 @@ class Plan(models.Model):
     member_plans = MemberPlanManager()
 
     def __str__(self):
-        return '{0} for {1} ({2})'.format(self.assoc.member.display_name, self.gig.title, self.status)
+        return '{0} for {1} ({2})'.format(self.assoc.member.display_name, self.gig.title, Plan.StatusChoices(self.status).label)
 
 
 class Gig(models.Model):
