@@ -105,7 +105,8 @@ class AbstractGig(models.Model):
 
     @property
     def member_plans(self):
-        # find any members that don't have plans yet
+        """ find any members that don't have plans yet. This is called whenever a new gig is created
+            through the signaling system """
         absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
         Plan.objects.bulk_create(
             [Plan(gig=self, assoc=a) for a in absent]
