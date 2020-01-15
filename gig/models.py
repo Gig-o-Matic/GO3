@@ -53,35 +53,19 @@ class Plan(models.Model):
         return '{0} for {1} ({2})'.format(self.assoc.member.display_name, self.gig.title, Plan.StatusChoices(self.status).label)
 
 
-class Gig(models.Model):
+class AbstractGig(models.Model):
     title = models.CharField(max_length=200)
     band = models.ForeignKey(Band, related_name="gigs", on_delete=models.CASCADE)
 
-    # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
-    contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
     details = models.TextField(null=True, blank=True)
-    setlist = models.TextField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
     date = models.DateField()
-    enddate = models.DateField(null=True, blank=True)
 
     calltime = models.TimeField(null=True, blank=True)
-    settime = models.TimeField(null=True, blank=True)
-    endtime = models.TimeField(null=True, blank=True)
 
     address = models.TextField(null=True, blank=True)
-    dress = models.TextField(null=True, blank=True)
-    paid = models.TextField(null=True, blank=True)
-    postgig = models.TextField(null=True, blank=True)
-
-    leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
-
-    # todo manage these
-    # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
-    # sorttime = ndb.IntegerProperty( default=None )
-
     class StatusOptions(models.IntegerChoices):
             UNKNOWN = 0
             CONFIRMED = 1
@@ -113,7 +97,6 @@ class Gig(models.Model):
     hide_from_calendar = models.BooleanField(default=False)
     default_to_attending = models.BooleanField( default=False )
 
-    rss_description = models.TextField( null=True, blank=True )
     trashed_date = models.DateTimeField( blank=True, null=True )
 
     @property
@@ -133,3 +116,30 @@ class Gig(models.Model):
 
     def __str__(self):
         return self.title
+
+class Gig(AbstractGig):
+
+    # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
+    contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
+    setlist = models.TextField(null=True, blank=True)
+
+    enddate = models.DateField(null=True, blank=True)
+
+    settime = models.TimeField(null=True, blank=True)
+    endtime = models.TimeField(null=True, blank=True)
+
+    dress = models.TextField(null=True, blank=True)
+    paid = models.TextField(null=True, blank=True)
+    postgig = models.TextField(null=True, blank=True)
+
+    leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
+
+    # todo manage these
+    # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
+    # sorttime = ndb.IntegerProperty( default=None )
+
+    # todo what's this?
+    # comment_id = ndb.TextProperty( default = None)
+
+
+    rss_description = models.TextField( null=True, blank=True )
