@@ -55,6 +55,12 @@ class Band(models.Model):
     # band_cal_feed_dirty = models.BooleanField(default=True)
     # pub_cal_feed_dirty = ndb.BooleanProperty(default=True)
 
+    def has_member(self, member):
+        return self.assocs.filter(member=member, status=Assoc.StatusChoices.CONFIRMED).count()==1
+
+    def is_admin(self, member):
+        return self.assocs.filter(member=member, status=Assoc.StatusChoices.CONFIRMED, is_admin=True).count()==1
+
     def __str__(self):
         return self.name
 
@@ -72,22 +78,22 @@ class Section(models.Model):
 
 
 class MemberAssocManager(models.Manager):
-    def confirmed_assocs(self, member_id):
+    def confirmed_assocs(self, member):
         """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(member_id=member_id, status=Assoc.StatusChoices.CONFIRMED)
+        return super().get_queryset().filter(member=member, status=Assoc.StatusChoices.CONFIRMED)
 
-    def add_gig_assocs(self, member_id):
+    def add_gig_assocs(self, member):
         """ return the assocs for bands the member can create gigs for """
         return super().get_queryset().filter(
-                            Q(member__id=member_id) & Q(status=Assoc.StatusChoices.CONFIRMED) & (
+                            Q(member=member) & Q(status=Assoc.StatusChoices.CONFIRMED) & (
                                 Q(member__is_superuser=True) | Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)
                             )
                         )
 
 class BandAssocManager(models.Manager):
-    def confirmed_assocs(self, band_id):
+    def confirmed_assocs(self, band):
         """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(band_id=band_id, status=Assoc.StatusChoices.CONFIRMED)
+        return super().get_queryset().filter(band=band, status=Assoc.StatusChoices.CONFIRMED)
 
 
 class Assoc(models.Model):

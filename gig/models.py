@@ -19,8 +19,8 @@ from band.models import Band, Assoc
 import datetime
 
 class MemberPlanManager(models.Manager):
-    def future_plans(self, member_id):
-        return super().get_queryset().filter(assoc__member__id=member_id, 
+    def future_plans(self, member):
+        return super().get_queryset().filter(assoc__member=member, 
                                              assoc__status=Assoc.StatusChoices.CONFIRMED,
                                              gig__date__gt=datetime.datetime.now())
 

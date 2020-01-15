@@ -54,7 +54,7 @@ class CreateView(generic.CreateView):
         if is_superuser or anyone_can_create:
             has_permission = True
         else:
-            if band.assocs.filter(member=self.request.user, is_band_admin=True).count() == 1:
+            if band.is_admin(self.request.user):
                 has_permission = True
 
         if has_permission == False:

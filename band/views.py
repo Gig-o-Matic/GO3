@@ -45,7 +45,7 @@ class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member_assocs'] = Assoc.band_assocs.confirmed_assocs(self.kwargs['pk'])
+        context['member_assocs'] = Assoc.band_assocs.confirmed_assocs(Band.objects.get(id=self.kwargs['pk']))
         return context
 
 class SectionMembersView(LoginRequiredMixin, TemplateView):
@@ -62,7 +62,7 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         # make sure I'm in the band or am superuser
         u = self.request.user
-        if  u.is_superuser is False and len(b.assocs.confirmed.filter(member=u, member__is_active=True))!=1:
+        if  u.is_superuser is False and not b.has_member(u):
             raise ValueError('user {0} accessing section members for non-member band'.format(u.email))
 
         if self.kwargs['sk']:

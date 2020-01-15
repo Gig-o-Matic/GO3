@@ -96,20 +96,20 @@ class Member(AbstractUser):
     @property
     def confirmed_assocs(self):
         """ return gigs for bands the member is confirmed """
-        return Assoc.member_assocs.confirmed_assocs(self.id)
+        return Assoc.member_assocs.confirmed_assocs(self)
 
     @property
     def add_gig_assocs(self):
         """ return the assocs for bands the member can create gigs for """
-        return Assoc.member_assocs.add_gig_assocs(self.id)
+        return Assoc.member_assocs.add_gig_assocs(self)
 
     @property
     def future_plans(self):
-        return Plan.member_plans.future_plans(self.id).exclude(status=Plan.StatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).exclude(status=Plan.StatusChoices.NO_PLAN)
 
     @property
     def future_noplans(self):
-        return Plan.member_plans.future_plans(self.id).filter(status=Plan.StatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).filter(status=Plan.StatusChoices.NO_PLAN)
 
     @property
     def motd(self):
