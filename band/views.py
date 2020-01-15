@@ -45,7 +45,7 @@ class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member_assocs'] = Assoc.confirmed.filter(band__id=self.kwargs['pk'], member__is_active=True)
+        context['member_assocs'] = Assoc.band_assocs.confirmed_assocs(self.kwargs['pk'])
         return context
 
 class SectionMembersView(LoginRequiredMixin, TemplateView):

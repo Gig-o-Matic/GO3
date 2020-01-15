@@ -74,7 +74,7 @@ class Section(models.Model):
 class MemberAssocManager(models.Manager):
     def confirmed_assocs(self, member_id):
         """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(status=Assoc.StatusChoices.CONFIRMED)
+        return super().get_queryset().filter(member_id=member_id, status=Assoc.StatusChoices.CONFIRMED)
 
     def add_gig_assocs(self, member_id):
         """ return the assocs for bands the member can create gigs for """
@@ -83,6 +83,12 @@ class MemberAssocManager(models.Manager):
                                 Q(member__is_superuser=True) | Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)
                             )
                         )
+
+class BandAssocManager(models.Manager):
+    def confirmed_assocs(self, band_id):
+        """ returns the asocs for bands we're confirmed for """
+        return super().get_queryset().filter(band_id=band_id, status=Assoc.StatusChoices.CONFIRMED)
+
 
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
@@ -117,6 +123,7 @@ class Assoc(models.Model):
 
     objects = models.Manager()
     member_assocs = MemberAssocManager()
+    band_assocs = BandAssocManager()
 
     def __str__(self):
         return "{0} in {1}".format(self.member, self.band)

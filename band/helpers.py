@@ -107,7 +107,7 @@ def join_assoc(request, bk, mk):
         raise PermissionError('tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
     # OK, create the assoc
-    a = Assoc.objects.get_or_create(band=b, member=m)
+    a = Assoc.objects.get_or_create(band=b, member=m, status=Assoc.StatusChoices.PENDING)
 
     return HttpResponse()
 
