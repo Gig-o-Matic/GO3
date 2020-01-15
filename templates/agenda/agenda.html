@@ -65,10 +65,12 @@
             </div>
             <div class="card-body">
                 <div id="upcomingevents">
+                    {% with upcoming_plans=user.future_plans.all %}
                     {% if upcoming_plans %}
-                        {% for plan_info in upcoming_plans %}
+                        {% for plan in upcoming_plans %}
                             <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                                 <div class="col-md-12">
+                                    {{ plan }}
 {% comment %}                                    
                                     {{ plan_edit.plan_edit(plan_info) }}
 {% endcomment %}
@@ -78,6 +80,7 @@
                     {% else %}
                         {% trans "Nothing coming up!" %}
                     {% endif %}
+                    {% endwith %}
                 </div>
             </div>
         </div>
