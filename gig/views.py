@@ -46,18 +46,15 @@ class CreateView(generic.CreateView):
 
     def form_valid(self, form):
 
-        # make sure we're allowed to make a gig for this band
-        has_permission = False
-        is_superuser = self.request.user.is_superuser
         band = Band.objects.get(id=self.kwargs['bk'])
-        anyone_can_create = band.anyone_can_create_gigs
-        if is_superuser or anyone_can_create:
+
+        # make sure we're allowed to make a gig for this band
+        if self.request.user.is_superuser:
             has_permission = True
         else:
-            if band.is_admin(self.request.user):
-                has_permission = True
+            has_permission = band.anyone_can_create_gigs or band.is_admin(self.request.user)
 
-        if has_permission == False:
+        if has_permission is False:
             raise(PermissionError, "Trying to create a gig without permission: {}".format(self.request.user.email))
 
         form.instance.band = band

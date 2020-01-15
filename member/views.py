@@ -51,6 +51,7 @@ class DetailView(generic.DetailView):
             # are we at least in the same band, or superuser?
             if the_user.is_superuser:
                 ok_to_show = True
+            # TODO What is all this?
             # the_other_band_keys = assoc.get_band_keys_of_member_key(the_member_key=the_user.key, confirmed_only=True)
             # for b in the_other_band_keys:
             #     if b in the_band_keys:
