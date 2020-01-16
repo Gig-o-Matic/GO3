@@ -140,36 +140,36 @@ document.onkeypress = stopRKey;
     {% block navbarscripts %}
         {% if user %}
             <script>
-                function updateNavbarBands() {
-                    $.post('/member_get_bands',
-                    {
-                        mk: '{{user.id}}'
-                    },
-                    function(responseTxt,statusTxt,xhr){
-                        if(statusTxt=="success")
-                            tmp=document.getElementById('bandlinks')
-                            if (tmp) {
-                                tmp.innerHTML=responseTxt;
-                            }
-                        if(statusTxt=="error")
-                            alert("Error: "+xhr.status+": "+xhr.statusText);
-                    });
-                }
-                function updateNavbarAddGig() {
-                    $.post('/member_get_add_gig_bands',
-                    {
-                        mk: '{{user.id}}'
-                    },
-                    function(responseTxt,statusTxt,xhr){
-                        if(statusTxt=="success")
-                            tmp=document.getElementById('addgigbandlinks')
-                            if (tmp) {
-                                tmp.innerHTML=responseTxt;
-                            }
-                        if(statusTxt=="error")
-                            alert("Error: "+xhr.status+": "+xhr.statusText);
-                    });
-                }
+                // function updateNavbarBands() {
+                //     $.post('/member_get_bands',
+                //     {
+                //         mk: '{{user.id}}'
+                //     },
+                //     function(responseTxt,statusTxt,xhr){
+                //         if(statusTxt=="success")
+                //             tmp=document.getElementById('bandlinks')
+                //             if (tmp) {
+                //                 tmp.innerHTML=responseTxt;
+                //             }
+                //         if(statusTxt=="error")
+                //             alert("Error: "+xhr.status+": "+xhr.statusText);
+                //     });
+                // }
+                // function updateNavbarAddGig() {
+                //     $.post('/member_get_add_gig_bands',
+                //     {
+                //         mk: '{{user.id}}'
+                //     },
+                //     function(responseTxt,statusTxt,xhr){
+                //         if(statusTxt=="success")
+                //             tmp=document.getElementById('addgigbandlinks')
+                //             if (tmp) {
+                //                 tmp.innerHTML=responseTxt;
+                //             }
+                //         if(statusTxt=="error")
+                //             alert("Error: "+xhr.status+": "+xhr.statusText);
+                //     });
+                // }
         
                 $(document).ready(function() {
                     $('#motd-alert').bind('closed.bs.alert', function () {
@@ -178,8 +178,8 @@ document.onkeypress = stopRKey;
                     $('#welcome-alert').bind('closed.bs.alert', function () {
                         $.post("/seen_welcome",{ mk:"{{user.id}}" })
                     });
-                    updateNavbarBands();
-                    updateNavbarAddGig();
+                    // updateNavbarBands();
+                    // updateNavbarAddGig();
                 });
             </script>
         {% endif %}

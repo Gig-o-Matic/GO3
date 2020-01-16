@@ -15,15 +15,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.urls import path
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .models import Plan
 
-from . import views
-from . import helpers
+@login_required
+def update_plan(request, pk, val):
+    """ set value of plan """
+    plan = Plan.objects.get(id=pk)
+    plan.status = val
+    plan.save()
 
-urlpatterns = [
-    path('create/<int:bk>', views.CreateView.as_view(), name='gig-create'),
-    path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
-    path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
-
-    path('plan/<int:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
-]
+    return HttpResponse()
