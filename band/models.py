@@ -17,6 +17,7 @@
 
 from django.db import models
 from django.db.models import Q
+from go3.colors import the_colors
 
 class Band(models.Model):
     name = models.CharField(max_length=200)
@@ -78,6 +79,10 @@ class Section(models.Model):
 
 
 class MemberAssocManager(models.Manager):
+    def confirmed_count(self, member):
+        """ returns the asocs for bands we're confirmed for """
+        return super().get_queryset().filter(member=member, status=Assoc.StatusChoices.CONFIRMED).count()
+
     def confirmed_assocs(self, member):
         """ returns the asocs for bands we're confirmed for """
         return super().get_queryset().filter(member=member, status=Assoc.StatusChoices.CONFIRMED)
@@ -123,7 +128,12 @@ class Assoc(models.Model):
     is_occasional = models.BooleanField( default = False )
     # commitment_number = ndb.IntegerProperty(default=0)
     # commitment_total = ndb.IntegerProperty(default=0)
-    color = models.IntegerField(default=0) # see colors.py
+    color = models.IntegerField(default=0)
+
+    @property
+    def colorval(self):
+        return the_colors[self.color]
+
     email_me = models.BooleanField (default=True)
     hide_from_schedule = models.BooleanField (default=False)
 

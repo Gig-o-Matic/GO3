@@ -30,7 +30,7 @@
                         {% for plan in weighin_plans %}
                             <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
                                 <div class="col-12">
-                                    {{ plan }}
+                                    {% include "agenda/agenda_plan_edit.html" with plan=plan %}
 {% comment %}                                    
                                     {{ plan_edit.plan_edit(plan_info) }}
 {% endcomment %}
@@ -70,7 +70,7 @@
                         {% for plan in upcoming_plans %}
                             <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                                 <div class="col-md-12">
-                                    {{ plan }}
+                                    {% include "agenda/agenda_plan_edit.html" with plan=plan %}
 {% comment %}                                    
                                     {{ plan_edit.plan_edit(plan_info) }}
 {% endcomment %}

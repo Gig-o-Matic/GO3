@@ -23,6 +23,7 @@ from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from go3.colors import the_colors
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
@@ -113,7 +114,7 @@ class AssocsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['assocs'] = Assoc.objects.select_related('band').filter(member__id = self.kwargs['pk'])
-        context['the_colors'] = ['white', 'red', 'black'] # todo fix colors
+        context['the_colors'] = the_colors
         return context
 
 

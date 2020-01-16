@@ -129,6 +129,15 @@ class Gig(AbstractGig):
     settime = models.TimeField(null=True, blank=True)
     endtime = models.TimeField(null=True, blank=True)
 
+    @property
+    def time(self):
+        if self.calltime:
+            return self.calltime
+        elif self.settime:
+            return self.settime
+        else:
+            return None
+
     dress = models.TextField(null=True, blank=True)
     paid = models.TextField(null=True, blank=True)
     postgig = models.TextField(null=True, blank=True)

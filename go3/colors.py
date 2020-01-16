@@ -15,10 +15,4 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django import template
-
-register = template.Library()
-
-@register.filter
-def lookup(d, key):
-    return d[key]
+the_colors = ['white', 'red', 'black'] # todo fix colors

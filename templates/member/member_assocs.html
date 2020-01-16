@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load member_extras %}
 {% if assocs|length %}
     {% for assoc in assocs %}
         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
@@ -94,7 +93,7 @@
                                             {% if assoc.color == 0 %}
                                                 <i class="far fa-square"></i>
                                             {% else %}
-                                                <i class="fas fa-square" style="color:{{ the_colors|lookup:assoc.color }};"></i>
+                                                <i class="fas fa-square" style="color:{{ assoc.colorval }};"></i>
                                             {% endif %}
                                             <span class="caret"></span>
                                         </button>
@@ -105,7 +104,7 @@
                                                 >{% if forloop.first %}
                                                     <i class="far fa-square"></i>
                                                 {% else %}
-                                                    <i class="fas fa-square" style="color:{{ the_colors|lookup:forloop.counter0 }};"></i>
+                                                    <i class="fas fa-square" style="color:{{ c }};"></i>
                                                 {% endif %}</a>
                                             {% endfor %}
                                         </div>

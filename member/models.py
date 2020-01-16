@@ -94,6 +94,11 @@ class Member(AbstractUser):
         return self.username if self.username else self.email
 
     @property
+    def band_count(self):
+        """ return number of bands for which I'm confirmed """
+        return Assoc.member_assocs.confirmed_count(self)
+
+    @property
     def confirmed_assocs(self):
         """ return gigs for bands the member is confirmed """
         return Assoc.member_assocs.confirmed_assocs(self)

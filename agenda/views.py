@@ -16,6 +16,11 @@
 """
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from go3.colors import the_colors
 
 class AgendaView(LoginRequiredMixin, TemplateView):
     template_name='agenda/agenda.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['the_colors'] = the_colors
+        return context

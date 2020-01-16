@@ -1,0 +1,93 @@
+{% comment %}
+{% set the_section_key = plan_info['the_section_key'] %}
+{% if the_assoc and the_assoc.is_multisectional %}
+    {% set show_section = True %}
+{% else %}
+    {% set show_section = False %}
+{% endif %}
+{% endcomment %}
+
+{% with assoc=plan.assoc gig=plan.gig band=plan.assoc.band %}
+<div class="row" style="border-left:solid thick {{ plan.gig.assoc.colorval }};">
+    <div class="col-sm-12 col-md-3">
+        {{ gig.date|date:"SHORT_DATE_FORMAT" }} {{ gig.date|date:"l" }}
+        {% if user.preferences.agenda_show_time and gig.time %}
+            {{ gig.time }}
+        {% endif %}
+        <span style="display: inline-block; vertical-align: middle;">
+        {% if gig.status == 1 %}
+            <i class="fas fa-check-circle float-md-right" style="color:green"></i>
+        {% elif gig.status == 2 %}
+            <i class="fas fa-times-circle float-md-right" style="color:red"></i>
+        {% else %}
+            <i class="fas fa-question-circle float-md-right" style="color:orange"></i>
+        {% endif %}
+        </span>
+    </div>
+    <div class="col-sm-12 col-md-5">
+        <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
+        {% if user.band_count > 1 %}
+            <a href="/band/{{ band.id }}">
+            {% if band.shortname %}
+                ({{ band.shortname }})
+            {% else %}
+                ({{ band.name }})
+            {% endif %}
+            </a>
+        {% endif %}
+    </div>
+{% comment %}
+    {% if gig.status != 2 %}
+        <div class="col-12 col-md-4 btn-group" role="group">
+            {{ plan_icon.icon_button(the_plan, the_band.simple_planning ) }}
+            {% if band.plan_feedback %}
+                {{ plan_icon.feedback_button(the_plan, the_band.plan_feedback.split('\n') ) }}
+            {% endif %}
+            {% if assoc.is_multisectional %}
+                {% if band.sections|count > 1 %}
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{the_plan_key.urlsafe()}}" aria-haspopup="true" aria-expanded="false">
+                            {% if the_section_key == None %}
+                                {% trans %}section{% endtrans %}...  <span class="caret"></span>
+                            {% else %}
+                                {{the_section_key.get().name | shorten }} <span class="caret"></span>
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="sel-{{the_plan_key.urlsafe()}}">
+                            {% for section_key in the_section_keys %}
+                                {% set a_section = section_key.get() %}
+                                <a class="dropdown-item" onclick="section_select('{{the_plan_key.urlsafe()}}','{{section_key.urlsafe()}}','{{a_section.name | shorten}}')">{{ a_section.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+            {% if not the_plan.comment %}
+                <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;" href="#" id="comment-init-{{the_plan_key.urlsafe()}}" onclick='show_comment("{{the_plan_key.urlsafe()}}")'><i class="far fa-comment"></i></a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="col-12 col-md-4">
+            <strong>{% trans "Cancelled!" %}</strong>
+        </div>
+    {% endif %}
+{% endcomment %}
+</div>
+{% comment %}
+{% if the_gig.status != 2 %}
+    {% if the_member_key == the_user.key or the_user_is_superuser %}
+        <div class="row" style="border-left:solid thick {{ colors[the_assoc.color] }};{% if not the_plan.comment %}display:none;{% endif %}" id="comment-row-{{the_plan_key.urlsafe()}}">
+            <div class="ml-auto col-12 col-md-9">
+                <a href="#" class="comment-thing" id="comment-{{the_plan_key.urlsafe()}}" data-type="text" data-pk="{{the_plan_key.urlsafe()}}" data-url="/updateplancomment" data-title="">{{the_plan.comment}}</a>
+            </div>
+        </div>
+    {% elif the_plan.comment %}
+        <div class="row" style="border-left:solid thick {{ colors[the_assoc.color] }};" id="comment-row-{{the_plan_key.urlsafe()}}">
+            <div class="ml-auto col-12 col-md-9">
+                {{ the_plan.comment }}
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+{% endcomment %}
+{% endwith %}
