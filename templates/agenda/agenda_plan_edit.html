@@ -39,7 +39,7 @@
     </div>
     {% if gig.status != 2 %}
         <div class="col-12 col-md-4 btn-group" role="group">
-            {% include "base/plan_icon_button.html" with simple_planning=band.simple_planning %}
+            {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
             {% if band.plan_feedback %}
 {% comment %}            
                 {{ plan_icon.feedback_button(the_plan, the_band.plan_feedback.split('\n') ) }}
