@@ -8,7 +8,7 @@
 {% endcomment %}
 
 {% with assoc=plan.assoc gig=plan.gig band=plan.assoc.band %}
-<div class="row" style="border-left:solid thick {{ plan.gig.assoc.colorval }};">
+<div class="row" style="border-left:solid thick {{ assoc.colorval }};">
     <div class="col-sm-12 col-md-3">
         {{ gig.date|date:"SHORT_DATE_FORMAT" }} {{ gig.date|date:"l" }}
         {% if user.preferences.agenda_show_time and gig.time %}
