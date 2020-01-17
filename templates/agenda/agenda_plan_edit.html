@@ -11,7 +11,7 @@
 {% with assoc=plan.assoc gig=plan.gig band=plan.assoc.band section=plan.section%}
 <div class="row" style="border-left:solid thick {{ assoc.colorval }};">
     <div class="col-sm-12 col-md-3">
-        {{ gig.date|date:"SHORT_DATE_FORMAT" }} {{ gig.date|date:"l" }}
+        {{ gig.date|date:"SHORT_DATE_FORMAT" }} {{ gig.date|date:"D" }}
         {% if user.preferences.agenda_show_time and gig.time %}
             {{ gig.time }}
         {% endif %}
@@ -83,7 +83,7 @@ TODO the section name had a 'shorten' filter
 {% if gig.status != 2 %}
     <div class="row" style="border-left:solid thick {{ assoc.colorval }};{% if not plan.comment %}display:none;{% endif %}" id="comment-row-{{plan.id}}">
         <div class="ml-auto col-12 col-md-9">
-            <a href="#" class="comment-thing" id="comment-{{plan.id}}" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment}}</a>
+            <a href="#" class="comment-thing" id="comment-{{plan.id}}" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
         </div>
     </div>
 {% endif %}
