@@ -2,6 +2,7 @@ asgiref==3.2.3
 astroid==2.3.3
 certifi==2019.11.28
 Django==3.0
+django-crispy-forms==1.8.1
 django-extensions==2.2.5
 django-widget-tweaks==1.4.5
 isort==4.3.21
@@ -15,4 +16,5 @@ pylint==2.4.4
 pytz==2019.3
 six==1.13.0
 sqlparse==0.3.0
+whitenoise==5.0.1
 wrapt==1.11.2
