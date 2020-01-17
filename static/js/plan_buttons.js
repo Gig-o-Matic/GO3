@@ -116,16 +116,20 @@ function closed_comment(thing) {
     }
 }
 
-
-$(document).ready(function() {
-    // init_plan_buttons();
-    init_feedback_buttons();
+function init_plan_buttons(token) {
     $('.comment-thing').editable({
         emptytext: '<i class="far fa-comment"></i>',
         emptyclass: 'empty-comment',
         mode: 'inline',
+        ajaxOptions: { headers: {"X-CSRFToken": token }},
     }).on('hidden', function(e, reason) {
         closed_comment(e.target.getAttribute('data-pk'));
     })
+    
+}
+
+$(document).ready(function() {
+    // init_plan_buttons();
+    init_feedback_buttons();
 });
 

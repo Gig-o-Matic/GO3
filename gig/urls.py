@@ -26,4 +26,5 @@ urlpatterns = [
     path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
 
     path('plan/<int:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
+    path('plan/<int:pk>/comment', helpers.update_plan_comment, name='plan-update-comment')
 ]

@@ -27,3 +27,12 @@ def update_plan(request, pk, val):
     plan.save()
 
     return HttpResponse()
+
+@login_required
+def update_plan_comment(request, pk):
+    """ set value of plan """
+    plan = Plan.objects.get(id=pk)
+    plan.comment = request.POST['value']
+    plan.save()
+
+    return HttpResponse()

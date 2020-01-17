@@ -70,7 +70,7 @@ TODO the section name had a 'shorten' filter
                     </div>
                 {% endif %}
             {% endif %}
-            {% if not the_plan.comment %}
+            {% if not plan.comment %}
                 <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;" href="#" id="comment-init-{{plan.id}}" onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
             {% endif %}
         </div>
@@ -80,21 +80,11 @@ TODO the section name had a 'shorten' filter
         </div>
     {% endif %}
 </div>
-{% comment %}
-{% if the_gig.status != 2 %}
-    {% if the_member_key == the_user.key or the_user_is_superuser %}
-        <div class="row" style="border-left:solid thick {{ colors[the_assoc.color] }};{% if not the_plan.comment %}display:none;{% endif %}" id="comment-row-{{plan.id}}">
-            <div class="ml-auto col-12 col-md-9">
-                <a href="#" class="comment-thing" id="comment-{{plan.id}}" data-type="text" data-pk="{{plan.id}}" data-url="/updateplancomment" data-title="">{{plan.comment}}</a>
-            </div>
+{% if gig.status != 2 %}
+    <div class="row" style="border-left:solid thick {{ assoc.colorval }};{% if not plan.comment %}display:none;{% endif %}" id="comment-row-{{plan.id}}">
+        <div class="ml-auto col-12 col-md-9">
+            <a href="#" class="comment-thing" id="comment-{{plan.id}}" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment}}</a>
         </div>
-    {% elif the_plan.comment %}
-        <div class="row" style="border-left:solid thick {{ colors[the_assoc.color] }};" id="comment-row-{{plan.id}}">
-            <div class="ml-auto col-12 col-md-9">
-                {{ plan.comment }}
-            </div>
-        </div>
-    {% endif %}
+    </div>
 {% endif %}
-{% endcomment %}
 {% endwith %}
