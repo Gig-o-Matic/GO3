@@ -1,5 +1,6 @@
 {% extends 'base/go3base.html' %}
 {% load i18n %}
+{% load static %}
 
 {% block title %}{% trans "Schedule" %}{% endblock title %}
 
@@ -90,7 +91,7 @@
 {% endblock content %}
 
 {% block localscripts %}
-<script src="/static/js/plan_buttons.js"></script>
+<script src="{% static "js/plan_buttons.js" %}"></script>
 <script>
 
 $(document).ready(function() {
