@@ -40,7 +40,6 @@ def update_plan_comment(request, pk):
 # @login_required
 def update_plan_default_section(assoc):
     """
-    the default section of the member has changed, so update any plans that aren't overriding
+    the default section of the member assoc has changed, so update any plans that aren't overriding
     """
-    print("\n\nupdating plans\n\n")
     Plan.objects.filter(assoc=assoc, plan_section=None).update(section=assoc.default_section)
