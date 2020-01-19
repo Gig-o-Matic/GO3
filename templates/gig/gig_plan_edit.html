@@ -1,0 +1,102 @@
+{% load i18n %}
+
+{% with assoc=plan.assoc plan_member=plan.assoc.member band=plan.assoc.band %}
+
+{% comment %}
+{% set plan = plan_info['plan'] %}
+{% set plan_key = plan.key %}
+
+{% set the_member_key = plan_info['the_member_key'] %}
+{% set the_member = the_member_key.get() %}
+{% set the_band_key = plan_info['the_band_key'] %}
+{% set the_band = the_band_key.get() %}
+{% set the_assoc = plan_info['the_assoc'] %}
+
+{% set show_section = False %}
+{% if the_assoc and the_assoc.is_multisectional %}
+    {% if the_member_key == the_user.key or the_user_is_superuser or the_user_is_band_admin %}
+        {% set show_section = True %}
+    {% endif %}
+{% endif %}
+
+{% set title_lg = 6 %}
+{% set title_sm = 6 %}
+{% set date_lg = 6 %}
+{% set date_sm = 6 %}
+{% set grp1_lg = 4 %}
+{% set grp1_sm = 4 %}
+{% set grp2_lg = 8 %}
+{% set grp2_sm = 8 %}
+
+{% if show_section %}
+    {% set comment_lg = 7 %}
+    {% set comment_sm = 7 %}
+    {% set comment_2_lg = 4 %}
+    {% set comment_2_sm = 4 %}
+    {% set section_lg = 2 %}
+    {% set section_sm = 2 %}
+{% else %}
+    {% set comment_2_lg = 6 %}
+    {% set comment_2_sm = 6 %}
+    {% set comment_lg = 9 %}
+    {% set comment_sm = 9 %}
+{% endif %}
+
+{% endcomment %}
+<div class="row {% if plan.value != 1 and plan.value != 2 %}plannotattending{% endif %}">
+    <div class="col-4" style="display:flex; align-items:center;" >
+        <a href='/member/{{plan_member.id}}'>{{ plan_member.display_name }}</a>
+    </div>
+    {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
+        <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
+            {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+            {% if band.plan_feedback %}
+{% comment %}            
+                {{ plan_icon.feedback_button(plan, the_band.plan_feedback.split('\n') ) }}
+{% endcomment %}                
+            {% endif %}
+{% comment %}            
+            {% if show_section %}
+                {% if plan.member == the_user.key or the_user_is_superuser or the_user_is_band_admin %}
+                    {% if get_the_section_keys %}
+                        {% set the_section_keys = get_the_section_keys(the_band_key) %}
+                    {% endif %}
+                    {% set the_section_keys = the_band_key.get().sections %}
+                    {% if the_sections and the_sections|length > 1 %}
+                        <div class="dropdown mr-2">
+                            <a class="btn btn-outline-secondary btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown" id="sel-{{plan_key.urlsafe()}}" aria-haspopup="true" aria-expanded="false">
+                                {% if plan.section == None %}
+                                    {% trans %}section{% endtrans %}...  <span class="caret"></span>
+                                {% else %}
+                                    {{plan.section.get().name | shorten}} <span class="caret"></span>
+                                {% endif %}
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="sel-{{plan_key.urlsafe()}}">
+                                {% for a_section in the_sections %}
+                                    {% if a_section %}
+                                        <a class="dropdown-item" onclick="section_select('{{plan_key.urlsafe()}}','{{a_section.key.urlsafe()}}','{{a_section.name | shorten}}')">{{ a_section.name }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+{% endcomment %}            
+            <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
+        </div>
+    {% else %}
+	    <div class="col-8" style="display:flex; align-items:center;" >
+{% comment %}
+            {{ plan_icon.icon_display(plan.value) }}
+            {% if the_band.plan_feedback and plan.feedback_value %}
+                {{ the_band.plan_feedback.split('\n')[plan.feedback_value-1] }}
+            {% endif %}
+            {% if plan.comment %}
+                {{ plan.comment }}
+            {% endif %}
+{% endcomment %}            
+	    </div>
+    {% endif %}
+</div>
+{% endwith %}

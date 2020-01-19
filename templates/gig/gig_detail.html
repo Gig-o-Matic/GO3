@@ -1,25 +1,15 @@
 {% extends 'base/go3base.html' %}
 {% load i18n %}
+{% load static %}
 {% comment %}
 {% import 'plan_icon.html' as plan_icon %}
 {% endcomment %}
 
 {% block title %}{% trans "Gig Info" %}{% endblock title %}
 
-{% comment %}
-{% if band_has_sections %}
-    {% set plan_size_lg=10 %}
-    {% set plan_size_sm=12 %}
-{% else %}
-    {% set plan_size_lg=12 %}
-    {% set plan_size_sm=12 %}
-{% endif %}
-{% endcomment %}
+{% with band=gig.band %}
 
 {% block content %}
-{% comment %}
-{% set the_band_key = gig.key.parent() %}
-{% endcomment %}
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
@@ -80,13 +70,13 @@
                 {% endif %}
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Band" %}</div>
-                    <div class="col-md-10 col-sm-10 col-8"><a href="band_info.html?bk={{gig.band.id}}">{{ gig.band.name }}</a></div>
+                    <div class="col-md-10 col-sm-10 col-8"><a href="/band/{{ gig.band.id }}">{{ gig.band.name }}</a></div>
                 </div>
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Contact" %}</div>
                     <div class="col-md-10 col-sm-10 col-8">
                         {% if gig.contact %}
-                            <a href="/member_info.html?mk='{{gig.contact.id}}'">{{ gig.contact.display_name }}</a>
+                            <a href="/member/{{ gig.contact.id }}">{{ gig.contact.display_name }}</a>
                         {% endif %}
                     </div>
                 </div>                    
@@ -244,29 +234,25 @@
                     </div>
                     <div>&nbsp;</div>
                 {% endif %}
-
-{% comment %}
-                {% import 'gig_plan_edit.html' as plan_edit with context %}                
-{% endcomment %}
-                {% for the_section in the_sections %}
+                {% regroup gig.member_plans.all by section as plans_by_section %}
+                {% for section, plans in plans_by_section %}
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
-                        {% if band_has_sections %}
+                        {% if plans_by_section|length > 0 %}
                             <div class="col-lg-2 col-md-2 col-sm-12 col-12 gomlabel">
-                                {% if the_section %}
-                                    {{the_section.name}}
-                                {% elif the_sections|length > 1 %}
+                                {% if section.name is None %}
                                     {% trans "No Section" %}
+                                {% else %}
+                                    {{ section.name }}
                                 {% endif %}
                             </div>
                         {% endif %}
-                        <div class="col-lg-{{plan_size_lg}} col-md-{{plan_size_lg}} col-sm-{{plan_size_sm}} col-{{plan_size_sm}}">
-                            {% for member_plan in the_plans %}
-{% comment %}
-                                {% if (the_section == None and member_plan['the_section'] == None) or
-                                      (the_section != None and the_section.key == member_plan['the_section']) %}
-                                      {{ plan_edit.plan_edit(member_plan) }}
-                                {% endif %}
-{% endcomment %}
+                        {% if band.sections.count > 0 %}
+                        <div class="col-lg-10 col-md-10 col-sm-12 col-12">
+                        {% else %}
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                        {% endif %}
+                            {% for plan in plans %}
+                                {% include "gig/gig_plan_edit.html" with plan=plan %}
                             {% endfor %}
                         </div>
                     </div>
@@ -303,9 +289,9 @@
 {% endblock content %}
 
 {% block localscripts %}
-<script src="/js/plan_buttons.js"></script>
-<script src="/js/comments.js"></script>
-<script src="/js/jquery.truncator.js"></script>
+<script src="{% static "js/plan_buttons.js" %}"></script>
+<script src="{% static "js/comments.js" %}"></script>
+<script src="{% static "js/jquery.truncator.js" %}"></script>
 <script>
 var simple=false;
 
@@ -349,6 +335,7 @@ function sendreminder(gk) {
 {% endif %}
 
 $(document).ready(function() {
+    init_plan_buttons("{{csrf_token}}")
     setsimple();
     {% if user_can_edit %}
         {% if not gig.was_reminded %}
@@ -368,3 +355,4 @@ $(document).ready(function() {
 </script>
 {% endblock localscripts %}
 
+{% endwith %}

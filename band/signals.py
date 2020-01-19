@@ -14,10 +14,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from .models import Band
+from .models import Band, Assoc
+from gig.helpers import update_plan_default_section
 
 @receiver(pre_save, sender=Band)
 def my_handler(sender, instance, **kwargs):
     instance.condensed_name = ''.join(instance.name.split()).lower()
+
+@receiver(post_save, sender=Assoc)
+def update_plan_section(sender, instance, **kwargs):
+    # update any plans that rely on knowing the default section
+    update_plan_default_section(instance)
+

@@ -19,10 +19,15 @@ from band.models import Band, Assoc
 import datetime
 
 class MemberPlanManager(models.Manager):
+    def all(self):
+        """ override the default all to order by section """
+        return super.order_by(section)
+
     def future_plans(self, member):
         return super().get_queryset().filter(assoc__member=member, 
                                              assoc__status=Assoc.StatusChoices.CONFIRMED,
                                              gig__date__gt=datetime.datetime.now())
+
 
 class Plan(models.Model):
     """ Models a gig-o-matic plan """
@@ -42,7 +47,14 @@ class Plan(models.Model):
 
     feedback_value = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, blank=True, null=True)
-    section = models.ForeignKey("band.Section", verbose_name="section", on_delete=models.SET_NULL, null=True, blank=True)
+
+    # plan_section holds the section override for this particular plan
+    plan_section = models.ForeignKey("band.Section", related_name="plansections", verbose_name="plan_section", on_delete=models.SET_NULL, null=True, blank=True)
+
+    # section is the actual section the member will use for this plan. It is updated by a presave signal on the plan,
+    # and by the code that sets the default section for an assoc
+    section = models.ForeignKey("band.Section", related_name="sections", verbose_name="section", on_delete=models.SET_NULL, null=True, blank=True)
+
     last_update = models.DateTimeField(auto_now=True)
     snooze_until = models.DateTimeField(null=True, blank=True)
 

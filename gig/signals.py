@@ -14,11 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import Gig
+from .models import Gig, Plan
 
 @receiver(post_save, sender=Gig)
 def new_gig_handler(sender, instance, created, **kwargs):
     """ if this is a new gig, make sure there's a plan for every member """
     x = instance.member_plans
+
+@receiver(pre_save, sender=Plan)
+def update_plan_section(sender, instance, **kwargs):
+    """ set the section to the plan_section, unless there isn't one - in that case use the member's default """
+    instance.section = instance.plan_section or instance.assoc.default_section

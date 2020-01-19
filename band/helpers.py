@@ -17,6 +17,7 @@
 
 from django.http import HttpResponse
 from .models import Band, Assoc, Section
+from gig.helpers import update_plan_default_section
 from member.models import Member
 from django.contrib.auth.decorators import login_required
 
@@ -67,6 +68,7 @@ def set_assoc_section(request, ak, sk):
 
         a.default_section=s
         a.save()
+
     return HttpResponse()
 
 

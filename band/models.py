@@ -79,6 +79,7 @@ class Section(models.Model):
 
 
 class MemberAssocManager(models.Manager):
+    """ functions on the Assoc class that are queries for members """
     def confirmed_count(self, member):
         """ returns the asocs for bands we're confirmed for """
         return super().get_queryset().filter(member=member, status=Assoc.StatusChoices.CONFIRMED).count()
