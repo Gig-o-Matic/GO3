@@ -16,12 +16,22 @@
 """
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from .models import Band, Assoc
+from .models import Band, Assoc, Section
 from gig.helpers import update_plan_default_section
 
 @receiver(pre_save, sender=Band)
-def my_handler(sender, instance, **kwargs):
+def set_condensed_name(sender, instance, **kwargs):
     instance.condensed_name = ''.join(instance.name.split()).lower()
+
+@receiver(post_save, sender=Band)
+def set_default_section(sender, instance, created, **kwargs):
+    if created:
+        s = Section.objects.create(name=None, band=instance, is_default=True)
+
+@receiver(pre_save, sender=Assoc)
+def set_initial_default_section(sender, instance, **kwargs):
+    if instance.default_section is None:
+        instance.default_section = instance.band.sections.get(is_default=True)
 
 @receiver(post_save, sender=Assoc)
 def update_plan_section(sender, instance, **kwargs):

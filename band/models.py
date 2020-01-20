@@ -67,12 +67,14 @@ class Band(models.Model):
 
 
 class Section(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(default=0)
     band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
 
+    is_default = models.BooleanField(default=False)
+
     def __str__(self):
-        return '{0} in {1}'.format(self.name, self.band.name)
+        return '{0} in {1}'.format(self.name if self.name else '[none]', self.band.name)
 
     class Meta:
         ordering = ['order']

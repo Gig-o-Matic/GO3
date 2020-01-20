@@ -7,9 +7,9 @@
 
 {% block title %}{% trans "Gig Info" %}{% endblock title %}
 
-{% with band=gig.band %}
 
 {% block content %}
+{% with band=gig.band %}
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
@@ -235,18 +235,18 @@
                     <div>&nbsp;</div>
                 {% endif %}
                 {% regroup gig.member_plans.all by section as plans_by_section %}
-                {% for section, plans in plans_by_section %}
+                NEED TO DO SOMETHING FOR SECTIONS WITH NO PLANS - PROBABLY MAKE NEW FILTER TO SELECT FROM PLANS BY SECTION
+                {{ gig.band }}
+                {% for section in band.sections.all %}
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
-                        {% if plans_by_section|length > 0 %}
-                            <div class="col-lg-2 col-md-2 col-sm-12 col-12 gomlabel">
-                                {% if section.name is None %}
-                                    {% trans "No Section" %}
-                                {% else %}
-                                    {{ section.name }}
-                                {% endif %}
-                            </div>
-                        {% endif %}
-                        {% if band.sections.count > 0 %}
+                        <div class="col-lg-2 col-md-2 col-sm-12 col-12 gomlabel">
+                            {% if section.name is None %}
+                                {% trans "No Section" %}
+                            {% else %}
+                                {{ section.name }}
+                            {% endif %}
+                        </div>
+                        {% if band.sections|length > 0 %}
                         <div class="col-lg-10 col-md-10 col-sm-12 col-12">
                         {% else %}
                         <div class="col-lg-12 col-md-12 col-sm-12 col-12">
@@ -286,6 +286,7 @@
         </div> <!-- card -->
     </div>
 </div> <!-- row -->
+{% endwith %}
 {% endblock content %}
 
 {% block localscripts %}
@@ -355,4 +356,3 @@ $(document).ready(function() {
 </script>
 {% endblock localscripts %}
 
-{% endwith %}
