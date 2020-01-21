@@ -76,6 +76,11 @@ class Section(models.Model):
     def __str__(self):
         return '{0} in {1}'.format(self.name if self.name else '[none]', self.band.name)
 
+    def delete(self):
+        # when a section gets deleted, set any assocs in the section to the band's default section before proceeding
+        self.default_assocs.update(default_section=self.band.sections.get(is_default=True))
+        super(Section, self).delete()
+
     class Meta:
         ordering = ['order']
 
@@ -107,7 +112,7 @@ class BandAssocManager(models.Manager):
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
-    default_section = models.ForeignKey(Section, null=True, blank=True, related_name="default_section", on_delete=models.SET_NULL)
+    default_section = models.ForeignKey(Section, null=True, blank=True, related_name="default_assocs", on_delete=models.SET_NULL)
 
     class StatusChoices(models.IntegerChoices):
         NOT_CONFIRMED = 0, "Not Confirmed"
@@ -124,6 +129,14 @@ class Assoc(models.Model):
     @property
     def is_confirmed(self):
         return self.status == Assoc.StatusChoices.CONFIRMED
+
+    @property
+    def section(self):
+        if default_section is None:
+            print('\n\nupdated default section\n\n')
+            default_section = self.band.sections.get(is_default=True)
+            self.save()
+        return default_section
 
     # default_section_index = ndb.IntegerProperty( default=None )
 
