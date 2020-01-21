@@ -1,6 +1,7 @@
 {% extends 'base/go3base.html' %}
 {% load i18n %}
 {% load static %}
+{% load gig_extras %}
 {% comment %}
 {% import 'plan_icon.html' as plan_icon %}
 {% endcomment %}
@@ -235,8 +236,6 @@
                     <div>&nbsp;</div>
                 {% endif %}
                 {% regroup gig.member_plans.all by section as plans_by_section %}
-                NEED TO DO SOMETHING FOR SECTIONS WITH NO PLANS - PROBABLY MAKE NEW FILTER TO SELECT FROM PLANS BY SECTION
-                {{ gig.band }}
                 {% for section in band.sections.all %}
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                         <div class="col-lg-2 col-md-2 col-sm-12 col-12 gomlabel">
@@ -251,7 +250,7 @@
                         {% else %}
                         <div class="col-lg-12 col-md-12 col-sm-12 col-12">
                         {% endif %}
-                            {% for plan in plans %}
+                            {% for plan in plans_by_section|lookup_plans:section %}
                                 {% include "gig/gig_plan_edit.html" with plan=plan %}
                             {% endfor %}
                         </div>
