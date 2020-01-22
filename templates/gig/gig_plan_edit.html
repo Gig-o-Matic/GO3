@@ -65,17 +65,11 @@
                     {% if the_sections and the_sections|length > 1 %}
                         <div class="dropdown mr-2">
                             <a class="btn btn-outline-secondary btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown" id="sel-{{plan_key.urlsafe()}}" aria-haspopup="true" aria-expanded="false">
-                                {% if plan.section == None %}
-                                    {% trans %}section{% endtrans %}...  <span class="caret"></span>
-                                {% else %}
-                                    {{plan.section.get().name | shorten}} <span class="caret"></span>
-                                {% endif %}
+                                {{plan.section.get().name | shorten}} <span class="caret"></span>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="sel-{{plan_key.urlsafe()}}">
                                 {% for a_section in the_sections %}
-                                    {% if a_section %}
-                                        <a class="dropdown-item" onclick="section_select('{{plan_key.urlsafe()}}','{{a_section.key.urlsafe()}}','{{a_section.name | shorten}}')">{{ a_section.name }}</a>
-                                    {% endif %}
+                                    <a class="dropdown-item" onclick="section_select('{{plan_key.urlsafe()}}','{{a_section.key.urlsafe()}}','{{a_section.name | shorten}}')">{{ a_section.name }}</a>
                                 {% endfor %}
                             </div>
                         </div>

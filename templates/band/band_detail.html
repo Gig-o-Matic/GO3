@@ -408,7 +408,7 @@ function updateOneSection(i) {
         success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="success") {
                         document.getElementById('section'+i).innerHTML=responseTxt;
-                        if (i != "None") {
+                        if (document.getElementById('section'+(i+1))) {
                             updateSection(i+1);
                         }
                     }
@@ -416,28 +416,6 @@ function updateOneSection(i) {
                         alert("Error: "+xhr.status+": "+xhr.statusText);
                     }
                 },
-    });
-}
-
-function updateNoneSection() {
-
-    $.ajax({
-        method: 'GET',
-        url: '/band/{{ band.id }}/section/0',
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-            if(statusTxt=="success")
-            	if (responseTxt=="None") {
-            		$('#sectionNone').hide()
-            		$('#sectionNone').css('padding-top','0px')
-            		$('#sectionNone').css('padding-bottom','0px')
-            	} else {
-                	document.getElementById('sectionNone').innerHTML=responseTxt;
-                }
-            if(statusTxt=="error") {
-                alert("Error: "+xhr.status+": "+xhr.statusText);
-            }
-        },
     });
 }
 

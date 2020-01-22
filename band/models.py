@@ -74,7 +74,7 @@ class Section(models.Model):
     is_default = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{0} in {1}'.format(self.name if self.name else '[none]', self.band.name)
+        return '{0} in {1}'.format(self.name if self.name else 'No Section', self.band.name)
         
     class Meta:
         ordering = ['order']

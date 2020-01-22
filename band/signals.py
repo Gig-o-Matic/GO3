@@ -27,7 +27,7 @@ def set_condensed_name(sender, instance, **kwargs):
 @receiver(post_save, sender=Band)
 def set_default_section(sender, instance, created, **kwargs):
     if created:
-        s = Section.objects.create(name=None, band=instance, is_default=True)
+        s = Section.objects.create(name='No Section', band=instance, is_default=True)
 
 @receiver(pre_save, sender=Assoc)
 def set_initial_default_section(sender, instance, **kwargs):
