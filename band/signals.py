@@ -14,9 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 from .models import Band, Assoc, Section
+from gig.models import Plan
 from gig.helpers import update_plan_default_section
 
 @receiver(pre_save, sender=Band)
@@ -37,3 +38,12 @@ def set_initial_default_section(sender, instance, **kwargs):
 def set_plan_sections(sender, instance, **kwargs):
     # update any plans that rely on knowing the default section
     update_plan_default_section(instance)
+
+@receiver(pre_delete, sender=Section)
+def set_sections_of_assocs(sender, instance, **kwargs):
+    # when a section gets deleted, set any assocs in the section to the band's default section before proceeding
+    band_default_section = instance.band.sections.get(is_default=True)
+    instance.default_assocs.update(default_section=band_default_section)
+    Plan.objects.filter(section=instance).update(section=band_default_section)
+    Plan.objects.filter(plan_section=instance).update(plan_section=band_default_section)
+

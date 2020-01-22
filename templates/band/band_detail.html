@@ -286,11 +286,6 @@
                             		</div>
                            	    </div>
                         	{% endfor %}
-                    	    <div class="row" id="sectionNone" data-section="0" style="padding-top: 5px; padding-bottom: 5px; {% if band.sections.all|length is odd %}background:#f5f5f5;{% endif %}">
-                        		<div class="col-12">
-                        			<i class="fas fa-spinner fa-pulse fa-lg"></i>
-                        		</div>
-                       	    </div>
                         </div>
                     </div>
                     <div class="row">
@@ -401,11 +396,7 @@ function updateSections() {
 
 var num_sections = Number({{ band.sections.all|length }});
 function updateSection(i) {
-	if (i >= num_sections) {
-		updateNoneSection()
-	} else {
-		updateOneSection(i)
-	}
+    updateOneSection(i)
 }
 
 function updateOneSection(i) {

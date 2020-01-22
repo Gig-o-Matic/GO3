@@ -48,12 +48,12 @@ class Plan(models.Model):
     feedback_value = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, blank=True, null=True)
 
-    # plan_section holds the section override for this particular plan
-    plan_section = models.ForeignKey("band.Section", related_name="plansections", verbose_name="plan_section", on_delete=models.SET_NULL, null=True, blank=True)
+    # plan_section holds the section override for this particular plan. it may be set by the pre_delete signal on section
+    plan_section = models.ForeignKey("band.Section", related_name="plansections", verbose_name="plan_section", on_delete=models.DO_NOTHING, null=True, blank=True)
 
     # section is the actual section the member will use for this plan. It is updated by a presave signal on the plan,
-    # and by the code that sets the default section for an assoc
-    section = models.ForeignKey("band.Section", related_name="sections", verbose_name="section", on_delete=models.SET_NULL, null=True, blank=True)
+    # and by the code that sets the default section for an assoc, or pre_delete signal on section
+    section = models.ForeignKey("band.Section", related_name="sections", verbose_name="section", on_delete=models.DO_NOTHING, null=True, blank=True)
 
     last_update = models.DateTimeField(auto_now=True)
     snooze_until = models.DateTimeField(null=True, blank=True)
@@ -121,7 +121,7 @@ class AbstractGig(models.Model):
             through the signaling system """
         absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
         Plan.objects.bulk_create(
-            [Plan(gig=self, assoc=a) for a in absent]
+            [Plan(gig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
         )
         # now that we have one for every member, return the list
         return self.plans
