@@ -198,7 +198,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row titlerow"><div class="col-12">
-                            {% trans "Pending Members" %} <span class="badge badge-pill badge-secondary">{{the_pending_members|length}}</span>
+                            {% trans "Pending Members" %} <span class="badge badge-pill badge-secondary">{{the_pending_members.all|length}}</span>
                         </div></div>
                     </div>
                     <div class="card-body">
@@ -225,7 +225,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row titlerow"><div class="col-12">
-                            {% trans "Invited Members" %} <span class="badge badge-pill badge-secondary">{{the_invited_members|length}}</span>
+                            {% trans "Invited Members" %} <span class="badge badge-pill badge-secondary">{{the_invited_members.all|length}}</span>
                         </div></div>
                     </div>
                     <div class="card-body">
@@ -246,7 +246,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="row titlerow">
-                        {% if band.sections.all|length == 0 %}
+                        {% if band.sections.all|length == 1 %}
                             <div class="col-4">
                                 {% trans "Members" %}
                                 {% if the_user_is_band_admin or request.user.is_superuser %}
