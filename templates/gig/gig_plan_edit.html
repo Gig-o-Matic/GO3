@@ -43,7 +43,7 @@
 {% endif %}
 
 {% endcomment %}
-<div class="row {% if plan.value != 1 and plan.value != 2 %}plannotattending{% endif %}">
+<div class="row {% if not plan.attending %}plannotattending{% endif %}">
     <div class="col-4" style="display:flex; align-items:center;" >
         <a href='/member/{{plan_member.id}}'>{{ plan_member.display_name }}</a>
     </div>

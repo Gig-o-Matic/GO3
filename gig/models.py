@@ -45,6 +45,10 @@ class Plan(models.Model):
 
     status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NO_PLAN)
 
+    @property
+    def attending(self):
+        return self.status in [Plan.StatusChoices.DEFINITELY, Plan.StatusChoices.PROBABLY]
+
     feedback_value = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, blank=True, null=True)
 
