@@ -20,4 +20,5 @@ from . import views
 
 urlpatterns = [
     path('', views.AgendaView.as_view(), name='agenda'),
+    path('agenda', views.AgendaView.as_view(), name='agenda'),
 ]

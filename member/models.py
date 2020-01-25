@@ -150,8 +150,14 @@ class MemberPreferences(models.Model):
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=True)
     calendar_show_only_committed = models.BooleanField(default=True)
-    default_view = models.IntegerField(default=0) # 0 = agenda, 1 = calendar, 2 = grid
     agenda_show_time = models.BooleanField(default=False)
     show_long_agenda = models.BooleanField(default=True)
+
+    class AgendaChoices(models.IntegerChoices):
+        AGENDA = 0, "Agenda"
+        GRID = 1, "Grid"
+        CALENDAR = 2, "Calendar"
+
+    default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 
 
