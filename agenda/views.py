@@ -14,9 +14,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from go3.colors import the_colors
+from member.models import MemberPreferences
+
+@login_required
+def AgendaSelector(request):
+
+    view_selector = {
+        MemberPreferences.AgendaChoices.AGENDA: AgendaView
+    }
+
+    return view_selector[request.user.preferences.default_view].as_view()(request)
 
 class AgendaView(LoginRequiredMixin, TemplateView):
     template_name='agenda/agenda.html'

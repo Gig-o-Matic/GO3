@@ -19,6 +19,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.AgendaView.as_view(), name='agenda'),
+    path('', views.AgendaSelector, name='home'),
     path('agenda', views.AgendaView.as_view(), name='agenda'),
 ]
