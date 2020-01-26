@@ -46,6 +46,10 @@ class Band(models.Model):
     simple_planning = models.BooleanField(default=False)
     plan_feedback = models.TextField(max_length=500, blank=True, null=True)
 
+    @property
+    def feedback_strings(self):
+        return self.plan_feedback.split('\n')
+
     creation_date = models.DateField(auto_now_add=True)
     last_activity = models.DateTimeField(auto_now=True)
 

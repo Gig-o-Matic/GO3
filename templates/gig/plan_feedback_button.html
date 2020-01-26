@@ -1,0 +1,16 @@
+{% load gig_extras %}
+<div class="dropdown mr-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle text-center feedback-button" data-toggle="dropdown" id="ef-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
+        {% if plan.feedback_value %}            
+            {% if plan.feedback_value %}{{feedback_strings|lookup:plan.feedback_value}}{%endif%}
+        {% else %}
+            <i class="fas fa-minus fa-sm" style="color:black"></i>
+        {% endif %}
+    </button>
+    <div class="dropdown-menu" aria-labelledby="ef-{{plan.id}}">
+        <a class="dropdown-item" onclick="update_feedback('{{plan.id}}','0', '-', '{{csrf_token}}')">-</a>
+        {% for string in feedback_strings %}
+            <a class="dropdown-item" onclick="update_feedback('{{plan.id}}','{{ forloop.counter }}','{{feedback_strings|lookup:forloop.counter}}','{{csrf_token}}')">{{string}}</a>
+        {% endfor %}
+    </div>
+</div>

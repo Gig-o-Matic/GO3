@@ -27,12 +27,12 @@ function set_plan_button(the_id, the_value) {
     document.getElementById(the_id).innerHTML=the_result;
 }
 
-function init_plan_buttons() {
-    plan_buttons=document.getElementsByClassName('plan-button');  
-    for (var i=0; i < plan_buttons.length; i++) {
-        set_plan_button(plan_buttons[i].id, plan_buttons[i].getAttribute("data-init"));
-    }
-}    
+// function init_plan_buttons() {
+//     plan_buttons=document.getElementsByClassName('plan-button');  
+//     for (var i=0; i < plan_buttons.length; i++) {
+//         set_plan_button(plan_buttons[i].id, plan_buttons[i].getAttribute("data-init"));
+//     }
+// }    
 
 function update_plan(pk, val, token) {
     document.getElementById(pk).innerHTML='<i class="fa fa-spinner fa-spin fa-lg"></i>';
@@ -50,36 +50,29 @@ function update_plan(pk, val, token) {
 }
 
 // CODE FOR FEEDBACK BUTTONS
-function init_feedback_buttons() {
-    plan_buttons=document.getElementsByClassName('feedback-button');  
-    for (var i=0; i < plan_buttons.length; i++) {
-        val = plan_buttons[i].getAttribute("data-init")
-        set_feedback_button(plan_buttons[i].id, val);
-    }
-}    
 
 function set_feedback_button(the_id, the_value) {
-    if (the_value=='') {
+    if (the_value=='-') {
         val = '<i class="fas fa-minus fa-sm" style="color:black"></i>'
     } else {
         val = the_value
     }
-    document.getElementById(the_id).innerHTML=val;
+    document.getElementById('ef-'+the_id).innerHTML=val;
 }
 
-function update_feedback(pk, val) {
+function update_feedback(pk, val, text, token) {
     document.getElementById('ef-'+pk).innerHTML='<i class="fa fa-spinner fa-spin fa-lg"></i>';
-    $.post("/updateplanfeedback",
-                {
-                    val: val,
-                    pk: pk
-                },
-                function(responseTxt,statusTxt,xhr){
+    $.ajax({
+        method: 'POST',
+        url: '/gig/plan/'+pk+'/feedback/'+val,
+        headers: { "X-CSRFToken": token },
+        success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="success")
-                        set_feedback_button("ef-"+pk, responseTxt)
+                        set_feedback_button(pk, text)
                     if(statusTxt=="error")
-                      alert("Error: "+xhr.status+": "+xhr.statusText);
-                });
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
 }
 
 
@@ -116,7 +109,7 @@ function closed_comment(thing) {
     }
 }
 
-function init_plan_buttons(token) {
+function init_plan_comments(token) {
     $('.comment-thing').editable({
         emptytext: '<i class="far fa-comment"></i>',
         emptyclass: 'empty-comment',
@@ -129,7 +122,5 @@ function init_plan_buttons(token) {
 }
 
 $(document).ready(function() {
-    // init_plan_buttons();
-    init_feedback_buttons();
 });
 

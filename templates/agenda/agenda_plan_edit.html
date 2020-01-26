@@ -43,7 +43,8 @@
             {% if band.plan_feedback %}
 {% comment %}            
                 {{ plan_icon.feedback_button(the_plan, the_band.plan_feedback.split('\n') ) }}
-{% endcomment %}                
+{% endcomment %}
+                {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
             {% endif %}
             {% if assoc.is_multisectional %}
                 {% if band.sections|length > 1 %}

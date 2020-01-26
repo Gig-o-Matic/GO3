@@ -11,3 +11,9 @@ def lookup_plans(value, section):
     else:
         return []
 
+@register.filter
+def lookup(value, index):
+    if index==0:
+        return ''
+    else:
+        return value[int(index)-1].strip()

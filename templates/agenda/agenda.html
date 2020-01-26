@@ -91,12 +91,12 @@
 {% endblock content %}
 
 {% block localscripts %}
-<script src="{% static "js/plan_buttons.js" %}"></script>
+<script src="{% static 'js/plan_buttons.js' %}"></script>
 <script>
 
 $(document).ready(function() {
-    init_plan_buttons("{{csrf_token}}")
-    $('.popcomment').tooltip({ 'trigger':'hover click' })
+    init_plan_comments("{{csrf_token}}");
+    $('.popcomment').tooltip({ 'trigger':'hover click' });
 });
 </script>
 {% endblock localscripts %}

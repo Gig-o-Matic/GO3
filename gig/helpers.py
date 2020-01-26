@@ -25,7 +25,14 @@ def update_plan(request, pk, val):
     plan = Plan.objects.get(id=pk)
     plan.status = val
     plan.save()
+    return HttpResponse()
 
+@login_required
+def update_plan_feedback(request, pk, val):
+    """ set value of plan """
+    plan = Plan.objects.get(id=pk)
+    plan.feedback_value = val
+    plan.save()
     return HttpResponse()
 
 @login_required
@@ -34,7 +41,6 @@ def update_plan_comment(request, pk):
     plan = Plan.objects.get(id=pk)
     plan.comment = request.POST['value']
     plan.save()
-
     return HttpResponse()
 
 # @login_required
