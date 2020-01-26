@@ -17,6 +17,12 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
+from datetime import datetime
+
+@receiver(pre_save, sender=Gig)
+def set_date_time(sender, instance, **kwargs):
+    t = instance.schedule_time
+    instance.schedule_datetime = datetime.combine(instance.schedule_date, t if t else datetime.min.time())
 
 @receiver(post_save, sender=Gig)
 def new_gig_handler(sender, instance, created, **kwargs):

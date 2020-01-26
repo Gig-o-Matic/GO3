@@ -26,7 +26,7 @@ class MemberPlanManager(models.Manager):
     def future_plans(self, member):
         return super().get_queryset().filter(assoc__member=member, 
                                              assoc__status=Assoc.StatusChoices.CONFIRMED,
-                                             gig__date__gt=datetime.datetime.now())
+                                             gig__schedule_datetime__gt=datetime.datetime.now())
 
 
 class Plan(models.Model):
@@ -79,7 +79,18 @@ class AbstractGig(models.Model):
 
     date = models.DateField()
 
+    @property
+    def schedule_date(self):
+        return self.date
+
     calltime = models.TimeField(null=True, blank=True)
+
+    @property
+    def schedule_time(self):
+        return self.calltime
+
+    # set on save signal
+    schedule_datetime = models.DateTimeField(blank=True)
 
     address = models.TextField(null=True, blank=True)
     class StatusOptions(models.IntegerChoices):
@@ -146,13 +157,20 @@ class Gig(AbstractGig):
     endtime = models.TimeField(null=True, blank=True)
 
     @property
-    def time(self):
+    def schedule_time(self):
         if self.calltime:
             return self.calltime
         elif self.settime:
             return self.settime
         else:
             return None
+
+    @property
+    def schedule_date(self):
+        if self.enddate:
+            return self.enddate
+        else:
+            return self.date
 
     dress = models.TextField(null=True, blank=True)
     paid = models.TextField(null=True, blank=True)
