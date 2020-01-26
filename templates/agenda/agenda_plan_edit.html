@@ -41,9 +41,6 @@
         <div class="col-12 col-md-4 btn-group" role="group">
             {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
             {% if band.plan_feedback %}
-{% comment %}            
-                {{ plan_icon.feedback_button(the_plan, the_band.plan_feedback.split('\n') ) }}
-{% endcomment %}
                 {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
             {% endif %}
             {% if assoc.is_multisectional %}
