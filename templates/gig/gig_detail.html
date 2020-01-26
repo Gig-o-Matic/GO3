@@ -2,9 +2,7 @@
 {% load i18n %}
 {% load static %}
 {% load gig_extras %}
-{% comment %}
-{% import 'plan_icon.html' as plan_icon %}
-{% endcomment %}
+{% load humanize %}
 
 {% block title %}{% trans "Gig Info" %}{% endblock title %}
 
@@ -84,7 +82,7 @@
                 <div class="row">&nbsp;</div>
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-12"><i class="fas fa-calendar"></i></div>
-                    <div class="col-md-10 col-sm-10 col-12">{{ gig.date|date:"SHORT_DATE_FORMAT" }}{{ enddate_str }}</div>
+                    <div class="col-md-10 col-sm-10 col-12">{{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}{{ enddate_str }}</div>
                 </div>
                 <div class="row">
                     <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
