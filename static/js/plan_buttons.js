@@ -78,19 +78,21 @@ function update_feedback(pk, val, text, token) {
 
 
 // CODE FOR SELECTING SECTIONS
-function section_select(pk, sk, name) {
-    $.post("/updateplansection",
-                {
-                    sk: sk,
-                    pk: pk
-                },
-                function(responseTxt,statusTxt,xhr){
+function section_select(objecttype, objectid, item, sectionid, sectionname, csrf_token) {
+    $.ajax({
+        method: 'POST',
+        url: '/'+objecttype+'/'+objectid+'/section/'+sectionid,
+        headers: { "X-CSRFToken": csrf_token },
+        success: function(responseTxt,statusTxt,xhr){
                     if(statusTxt=="success")
-                        $('#sel-'+pk).html(name+ " <span class='caret'></span>")
+                        setTimeout(function(){document.getElementById(item).innerHTML=sectionname}, 1000);
                     if(statusTxt=="error")
-                      alert("Error: "+xhr.status+": "+xhr.statusText);
-                });
+                        alert("Error: "+xhr.status+": "+xhr.statusText);
+                },
+    });
 }
+
+
 
 
 // CODE FOR COMMENTS ON AGENDA PAGE

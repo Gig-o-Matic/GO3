@@ -5,9 +5,6 @@
 {% block title %}{% trans "Schedule" %}{% endblock title %}
 
 {% block content %}
-{% comment %}
-    {% import 'agenda_plan_edit.html' as plan_edit with context %}
-{% endcomment %}
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
         <div class="page-header">
@@ -32,9 +29,6 @@
                             <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
                                 <div class="col-12">
                                     {% include "agenda/agenda_plan_edit.html" with plan=plan %}
-{% comment %}                                    
-                                    {{ plan_edit.plan_edit(plan_info) }}
-{% endcomment %}
                                 </div>
                             </div>
                         {% endfor %}
@@ -72,9 +66,6 @@
                             <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                                 <div class="col-md-12">
                                     {% include "agenda/agenda_plan_edit.html" with plan=plan %}
-{% comment %}                                    
-                                    {{ plan_edit.plan_edit(plan_info) }}
-{% endcomment %}
                                 </div>
                             </div>
                         {% endfor %}
