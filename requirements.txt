@@ -10,8 +10,6 @@ Jinja2==2.10.3
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
-mysql-connector-python==1.1.6
-mysqlclient==1.4.6
 pylint==2.4.4
 pytz==2019.3
 six==1.13.0
