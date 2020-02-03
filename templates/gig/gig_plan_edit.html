@@ -53,29 +53,35 @@
             {% if band.plan_feedback %}
                 {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
             {% endif %}
-{% comment %}            
-            {% if show_section %}
-                {% if plan.member == the_user.key or the_user_is_superuser or the_user_is_band_admin %}
-                    {% if get_the_section_keys %}
-                        {% set the_section_keys = get_the_section_keys(the_band_key) %}
-                    {% endif %}
-                    {% set the_section_keys = the_band_key.get().sections %}
-                    {% if the_sections and the_sections|length > 1 %}
-                        <div class="dropdown mr-2">
-                            <a class="btn btn-outline-secondary btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown" id="sel-{{plan_key.urlsafe()}}" aria-haspopup="true" aria-expanded="false">
-                                {{plan.section.get().name | shorten}} <span class="caret"></span>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="sel-{{plan_key.urlsafe()}}">
-                                {% for a_section in the_sections %}
-                                    <a class="dropdown-item" onclick="section_select('{{plan_key.urlsafe()}}','{{a_section.key.urlsafe()}}','{{a_section.name | shorten}}')">{{ a_section.name }}</a>
-                                {% endfor %}
-                            </div>
+
+
+            {% if assoc.is_multisectional and band.sections.all|length > 1 %}
+                {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
+                            {% if section == None %}
+                                {% trans "section" %}...  <span class="caret"></span>
+                            {% else %}
+                                {{section.name }} <span class="caret"></span>
+                    {% comment %}
+                    TODO the section name had a 'shorten' filter
+                    {% endcomment %}                                
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
+                            {% for section in band.sections.all %}
+                                <a class="dropdown-item" onclick="section_select('band/assoc','{{ assoc.id }}','sel-{{plan.id}}','{{ section.id }}', 
+                                                                                '{{ section.name }}','{{ csrf_token}}')">{{ section.name }}</a>
+                    {% comment %}
+                    TODO the section name had a 'shorten' filter
+                    {% endcomment %}                                
+                                
+                            {% endfor %}
                         </div>
-                    {% endif %}
-                {% endif %}
+                    </div>
+{% endif %}
             {% endif %}
-{% endcomment %}            
-            <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
+<a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
         </div>
     {% else %}
 	    <div class="col-8" style="display:flex; align-items:center;" >
