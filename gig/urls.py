@@ -27,5 +27,6 @@ urlpatterns = [
 
     path('plan/<int:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
     path('plan/<int:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),
-    path('plan/<int:pk>/comment', helpers.update_plan_comment, name='plan-update-comment')
+    path('plan/<int:pk>/comment', helpers.update_plan_comment, name='plan-update-comment'),
+    path('plan/<int:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
 ]

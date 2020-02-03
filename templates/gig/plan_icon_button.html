@@ -1,6 +1,6 @@
 {% load i18n %}
 <div class="dropdown mr-2">
-    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle text-center plan-button" data-toggle="dropdown" id="{{plan.id}}" data-init="{{plan.value}}" aria-haspopup="true" aria-expanded="false">
+    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle text-center plan-button" data-toggle="dropdown" id="{{plan.id}}" data-init="{{plan.status}}" aria-haspopup="true" aria-expanded="false">
         <!-- <i class="fas fa-spinner fa-pulse fa-lg"></i> -->
         {% include "gig/plan_icon.html" with plan_value=plan.status %}
     </button>

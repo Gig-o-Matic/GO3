@@ -8,8 +8,8 @@
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
         <div class="page-header">
-            {% trans "Schedule" %}: {% if the_user.nickname %}{{the_user.nickname}}{%else%}{{the_user.name}}{% endif %}
-            {% if the_user.preferences.default_view != 0 %}
+            {% trans "Schedule" %}: {% if user.nickname %}{{user.nickname}}{%else%}{{user.name}}{% endif %}
+            {% if user.preferences.default_view != 0 %}
                 <small>(<a href="/?default=0">{% trans "Make this my default view!" %}</a>)</small>
             {% endif %}
         </div>

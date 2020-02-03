@@ -28,7 +28,6 @@
                                         {% endif %}
                                     </button>
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
-                                        <a class="dropdown-item" onclick="section_select('{{ assoc.id }}','0')">{% trans "None" %}</a>
                                         {% for section in assoc.band.sections.all %}
                                             <a class="dropdown-item" 
                                             onclick="section_select('{{assoc.id}}','{{section.id}}')">{{ section.name }}</a>

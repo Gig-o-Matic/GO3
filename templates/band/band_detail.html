@@ -1,5 +1,6 @@
 {% extends 'base/go3base.html' %}
 {% load i18n %}
+{% load static %}
 
 {% block title %}{% trans "Band Info" %}{% endblock title %}
 
@@ -338,7 +339,11 @@
 {% endblock modal %}
 
 {% block localscripts %}
+{% comment %}
 <script src="/js/jquery.validate.js"></script>
+{% endcomment %}
+<script src="{% static "js/plan_buttons.js" %}"></script>
+
 <script>
 
 // TODO
@@ -426,20 +431,6 @@ function option_tf_select(option, objecttype, objectid, elementid) {
         url: '/'+objecttype+'/'+objectid+'/tfparam/'+option+'/'+elem.checked,
         headers: { "X-CSRFToken": "{{csrf_token}}" },
         success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-function section_select(objecttype, objectid, value) {
-    $.ajax({
-        method: 'POST',
-        url: '/'+objecttype+'/'+objectid+'/section/'+value,
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        setTimeout(function(){updateSections(); updateMembers();}, 1000);
                     if(statusTxt=="error")
                         alert("Error: "+xhr.status+": "+xhr.statusText);
                 },
