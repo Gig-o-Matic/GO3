@@ -18,6 +18,7 @@
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Plan
+from band.models import Section
 
 @login_required
 def update_plan(request, pk, val):
@@ -42,6 +43,15 @@ def update_plan_comment(request, pk):
     plan.comment = request.POST['value']
     plan.save()
     return HttpResponse()
+
+@login_required
+def update_plan_section(request, pk, val):
+    """ set section for this plan """
+    plan = Plan.objects.get(id=pk)
+    plan.plan_section = Section.objects.get(id=val)
+    plan.save()
+    return HttpResponse()
+
 
 # @login_required
 def update_plan_default_section(assoc):
