@@ -135,9 +135,14 @@ class AbstractGig(models.Model):
         """ find any members that don't have plans yet. This is called whenever a new gig is created
             through the signaling system """
         absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
-        Plan.objects.bulk_create(
-            [Plan(gig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
-        )
+        # Plan.objects.bulk_create(
+        #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
+        # )
+        # can't use bulk_create because it doesn't send signals
+        # TODO is there a more efficient way?
+        s = self.band.sections.get(is_default=True)
+        for a in absent:
+            Plan.objects.create(gig=self, assoc=a, section=s)
         # now that we have one for every member, return the list
         return self.plans
 

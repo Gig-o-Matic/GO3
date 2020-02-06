@@ -18,11 +18,12 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
 from datetime import datetime
+from django.utils import timezone
 
 @receiver(pre_save, sender=Gig)
 def set_date_time(sender, instance, **kwargs):
     t = instance.schedule_time
-    instance.schedule_datetime = datetime.combine(instance.schedule_date, t if t else datetime.min.time())
+    instance.schedule_datetime = datetime.combine(instance.schedule_date, t) if t else instance.schedule_date
 
 @receiver(post_save, sender=Gig)
 def new_gig_handler(sender, instance, created, **kwargs):
@@ -32,4 +33,4 @@ def new_gig_handler(sender, instance, created, **kwargs):
 @receiver(pre_save, sender=Plan)
 def update_plan_section(sender, instance, **kwargs):
     """ set the section to the plan_section, unless there isn't one - in that case use the member's default """
-    instance.section = instance.plan_section or instance.assoc.default_section
+    instance.section = instance.plan_section or instance.assoc.section
