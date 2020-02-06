@@ -50,6 +50,14 @@ class Band(models.Model):
     def feedback_strings(self):
         return self.plan_feedback.split('\n')
 
+    class StatusChoices(models.IntegerChoices):
+        ACTIVE = 0, "Active"
+        DORMANT = 1, "Dormant"
+        DELETED = 2, "Deleted"
+
+    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.ACTIVE)
+
+
     creation_date = models.DateField(auto_now_add=True)
     last_activity = models.DateTimeField(auto_now=True)
 

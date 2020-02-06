@@ -79,6 +79,12 @@ class Member(AbstractUser):
 
     # flag to determine whether to recompute calendar feed
     cal_feed_dirty = models.BooleanField(default=True)
+    class StatusChoices(models.IntegerChoices):
+        ACTIVE = 0, "Active"
+        DORMANT = 1, "Dormant"
+        DELETED = 2, "Deleted"
+
+    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.ACTIVE)
 
     @property
     def display_name(self):
