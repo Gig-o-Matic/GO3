@@ -163,7 +163,6 @@ class Assoc(models.Model):
 
     objects = models.Manager()
     member_assocs = MemberAssocManager()
-    band_assocs = BandAssocManager()
 
     def __str__(self):
         return "{0} in {1}".format(self.member, self.band)
