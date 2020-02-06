@@ -131,11 +131,10 @@ class Assoc(models.Model):
 
     @property
     def section(self):
-        if default_section is None:
-            print('\n\nupdated default section\n\n')
-            default_section = self.band.sections.get(is_default=True)
-            self.save()
-        return default_section
+        if self.default_section is None:
+            return self.band.sections.get(is_default=True)
+        else:
+            return self.default_section
 
     # default_section_index = ndb.IntegerProperty( default=None )
 
