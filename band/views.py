@@ -20,7 +20,7 @@ class DetailView(generic.DetailView):
 
         context = super().get_context_data(**kwargs)
 
-        assoc = Assoc.objects.filter(band=the_band, member=the_user).first()
+        assoc = Assoc.objects.get(band=the_band, member=the_user)
         if assoc is None:
             context['the_user_is_associated'] = False
         else:
