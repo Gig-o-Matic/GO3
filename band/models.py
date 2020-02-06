@@ -74,6 +74,14 @@ class Band(models.Model):
     def is_admin(self, member):
         return self.assocs.filter(member=member, status=Assoc.StatusChoices.CONFIRMED, is_admin=True).count()==1
 
+    @property
+    def all_assocs(self):
+        return self.assocs
+
+    @property
+    def confirmed_assocs(self):
+        return self.assocs.filter(status=Assoc.StatusChoices.CONFIRMED)
+
     def __str__(self):
         return self.name
 
@@ -109,12 +117,6 @@ class MemberAssocManager(models.Manager):
                                 Q(member__is_superuser=True) | Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)
                             )
                         )
-
-class BandAssocManager(models.Manager):
-    def confirmed_assocs(self, band):
-        """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(band=band, status=Assoc.StatusChoices.CONFIRMED)
-
 
 class Assoc(models.Model):
     band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)

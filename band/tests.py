@@ -20,7 +20,7 @@ from .models import Band, Assoc, Section
 from member.models import Member
 from band import helpers
 
-class MemberTest(TestCase):
+class MemberTests(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='d@e.f')
@@ -157,3 +157,27 @@ class MemberTest(TestCase):
         self.assertTrue(assoc.default_section.is_default)
         self.assertEqual(assoc.default_section,self.band.sections.get(is_default=True))
 
+class BandTests(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+
+    def test_band_member_queries(self):
+        band = Band.objects.create(name='test band')
+        self.assertEqual(band.all_assocs.count(), 0)
+        self.assertEqual(band.confirmed_assocs.count(), 0)
+        joeuser = Member.objects.create_user(email='g@h.i')
+        a=Assoc.objects.create(member=joeuser, band=band, is_admin=True)
+        self.assertEqual(band.all_assocs.count(), 1)
+        self.assertEqual(band.confirmed_assocs.count(), 0)
+        a.status = Assoc.StatusChoices.CONFIRMED
+        a.save()
+        self.assertEqual(band.confirmed_assocs.count(), 1)
+
+
+    

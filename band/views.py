@@ -44,8 +44,9 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
+        the_band = self.object
         context = super().get_context_data(**kwargs)
-        context['member_assocs'] = Assoc.band_assocs.confirmed_assocs(Band.objects.get(id=self.kwargs['pk']))
+        context['member_assocs'] = the_band.confirmed_assocs
         return context
 
 class SectionMembersView(LoginRequiredMixin, TemplateView):
