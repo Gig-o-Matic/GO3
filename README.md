@@ -21,3 +21,11 @@ At this point, you should be able to run the project locally:
 python manage.py runserver
 ```
 You can log in with the user created above.
+
+## Task queue
+
+Django-Q is used as a task queue, and the default setting uses the standard database as a broker.  Tasks can be serialized into the database without any additional configuration.  However, a separate process is used to run these items in the queue.  This can be launched with
+```
+python manage.py qcluster
+```
+You can cause tests to run synchronously by setting `'sync': True` in the `Q_CLUSTER` settings.

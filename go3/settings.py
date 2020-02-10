@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'django.contrib.humanize',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -168,6 +169,17 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login'
+
+# Configure Django-q message broker
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
+}
 
 try:
     from .settings_local import *
