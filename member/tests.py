@@ -84,10 +84,12 @@ class MemberEmailTest(TestCase):
                 return mock_open(read_data=content).return_value
             return _open(filename, *args, **kw)
 
-        patch('builtins.open', template_open).start()
+        self.patcher = patch('builtins.open', template_open)
+        self.patcher.start()
 
     def tearDown(self):
         Member.objects.all().delete()
+        self.patcher.stop()
 
     def test_markdown_mail(self):
         message = prepare_email(self.member, 't:**Markdown**')
