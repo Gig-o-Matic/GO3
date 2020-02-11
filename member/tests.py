@@ -73,48 +73,64 @@ class MemberEmailTest(TestCase):
     def setUp(self):
         self.member = Member.objects.create_user('member@example.com')
 
+        _open = open  # Saves a reference to the builtin, for access after patching
+        def template_open(filename, *args, **kw):
+            # We adopt the convention that a filename begining with 't:' indicates
+            # a template that we want to inject, with the contents of the filename
+            # following the 't:'.  But the template mechanism tries to open
+            # absolute paths, so we need to look for 't:' anywhere in the filename.
+            if isinstance(filename, str) and (i := filename.find('t:')) > -1:
+                content = filename[i+2:]
+                return mock_open(read_data=content).return_value
+            return _open(filename, *args, **kw)
+
+        patch('builtins.open', template_open).start()
+
     def tearDown(self):
         Member.objects.all().delete()
 
-    @patch('builtins.open', mock_open(read_data='**Markdown**'))
     def test_markdown_mail(self):
-        message = prepare_email(self.member, 'template1')
+        message = prepare_email(self.member, 't:**Markdown**')
         self.assertIn('**Markdown**', message.body)
         self.assertEqual(len(message.alternatives), 1)
         self.assertEqual(message.alternatives[0][1], 'text/html')
         self.assertIn('<strong>Markdown</strong>', message.alternatives[0][0])
 
-    @patch('builtins.open', mock_open(read_data='{{ key }}'))
     def test_markdown_template(self):
-        message = prepare_email(self.member, 'template2', {'key': 'value'})
+        message = prepare_email(self.member, 't:{{ key }}', {'key': 'value'})
         self.assertIn('value', message.body)
         self.assertIn('value', message.alternatives[0][0])
 
-    @patch('builtins.open', mock_open(read_data='{{ member.email }}'))
     def test_markdown_template_member(self):
-        message = prepare_email(self.member, 'template3')
+        message = prepare_email(self.member, 't:{{ member.email }}')
         self.assertIn(self.member.email, message.body)
         self.assertIn(self.member.email, message.alternatives[0][0])
 
-    @patch('builtins.open', mock_open(read_data='Body'))
     def test_markdown_default_subject(self):
-        message = prepare_email(self.member, 'template4')
+        message = prepare_email(self.member, 't:Body')
         self.assertEqual(message.subject, DEFAULT_SUBJECT)
         self.assertEqual(message.body, 'Body')
 
-    @patch('builtins.open', mock_open(read_data='Subject: Custom\nBody'))
     def test_markdown_subject(self):
-        message = prepare_email(self.member, 'template5')
+        message = prepare_email(self.member, 't:Subject: Custom\nBody')
         self.assertEqual(message.subject, 'Custom')
         self.assertEqual(message.body, 'Body')
 
-    @patch('builtins.open', mock_open())
     def test_email_to_no_username(self):
-        message = prepare_email(self.member, 'template6')
+        message = prepare_email(self.member, 't:')
         self.assertEqual(message.to[0], 'member@example.com')
 
-    @patch('builtins.open', mock_open())
     def test_email_to_username(self):
         self.member.username = 'Member Username'
-        message = prepare_email(self.member, 'template7')
+        message = prepare_email(self.member, 't:')
         self.assertEqual(message.to[0], 'Member Username <member@example.com>')
+
+    def test_translation_en(self):
+        message = prepare_email(self.member, 't:{% load i18n %}{% blocktrans %}Translated text{% endblocktrans %}')
+        self.assertEqual(message.body, 'Translated text')
+
+    def test_translation_de(self):
+        self.member.preferences.locale = 'de'
+        # This translation is already provided by Django
+        message = prepare_email(self.member, 't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}')
+        self.assertEqual(message.body, 'Deutsch')

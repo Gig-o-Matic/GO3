@@ -18,7 +18,7 @@
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.contrib.auth.decorators import login_required
 from markdown import markdown
 
@@ -41,7 +41,8 @@ def prepare_email(member, template, context=None, **kw):
         context = dict()
     context['member'] = member
 
-    text = render_to_string(template, context)
+    with translation.override(member.preferences.locale):
+        text = render_to_string(template, context)
     if text.startswith(SUBJECT):
         subject, text = [t.strip() for t in text[len(SUBJECT):].split('\n', 1)]
     else:
