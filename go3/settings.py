@@ -190,7 +190,7 @@ Q_CLUSTER = {
 }
 
 # Email settings
-SERVER_EMAIL = 'gigomatic.superuser@gmail.com'
+DEFAULT_FROM_EMAIL = 'gigomatic.superuser@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # For production, be sure to set
 #EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'

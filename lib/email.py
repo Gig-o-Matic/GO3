@@ -2,8 +2,6 @@ from django.template.loader import render_to_string
 from django_q.tasks import async_task
 from markdown import markdown
 
-from go3.settings import SERVER_EMAIL
-
 SUBJECT = 'Subject:'
 DEFAULT_SUBJECT = 'Message from Gig-O-Matic'
 
@@ -17,7 +15,7 @@ def send_mail_async(subject, message, from_email, recipient_list, html_message=N
                ack_failure=True
               )
 
-def send_markdown_mail(template, context, recipient_list, from_email=SERVER_EMAIL):
+def send_markdown_mail(template, context, recipient_list, from_email=None):
     text = render_to_string(template, context)
     if text.startswith(SUBJECT):
         subject, text = [t.strip() for t in text[len(SUBJECT):].split('\n', 1)]
