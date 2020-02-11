@@ -24,6 +24,8 @@ from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from go3.colors import the_colors
+from django.utils import translation
+from django.conf import settings
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
@@ -98,6 +100,7 @@ class DetailView(generic.DetailView):
 class UpdateView(BaseUpdateView):
     model = Member
     fields = ['email','username','nickname','phone','statement','images']
+
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
@@ -105,8 +108,15 @@ class PreferencesUpdateView(BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','locale','share_profile','share_email','calendar_show_only_confirmed', 
               'calendar_show_only_committed']
+
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
+
+    def form_valid(self, form):
+        translation.activate(self.object.locale)
+        response = super().form_valid(form)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.object.locale )
+        return response
 
 
 class AssocsView(LoginRequiredMixin, TemplateView):
