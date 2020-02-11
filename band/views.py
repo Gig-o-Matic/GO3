@@ -45,7 +45,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
-        the_band = self.object
+        the_band = Band.objects.get(id=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
         context['member_assocs'] = the_band.confirmed_assocs
         return context
@@ -55,12 +55,9 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        b = Band.objects.filter(id=self.kwargs['pk'])
+        b = Band.objects.get(id=self.kwargs['pk'])
         # prefetching seems to his the database more
         # b = Band.objects.prefetch_related('assocs').filter(id=self.kwargs['pk'])
-        if len(b) != 1:
-            raise ValueError('getting section info on a band that does not exist')
-        b = b[0]
 
         # make sure I'm in the band or am superuser
         u = self.request.user

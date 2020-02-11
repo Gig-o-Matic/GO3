@@ -24,6 +24,7 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
+from band.models import Assoc
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
