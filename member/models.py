@@ -18,12 +18,13 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.contrib.auth.models import User
-from band.models import Band, Assoc
 from motd.models import MOTD
 from gig.models import Plan
 from django.utils.translation import gettext_lazy as _
 import datetime
 from django.utils import timezone
+from .util import MemberStatusChoices, AgendaChoices
+from band.models import Assoc
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -79,12 +80,8 @@ class Member(AbstractUser):
 
     # flag to determine whether to recompute calendar feed
     cal_feed_dirty = models.BooleanField(default=True)
-    class StatusChoices(models.IntegerChoices):
-        ACTIVE = 0, "Active"
-        DORMANT = 1, "Dormant"
-        DELETED = 2, "Deleted"
 
-    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.ACTIVE)
+    status = models.IntegerField(choices=MemberStatusChoices.choices, default=MemberStatusChoices.ACTIVE)
 
     @property
     def display_name(self):
@@ -158,11 +155,6 @@ class MemberPreferences(models.Model):
     calendar_show_only_committed = models.BooleanField(default=True)
     agenda_show_time = models.BooleanField(default=False)
     show_long_agenda = models.BooleanField(default=True)
-
-    class AgendaChoices(models.IntegerChoices):
-        AGENDA = 0, "Agenda"
-        GRID = 1, "Grid"
-        CALENDAR = 2, "Calendar"
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 

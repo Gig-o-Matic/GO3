@@ -20,6 +20,7 @@ from .models import Band, Assoc, Section
 from gig.helpers import update_plan_default_section
 from member.models import Member
 from django.contrib.auth.decorators import login_required
+from band.util import AssocStatusChoices
 
 @login_required
 def set_assoc_tfparam(request, ak, param, truefalse):
@@ -109,7 +110,7 @@ def join_assoc(request, bk, mk):
         raise PermissionError('tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
     # OK, create the assoc
-    a = Assoc.objects.get_or_create(band=b, member=m, status=Assoc.StatusChoices.PENDING)
+    a = Assoc.objects.get_or_create(band=b, member=m, status=AssocStatusChoices.PENDING)
 
     return HttpResponse()
 
@@ -139,7 +140,7 @@ def confirm_assoc(request, ak):
         raise PermissionError('tying to confirm an assoc which is not admin by user {0}'.format(request.user.username))
 
     # OK, confirm the assoc
-    a.status = Assoc.StatusChoices.CONFIRMED
+    a.status = AssocStatusChoices.CONFIRMED
     a.save()
 
     return HttpResponse()

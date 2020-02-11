@@ -19,6 +19,8 @@ from django.test import TestCase, RequestFactory
 from .models import Band, Assoc, Section
 from member.models import Member
 from band import helpers
+from member.util import MemberStatusChoices
+from band.util import AssocStatusChoices
 
 class MemberTests(TestCase):
     def setUp(self):
@@ -111,22 +113,22 @@ class MemberTests(TestCase):
     def test_confirmband(self):
         request = RequestFactory().get('/band/assoc/{}/confirm'.format(self.joeuser.id))
         a = Assoc.objects.create(member=self.joeuser, band=self.band)
-        self.assertFalse(a.status==Assoc.StatusChoices.CONFIRMED)
+        self.assertFalse(a.status==AssocStatusChoices.CONFIRMED)
 
         # make sure a superuser can confirm an assoc for another user
         request.user = self.super
         helpers.confirm_assoc(request, a.id)
         a = Assoc.objects.get(band=self.band, member=self.joeuser)
-        self.assertTrue(a.status==Assoc.StatusChoices.CONFIRMED)
-        a.status=Assoc.StatusChoices.CONFIRMED
+        self.assertTrue(a.status==AssocStatusChoices.CONFIRMED)
+        a.status=AssocStatusChoices.CONFIRMED
         a.save()
 
         # make sure a band admin can create an assoc for another user for their band
         request.user = self.band_admin
         helpers.confirm_assoc(request, a.id)
         a = Assoc.objects.get(band=self.band, member=self.joeuser)
-        self.assertTrue(a.status==Assoc.StatusChoices.CONFIRMED)
-        a.status = Assoc.StatusChoices.NOT_CONFIRMED
+        self.assertTrue(a.status==AssocStatusChoices.CONFIRMED)
+        a.status = AssocStatusChoices.NOT_CONFIRMED
         a.save()
 
         # make sure nobody else can
@@ -175,9 +177,10 @@ class BandTests(TestCase):
         a=Assoc.objects.create(member=joeuser, band=band, is_admin=True)
         self.assertEqual(band.all_assocs.count(), 1)
         self.assertEqual(band.confirmed_assocs.count(), 0)
-        a.status = Assoc.StatusChoices.CONFIRMED
+        a.status = AssocStatusChoices.CONFIRMED
         a.save()
         self.assertEqual(band.confirmed_assocs.count(), 1)
-
-
-    
+        joeuser.status = MemberStatusChoices.DORMANT
+        joeuser.save()
+        self.assertEqual(band.all_assocs.count(), 0)
+        self.assertEqual(band.confirmed_assocs.count(), 0)

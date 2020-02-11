@@ -16,6 +16,7 @@
 """
 from django.db import models
 from band.models import Band, Assoc
+from band.util import AssocStatusChoices
 import datetime
 
 class MemberPlanManager(models.Manager):
@@ -25,7 +26,7 @@ class MemberPlanManager(models.Manager):
 
     def future_plans(self, member):
         return super().get_queryset().filter(assoc__member=member, 
-                                             assoc__status=Assoc.StatusChoices.CONFIRMED,
+                                             assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__schedule_datetime__gt=datetime.datetime.now())
 
 

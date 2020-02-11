@@ -20,12 +20,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from go3.colors import the_colors
 from member.models import MemberPreferences
+from member.util import AgendaChoices
 
 @login_required
 def AgendaSelector(request):
 
     view_selector = {
-        MemberPreferences.AgendaChoices.AGENDA: AgendaView
+        AgendaChoices.AGENDA: AgendaView
     }
 
     return view_selector[request.user.preferences.default_view].as_view()(request)

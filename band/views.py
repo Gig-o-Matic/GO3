@@ -1,11 +1,12 @@
 from django.http import HttpResponse
-from .models import Band, Assoc, Section
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.views.generic.base import TemplateView
 from django.urls import reverse
-from .forms import BandForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Band, Assoc, Section
+from .forms import BandForm
+from .util import AssocStatusChoices
 
 def index(request):
     return HttpResponse("Hello, world. You're at the band index.")
@@ -27,7 +28,7 @@ class DetailView(generic.DetailView):
             context['the_user_is_associated'] = True
             context['the_user_is_band_admin'] = assoc.is_admin
 
-            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=Assoc.StatusChoices.PENDING)
+            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
         return context
 
     def get_success_url(self):
@@ -44,7 +45,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class AllMembersView(LoginRequiredMixin, TemplateView):
     template_name='band/band_all_members.html'
     def get_context_data(self, **kwargs):
-        the_band = self.object
+        the_band = Band.objects.get(id=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
         context['member_assocs'] = the_band.confirmed_assocs
         return context
@@ -54,12 +55,9 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        b = Band.objects.filter(id=self.kwargs['pk'])
+        b = Band.objects.get(id=self.kwargs['pk'])
         # prefetching seems to his the database more
         # b = Band.objects.prefetch_related('assocs').filter(id=self.kwargs['pk'])
-        if len(b) != 1:
-            raise ValueError('getting section info on a band that does not exist')
-        b = b[0]
 
         # make sure I'm in the band or am superuser
         u = self.request.user
@@ -80,6 +78,6 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
-        context['the_assocs'] = b.assocs.filter(status=Assoc.StatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
+        context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
         return context
 
