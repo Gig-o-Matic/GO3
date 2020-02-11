@@ -18,6 +18,8 @@
 from django.db import models
 from django.db.models import Q
 from go3.colors import the_colors
+from .util import BandStatusChoices, AssocStatusChoices
+from member.util import MemberStatusChoices, AgendaChoices
 
 class Band(models.Model):
     name = models.CharField(max_length=200)
@@ -50,12 +52,7 @@ class Band(models.Model):
     def feedback_strings(self):
         return self.plan_feedback.split('\n')
 
-    class StatusChoices(models.IntegerChoices):
-        ACTIVE = 0, "Active"
-        DORMANT = 1, "Dormant"
-        DELETED = 2, "Deleted"
-
-    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.ACTIVE)
+    status = models.IntegerField(choices=BandStatusChoices.choices, default=BandStatusChoices.ACTIVE)
 
 
     creation_date = models.DateField(auto_now_add=True)
@@ -69,18 +66,18 @@ class Band(models.Model):
     # pub_cal_feed_dirty = ndb.BooleanProperty(default=True)
 
     def has_member(self, member):
-        return self.assocs.filter(member=member, status=Assoc.StatusChoices.CONFIRMED).count()==1
+        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count()==1
 
     def is_admin(self, member):
-        return self.assocs.filter(member=member, status=Assoc.StatusChoices.CONFIRMED, is_admin=True).count()==1
+        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count()==1
 
     @property
     def all_assocs(self):
-        return self.assocs
+        return self.assocs.filter(member__status=MemberStatusChoices.ACTIVE)
 
     @property
     def confirmed_assocs(self):
-        return self.assocs.filter(status=Assoc.StatusChoices.CONFIRMED)
+        return self.assocs.filter(status=AssocStatusChoices.CONFIRMED, member__status=MemberStatusChoices.ACTIVE)
 
     def __str__(self):
         return self.name
@@ -104,16 +101,16 @@ class MemberAssocManager(models.Manager):
     """ functions on the Assoc class that are queries for members """
     def confirmed_count(self, member):
         """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(member=member, status=Assoc.StatusChoices.CONFIRMED).count()
+        return super().get_queryset().filter(member=member, status=AssocStatusChoices.CONFIRMED).count()
 
     def confirmed_assocs(self, member):
         """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(member=member, status=Assoc.StatusChoices.CONFIRMED)
+        return super().get_queryset().filter(member=member, status=AssocStatusChoices.CONFIRMED)
 
     def add_gig_assocs(self, member):
         """ return the assocs for bands the member can create gigs for """
         return super().get_queryset().filter(
-                            Q(member=member) & Q(status=Assoc.StatusChoices.CONFIRMED) & (
+                            Q(member=member) & Q(status=AssocStatusChoices.CONFIRMED) & (
                                 Q(member__is_superuser=True) | Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)
                             )
                         )
@@ -123,21 +120,14 @@ class Assoc(models.Model):
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
     default_section = models.ForeignKey(Section, null=True, blank=True, related_name="default_assocs", on_delete=models.DO_NOTHING)
 
-    class StatusChoices(models.IntegerChoices):
-        NOT_CONFIRMED = 0, "Not Confirmed"
-        CONFIRMED = 1, "Confirmed"
-        INVITED = 2, "Invited"
-        ALUMNI = 3, "Alumni"
-        PENDING = 4, "Pending"
-
-    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NOT_CONFIRMED)
+    status = models.IntegerField(choices=AssocStatusChoices.choices, default=AssocStatusChoices.NOT_CONFIRMED)
 
     is_admin = models.BooleanField(default=False)
     is_occasional = models.BooleanField(default=False)
 
     @property
     def is_confirmed(self):
-        return self.status == Assoc.StatusChoices.CONFIRMED
+        return self.status == AssocStatusChoices.CONFIRMED
 
     @property
     def section(self):

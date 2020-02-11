@@ -1,11 +1,12 @@
 from django.http import HttpResponse
-from .models import Band, Assoc, Section
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.views.generic.base import TemplateView
 from django.urls import reverse
-from .forms import BandForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Band, Assoc, Section
+from .forms import BandForm
+from .util import AssocStatusChoices
 
 def index(request):
     return HttpResponse("Hello, world. You're at the band index.")
@@ -27,7 +28,7 @@ class DetailView(generic.DetailView):
             context['the_user_is_associated'] = True
             context['the_user_is_band_admin'] = assoc.is_admin
 
-            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=Assoc.StatusChoices.PENDING)
+            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
         return context
 
     def get_success_url(self):
@@ -80,6 +81,6 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
-        context['the_assocs'] = b.assocs.filter(status=Assoc.StatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
+        context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
         return context
 
