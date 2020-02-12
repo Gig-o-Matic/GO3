@@ -25,6 +25,7 @@ import datetime
 from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
 from band.models import Assoc
+from go3.settings import LANGUAGES
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -148,7 +149,7 @@ class MemberPreferences(models.Model):
     member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
 
     hide_canceled_gigs = models.BooleanField(default=False)
-    language = models.CharField(max_length=200, default='en')
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
     share_profile = models.BooleanField(default=True)
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=True)
