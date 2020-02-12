@@ -106,16 +106,16 @@ class UpdateView(BaseUpdateView):
 
 class PreferencesUpdateView(BaseUpdateView):
     model = MemberPreferences
-    fields = ['hide_canceled_gigs','locale','share_profile','share_email','calendar_show_only_confirmed', 
+    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed', 
               'calendar_show_only_committed']
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
     def form_valid(self, form):
-        translation.activate(self.object.locale)
+        translation.activate(self.object.language)
         response = super().form_valid(form)
-        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.object.locale )
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.object.language )
         return response
 
 

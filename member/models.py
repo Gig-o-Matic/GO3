@@ -148,7 +148,7 @@ class MemberPreferences(models.Model):
     member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
 
     hide_canceled_gigs = models.BooleanField(default=False)
-    locale = models.CharField(max_length=200, default='en')
+    language = models.CharField(max_length=200, default='en')
     share_profile = models.BooleanField(default=True)
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=True)
