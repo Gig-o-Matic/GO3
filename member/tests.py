@@ -132,7 +132,7 @@ class MemberEmailTest(TestCase):
         self.assertEqual(message.body, 'Translated text')
 
     def test_translation_de(self):
-        self.member.preferences.locale = 'de'
+        self.member.preferences.language = 'de'
         # This translation is already provided by Django
         message = prepare_email(self.member, 't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}')
         self.assertEqual(message.body, 'Deutsch')

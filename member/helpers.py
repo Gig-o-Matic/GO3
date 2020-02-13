@@ -41,7 +41,7 @@ def prepare_email(member, template, context=None, **kw):
         context = dict()
     context['member'] = member
 
-    with translation.override(member.preferences.locale):
+    with translation.override(member.preferences.language):
         text = render_to_string(template, context)
     if text.startswith(SUBJECT):
         subject, text = [t.strip() for t in text[len(SUBJECT):].split('\n', 1)]
