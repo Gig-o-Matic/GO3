@@ -98,6 +98,10 @@ class Member(AbstractUser):
         return self.username if self.username else self.email
 
     @property
+    def email_line(self):
+        return f'{self.username} <{self.email}>' if self.username else self.email
+
+    @property
     def band_count(self):
         """ return number of bands for which I'm confirmed """
         return Assoc.member_assocs.confirmed_count(self)
@@ -129,7 +133,7 @@ class Member(AbstractUser):
         return the_motd.text if the_motd else None
 
     objects = MemberManager()
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -158,5 +162,3 @@ class MemberPreferences(models.Model):
     show_long_agenda = models.BooleanField(default=True)
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
-
-

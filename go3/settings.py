@@ -27,8 +27,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
+import logging
 import os
+import sys
 from django.utils.translation import gettext_lazy as _
+
+_testing = False
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
+    _testing = True
+    logging.disable(logging.CRITICAL)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,6 +69,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'django.contrib.humanize',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -172,6 +180,27 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login'
+
+# Configure Django-q message broker
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
+    'sync': _testing,
+}
+
+# Email settings
+DEFAULT_FROM_EMAIL = 'gigomatic.superuser@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# For production, be sure to set
+#EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'
+#EMAIL_HOST = ...
+#EMAIL_HOST_USER = ...
+#EMAIL_HOST_PASSWORD = ...
 
 try:
     from .settings_local import *
