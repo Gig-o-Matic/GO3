@@ -59,3 +59,6 @@ def update_plan_default_section(assoc):
     the default section of the member assoc has changed, so update any plans that aren't overriding
     """
     Plan.objects.filter(assoc=assoc, plan_section=None).update(section=assoc.default_section)
+
+def get_confirm_urls(member, gig):
+    return {'yes_url': 'http://example.com/yes', 'no_url': 'http://example.com/no', 'snooze_url': 'http://example.com/snooze'}

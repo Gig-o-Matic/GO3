@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 import datetime
@@ -108,6 +109,10 @@ class AbstractGig(models.Model):
     @property
     def is_confirmed(self):
         self.status=StatusOptions.CONFIRMED
+
+    @property
+    def status_string(self):
+        return [_('Unconfirmed'), _('Confirmed!'), _('Cancelled!'), _('Asking')][self.status]
 
     # todo archive
     # archive_id = ndb.TextProperty( default=None )

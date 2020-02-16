@@ -14,12 +14,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.test import TestCase
+import copy
+from django.core import mail
+from django.test import TestCase, override_settings
 from member.models import Member
 from band.models import Band, Section, Assoc
+from band.util import AssocStatusChoices
 from gig.models import Gig
-from datetime import timedelta, datetime
+from go3 import settings
+from datetime import timedelta, datetime, time
 from django.utils import timezone
+
+MISSING_TEMPLATES = copy.deepcopy(settings.TEMPLATES)
+MISSING_TEMPLATES[0]['OPTIONS']['string_if_invalid'] = 'MISSING: %s'
 
 class GigTest(TestCase):
     def setUp(self):
@@ -88,10 +95,60 @@ class GigTest(TestCase):
         p = g.plans.first()
         self.assertEqual(p.section, s3) # should use the override section
 
+    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    def test_new_gig_email(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = Gig.objects.create(
+            title="New Gig",
+            band_id=self.band.id,
+            date=datetime(2100, 1, 2),
+            calltime=time(12, tzinfo=timezone.get_current_timezone()),
+            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
+            endtime=time(14, tzinfo=timezone.get_current_timezone())
+        )
+        self.assertEqual(len(mail.outbox), 1)
 
+        message = mail.outbox[0]
+        self.assertIn(g.title, message.subject)
+        self.assertIn("01/02/2100 (Sat)", message.body)
+        self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
+        self.assertIn('Unconfirmed', message.body)
+        self.assertNotIn('MISSING', message.body)
 
+    def test_new_gig_all_confirmed(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1))
+        self.assertEqual(len(mail.outbox), 2)
 
+    def test_new_gig_obey_email_me(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
+        g = Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1))
+        self.assertEqual(len(mail.outbox), 1)
 
+    def test_new_gig_contact(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1), contact=self.janeuser)
 
+        message = mail.outbox[0]
+        self.assertIn(self.janeuser.email, message.reply_to)
+        self.assertIn(self.janeuser.display_name, message.body)
 
+    def test_new_gig_localization(self):
+        self.joeuser.preferences.language = 'de'
+        self.joeuser.save()
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = Gig.objects.create(
+            title="New Gig",
+            band_id=self.band.id,
+            date=datetime(2100, 1, 2),
+            calltime=time(12, tzinfo=timezone.get_current_timezone()),
+            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
+            endtime=time(14, tzinfo=timezone.get_current_timezone())
+        )
 
+        message = mail.outbox[0]
+        self.assertIn('02.01.2100 (Sa)', message.body)
+        self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
+        self.assertIn('Nicht fixiert', message.body)
