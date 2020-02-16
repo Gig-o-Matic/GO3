@@ -43,6 +43,16 @@ class GigTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
+    def create_gig(self):
+        return Gig.objects.create(
+            title="New Gig",
+            band_id=self.band.id,
+            date=datetime(2100, 1, 2),
+            calltime=time(12, tzinfo=timezone.get_current_timezone()),
+            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
+            endtime=time(14, tzinfo=timezone.get_current_timezone())
+        )
+
     def test_no_section(self):
         """ show that the band has a default section called 'No Section' """
         a = self.band.assocs.first()
@@ -53,7 +63,7 @@ class GigTest(TestCase):
 
     def test_gig_plans(self):
         """ show that when a gig is created, every member has a plan """
-        g = Gig.objects.create(title="test gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1))
+        g = self.create_gig()
         self.assertEqual(g.plans.count(), self.band.assocs.count())
 
     def test_plan_section(self):
@@ -71,7 +81,7 @@ class GigTest(TestCase):
         self.assertEqual(self.band_admin.assocs.first().section, s1)
 
         """ now create a gig and find out what the member's plan says """
-        g = Gig.objects.create(title="test gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1))
+        g = self.create_gig()
         p = g.plans.first()
         self.assertEqual(p.assoc.member, self.band_admin)
         self.assertEqual(p.plan_section, None) # we didn't set one so should be None
@@ -98,14 +108,7 @@ class GigTest(TestCase):
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = Gig.objects.create(
-            title="New Gig",
-            band_id=self.band.id,
-            date=datetime(2100, 1, 2),
-            calltime=time(12, tzinfo=timezone.get_current_timezone()),
-            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
-            endtime=time(14, tzinfo=timezone.get_current_timezone())
-        )
+        g = self.create_gig()
         self.assertEqual(len(mail.outbox), 1)
 
         message = mail.outbox[0]
@@ -118,18 +121,18 @@ class GigTest(TestCase):
     def test_new_gig_all_confirmed(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1))
+        self.create_gig()
         self.assertEqual(len(mail.outbox), 2)
 
     def test_new_gig_obey_email_me(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
-        g = Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1))
+        self.create_gig()
         self.assertEqual(len(mail.outbox), 1)
 
     def test_new_gig_contact(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1), contact=self.janeuser)
+        Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1), contact=self.janeuser)
 
         message = mail.outbox[0]
         self.assertIn(self.janeuser.email, message.reply_to)
@@ -139,14 +142,7 @@ class GigTest(TestCase):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = Gig.objects.create(
-            title="New Gig",
-            band_id=self.band.id,
-            date=datetime(2100, 1, 2),
-            calltime=time(12, tzinfo=timezone.get_current_timezone()),
-            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
-            endtime=time(14, tzinfo=timezone.get_current_timezone())
-        )
+        self.create_gig()
 
         message = mail.outbox[0]
         self.assertIn('02.01.2100 (Sa)', message.body)
