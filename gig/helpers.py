@@ -15,8 +15,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import datetime
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from .models import Plan
 from band.models import Section, AssocStatusChoices
 from member.helpers import prepare_email
@@ -85,3 +87,17 @@ def send_emails_from_plans(plans_query, template):
 def send_reminder_email(gig):
     undecided = gig.member_plans.filter(status__in=(Plan.StatusChoices.NO_PLAN, Plan.StatusChoices.DONT_KNOW))
     send_emails_from_plans(undecided, 'email/gig_reminder.md')
+
+def send_snooze_reminders():
+    """
+    Send a reminder for all plans with a snooze_until in the next day and a gig
+    date in the future.  Set the snooze_until property of all such plans to None,
+    to so we don't send another reminder in the future.
+    """
+    now = datetime.datetime.now(tz=timezone.get_current_timezone())
+    next_day = now + datetime.timedelta(days=1)
+    unsnooze = Plan.objects.filter(snooze_until__isnull=False,
+                                   snooze_until__lte=next_day,
+                                   gig__date__gt=now)
+    send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
+    unsnooze.update(snooze_until=None)

@@ -21,7 +21,7 @@ from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from .models import Gig
-from .helpers import send_reminder_email
+from .helpers import send_reminder_email, send_snooze_reminders
 from go3 import settings
 from datetime import timedelta, datetime, time
 from django.utils import timezone
@@ -160,3 +160,39 @@ class GigTest(TestCase):
         message = mail.outbox[0]
         self.assertIn('Reminder', message.subject)
         self.assertIn('reminder', message.body)
+
+    def test_snooze_reminder(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        g.member_plans.update(snooze_until=datetime.now(tz=timezone.get_current_timezone()))
+        mail.outbox = []
+        send_snooze_reminders()
+
+        self.assertEqual(len(mail.outbox), 2)
+        for message in mail.outbox:
+            self.assertIn('Reminder', message.subject)
+        self.assertEqual(g.member_plans.filter(snooze_until__isnull=False).count(), 0)
+
+    def test_snooze_until_cutoff(self):
+        joeassoc = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        janeassoc=Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        now = datetime.now(tz=timezone.get_current_timezone())
+        g.member_plans.filter(assoc=joeassoc).update(snooze_until=now)
+        g.member_plans.filter(assoc=janeassoc).update(snooze_until=now + timedelta(days=2))
+        mail.outbox = []
+        send_snooze_reminders()
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_snooze_until_null(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        now = datetime.now(tz=timezone.get_current_timezone())
+        g.member_plans.filter(assoc=a).update(snooze_until=now)
+        mail.outbox = []
+        send_snooze_reminders()
+
+        self.assertEqual(len(mail.outbox), 1)
