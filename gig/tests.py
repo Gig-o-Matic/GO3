@@ -20,7 +20,8 @@ from django.test import TestCase, override_settings
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
-from gig.models import Gig
+from .models import Gig
+from .helpers import send_reminder_email
 from go3 import settings
 from datetime import timedelta, datetime, time
 from django.utils import timezone
@@ -148,3 +149,14 @@ class GigTest(TestCase):
         self.assertIn('02.01.2100 (Sa)', message.body)
         self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
         self.assertIn('Nicht fixiert', message.body)
+
+    def test_reminder_email(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        mail.outbox = []
+        send_reminder_email(g)
+
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('Reminder', message.subject)
+        self.assertIn('reminder', message.body)

@@ -81,3 +81,7 @@ def send_emails_from_plans(plans_query, template):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,
                                      assoc__email_me=True)
     send_messages_async(email_from_plan(p, template) for p in contactable)
+
+def send_reminder_email(gig):
+    undecided = gig.member_plans.filter(status__in=(Plan.StatusChoices.NO_PLAN, Plan.StatusChoices.DONT_KNOW))
+    send_emails_from_plans(undecided, 'email/gig_reminder.md')
