@@ -118,6 +118,11 @@ class MemberEmailTest(TestCase):
         self.assertEqual(message.subject, 'Custom')
         self.assertEqual(message.body, 'Body')
 
+    def test_markdown_html_escape(self):
+        message = prepare_email(self.member, 't:1 < 2')
+        self.assertIn('<', message.body)
+        self.assertIn('&lt;', message.alternatives[0][0])
+
     def test_email_to_no_username(self):
         message = prepare_email(self.member, 't:')
         self.assertEqual(message.to[0], 'member@example.com')

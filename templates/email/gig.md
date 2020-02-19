@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n %}{% autoescape off %}
 Subject: {% block subject %}{% endblock %}
 
 {% block opening %}{% endblock %}
@@ -22,4 +22,4 @@ If you **aren't sure** and want to be reminded in a few days, [click here]({{ sn
 {% blocktrans %}Gig info page is [here](https://gig-o-matic.com{{ gig_url }}).{% endblocktrans %}
 
 {% blocktrans %}Thanks,
-The Gig-o-Matic Team{% endblocktrans %}
+The Gig-o-Matic Team{% endblocktrans %}{% endautoescape %}
