@@ -117,6 +117,7 @@ class GigTest(TestCase):
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
         self.assertIn('Unconfirmed', message.body)
+        self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
 
     def test_new_gig_all_confirmed(self):
@@ -150,6 +151,7 @@ class GigTest(TestCase):
         self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
         self.assertIn('Nicht fixiert', message.body)
 
+    @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_reminder_email(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         g = self.create_gig()
@@ -160,6 +162,8 @@ class GigTest(TestCase):
         message = mail.outbox[0]
         self.assertIn('Reminder', message.subject)
         self.assertIn('reminder', message.body)
+        self.assertNotIn('MISSING', message.subject)
+        self.assertNotIn('MISSING', message.body)
 
     def test_no_reminder_to_decided(self):
         a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
