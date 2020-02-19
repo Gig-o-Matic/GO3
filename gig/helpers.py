@@ -74,7 +74,11 @@ def email_from_plan(plan, template):
                                    if (contact := gig.contact) else ('??', None))
     context = {
         'gig': gig,
+        'change_string': 'FIXME: Figure out what changed',
         'contact_name': contact_name,
+        'status': plan.status,
+        'status_label': Plan.StatusChoices(plan.status).label,
+        **Plan.StatusChoices.__members__,
         **get_confirm_urls(member, gig)
     }
     return prepare_email(member, template, context, reply_to=[contact_email])

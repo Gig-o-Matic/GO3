@@ -12,12 +12,14 @@ Subject: {% block subject %}{% endblock %}
 {{ gig.details }}
 {% endif %}{% if gig.setlist %}
 {{ gig.setlist }}
+{% endif %}{% if status != NO_PLAN and status != DONT_KNOW %}
+{% blocktrans %}Your current status is {{ status_label }}.  If that is still correct, you need not take any action.{% endblocktrans %}
+{% endif %}{% if status != DEFINITELY %}
+{% blocktrans %}If you **can** make it, [click here]({{ yes_url }}).{% endblocktrans %}
+{% endif %}{% if status != CANT_DO_IT %}
+{% blocktrans %}If you **can't** make it, [click here]({{ no_url }}).{% endblocktrans %}
 {% endif %}
-{% blocktrans %}If you **can** make it, [click here]({{ yes_url }}).
-
-If you **can't** make it, [click here]({{ no_url }}).
-
-If you **aren't sure** and want to be reminded in a few days, [click here]({{ snooze_url }}).{% endblocktrans %}
+{% blocktrans %}If you **aren't sure** and want to be reminded in a few days, [click here]({{ snooze_url }}).{% endblocktrans %}
 {% url 'gig-detail' gig.id as gig_url %}
 {% blocktrans %}Gig info page is [here](https://gig-o-matic.com{{ gig_url }}).{% endblocktrans %}
 

@@ -209,3 +209,46 @@ class GigTest(TestCase):
         send_snooze_reminders()
 
         self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    def test_gig_edit_email(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        mail.outbox = []
+        g.status = g.StatusOptions.CONFIRMED
+        g.save()
+
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('Edit', message.subject)
+        self.assertNotIn('Your current status', message.body)
+        self.assertIn('**can** make it', message.body)
+        self.assertIn("**can't** make it", message.body)
+        self.assertNotIn('MISSING', message.subject)
+        self.assertNotIn('MISSING', message.body)
+
+    def test_gig_edit_definitely(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        g.member_plans.update(status=Plan.StatusChoices.DEFINITELY)
+        mail.outbox = []
+        g.status = g.StatusOptions.CONFIRMED
+        g.save()
+
+        message = mail.outbox[0]
+        self.assertIn(f'Your current status is {Plan.StatusChoices.DEFINITELY.label}', message.body)
+        self.assertNotIn('**can** make it', message.body)
+        self.assertIn("**can't** make it", message.body)
+
+    def test_gig_edit_cant(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        g.member_plans.update(status=Plan.StatusChoices.CANT_DO_IT)
+        mail.outbox = []
+        g.status = g.StatusOptions.CONFIRMED
+        g.save()
+
+        message = mail.outbox[0]
+        self.assertIn(f'Your current status is {Plan.StatusChoices.CANT_DO_IT.label}', message.body)
+        self.assertIn('**can** make it', message.body)
+        self.assertNotIn("**can't** make it", message.body)

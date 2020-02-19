@@ -31,6 +31,8 @@ def notify_new_gig(sender, instance, created, **kwargs):
     if created:
         # This has the side effect of creating plans for all members
         send_emails_from_plans(instance.member_plans, 'email/new_gig.md')
+    else:
+        send_emails_from_plans(instance.member_plans, 'email/edited_gig.md')
 
 @receiver(pre_save, sender=Plan)
 def update_plan_section(sender, instance, **kwargs):
