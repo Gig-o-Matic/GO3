@@ -20,7 +20,7 @@ from django.test import TestCase, override_settings
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
-from .models import Gig
+from .models import Gig, Plan
 from .helpers import send_reminder_email, send_snooze_reminders
 from go3 import settings
 from datetime import timedelta, datetime, time
@@ -160,6 +160,15 @@ class GigTest(TestCase):
         message = mail.outbox[0]
         self.assertIn('Reminder', message.subject)
         self.assertIn('reminder', message.body)
+
+    def test_no_reminder_to_decided(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        g.member_plans.filter(assoc=a).update(status=Plan.StatusChoices.DEFINITELY)
+        mail.outbox = []
+        send_reminder_email(g)
+
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_snooze_reminder(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
