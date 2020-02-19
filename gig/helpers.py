@@ -18,7 +18,9 @@
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Plan
-from band.models import Section
+from band.models import Section, AssocStatusChoices
+from member.helpers import prepare_email
+from lib.email import send_messages_async
 
 @login_required
 def update_plan(request, pk, val):
@@ -62,3 +64,20 @@ def update_plan_default_section(assoc):
 
 def get_confirm_urls(member, gig):
     return {'yes_url': 'http://example.com/yes', 'no_url': 'http://example.com/no', 'snooze_url': 'http://example.com/snooze'}
+
+def email_from_plan(plan, template):
+    gig = plan.gig
+    member = plan.assoc.member
+    contact_name, contact_email = ((contact.display_name, contact.email)
+                                   if (contact := gig.contact) else ('??', None))
+    context = {
+        'gig': gig,
+        'contact_name': contact_name,
+        **get_confirm_urls(member, gig)
+    }
+    return prepare_email(member, template, context, reply_to=[contact_email])
+
+def send_emails_from_plans(plans_query, template):
+    contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,
+                                     assoc__email_me=True)
+    send_messages_async(email_from_plan(p, template) for p in contactable)
