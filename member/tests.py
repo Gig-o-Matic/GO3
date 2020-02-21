@@ -118,6 +118,11 @@ class MemberEmailTest(TestCase):
         self.assertEqual(message.subject, 'Custom')
         self.assertEqual(message.body, 'Body')
 
+    def test_markdown_html_escape(self):
+        message = prepare_email(self.member, 't:1 < 2')
+        self.assertIn('<', message.body)
+        self.assertIn('&lt;', message.alternatives[0][0])
+
     def test_email_to_no_username(self):
         message = prepare_email(self.member, 't:')
         self.assertEqual(message.to[0], 'member@example.com')
@@ -136,3 +141,14 @@ class MemberEmailTest(TestCase):
         # This translation is already provided by Django
         message = prepare_email(self.member, 't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}')
         self.assertEqual(message.body, 'Deutsch')
+
+    def test_translation_before_subject(self):
+        message = prepare_email(self.member, 't:{% load i18n %}\nSubject: {% blocktrans %}Subject Line{% endblocktrans %}\n\n{% blocktrans %}Body{% endblocktrans %}')
+        self.assertEqual(message.subject, "Subject Line")
+        self.assertEqual(message.body, "Body")
+
+    def test_markdown_new_lines(self):
+        message = prepare_email(self.member, 't:Line one\nLine two')
+        self.assertIn('\n', message.body)
+        # We want a new line, but it could show up as "<br>" or "<br />"
+        self.assertIn('<br', message.alternatives[0][0])

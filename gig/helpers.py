@@ -15,10 +15,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import datetime
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from .models import Plan
-from band.models import Section
+from band.models import Section, AssocStatusChoices
+from member.helpers import prepare_email
+from lib.email import send_messages_async
 
 @login_required
 def update_plan(request, pk, val):
@@ -59,3 +63,45 @@ def update_plan_default_section(assoc):
     the default section of the member assoc has changed, so update any plans that aren't overriding
     """
     Plan.objects.filter(assoc=assoc, plan_section=None).update(section=assoc.default_section)
+
+def get_confirm_urls(member, gig):
+    return {'yes_url': 'http://example.com/yes', 'no_url': 'http://example.com/no', 'snooze_url': 'http://example.com/snooze'}
+
+def email_from_plan(plan, template):
+    gig = plan.gig
+    member = plan.assoc.member
+    contact_name, contact_email = ((contact.display_name, contact.email)
+                                   if (contact := gig.contact) else ('??', None))
+    context = {
+        'gig': gig,
+        'change_string': 'FIXME: Figure out what changed',
+        'contact_name': contact_name,
+        'status': plan.status,
+        'status_label': Plan.StatusChoices(plan.status).label,
+        **Plan.StatusChoices.__members__,
+        **get_confirm_urls(member, gig)
+    }
+    return prepare_email(member, template, context, reply_to=[contact_email])
+
+def send_emails_from_plans(plans_query, template):
+    contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,
+                                     assoc__email_me=True)
+    send_messages_async(email_from_plan(p, template) for p in contactable)
+
+def send_reminder_email(gig):
+    undecided = gig.member_plans.filter(status__in=(Plan.StatusChoices.NO_PLAN, Plan.StatusChoices.DONT_KNOW))
+    send_emails_from_plans(undecided, 'email/gig_reminder.md')
+
+def send_snooze_reminders():
+    """
+    Send a reminder for all plans with a snooze_until in the next day and a gig
+    date in the future.  Set the snooze_until property of all such plans to None,
+    to so we don't send another reminder in the future.
+    """
+    now = datetime.datetime.now(tz=timezone.get_current_timezone())
+    next_day = now + datetime.timedelta(days=1)
+    unsnooze = Plan.objects.filter(snooze_until__isnull=False,
+                                   snooze_until__lte=next_day,
+                                   gig__date__gt=now)
+    send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
+    unsnooze.update(snooze_until=None)

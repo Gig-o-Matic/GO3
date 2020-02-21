@@ -42,12 +42,12 @@ def prepare_email(member, template, context=None, **kw):
     context['member'] = member
 
     with translation.override(member.preferences.language):
-        text = render_to_string(template, context)
+        text = render_to_string(template, context).strip()
     if text.startswith(SUBJECT):
         subject, text = [t.strip() for t in text[len(SUBJECT):].split('\n', 1)]
     else:
         subject = DEFAULT_SUBJECT
-    html = markdown(text)
+    html = markdown(text, extensions=['nl2br'])
 
     message = EmailMultiAlternatives(subject, text, to=[member.email_line], **kw)
     message.attach_alternative(html, 'text/html')

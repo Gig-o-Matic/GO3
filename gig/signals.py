@@ -17,6 +17,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
+from gig.helpers import send_emails_from_plans
 from datetime import datetime
 from django.utils import timezone
 
@@ -26,9 +27,12 @@ def set_date_time(sender, instance, **kwargs):
     instance.schedule_datetime = datetime.combine(instance.schedule_date, t) if t else instance.schedule_date
 
 @receiver(post_save, sender=Gig)
-def new_gig_handler(sender, instance, created, **kwargs):
-    """ if this is a new gig, make sure there's a plan for every member """
-    x = instance.member_plans
+def notify_new_gig(sender, instance, created, **kwargs):
+    if created:
+        # This has the side effect of creating plans for all members
+        send_emails_from_plans(instance.member_plans, 'email/new_gig.md')
+    else:
+        send_emails_from_plans(instance.member_plans, 'email/edited_gig.md')
 
 @receiver(pre_save, sender=Plan)
 def update_plan_section(sender, instance, **kwargs):
