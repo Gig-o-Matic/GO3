@@ -25,36 +25,36 @@
             {{ form.errors }}
 
             <div class="form-group">
-                {{ form.title.errore }}
+                {{ form.title.errors }}
                 {{ form.title.label_tag }}
                 {% render_field form.title class="form-control" %}
             </div>
             <div class="row">
                 <div class="form-group col-6">
-                    {{ form.contact.errore }}
+                    {{ form.contact.errors }}
                     {{ form.contact.label_tag }}
                     {% render_field form.contact class="form-control" %}
                 </div>
                 <div class="form-group col-6">
-                    {{ form.status.errore }}
+                    {{ form.status.errors }}
                     {{ form.status.label_tag }}
                     {% render_field form.status class="form-control" %}
                 </div>
             </div>
             <div class="form-group">
-                {{ form.is_private.errore }}
+                {{ form.is_private.errors }}
                 {% render_field form.is_private %}
                 {{ form.is_private.label_tag }}
             </div>
              
             <div class="row">
                 <div class="form-group col-4">
-                    {{ form.date.errore }}
+                    {{ form.date.errors }}
                     {{ form.date.label_tag }}
                     {% render_field form.date class="form-control" %}
                 </div>
                 <div class="form-group col-4">
-                    {{ form.enddate.errore }}
+                    {{ form.enddate.errors }}
                     {{ form.enddate.label_tag }}
                     {% render_field form.enddate class="form-control" %}
                 </div>
