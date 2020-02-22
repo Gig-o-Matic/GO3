@@ -17,6 +17,8 @@
 
 from django import forms
 from .models import Gig
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class GigForm(forms.ModelForm):
@@ -25,6 +27,26 @@ class GigForm(forms.ModelForm):
             label_suffix='',
             **kwargs
         )
+
+    def clean_date(self):
+        date = self.cleaned_data['date']
+        if date < timezone.now():
+            raise ValidationError(_('Date must be in the future'), code='invalid date')
+        return date
+
+    def clean_setdate(self):
+        date = self.cleaned_data['date']
+        setdate = self.cleaned_data['setdate']
+        if setdate and setdate < date:
+            raise ValidationError(_('Set date must be later than the start date'), code='invalid end date')
+        return date
+
+    def clean_enddate(self):
+        date = self.cleaned_data['date']
+        enddate = self.cleaned_data['enddate']
+        if enddate and enddate < date:
+            raise ValidationError(_('End date must be later than the start date'), code='invalid end date')
+        return date
 
     class Meta:
         model = Gig
