@@ -25,6 +25,7 @@ from .helpers import send_reminder_email, send_snooze_reminders
 from go3 import settings
 from datetime import timedelta, datetime, time
 from django.utils import timezone
+from pytz import timezone as pytz_timezone
 
 MISSING_TEMPLATES = copy.deepcopy(settings.TEMPLATES)
 MISSING_TEMPLATES[0]['OPTIONS']['string_if_invalid'] = 'MISSING: %s'
@@ -45,13 +46,13 @@ class GigTest(TestCase):
         Assoc.objects.all().delete()
 
     def create_gig(self):
+        thedate = timezone.datetime(2100,1,2, tzinfo=pytz_timezone('UTC'))
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
-            date=datetime(2100, 1, 2),
-            calltime=time(12, tzinfo=timezone.get_current_timezone()),
-            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
-            endtime=time(14, tzinfo=timezone.get_current_timezone())
+            date=thedate,
+            setdate=thedate + timedelta(hours=1),
+            enddate=thedate + timedelta(hours=2),
         )
 
     def test_no_section(self):

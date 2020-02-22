@@ -28,7 +28,7 @@ class GigForm(forms.ModelForm):
 
     class Meta:
         model = Gig
-        fields = ['title','contact','status','is_private','date','enddate','calltime','settime','endtime','address','dress','paid','postgig',
+        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','postgig',
                 'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
 
         widgets = {

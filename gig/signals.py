@@ -22,9 +22,13 @@ from datetime import datetime
 from django.utils import timezone
 
 @receiver(pre_save, sender=Gig)
-def set_date_time(sender, instance, **kwargs):
-    t = instance.schedule_time
-    instance.schedule_datetime = datetime.combine(instance.schedule_date, t) if t else instance.schedule_date
+def set_times(sender, instance, **kwargs):
+    """ make sure we have a setdate and and enddate """
+    if instance.setdate is None:
+        instance.setdate = instance.date
+
+    if instance.enddate is None:
+        instance.enddate = instance.setdate
 
 @receiver(post_save, sender=Gig)
 def notify_new_gig(sender, instance, created, **kwargs):
