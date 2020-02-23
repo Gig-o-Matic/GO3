@@ -64,9 +64,6 @@ def update_plan_default_section(assoc):
     """
     Plan.objects.filter(assoc=assoc, plan_section=None).update(section=assoc.default_section)
 
-def get_confirm_urls(member, gig):
-    return {'yes_url': 'http://example.com/yes', 'no_url': 'http://example.com/no', 'snooze_url': 'http://example.com/snooze'}
-
 def email_from_plan(plan, template):
     gig = plan.gig
     member = plan.assoc.member
@@ -76,10 +73,10 @@ def email_from_plan(plan, template):
         'gig': gig,
         'change_string': 'FIXME: Figure out what changed',
         'contact_name': contact_name,
+        'plan': plan,
         'status': plan.status,
         'status_label': Plan.StatusChoices(plan.status).label,
         **Plan.StatusChoices.__members__,
-        **get_confirm_urls(member, gig)
     }
     return prepare_email(member, template, context, reply_to=[contact_email])
 

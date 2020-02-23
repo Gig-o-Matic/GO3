@@ -29,4 +29,6 @@ urlpatterns = [
     path('plan/<uuid:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),
     path('plan/<uuid:pk>/comment', helpers.update_plan_comment, name='plan-update-comment'),
     path('plan/<uuid:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
+
+    path('answer/<uuid:pk>/<int:val>', views.answer, name='gig-answer'),
 ]

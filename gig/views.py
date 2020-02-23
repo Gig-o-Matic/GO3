@@ -14,10 +14,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.shortcuts import render
+import datetime
+from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.urls import reverse
-from .models import Gig
+from django.utils import timezone
+from .models import Gig, Plan
 from .forms import GigForm
 from band.models import Band
 
@@ -65,3 +67,15 @@ class UpdateView(generic.UpdateView):
     form_class = GigForm
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
+
+def answer(request, pk, val):
+    plan = get_object_or_404(Plan, pk=pk)
+    plan.status = val
+    if val == Plan.StatusChoices.DONT_KNOW:
+        now = datetime.datetime.now(tz=timezone.get_current_timezone())
+        if (future_days := (plan.gig.schedule_datetime - now).days) > 8:
+            plan.snooze_until = now + datetime.timedelta(days=7)
+        elif future_days > 2:
+            plan.snooze_until = plan.gig.schedule_datetime - datetime.timedelta(days=2)
+    plan.save()
+    return render(request, 'gig/answer.html')

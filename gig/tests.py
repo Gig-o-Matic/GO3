@@ -108,7 +108,7 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         g = self.create_gig()
         self.assertEqual(len(mail.outbox), 1)
 
@@ -117,6 +117,10 @@ class GigTest(TestCase):
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
         self.assertIn('Unconfirmed', message.body)
+        pk = g.member_plans.filter(assoc=a).get().id
+        self.assertIn(f'{pk}/{Plan.StatusChoices.DEFINITELY}', message.body)
+        self.assertIn(f'{pk}/{Plan.StatusChoices.CANT_DO_IT}', message.body)
+        self.assertIn(f'{pk}/{Plan.StatusChoices.DONT_KNOW}', message.body)
         self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
 
