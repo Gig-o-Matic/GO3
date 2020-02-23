@@ -24,6 +24,7 @@ from .models import Gig, Plan
 from .helpers import send_reminder_email, send_snooze_reminders
 from go3 import settings
 from datetime import timedelta, datetime, time
+from django.urls import reverse
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
 
@@ -54,6 +55,12 @@ class GigTest(TestCase):
             setdate=thedate + timedelta(minutes=30),
             enddate=thedate + timedelta(hours=2),
         )
+
+    def assoc_joe_and_create_gig(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig()
+        p = g.member_plans.filter(assoc=a).get()
+        return g, a, p
 
     def test_no_section(self):
         """ show that the band has a default section called 'No Section' """
@@ -109,11 +116,8 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
-        self.joeuser.preferences.language='en-US'
-        self.joeuser.save()
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         with timezone.override('UTC'):
-            g = self.create_gig()
+            g, a, p = self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)
 
         message = mail.outbox[0]
@@ -121,10 +125,9 @@ class GigTest(TestCase):
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
         self.assertIn('Unconfirmed', message.body)
-        pk = g.member_plans.filter(assoc=a).get().id
-        self.assertIn(f'{pk}/{Plan.StatusChoices.DEFINITELY}', message.body)
-        self.assertIn(f'{pk}/{Plan.StatusChoices.CANT_DO_IT}', message.body)
-        self.assertIn(f'{pk}/{Plan.StatusChoices.DONT_KNOW}', message.body)
+        self.assertIn(f'{p.id}/{Plan.StatusChoices.DEFINITELY}', message.body)
+        self.assertIn(f'{p.id}/{Plan.StatusChoices.CANT_DO_IT}', message.body)
+        self.assertIn(f'{p.id}/{Plan.StatusChoices.DONT_KNOW}', message.body)
         self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
 
@@ -151,9 +154,13 @@ class GigTest(TestCase):
     def test_new_gig_localization(self):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()
+<<<<<<< HEAD
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         with timezone.override('UTC'):
             self.create_gig()
+=======
+        self.assoc_joe_and_create_gig()
+>>>>>>> Add tests for answer links
 
         message = mail.outbox[0]
         self.assertIn('02.01.2100 (Sa)', message.body)
@@ -173,8 +180,7 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_reminder_email(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         send_reminder_email(g)
 
@@ -186,9 +192,9 @@ class GigTest(TestCase):
         self.assertNotIn('MISSING', message.body)
 
     def test_no_reminder_to_decided(self):
-        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
-        g.member_plans.filter(assoc=a).update(status=Plan.StatusChoices.DEFINITELY)
+        g, a, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
         mail.outbox = []
         send_reminder_email(g)
 
@@ -232,8 +238,7 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_gig_edit_email(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
@@ -248,9 +253,9 @@ class GigTest(TestCase):
         self.assertNotIn('MISSING', message.body)
 
     def test_gig_edit_definitely(self):
-        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
-        g.member_plans.update(status=Plan.StatusChoices.DEFINITELY)
+        g, a, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
@@ -261,9 +266,9 @@ class GigTest(TestCase):
         self.assertIn("**can't** make it", message.body)
 
     def test_gig_edit_cant(self):
-        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
-        g.member_plans.update(status=Plan.StatusChoices.CANT_DO_IT)
+        g, a, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.CANT_DO_IT
+        p.save()
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
@@ -272,3 +277,54 @@ class GigTest(TestCase):
         self.assertIn(f'Your current status is "{Plan.StatusChoices.CANT_DO_IT.label}"', message.body)
         self.assertIn('**can** make it', message.body)
         self.assertNotIn("**can't** make it", message.body)
+
+    def test_answer_yes(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DEFINITELY]))
+        p.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(p.status, Plan.StatusChoices.DEFINITELY)
+        self.assertEqual(p.snooze_until, None)
+
+    def test_answer_no(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.CANT_DO_IT]))
+        p.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(p.status, Plan.StatusChoices.CANT_DO_IT)
+        self.assertEqual(p.snooze_until, None)
+
+    def test_answer_snooze_long(self):
+        now = datetime.now(tz=timezone.get_current_timezone())
+        _, _, p = self.assoc_joe_and_create_gig()
+        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
+        p.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
+        self.assertGreaterEqual((p.snooze_until - now).days, 7)
+
+    def test_answer_snooze_short(self):
+        now = datetime.now(tz=timezone.get_current_timezone())
+        g, _, p = self.assoc_joe_and_create_gig()
+        g.date = now.date() + timedelta(days=3)
+        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
+        p.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
+        self.assertLessEqual((p.snooze_until - now).days, 7)
+
+    def test_answer_snooze_too_short(self):
+        now = datetime.now(tz=timezone.get_current_timezone())
+        g, _, p = self.assoc_joe_and_create_gig()
+        g.date = now.date() + timedelta(days=1)
+        g.save()
+        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
+        p.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
+        self.assertEqual(p.snooze_until, None)
