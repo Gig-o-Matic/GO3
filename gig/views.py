@@ -78,4 +78,4 @@ def answer(request, pk, val):
         elif future_days > 2:
             plan.snooze_until = plan.gig.schedule_datetime - datetime.timedelta(days=2)
     plan.save()
-    return render(request, 'gig/answer.html')
+    return render(request, 'gig/answer.html', {'gig_id': plan.gig.id})
