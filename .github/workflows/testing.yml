@@ -19,4 +19,5 @@ jobs:
         pip install -r requirements.txt
     - name: Test with Django
       run: |
+        python manage.py collectstatic
         python manage.py test
