@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 import datetime
+import uuid
 
 class MemberPlanManager(models.Manager):
     def all(self):
@@ -33,6 +34,7 @@ class MemberPlanManager(models.Manager):
 
 class Plan(models.Model):
     """ Models a gig-o-matic plan """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     gig = models.ForeignKey("Gig", related_name="plans", on_delete=models.CASCADE)
     assoc = models.ForeignKey("band.Assoc", verbose_name="assoc", related_name="plans", on_delete=models.CASCADE)
 
