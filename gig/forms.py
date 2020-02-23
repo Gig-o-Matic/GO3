@@ -28,25 +28,21 @@ class GigForm(forms.ModelForm):
             **kwargs
         )
 
-    def clean_date(self):
+    def clean(self):
         date = self.cleaned_data['date']
         if date < timezone.now():
-            raise ValidationError(_('Date must be in the future'), code='invalid date')
-        return date
-
-    def clean_setdate(self):
-        date = self.cleaned_data['date']
+            self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
         setdate = self.cleaned_data['setdate']
         if setdate and setdate < date:
-            raise ValidationError(_('Set date must be later than the start date'), code='invalid end date')
-        return date
-
-    def clean_enddate(self):
-        date = self.cleaned_data['date']
+            self.add_error('setdate', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
         enddate = self.cleaned_data['enddate']
-        if enddate and enddate < date:
-            raise ValidationError(_('End date must be later than the start date'), code='invalid end date')
-        return date
+        if enddate:
+            if enddate < date:
+                self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+            elif setdate and enddate < setdate:
+                self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+
+        super().clean()
 
     class Meta:
         model = Gig

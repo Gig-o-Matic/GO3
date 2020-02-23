@@ -18,17 +18,6 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
 from gig.helpers import send_emails_from_plans
-from datetime import datetime
-from django.utils import timezone
-
-@receiver(pre_save, sender=Gig)
-def set_times(sender, instance, **kwargs):
-    """ make sure we have a setdate and and enddate """
-    if instance.setdate is None:
-        instance.setdate = instance.date
-
-    if instance.enddate is None:
-        instance.enddate = instance.setdate
 
 @receiver(post_save, sender=Gig)
 def notify_new_gig(sender, instance, created, **kwargs):

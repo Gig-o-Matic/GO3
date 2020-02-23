@@ -89,10 +89,10 @@
                     <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}: 
                         {{ gig.date|time:"TIME_FORMAT" }}
                     </div>
-                    {% if gig.setdate != gig.date %}
+                    {% if gig.setdate %}
                         <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ gig.setdate|time:"TIME_FORMAT" }}</div>
                     {% endif %}
-                    {% if gig.enddate != gig.setdate %}
+                    {% if gig.enddate %}
                         <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ gig.enddate|time:"TIME_FORMAT" }}</div>
                     {% endif %}
                 </div>
