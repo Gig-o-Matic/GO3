@@ -13,7 +13,7 @@ Subject: {% block subject %}{% endblock %}
 {% endif %}{% if gig.setlist %}
 {{ gig.setlist }}
 {% endif %}{% if status != NO_PLAN and status != DONT_KNOW %}
-{% blocktrans %}Your current status is {{ status_label }}.  If that is still correct, you need not take any action.{% endblocktrans %}
+{% blocktrans %}Your current status is "{{ status_label }}".  If that is still correct, you need not take any action.{% endblocktrans %}
 {% endif %}{% if status != DEFINITELY %}{% url 'gig-answer' plan.id DEFINITELY as yes_url %}
 {% blocktrans %}If you **can** make it, [click here](https://gig-o-matic.com{{ yes_url }}).{% endblocktrans %}
 {% endif %}{% if status != CANT_DO_IT %}{% url 'gig-answer' plan.id CANT_DO_IT as no_url %}
