@@ -21,11 +21,9 @@ from gig.helpers import send_emails_from_plans
 
 @receiver(post_save, sender=Gig)
 def notify_new_gig(sender, instance, created, **kwargs):
-    if created:
-        # This has the side effect of creating plans for all members
-        send_emails_from_plans(instance.member_plans, 'email/new_gig.md')
-    else:
-        send_emails_from_plans(instance.member_plans, 'email/edited_gig.md')
+    # This will have the side effect of creating plans for all members
+    async_task('gig.helpers.send_email_from_gig', instance,
+               'email/new_gig.md' if created else 'email/edited_gig.md')
 
 @receiver(pre_save, sender=Plan)
 def update_plan_section(sender, instance, **kwargs):
