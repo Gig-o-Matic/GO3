@@ -14,12 +14,12 @@ Subject: {% block subject %}{% endblock %}
 {{ gig.setlist }}
 {% endif %}{% if status != NO_PLAN and status != DONT_KNOW %}
 {% blocktrans %}Your current status is "{{ status_label }}".  If that is still correct, you need not take any action.{% endblocktrans %}
-{% endif %}{% if status != DEFINITELY %}
-{% blocktrans %}If you **can** make it, [click here]({{ yes_url }}).{% endblocktrans %}
-{% endif %}{% if status != CANT_DO_IT %}
-{% blocktrans %}If you **can't** make it, [click here]({{ no_url }}).{% endblocktrans %}
-{% endif %}
-{% blocktrans %}If you **aren't sure** and want to be reminded in a few days, [click here]({{ snooze_url }}).{% endblocktrans %}
+{% endif %}{% if status != DEFINITELY %}{% url 'gig-answer' plan.id DEFINITELY as yes_url %}
+{% blocktrans %}If you **can** make it, [click here](https://gig-o-matic.com{{ yes_url }}).{% endblocktrans %}
+{% endif %}{% if status != CANT_DO_IT %}{% url 'gig-answer' plan.id CANT_DO_IT as no_url %}
+{% blocktrans %}If you **can't** make it, [click here](https://gig-o-matic.com{{ no_url }}).{% endblocktrans %}
+{% endif %}{% url 'gig-answer' plan.id DONT_KNOW as snooze_url %}
+{% blocktrans %}If you **aren't sure** and want to be reminded in a few days, [click here](https://gig-o-matic.com{{ snooze_url }}).{% endblocktrans %}
 {% url 'gig-detail' gig.id as gig_url %}
 {% blocktrans %}Gig info page is [here](https://gig-o-matic.com{{ gig_url }}).{% endblocktrans %}
 
