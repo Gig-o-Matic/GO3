@@ -37,13 +37,13 @@ class Plan(models.Model):
     assoc = models.ForeignKey("band.Assoc", verbose_name="assoc", related_name="plans", on_delete=models.CASCADE)
 
     class StatusChoices(models.IntegerChoices):
-        NO_PLAN = 0, "No Plan"
-        DEFINITELY = 1, "Definitely"
-        PROBABLY = 2, "Probably"
-        DONT_KNOW = 3, "Don't Know"
-        PROBABLY_NOT = 4, "Probably Not"
-        CANT_DO_IT = 5, "Can't Do It"
-        NOT_INTERESTED = 6, "Not Interested"
+        NO_PLAN = 0, _("No Plan")
+        DEFINITELY = 1, _("Definite")
+        PROBABLY = 2, _("Probable")
+        DONT_KNOW = 3, _("Don't Know")
+        PROBABLY_NOT = 4, _("Probably Not")
+        CANT_DO_IT = 5, _("Can't Do It")
+        NOT_INTERESTED = 6, _("Not Interested")
 
     status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NO_PLAN)
 

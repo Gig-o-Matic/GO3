@@ -236,7 +236,7 @@ class GigTest(TestCase):
         g.save()
 
         message = mail.outbox[0]
-        self.assertIn(f'Your current status is {Plan.StatusChoices.DEFINITELY.label}', message.body)
+        self.assertIn(f'Your current status is "{Plan.StatusChoices.DEFINITELY.label}"', message.body)
         self.assertNotIn('**can** make it', message.body)
         self.assertIn("**can't** make it", message.body)
 
@@ -249,6 +249,6 @@ class GigTest(TestCase):
         g.save()
 
         message = mail.outbox[0]
-        self.assertIn(f'Your current status is {Plan.StatusChoices.CANT_DO_IT.label}', message.body)
+        self.assertIn(f'Your current status is "{Plan.StatusChoices.CANT_DO_IT.label}"', message.body)
         self.assertIn('**can** make it', message.body)
         self.assertNotIn("**can't** make it", message.body)
