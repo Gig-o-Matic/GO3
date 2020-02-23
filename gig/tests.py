@@ -328,3 +328,15 @@ class GigTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
         self.assertEqual(p.snooze_until, None)
+
+    def test_answer_unsets_snooze_until(self):
+        now = datetime.now(tz=timezone.get_current_timezone())
+        _, _, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.DONT_KNOW
+        p.snooze_until = now
+        p.save()
+
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+        p.refresh_from_db()
+        self.assertEqual(p.snooze_until, None)
