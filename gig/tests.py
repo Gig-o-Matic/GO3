@@ -154,13 +154,8 @@ class GigTest(TestCase):
     def test_new_gig_localization(self):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()
-<<<<<<< HEAD
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         with timezone.override('UTC'):
-            self.create_gig()
-=======
-        self.assoc_joe_and_create_gig()
->>>>>>> Add tests for answer links
+            self.assoc_joe_and_create_gig()
 
         message = mail.outbox[0]
         self.assertIn('02.01.2100 (Sa)', message.body)

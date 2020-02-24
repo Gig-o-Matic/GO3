@@ -73,9 +73,9 @@ def answer(request, pk, val):
     plan.status = val
     if val == Plan.StatusChoices.DONT_KNOW:
         now = datetime.datetime.now(tz=timezone.get_current_timezone())
-        if (future_days := (plan.gig.schedule_datetime - now).days) > 8:
+        if (future_days := (plan.gig.date - now).days) > 8:
             plan.snooze_until = now + datetime.timedelta(days=7)
         elif future_days > 2:
-            plan.snooze_until = plan.gig.schedule_datetime - datetime.timedelta(days=2)
+            plan.snooze_until = plan.gig.date - datetime.timedelta(days=2)
     plan.save()
     return render(request, 'gig/answer.html', {'gig_id': plan.gig.id})
