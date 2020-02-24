@@ -18,14 +18,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
 from gig.helpers import send_emails_from_plans
-from datetime import datetime
-from django.utils import timezone
 from django_q.tasks import async_task
-
-@receiver(pre_save, sender=Gig)
-def set_date_time(sender, instance, **kwargs):
-    t = instance.schedule_time
-    instance.schedule_datetime = datetime.combine(instance.schedule_date, t) if t else instance.schedule_date
 
 @receiver(post_save, sender=Gig)
 def notify_new_gig(sender, instance, created, **kwargs):

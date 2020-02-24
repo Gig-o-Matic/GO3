@@ -28,7 +28,7 @@ class MemberPlanManager(models.Manager):
     def future_plans(self, member):
         return super().get_queryset().filter(assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
-                                             gig__schedule_datetime__gt=datetime.datetime.now())
+                                             gig__date__gt=datetime.datetime.now())
 
 
 class Plan(models.Model):
@@ -79,20 +79,7 @@ class AbstractGig(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
-    date = models.DateField()
-
-    @property
-    def schedule_date(self):
-        return self.date
-
-    calltime = models.TimeField(null=True, blank=True)
-
-    @property
-    def schedule_time(self):
-        return self.calltime
-
-    # set on save signal
-    schedule_datetime = models.DateTimeField(blank=True)
+    date = models.DateTimeField()
 
     address = models.TextField(null=True, blank=True)
     class StatusOptions(models.IntegerChoices):
@@ -162,26 +149,8 @@ class Gig(AbstractGig):
     contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
     setlist = models.TextField(null=True, blank=True)
 
-    enddate = models.DateField(null=True, blank=True)
-
-    settime = models.TimeField(null=True, blank=True)
-    endtime = models.TimeField(null=True, blank=True)
-
-    @property
-    def schedule_time(self):
-        if self.calltime:
-            return self.calltime
-        elif self.settime:
-            return self.settime
-        else:
-            return None
-
-    @property
-    def schedule_date(self):
-        if self.enddate:
-            return self.enddate
-        else:
-            return self.date
+    setdate = models.DateTimeField(null=True, blank=True)
+    enddate = models.DateTimeField(null=True, blank=True)
 
     dress = models.TextField(null=True, blank=True)
     paid = models.TextField(null=True, blank=True)

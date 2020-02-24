@@ -17,6 +17,8 @@
 
 from django import forms
 from .models import Gig
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class GigForm(forms.ModelForm):
@@ -26,9 +28,25 @@ class GigForm(forms.ModelForm):
             **kwargs
         )
 
+    def clean(self):
+        date = self.cleaned_data['date']
+        if date < timezone.now():
+            self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
+        setdate = self.cleaned_data['setdate']
+        if setdate and setdate < date:
+            self.add_error('setdate', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
+        enddate = self.cleaned_data['enddate']
+        if enddate:
+            if enddate < date:
+                self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+            elif setdate and enddate < setdate:
+                self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+
+        super().clean()
+
     class Meta:
         model = Gig
-        fields = ['title','contact','status','is_private','date','enddate','calltime','settime','endtime','address','dress','paid','postgig',
+        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','postgig',
                 'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
 
         widgets = {
