@@ -25,8 +25,10 @@ urlpatterns = [
     path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
     path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
 
-    path('plan/<int:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
-    path('plan/<int:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),
-    path('plan/<int:pk>/comment', helpers.update_plan_comment, name='plan-update-comment'),
-    path('plan/<int:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
+    path('plan/<uuid:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
+    path('plan/<uuid:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),
+    path('plan/<uuid:pk>/comment', helpers.update_plan_comment, name='plan-update-comment'),
+    path('plan/<uuid:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
+
+    path('answer/<uuid:pk>/<int:val>', views.answer, name='gig-answer'),
 ]
