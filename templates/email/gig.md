@@ -5,7 +5,7 @@ Subject: {% block subject %}{% endblock %}
 
 {{ gig.title }}
 {% trans "Date" %}: {{ gig.date|date:"SHORT_DATE_FORMAT" }} ({{ gig.date|date:"D" }}){% if gig.enddate %} - {{ gig.enddate|date:"SHORT_DATE_FORMAT" }} ({{ gig.enddate|date:"D" }}){% endif %}
-{% trans "Time" %}: {% if gig.calltime %}{{ gig.calltime|time:"TIME_FORMAT" }} ({% trans "Call Time" %}){% if gig.settime or gig.endtime %}, {% endif %}{% endif %}{% if gig.settime %}{{ gig.settime|time:"TIME_FORMAT" }} ({% trans "Set Time" %}){% if gig.endtime %}, {% endif %}{% endif %}{% if gig.endtime %}{{ gig.endtime|time:"TIME_FORMAT" }} ({% trans "End Time" %}){% endif %}
+{% trans "Time" %}: {% if gig.date %}{{ gig.date|time:"TIME_FORMAT" }} ({% trans "Call Time" %}){% if gig.setdate or gig.enddate %}, {% endif %}{% endif %}{% if gig.setdate %}{{ gig.setdate|time:"TIME_FORMAT" }} ({% trans "Set Time" %}){% if gig.enddate %}, {% endif %}{% endif %}{% if gig.enddate %}{{ gig.enddate|time:"TIME_FORMAT" }} ({% trans "End Time" %}){% endif %}
 {% trans "Contact" %}: {{ contact_name }}
 {% trans "Status" %}: {{ gig.status_string }}
 {% if gig.details %}

@@ -26,6 +26,7 @@ from go3 import settings
 from datetime import timedelta, datetime, time
 from django.urls import reverse
 from django.utils import timezone
+from pytz import timezone as pytz_timezone
 
 MISSING_TEMPLATES = copy.deepcopy(settings.TEMPLATES)
 MISSING_TEMPLATES[0]['OPTIONS']['string_if_invalid'] = 'MISSING: %s'
@@ -46,13 +47,13 @@ class GigTest(TestCase):
         Assoc.objects.all().delete()
 
     def create_gig(self):
+        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC'))
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
-            date=datetime(2100, 1, 2),
-            calltime=time(12, tzinfo=timezone.get_current_timezone()),
-            settime=time(12, 30, tzinfo=timezone.get_current_timezone()),
-            endtime=time(14, tzinfo=timezone.get_current_timezone())
+            date=thedate,
+            setdate=thedate + timedelta(minutes=30),
+            enddate=thedate + timedelta(hours=2),
         )
 
     def assoc_joe_and_create_gig(self):
@@ -158,6 +159,17 @@ class GigTest(TestCase):
         self.assertIn('02.01.2100 (Sa)', message.body)
         self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
         self.assertIn('Nicht fixiert', message.body)
+
+    def test_new_gig_time_localization(self):
+        self.joeuser.preferences.language='en-US'
+        self.joeuser.save()
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        with timezone.override('America/New_York'):
+            g = self.create_gig()
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn("01/02/2100 (Sat)", message.body)
+        self.assertIn('7 a.m. (Call Time), 7:30 a.m. (Set Time), 9 a.m. (End Time)', message.body)
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_reminder_email(self):
