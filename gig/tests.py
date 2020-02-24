@@ -116,12 +116,8 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
-<<<<<<< HEAD
         with timezone.override('UTC'):
             g, a, p = self.assoc_joe_and_create_gig()
-=======
-        g, a, p = self.assoc_joe_and_create_gig()
->>>>>>> dfba4cf7e3106d50e0a474ee49bc21706599ee6e
         self.assertEqual(len(mail.outbox), 1)
 
         message = mail.outbox[0]
