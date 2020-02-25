@@ -79,8 +79,8 @@ class AbstractGig(models.Model):
         abstract = True
 
     title = models.CharField(max_length=200)
-    band = models.ForeignKey(Band,  
-                            on_delete=models.CASCADE)
+    band = models.ForeignKey(Band, on_delete=models.CASCADE)
+    # must access by band.gig_set - if we use a custom related_name things get difficult
 
     details = models.TextField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
