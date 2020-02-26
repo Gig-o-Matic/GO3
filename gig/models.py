@@ -74,8 +74,15 @@ class Plan(models.Model):
 
 
 class AbstractGig(models.Model):
+
+    class Meta:
+        abstract = True
+
     title = models.CharField(max_length=200)
-    band = models.ForeignKey(Band, related_name="gigs", on_delete=models.CASCADE)
+    band = models.ForeignKey(Band, 
+                            related_name="%(class)ss",
+                            related_query_name="%(class)ss", 
+                            on_delete=models.CASCADE)
 
     details = models.TextField(null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
