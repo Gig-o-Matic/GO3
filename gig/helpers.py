@@ -19,10 +19,14 @@ import datetime
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Plan
+from django.utils.formats import date_format, time_format
+from django.utils.translation import gettext_lazy as _
+from django.utils.timezone import template_localtime
+from .models import Gig, Plan
 from band.models import Section, AssocStatusChoices
 from member.helpers import prepare_email
 from lib.email import send_messages_async
+from lib.translation import join_trans
 
 @login_required
 def update_plan(request, pk, val):
@@ -64,14 +68,48 @@ def update_plan_default_section(assoc):
     """
     Plan.objects.filter(assoc=assoc, plan_section=None).update(section=assoc.default_section)
 
+def date_format_func(dt, fmt):
+    # Returns lambdas that the template will evaluate in the correct
+    # language context
+    return lambda: date_format(template_localtime(dt), fmt)
+
+def date_diff(latest, previous):
+    if latest.date() == previous.date():
+        return (date_format_func(latest, 'TIME_FORMAT'),
+                date_format_func(previous, 'TIME_FORMAT'))
+    return (date_format_func(latest, 'SHORT_DATETIME_FORMAT'),
+            date_format_func(previous, 'SHORT_DATETIME_FORMAT'))
+
+def generate_changes(latest, previous):
+    if not previous:
+        return []
+
+    changes = []
+    diff = latest.diff_against(previous)
+    if 'status' in diff.changed_fields:
+        # The historical copy only gets properties, it appears
+        changes.append((_('Status'), Gig.status_string(latest), Gig.status_string(previous)))
+    if 'date' in diff.changed_fields:
+        changes.append((_('Call Time'), *date_diff(latest.date, previous.date)))
+    if 'setdate' in diff.changed_fields:
+        changes.append((_('Set Time'), *date_diff(latest.setdate, previous.setdate)))
+    if 'enddate' in diff.changed_fields:
+        changes.append((_('End Time'), *date_diff(latest.enddate, previous.enddate)))
+    if set(diff.changed_fields) - {'status', 'date', 'setdate', 'enddate'}:
+        changes.append((_('Details'), _('(See below.)'), None))
+    return changes
+
 def email_from_plan(plan, template):
     gig = plan.gig
+    latest_record = gig.history.latest()
+    changes = generate_changes(latest_record, latest_record.prev_record)
     member = plan.assoc.member
     contact_name, contact_email = ((contact.display_name, contact.email)
                                    if (contact := gig.contact) else ('??', None))
     context = {
         'gig': gig,
-        'change_string': 'FIXME: Figure out what changed',
+        'changes': changes,
+        'changes_title': join_trans(_(', '), (c[0] for c in changes)),
         'contact_name': contact_name,
         'plan': plan,
         'status': plan.status,

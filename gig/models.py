@@ -107,7 +107,6 @@ class AbstractGig(models.Model):
     def is_confirmed(self):
         self.status=StatusOptions.CONFIRMED
 
-    @property
     def status_string(self):
         return [_('Unconfirmed'), _('Confirmed!'), _('Cancelled!'), _('Asking')][self.status]
 

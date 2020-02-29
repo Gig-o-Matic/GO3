@@ -233,7 +233,8 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_gig_edit_email(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
+        with timezone.override('UTC'):
+            g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
@@ -246,6 +247,45 @@ class GigTest(TestCase):
         self.assertIn("**can't** make it", message.body)
         self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
+
+    def test_gig_edit_status(self):
+        with timezone.override('UTC'):
+            g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        g.status = g.StatusOptions.CONFIRMED
+        g.save()
+
+        message = mail.outbox[0]
+        self.assertIn('Status', message.subject)
+        self.assertIn('Confirmed!', message.body)
+        self.assertIn("(was Unconfirmed)", message.body)
+
+    def test_gig_edit_call(self):
+        with timezone.override('UTC'):
+            g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        g.date = g.date + timedelta(hours=2)
+        g.save()
+
+        message = mail.outbox[0]
+        self.assertIn('Call Time', message.subject)
+        self.assertIn('9 a.m.', message.body)
+        self.assertIn("(was 7 a.m.)", message.body)
+
+    def test_gig_edit_trans(self):
+        self.joeuser.preferences.language = 'de'
+        self.joeuser.save()
+        with timezone.override('UTC'):
+            g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        g.date = g.date + timedelta(hours=2)
+        g.save()
+
+        message = mail.outbox[0]
+        self.assertIn('Beginn', message.subject)
+        # We need to check the previous time, since the current time will show
+        # up in the details block, which we're already checking to be localized
+        self.assertIn('07:00', message.body)
 
     def test_gig_edit_definitely(self):
         g, a, p = self.assoc_joe_and_create_gig()
