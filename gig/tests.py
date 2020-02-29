@@ -315,7 +315,7 @@ class GigTest(TestCase):
     def test_answer_snooze_too_short(self):
         now = datetime.now(tz=timezone.get_current_timezone())
         g, _, p = self.assoc_joe_and_create_gig()
-        g.date = now.date() + timedelta(days=1)
+        g.date = now + timedelta(days=1)
         g.save()
         response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
         p.refresh_from_db()
