@@ -18,6 +18,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
+from django.utils import timezone
 import datetime
 import uuid
 
@@ -29,7 +30,7 @@ class MemberPlanManager(models.Manager):
     def future_plans(self, member):
         return super().get_queryset().filter(assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
-                                             gig__date__gt=datetime.datetime.now())
+                                             gig__date__gt=timezone.now())
 
 
 class Plan(models.Model):
