@@ -17,7 +17,6 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
-from gig.helpers import send_emails_from_plans
 from django_q.tasks import async_task
 
 @receiver(post_save, sender=Gig)
