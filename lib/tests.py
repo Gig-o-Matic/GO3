@@ -91,3 +91,4 @@ class CaldavTest(FSTestCase):
     def test_calfeed_event(self):
         cf = make_calfeed('flim-flam', self.band.gigs.all(),self.joeuser.preferences.language)
         self.assertTrue(cf.find(b'EVENT')>0)
+

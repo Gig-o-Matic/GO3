@@ -21,7 +21,7 @@ from django.test import TestCase, RequestFactory
 from .models import Member, MemberPreferences
 from band.models import Band, Assoc
 from .views import AssocsView, OtherBandsView
-from .helpers import prepare_email
+from .helpers import prepare_email, prepare_calfeed
 from lib.email import DEFAULT_SUBJECT
 
 class MemberTest(TestCase):
@@ -152,3 +152,38 @@ class MemberEmailTest(TestCase):
         self.assertIn('\n', message.body)
         # We want a new line, but it could show up as "<br>" or "<br />"
         self.assertIn('<br', message.alternatives[0][0])
+
+def MemberCalfeedTest(TestCase):
+    def setUp(self):
+        """ fake a file system """
+        self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='d@e.f')
+        self.joeuser = Member.objects.create_user(email='g@h.i')
+        self.janeuser = Member.objects.create_user(email='j@k.l')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        g = self.create_gig()
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+        Gig.objects.all().delete()
+
+    def create_gig(self):
+        the_date = timezone.datetime(2100,1,2,tzinfo=pytz.timezone(self.band.timezone))
+        return Gig.objects.create(
+            title="New Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2)
+        )
+
+    def test_member_caldav_stream(self):
+        cf = prepare_calfeed(self.joeuser, [], self.joeuser.preferences.language)
+        self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
+        self.assertTrue(cf.find(b'g@h.i')>0)
+        self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
+        self.assertTrue(cf.find(b'EVENT')>0)

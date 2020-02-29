@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required
 from markdown import markdown
 
 from lib.email import DEFAULT_SUBJECT, SUBJECT
+from lib.caldav import make_calfeed
 
 @login_required
 def motd_seen(request, pk):
@@ -52,3 +53,7 @@ def prepare_email(member, template, context=None, **kw):
     message = EmailMultiAlternatives(subject, text, to=[member.email_line], **kw)
     message.attach_alternative(html, 'text/html')
     return message
+
+def prepare_calfeed(member):
+    cf = make_calfeed(member, [], member.preferences.language)
+    return cf
