@@ -20,9 +20,14 @@ from unittest.mock import patch, mock_open
 from django.test import TestCase, RequestFactory
 from .models import Member, MemberPreferences
 from band.models import Band, Assoc
+from gig.models import Gig
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_email, prepare_calfeed
 from lib.email import DEFAULT_SUBJECT
+
+from django.utils import timezone
+from datetime import timedelta
+import pytz
 
 class MemberTest(TestCase):
     def setUp(self):
@@ -153,7 +158,7 @@ class MemberEmailTest(TestCase):
         # We want a new line, but it could show up as "<br>" or "<br />"
         self.assertIn('<br', message.alternatives[0][0])
 
-def MemberCalfeedTest(TestCase):
+class MemberCalfeedTest(TestCase):
     def setUp(self):
         """ fake a file system """
         self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
@@ -161,7 +166,7 @@ def MemberCalfeedTest(TestCase):
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band')
-        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=True)
         g = self.create_gig()
 
     def tearDown(self):
@@ -182,7 +187,7 @@ def MemberCalfeedTest(TestCase):
         )
 
     def test_member_caldav_stream(self):
-        cf = prepare_calfeed(self.joeuser, [], self.joeuser.preferences.language)
+        cf = prepare_calfeed(self.joeuser)
         self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
         self.assertTrue(cf.find(b'g@h.i')>0)
         self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))

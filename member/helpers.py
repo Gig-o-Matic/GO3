@@ -21,6 +21,9 @@ from django.template.loader import render_to_string
 from django.utils import timezone, translation
 from django.contrib.auth.decorators import login_required
 from markdown import markdown
+from datetime import timedelta
+
+from gig.models import Plan
 
 from lib.email import DEFAULT_SUBJECT, SUBJECT
 from lib.caldav import make_calfeed
@@ -55,5 +58,12 @@ def prepare_email(member, template, context=None, **kw):
     return message
 
 def prepare_calfeed(member):
-    cf = make_calfeed(member, [], member.preferences.language)
+
+    # we want the gigs as far back as a year ago
+    date_earliest = timezone.now() - timedelta(days=365)
+
+    the_plans = Plan.objects.filter(assoc__member_id=member.id, gig__date__gt=date_earliest)
+
+    the_gigs = [p.gig for p in the_plans]
+    cf = make_calfeed(member, the_gigs, member.preferences.language)
     return cf
