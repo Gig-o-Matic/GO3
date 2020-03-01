@@ -26,6 +26,7 @@ from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
 from band.models import Assoc
 from go3.settings import LANGUAGES
+import uuid
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -81,6 +82,7 @@ class Member(AbstractUser):
 
     # flag to determine whether to recompute calendar feed
     cal_feed_dirty = models.BooleanField(default=True)
+    cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
 
     status = models.IntegerField(choices=MemberStatusChoices.choices, default=MemberStatusChoices.ACTIVE)
 

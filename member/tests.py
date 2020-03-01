@@ -22,9 +22,9 @@ from .models import Member, MemberPreferences
 from band.models import Band, Assoc
 from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
-from .helpers import prepare_email, prepare_calfeed
+from .helpers import prepare_email, prepare_calfeed, calfeed
 from lib.email import DEFAULT_SUBJECT
-
+from django.urls import resolve
 from django.utils import timezone
 from datetime import timedelta
 import pytz
@@ -163,7 +163,13 @@ class MemberCalfeedTest(TestCase):
         """ fake a file system """
         self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='d@e.f')
+
         self.joeuser = Member.objects.create_user(email='g@h.i')
+        self.joeuser.preferences.hide_canceled_gigs = False
+        self.joeuser.preferences.calendar_show_only_confirmed = False
+        self.joeuser.preferences.calendar_show_only_committed = False
+        self.joeuser.preferences.save()
+
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band')
         Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=True)
@@ -269,3 +275,11 @@ class MemberCalfeedTest(TestCase):
 
         cf = prepare_calfeed(self.joeuser)
         self.assertEqual(cf.find(b'EVENT'),-1)
+
+    def test_member_calfeed_url(self):
+        r = calfeed(request=None, pk='xyz')
+        self.assertEqual(r.status_code,404)
+
+        m = self.joeuser
+        r = calfeed(request=None, pk=m.cal_feed_id)
+        self.assertTrue(r.content.find(b'EVENT')>0)

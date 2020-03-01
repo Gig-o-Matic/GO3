@@ -24,9 +24,11 @@ from markdown import markdown
 from datetime import timedelta
 
 from gig.models import Gig, Plan
+from member.models import Member
 
 from lib.email import DEFAULT_SUBJECT, SUBJECT
 from lib.caldav import make_calfeed
+from django.core.exceptions import ValidationError
 
 @login_required
 def motd_seen(request, pk):
@@ -81,3 +83,16 @@ def prepare_calfeed(member):
     the_gigs = [p.gig for p in the_plans]
     cf = make_calfeed(member, the_gigs, member.preferences.language)
     return cf
+
+def calfeed(request, pk):
+    try:
+        m = Member.objects.get(cal_feed_id = pk)
+    except (ValueError, ValidationError):
+        hr = HttpResponse()
+        hr.status_code = 404
+        return hr
+
+    tf = prepare_calfeed(m)
+    return HttpResponse(tf)
+    
+
