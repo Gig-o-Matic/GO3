@@ -105,22 +105,23 @@ def generate_changes(latest, previous):
 
 def email_from_plan(plan, template):
     gig = plan.gig
-    latest_record = gig.history.latest()
-    changes = generate_changes(latest_record, latest_record.prev_record)
-    member = plan.assoc.member
-    contact_name, contact_email = ((contact.display_name, contact.email)
-                                   if (contact := gig.contact) else ('??', None))
-    context = {
-        'gig': gig,
-        'changes': changes,
-        'changes_title': join_trans(_(', '), (c[0] for c in changes)),
-        'contact_name': contact_name,
-        'plan': plan,
-        'status': plan.status,
-        'status_label': Plan.StatusChoices(plan.status).label,
-        **Plan.StatusChoices.__members__,
-    }
-    return prepare_email(member, template, context, reply_to=[contact_email])
+    with timezone.override(gig.band.timezone):
+        latest_record = gig.history.latest()
+        changes = generate_changes(latest_record, latest_record.prev_record)
+        member = plan.assoc.member
+        contact_name, contact_email = ((contact.display_name, contact.email)
+                                       if (contact := gig.contact) else ('??', None))
+        context = {
+            'gig': gig,
+            'changes': changes,
+            'changes_title': join_trans(_(', '), (c[0] for c in changes)),
+            'contact_name': contact_name,
+            'plan': plan,
+            'status': plan.status,
+            'status_label': Plan.StatusChoices(plan.status).label,
+            **Plan.StatusChoices.__members__,
+        }
+        return prepare_email(member, template, context, reply_to=[contact_email])
 
 def send_emails_from_plans(plans_query, template):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,

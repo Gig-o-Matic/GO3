@@ -37,7 +37,7 @@ class GigTest(TestCase):
         self.band_admin = Member.objects.create_user(email='d@e.f')
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
-        self.band = Band.objects.create(name='test band')
+        self.band = Band.objects.create(name='test band', timezone='UTC')
         Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
 
     def tearDown(self):
@@ -116,8 +116,7 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
-        with timezone.override('UTC'):
-            g, a, p = self.assoc_joe_and_create_gig()
+        g, a, p = self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)
 
         message = mail.outbox[0]
@@ -154,8 +153,7 @@ class GigTest(TestCase):
     def test_new_gig_localization(self):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()
-        with timezone.override('UTC'):
-            self.assoc_joe_and_create_gig()
+        self.assoc_joe_and_create_gig()
 
         message = mail.outbox[0]
         self.assertIn('02.01.2100 (Sa)', message.body)
@@ -165,13 +163,34 @@ class GigTest(TestCase):
     def test_new_gig_time_localization(self):
         self.joeuser.preferences.language='en-US'
         self.joeuser.save()
+        self.band.timezone = 'America/New_York'
+        self.band.save()
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        with timezone.override('America/New_York'):
-            g = self.create_gig()
+        g = self.create_gig()
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn('7 a.m. (Call Time), 7:30 a.m. (Set Time), 9 a.m. (End Time)', message.body)
+
+    def test_gig_time_daylight_savings(self):
+        self.band.timezone = 'America/New_York'
+        self.band.save()
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+
+        # DST information only out to 2037?
+        Gig.objects.create(
+            title="January Gig",
+            band_id=self.band.id,
+            date=timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
+        )
+        Gig.objects.create(
+            title="July Gig",
+            band_id=self.band.id,
+            date=timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
+        )
+        self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
+        self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
+
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_reminder_email(self):
@@ -233,8 +252,7 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_gig_edit_email(self):
-        with timezone.override('UTC'):
-            g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
@@ -249,8 +267,7 @@ class GigTest(TestCase):
         self.assertNotIn('MISSING', message.body)
 
     def test_gig_edit_status(self):
-        with timezone.override('UTC'):
-            g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
@@ -261,20 +278,18 @@ class GigTest(TestCase):
         self.assertIn("(was Unconfirmed)", message.body)
 
     def test_gig_edit_call(self):
-        with timezone.override('UTC'):
-            g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.date = g.date + timedelta(hours=2)
         g.save()
 
         message = mail.outbox[0]
         self.assertIn('Call Time', message.subject)
-        self.assertIn('9 a.m.', message.body)
-        self.assertIn("(was 7 a.m.)", message.body)
+        self.assertIn('2 p.m.', message.body)
+        self.assertIn("(was noon)", message.body)
 
     def test_gig_edit_add_time(self):
-        with timezone.override('UTC'):
-            g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         g.setdate = None
         g.save()
 
@@ -284,12 +299,11 @@ class GigTest(TestCase):
 
         message = mail.outbox[0]
         self.assertIn('Set Time', message.subject)
-        self.assertIn('9 a.m.', message.body)
+        self.assertIn('2 p.m.', message.body)
         self.assertIn("(was not set)", message.body)
 
     def test_gig_edit_contact(self):
-        with timezone.override('UTC'):
-            g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.contact = self.janeuser
         g.save()
@@ -302,8 +316,7 @@ class GigTest(TestCase):
     def test_gig_edit_trans(self):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()
-        with timezone.override('UTC'):
-            g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.date = g.date + timedelta(hours=2)
         g.save()
@@ -312,7 +325,7 @@ class GigTest(TestCase):
         self.assertIn('Beginn', message.subject)
         # We need to check the previous time, since the current time will show
         # up in the details block, which we're already checking to be localized
-        self.assertIn('07:00', message.body)
+        self.assertIn('12:00', message.body)
 
     def test_gig_edit_definitely(self):
         g, a, p = self.assoc_joe_and_create_gig()
