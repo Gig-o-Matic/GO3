@@ -71,10 +71,10 @@ def update_plan_default_section(assoc):
 def date_format_func(dt, fmt):
     # Returns lambdas that the template will evaluate in the correct
     # language context
-    return lambda: date_format(template_localtime(dt), fmt)
+    return lambda: date_format(template_localtime(dt), fmt) if dt else _('not set')
 
 def date_diff(latest, previous):
-    if latest.date() == previous.date():
+    if latest and previous and latest.date() == previous.date():
         return (date_format_func(latest, 'TIME_FORMAT'),
                 date_format_func(previous, 'TIME_FORMAT'))
     return (date_format_func(latest, 'SHORT_DATETIME_FORMAT'),
