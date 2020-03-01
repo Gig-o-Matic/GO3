@@ -20,7 +20,7 @@ from unittest.mock import patch, mock_open
 from django.test import TestCase, RequestFactory
 from .models import Member, MemberPreferences
 from band.models import Band, Assoc
-from gig.models import Gig
+from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_email, prepare_calfeed
 from lib.email import DEFAULT_SUBJECT
@@ -187,8 +187,85 @@ class MemberCalfeedTest(TestCase):
         )
 
     def test_member_caldav_stream(self):
+
+        # if we're filtering nothing, make sure we see the gig
+        g = Gig.objects.first()
+        m = self.joeuser
+        p = Plan.objects.get(assoc__member=m.id, gig=g.id)
+
+        m.preferences.hide_canceled_gigs = False
+        m.preferences.calendar_show_only_confirmed = False
+        m.preferences.calendar_show_only_committed = False
+        m.preferences.save()
+        g.status = Gig.StatusOptions.CONFIRMED
+        g.save()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+
         cf = prepare_calfeed(self.joeuser)
-        self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
-        self.assertTrue(cf.find(b'g@h.i')>0)
-        self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
         self.assertTrue(cf.find(b'EVENT')>0)
+
+        # test hiding canceled gigs
+        m.preferences.hide_canceled_gigs = True
+        m.preferences.calendar_show_only_confirmed = False
+        m.preferences.calendar_show_only_committed = False
+        m.preferences.save()
+        g.status = Gig.StatusOptions.CONFIRMED
+        g.save()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+
+        cf = prepare_calfeed(self.joeuser)
+        self.assertTrue(cf.find(b'EVENT')>0)
+
+        m.preferences.hide_canceled_gigs = True
+        m.preferences.calendar_show_only_confirmed = False
+        m.preferences.calendar_show_only_committed = False
+        m.preferences.save()
+        g.status = Gig.StatusOptions.CANCELLED
+        g.save()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+
+        cf = prepare_calfeed(self.joeuser)
+        self.assertEqual(cf.find(b'EVENT'),-1)
+
+        # test showing only confirmed gigs
+        m.preferences.hide_canceled_gigs = False
+        m.preferences.calendar_show_only_confirmed = True
+        m.preferences.calendar_show_only_committed = False
+        m.preferences.save()
+        g.status = Gig.StatusOptions.ASKING
+        g.save()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+
+        cf = prepare_calfeed(self.joeuser)
+        self.assertEqual(cf.find(b'EVENT'),-1)
+
+        # test showing only committed gigs
+        m.preferences.hide_canceled_gigs = False
+        m.preferences.calendar_show_only_confirmed = False
+        m.preferences.calendar_show_only_committed = True
+        m.preferences.save()
+        g.status = Gig.StatusOptions.CONFIRMED
+        g.save()
+        p.status = Plan.StatusChoices.DONT_KNOW
+        p.save()
+
+        cf = prepare_calfeed(self.joeuser)
+        self.assertEqual(cf.find(b'EVENT'),-1)
+
+        # test showing only gigs in the last year
+        m.preferences.hide_canceled_gigs = False
+        m.preferences.calendar_show_only_confirmed = False
+        m.preferences.calendar_show_only_committed = False
+        m.preferences.save()
+        g.status = Gig.StatusOptions.CONFIRMED
+        g.date = timezone.now() - timedelta(days=800)
+        g.save()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+
+        cf = prepare_calfeed(self.joeuser)
+        self.assertEqual(cf.find(b'EVENT'),-1)

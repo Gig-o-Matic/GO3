@@ -23,7 +23,7 @@ from django.contrib.auth.decorators import login_required
 from markdown import markdown
 from datetime import timedelta
 
-from gig.models import Plan
+from gig.models import Gig, Plan
 
 from lib.email import DEFAULT_SUBJECT, SUBJECT
 from lib.caldav import make_calfeed
@@ -58,11 +58,25 @@ def prepare_email(member, template, context=None, **kw):
     return message
 
 def prepare_calfeed(member):
-
+    
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
 
-    the_plans = Plan.objects.filter(assoc__member_id=member.id, gig__date__gt=date_earliest)
+    filter_args = {
+        "assoc__member_id": member.id,
+        "gig__date__gt": date_earliest,
+    }
+
+    if member.preferences.calendar_show_only_confirmed:
+        filter_args["gig__status"] = Gig.StatusOptions.CONFIRMED
+
+    if member.preferences.calendar_show_only_committed:
+        filter_args["status__in"] = [Plan.StatusChoices.DEFINITELY, Plan.StatusChoices.PROBABLY]
+
+    the_plans = Plan.objects.filter(**filter_args)
+
+    if member.preferences.hide_canceled_gigs:
+        the_plans = the_plans.exclude(gig__status=Gig.StatusOptions.CANCELLED)
 
     the_gigs = [p.gig for p in the_plans]
     cf = make_calfeed(member, the_gigs, member.preferences.language)
