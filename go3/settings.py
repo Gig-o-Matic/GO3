@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.humanize',
     'django_q',
+    'simple_history',
 ]
 
 MIDDLEWARE = [
