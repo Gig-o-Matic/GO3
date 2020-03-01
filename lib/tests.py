@@ -83,12 +83,12 @@ class CaldavTest(FSTestCase):
         self.assertEqual(cf,'hi')
 
     def test_calfeed(self):
-        cf = make_calfeed('flim-flam', [], self.joeuser.preferences.language)
+        cf = make_calfeed('flim-flam', [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
         self.assertTrue(cf.find(b'flim-flam')>0)
         self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
 
     def test_calfeed_event(self):
-        cf = make_calfeed('flim-flam', self.band.gigs.all(),self.joeuser.preferences.language)
+        cf = make_calfeed('flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'EVENT')>0)
 
