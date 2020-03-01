@@ -81,7 +81,7 @@ def prepare_calfeed(member):
         the_plans = the_plans.exclude(gig__status=Gig.StatusOptions.CANCELLED)
 
     the_gigs = [p.gig for p in the_plans]
-    cf = make_calfeed(member, the_gigs, member.preferences.language)
+    cf = make_calfeed(member, the_gigs, member.preferences.language, member.cal_feed_id)
     return cf
 
 def calfeed(request, pk):

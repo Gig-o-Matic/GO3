@@ -31,7 +31,7 @@ def get_calfeed(tag):
     return s
 
 
-def make_calfeed(the_title, the_events, the_language):
+def make_calfeed(the_title, the_events, the_language, the_uid):
     """ construct an ical-compliant stream from a list of events """
 
     def _make_summary(event):
@@ -57,6 +57,8 @@ def make_calfeed(the_title, the_events, the_language):
         for e in the_events:
             with timezone.override(e.band.timezone):
                 event = Event()
+                event.add('dtstamp', timezone.now())
+                event.add('uid', the_uid)
                 event.add('summary', _make_summary(e))
                 event.add('dtstart', e.date)
                 event.add('dtend', e.enddate)
