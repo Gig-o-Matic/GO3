@@ -287,6 +287,18 @@ class GigTest(TestCase):
         self.assertIn('9 a.m.', message.body)
         self.assertIn("(was not set)", message.body)
 
+    def test_gig_edit_contact(self):
+        with timezone.override('UTC'):
+            g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        g.contact = self.janeuser
+        g.save()
+
+        message = mail.outbox[0]
+        self.assertIn('Contact', message.subject)
+        self.assertIn(self.janeuser.display_name, message.body)
+        self.assertIn("(was ??)", message.body)
+
     def test_gig_edit_trans(self):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()

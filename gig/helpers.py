@@ -95,6 +95,10 @@ def generate_changes(latest, previous):
         changes.append((_('Set Time'), *date_diff(latest.setdate, previous.setdate)))
     if 'enddate' in diff.changed_fields:
         changes.append((_('End Time'), *date_diff(latest.enddate, previous.enddate)))
+    if 'contact' in diff.changed_fields:
+        changes.append((_('Contact'),
+                       latest.contact.display_name if latest.contact else '??',
+                       previous.contact.display_name if previous.contact else '??'))
     if set(diff.changed_fields) - {'status', 'date', 'setdate', 'enddate'}:
         changes.append((_('Details'), _('(See below.)'), None))
     return changes
