@@ -22,17 +22,20 @@ from .models import Member, MemberPreferences
 from band.models import Band, Assoc
 from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
-from .helpers import prepare_email, prepare_calfeed, calfeed
+from .helpers import prepare_email, prepare_calfeed, calfeed, update_all_calfeeds
 from lib.email import DEFAULT_SUBJECT
 from django.urls import resolve
 from django.utils import timezone
 from datetime import timedelta
 import pytz
+import os
+from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
+
 
 class MemberTest(TestCase):
     def setUp(self):
-        m=Member.objects.create_user('a@b.com', password='abc')
-        b=Band.objects.create(name='test band')
+        m = Member.objects.create_user('a@b.com', password='abc')
+        b = Band.objects.create(name='test band')
         Assoc.objects.create(band=b, member=m)
         Band.objects.create(name='another band')
 
@@ -47,7 +50,7 @@ class MemberTest(TestCase):
         m = Member.objects.all()
         self.assertEqual(len(m), 1)
         m = m[0]
-        self.assertEqual(len(m.assocs.all()),1)
+        self.assertEqual(len(m.assocs.all()), 1)
         b = m.assocs.first().band
         self.assertEqual(b.name, 'test band')
 
@@ -59,7 +62,7 @@ class MemberTest(TestCase):
 
         context = view.get_context_data()
         self.assertIn('assocs', context)
-        self.assertEqual(len(context['assocs']),1)
+        self.assertEqual(len(context['assocs']), 1)
         self.assertEqual(context['assocs'][0].band.name, 'test band')
 
     def test_member_otherbandsview(self):
@@ -70,7 +73,7 @@ class MemberTest(TestCase):
 
         context = view.get_context_data()
         self.assertIn('bands', context)
-        self.assertEqual(len(context['bands']),1)
+        self.assertEqual(len(context['bands']), 1)
         self.assertEqual(context['bands'][0].name, 'another band')
 
 
@@ -79,6 +82,7 @@ class MemberEmailTest(TestCase):
         self.member = Member.objects.create_user('member@example.com')
 
         _open = open  # Saves a reference to the builtin, for access after patching
+
         def template_open(filename, *args, **kw):
             # We adopt the convention that a filename begining with 't:' indicates
             # a template that we want to inject, with the contents of the filename
@@ -138,17 +142,20 @@ class MemberEmailTest(TestCase):
         self.assertEqual(message.to[0], 'Member Username <member@example.com>')
 
     def test_translation_en(self):
-        message = prepare_email(self.member, 't:{% load i18n %}{% blocktrans %}Translated text{% endblocktrans %}')
+        message = prepare_email(
+            self.member, 't:{% load i18n %}{% blocktrans %}Translated text{% endblocktrans %}')
         self.assertEqual(message.body, 'Translated text')
 
     def test_translation_de(self):
         self.member.preferences.language = 'de'
         # This translation is already provided by Django
-        message = prepare_email(self.member, 't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}')
+        message = prepare_email(
+            self.member, 't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}')
         self.assertEqual(message.body, 'Deutsch')
 
     def test_translation_before_subject(self):
-        message = prepare_email(self.member, 't:{% load i18n %}\nSubject: {% blocktrans %}Subject Line{% endblocktrans %}\n\n{% blocktrans %}Body{% endblocktrans %}')
+        message = prepare_email(
+            self.member, 't:{% load i18n %}\nSubject: {% blocktrans %}Subject Line{% endblocktrans %}\n\n{% blocktrans %}Body{% endblocktrans %}')
         self.assertEqual(message.subject, "Subject Line")
         self.assertEqual(message.body, "Body")
 
@@ -158,10 +165,11 @@ class MemberEmailTest(TestCase):
         # We want a new line, but it could show up as "<br>" or "<br />"
         self.assertIn('<br', message.alternatives[0][0])
 
-class MemberCalfeedTest(TestCase):
+
+class MemberCalfeedTest(FSTestCase):
     def setUp(self):
-        """ fake a file system """
-        self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
+        self.super = Member.objects.create_user(
+            email='a@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='d@e.f')
 
         self.joeuser = Member.objects.create_user(email='g@h.i')
@@ -172,8 +180,9 @@ class MemberCalfeedTest(TestCase):
 
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band')
-        Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=True)
-        g = self.create_gig()
+        Assoc.objects.create(member=self.joeuser,
+                             band=self.band, is_admin=True)
+        self.create_gig()
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -183,7 +192,8 @@ class MemberCalfeedTest(TestCase):
         Gig.objects.all().delete()
 
     def create_gig(self):
-        the_date = timezone.datetime(2100,1,2,tzinfo=pytz.timezone(self.band.timezone))
+        the_date = timezone.datetime(
+            2100, 1, 2, tzinfo=pytz.timezone(self.band.timezone))
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
@@ -192,94 +202,114 @@ class MemberCalfeedTest(TestCase):
             enddate=the_date + timedelta(hours=2)
         )
 
-    def test_member_caldav_stream(self):
-
-        # if we're filtering nothing, make sure we see the gig
+    def make_caldav_stream(self,
+                           hide_canceled_gigs,
+                           calendar_show_only_confirmed,
+                           calendar_show_only_committed,
+                           gig_status,
+                           plan_answer,
+                           date=None):
         g = Gig.objects.first()
         m = self.joeuser
         p = Plan.objects.get(assoc__member=m.id, gig=g.id)
 
-        m.preferences.hide_canceled_gigs = False
-        m.preferences.calendar_show_only_confirmed = False
-        m.preferences.calendar_show_only_committed = False
+        m.preferences.hide_canceled_gigs = hide_canceled_gigs
+        m.preferences.calendar_show_only_confirmed = calendar_show_only_confirmed
+        m.preferences.calendar_show_only_committed = calendar_show_only_committed
         m.preferences.save()
-        g.status = Gig.StatusOptions.CONFIRMED
+        g.status = gig_status
+        if date is not None:
+            g.date = date
         g.save()
-        p.status = Plan.StatusChoices.DEFINITELY
+        p.status = plan_answer
         p.save()
 
-        cf = prepare_calfeed(self.joeuser)
-        self.assertTrue(cf.find(b'EVENT')>0)
+        return prepare_calfeed(self.joeuser)
 
+    def test_member_caldav_stream(self):
+        # if we're filtering nothing, make sure we see the gig
+        cf = self.make_caldav_stream(
+            hide_canceled_gigs=False,
+            calendar_show_only_confirmed=False,
+            calendar_show_only_committed=False,
+            gig_status=Gig.StatusOptions.CONFIRMED,
+            plan_answer=Plan.StatusChoices.DEFINITELY
+        )
+        self.assertTrue(cf.find('EVENT') > 0)
+
+    def test_member_caldav_stream_filter_canceled(self):
         # test hiding canceled gigs
-        m.preferences.hide_canceled_gigs = True
-        m.preferences.calendar_show_only_confirmed = False
-        m.preferences.calendar_show_only_committed = False
-        m.preferences.save()
-        g.status = Gig.StatusOptions.CONFIRMED
-        g.save()
-        p.status = Plan.StatusChoices.DEFINITELY
-        p.save()
+        cf = self.make_caldav_stream(
+            hide_canceled_gigs=True,
+            calendar_show_only_confirmed=False,
+            calendar_show_only_committed=False,
+            gig_status=Gig.StatusOptions.CONFIRMED,
+            plan_answer=Plan.StatusChoices.DEFINITELY
+        )
+        self.assertTrue(cf.find('EVENT') > 0)
 
-        cf = prepare_calfeed(self.joeuser)
-        self.assertTrue(cf.find(b'EVENT')>0)
+        cf = self.make_caldav_stream(
+            hide_canceled_gigs=True,
+            calendar_show_only_confirmed=False,
+            calendar_show_only_committed=False,
+            gig_status=Gig.StatusOptions.CANCELLED,
+            plan_answer=Plan.StatusChoices.DEFINITELY
+        )
+        self.assertEqual(cf.find('EVENT'), -1)
 
-        m.preferences.hide_canceled_gigs = True
-        m.preferences.calendar_show_only_confirmed = False
-        m.preferences.calendar_show_only_committed = False
-        m.preferences.save()
-        g.status = Gig.StatusOptions.CANCELLED
-        g.save()
-        p.status = Plan.StatusChoices.DEFINITELY
-        p.save()
-
-        cf = prepare_calfeed(self.joeuser)
-        self.assertEqual(cf.find(b'EVENT'),-1)
-
+    def test_member_caldav_stream_filter_confirmed(self):
         # test showing only confirmed gigs
-        m.preferences.hide_canceled_gigs = False
-        m.preferences.calendar_show_only_confirmed = True
-        m.preferences.calendar_show_only_committed = False
-        m.preferences.save()
-        g.status = Gig.StatusOptions.ASKING
-        g.save()
-        p.status = Plan.StatusChoices.DEFINITELY
-        p.save()
+        cf = self.make_caldav_stream(
+            hide_canceled_gigs=False,
+            calendar_show_only_confirmed=True,
+            calendar_show_only_committed=False,
+            gig_status=Gig.StatusOptions.CANCELLED,
+            plan_answer=Plan.StatusChoices.DEFINITELY
+        )
+        self.assertEqual(cf.find('EVENT'), -1)
 
-        cf = prepare_calfeed(self.joeuser)
-        self.assertEqual(cf.find(b'EVENT'),-1)
-
+    def test_member_caldav_stream_committed(self):
         # test showing only committed gigs
-        m.preferences.hide_canceled_gigs = False
-        m.preferences.calendar_show_only_confirmed = False
-        m.preferences.calendar_show_only_committed = True
-        m.preferences.save()
-        g.status = Gig.StatusOptions.CONFIRMED
-        g.save()
-        p.status = Plan.StatusChoices.DONT_KNOW
-        p.save()
+        cf = self.make_caldav_stream(
+            hide_canceled_gigs=False,
+            calendar_show_only_confirmed=False,
+            calendar_show_only_committed=True,
+            gig_status=Gig.StatusOptions.CONFIRMED,
+            plan_answer=Plan.StatusChoices.DONT_KNOW
+        )
+        self.assertEqual(cf.find('EVENT'), -1)
 
-        cf = prepare_calfeed(self.joeuser)
-        self.assertEqual(cf.find(b'EVENT'),-1)
-
+    def test_member_caldav_stream_recent_only(self):
         # test showing only gigs in the last year
-        m.preferences.hide_canceled_gigs = False
-        m.preferences.calendar_show_only_confirmed = False
-        m.preferences.calendar_show_only_committed = False
-        m.preferences.save()
-        g.status = Gig.StatusOptions.CONFIRMED
-        g.date = timezone.now() - timedelta(days=800)
-        g.save()
-        p.status = Plan.StatusChoices.DEFINITELY
-        p.save()
+        cf = self.make_caldav_stream(
+            hide_canceled_gigs=False,
+            calendar_show_only_confirmed=False,
+            calendar_show_only_committed=False,
+            gig_status=Gig.StatusOptions.CONFIRMED,
+            plan_answer=Plan.StatusChoices.DEFINITELY,
+            date=timezone.now() - timedelta(days=800)
+        )
+        self.assertEqual(cf.find('EVENT'), -1)
 
-        cf = prepare_calfeed(self.joeuser)
-        self.assertEqual(cf.find(b'EVENT'),-1)
+    def test_member_calfeed_bad_url(self):
+        """ fail on bad calfeed url """
+        self.setUpPyfakefs()    # fake a file system
+        os.mkdir('calfeeds')
+
+        # should fail due to bad calfeed id
+        r = calfeed(request=None, pk='xyz')
+        self.assertEqual(r.status_code, 404)
 
     def test_member_calfeed_url(self):
-        r = calfeed(request=None, pk='xyz')
-        self.assertEqual(r.status_code,404)
+        """ fake a file system """
+        self.setUpPyfakefs()    # fake a file system
+        os.mkdir('calfeeds')
 
-        m = self.joeuser
-        r = calfeed(request=None, pk=m.cal_feed_id)
-        self.assertTrue(r.content.find(b'EVENT')>0)
+        self.joeuser.cal_feed_dirty = True
+        self.joeuser.save()
+        update_all_calfeeds()
+        self.joeuser.refresh_from_db()
+        self.assertFalse(self.joeuser.cal_feed_dirty)
+
+        cf = calfeed(request=None, pk=self.joeuser.cal_feed_id)
+        self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)

@@ -22,6 +22,7 @@ from member.models import Member
 from django.contrib.auth.decorators import login_required
 from band.util import AssocStatusChoices
 
+
 @login_required
 def set_assoc_tfparam(request, ak, param, truefalse):
     """ set a true/false parameter on an assoc """
@@ -30,16 +31,18 @@ def set_assoc_tfparam(request, ak, param, truefalse):
     if len(a) != 1:
         raise ValueError('altering an assoc that does not exist')
     else:
-        a=a[0]
+        a = a[0]
 
         if request.user != a.member and not request.user.is_superuser:
-            raise PermissionError('tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
+            raise PermissionError(
+                'tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
 
         if hasattr(a, param):
-            setattr(a, param, True if truefalse=='true' else False)
+            setattr(a, param, True if truefalse == 'true' else False)
             a.save()
         else:
-            raise ValueError('trying to set an assoc parameter that does not exist: {0}'.format(param))
+            raise ValueError(
+                'trying to set an assoc parameter that does not exist: {0}'.format(param))
     return HttpResponse()
 
 
@@ -52,22 +55,24 @@ def set_assoc_section(request, ak, sk):
     if len(a) != 1:
         raise ValueError('altering an assoc that does not exist')
     else:
-        a=a[0]
+        a = a[0]
 
         if request.user != a.member and not request.user.is_superuser:
-            raise PermissionError('tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
+            raise PermissionError(
+                'tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
 
         if sk == 0:
             s = None
         else:
-            s=Section.objects.filter(id=sk)
+            s = Section.objects.filter(id=sk)
             if len(s) != 1:
                 raise ValueError('setting a section that does not exist')
-            s=s[0]
+            s = s[0]
             if s.band != a.band:
-                raise ValueError('setting a section that is not part of the band')
+                raise ValueError(
+                    'setting a section that is not part of the band')
 
-        a.default_section=s
+        a.default_section = s
         a.save()
 
     return HttpResponse()
@@ -82,10 +87,11 @@ def set_assoc_color(request, ak, colorindex):
     if len(a) != 1:
         raise ValueError('altering an assoc that does not exist')
     else:
-        a=a[0]
+        a = a[0]
 
         if request.user != a.member and not request.user.is_superuser:
-            raise PermissionError('tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
+            raise PermissionError(
+                'tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
 
         a.color = colorindex
         a.save()
@@ -105,14 +111,18 @@ def join_assoc(request, bk, mk):
     # todo make sure this is us, or we're superuser, or band_admin
     is_self = (request.user == m)
     is_super = (request.user.is_superuser)
-    is_band_admin = Assoc.objects.filter(member=request.user, band=b, is_admin=True).count() == 1
+    is_band_admin = Assoc.objects.filter(
+        member=request.user, band=b, is_admin=True).count() == 1
     if not (is_self or is_super or is_band_admin):
-        raise PermissionError('tying to create an assoc which is not owned by user {0}'.format(request.user.username))
+        raise PermissionError(
+            'tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
     # OK, create the assoc
-    a = Assoc.objects.get_or_create(band=b, member=m, status=AssocStatusChoices.PENDING)
+    a = Assoc.objects.get_or_create(
+        band=b, member=m, status=AssocStatusChoices.PENDING)
 
     return HttpResponse()
+
 
 @login_required
 def delete_assoc(request, ak):
@@ -121,13 +131,16 @@ def delete_assoc(request, ak):
     # todo make sure this is us, or band_admin, or we're superuser
     is_self = (request.user == a.member)
     is_super = (request.user.is_superuser)
-    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_admin=True).count() == 1)
+    is_band_admin = (Assoc.objects.filter(member=request.user,
+                                          band=a.band, is_admin=True).count() == 1)
     if not (is_self or is_super or is_band_admin):
-        raise PermissionError('tying to delete an assoc which is not owned by user {0}'.format(request.user.username))
-    
+        raise PermissionError(
+            'tying to delete an assoc which is not owned by user {0}'.format(request.user.username))
+
     a.delete()
 
     return HttpResponse()
+
 
 @login_required
 def confirm_assoc(request, ak):
@@ -135,12 +148,19 @@ def confirm_assoc(request, ak):
 
     # todo make sure this is a band_admin, or we're superuser
     is_super = (request.user.is_superuser)
-    is_band_admin = (Assoc.objects.filter(member=request.user, band=a.band, is_admin=True).count() == 1)
+    is_band_admin = (Assoc.objects.filter(member=request.user,
+                                          band=a.band, is_admin=True).count() == 1)
     if not (is_super or is_band_admin):
-        raise PermissionError('tying to confirm an assoc which is not admin by user {0}'.format(request.user.username))
+        raise PermissionError(
+            'tying to confirm an assoc which is not admin by user {0}'.format(request.user.username))
 
     # OK, confirm the assoc
     a.status = AssocStatusChoices.CONFIRMED
     a.save()
 
     return HttpResponse()
+
+
+def set_calfeeds_dirty(band):
+    """ called from gig post_save signal - when gig is updated, set calfeeds dirty for all members """
+    Member.filter(assoc__band=band).update(cal_feed_dirty=True)

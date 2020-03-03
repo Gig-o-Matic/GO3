@@ -27,8 +27,9 @@ from gig.models import Gig, Plan
 from member.models import Member
 
 from lib.email import DEFAULT_SUBJECT, SUBJECT
-from lib.caldav import make_calfeed
+from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
+
 
 @login_required
 def motd_seen(request, pk):
@@ -55,12 +56,13 @@ def prepare_email(member, template, context=None, **kw):
         subject = DEFAULT_SUBJECT
     html = markdown(text, extensions=['nl2br'])
 
-    message = EmailMultiAlternatives(subject, text, to=[member.email_line], **kw)
+    message = EmailMultiAlternatives(
+        subject, text, to=[member.email_line], **kw)
     message.attach_alternative(html, 'text/html')
     return message
 
+
 def prepare_calfeed(member):
-    
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
 
@@ -73,7 +75,8 @@ def prepare_calfeed(member):
         filter_args["gig__status"] = Gig.StatusOptions.CONFIRMED
 
     if member.preferences.calendar_show_only_committed:
-        filter_args["status__in"] = [Plan.StatusChoices.DEFINITELY, Plan.StatusChoices.PROBABLY]
+        filter_args["status__in"] = [
+            Plan.StatusChoices.DEFINITELY, Plan.StatusChoices.PROBABLY]
 
     the_plans = Plan.objects.filter(**filter_args)
 
@@ -81,18 +84,29 @@ def prepare_calfeed(member):
         the_plans = the_plans.exclude(gig__status=Gig.StatusOptions.CANCELLED)
 
     the_gigs = [p.gig for p in the_plans]
-    cf = make_calfeed(member, the_gigs, member.preferences.language, member.cal_feed_id)
+    cf = make_calfeed(member, the_gigs,
+                      member.preferences.language, member.cal_feed_id)
     return cf
+
+
+def update_calfeed(member):
+    cf = prepare_calfeed(member)
+    save_calfeed(member.cal_feed_id, cf)
+
+
+def update_all_calfeeds():
+    members = Member.objects.filter(cal_feed_dirty=True) 
+    for m in members:
+        update_calfeed(m)
+    members.update(cal_feed_dirty=False)
+
 
 def calfeed(request, pk):
     try:
-        m = Member.objects.get(cal_feed_id = pk)
-    except (ValueError, ValidationError):
+        tf = get_calfeed(pk)
+    except ValueError:
         hr = HttpResponse()
         hr.status_code = 404
         return hr
 
-    tf = prepare_calfeed(m)
     return HttpResponse(tf)
-    
-

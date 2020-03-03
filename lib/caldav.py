@@ -18,16 +18,25 @@ from django.core.files.storage import FileSystemStorage
 from icalendar import Calendar, Event
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
+import os
+from django.core.files.storage import DefaultStorage
 
-filesys = FileSystemStorage("calfeeds","calfeeds")
+filesys = FileSystemStorage("calfeeds", "calfeeds")
+
 
 def save_calfeed(tag, content):
-    with filesys.open('{0}.txt'.format(tag),mode='w') as f:
+    file_path = f'{tag}.txt'
+
+    with filesys.open(file_path, mode='wt') as f:
         f.write(content)
 
+
 def get_calfeed(tag):
-    with filesys.open('{0}.txt'.format(tag),mode='r') as f:
-        s = f.readline()
+    try:
+        with filesys.open('{0}.txt'.format(tag), mode='r') as f:
+            s = f.read()
+    except FileNotFoundError:
+        raise ValueError()
     return s
 
 
@@ -42,9 +51,9 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
         """ description is the details, plus the setlist """
         x = ''
         if e.details:
-            x = '{0}'.format(e.details.replace('\r\n', '\\n'))
+            x = '{0}'.format(e.details.replace('\r\n', '\\n')) # todo - need to do this replace?
         if e.setlist:
-            x = '{0}\\n\\n{1}'.format(x, e.setlist.replace('\r\n', '\\n'))
+            x = '{0}\\n\\n{1}'.format(x, e.setlist.replace('\r\n', '\\n')) # todo - need to do this replace?
         return x
 
     # set up language
@@ -53,7 +62,8 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
         cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//')
         cal.add('version', '2.0')
         cal.add('X-WR-CALNAME', the_title)
-        cal.add('X-WR-CALDESC', '{0} {1}'.format(_('Gig-o-Matic calendar for'),the_title))
+        cal.add('X-WR-CALDESC',
+                '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_title))
         for e in the_events:
             with timezone.override(e.band.timezone):
                 event = Event()
@@ -64,8 +74,9 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('dtend', e.enddate)
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
-                event.add('url', 'http://www.gig-o-matic.com/gig/{0}'.format(e.id))
+                event.add(
+                    'url', 'http://www.gig-o-matic.com/gig/{0}'.format(e.id))
                 # todo don't hardwire the URL
                 # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
                 cal.add_component(event)
-    return cal.to_ical()
+    return cal.to_ical().decode('ascii')
