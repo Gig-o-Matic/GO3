@@ -16,6 +16,7 @@
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from simple_history.models import HistoricalRecords
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 from django.utils import timezone
@@ -107,7 +108,6 @@ class AbstractGig(models.Model):
     def is_confirmed(self):
         self.status=StatusOptions.CONFIRMED
 
-    @property
     def status_string(self):
         return [_('Unconfirmed'), _('Confirmed!'), _('Cancelled!'), _('Asking')][self.status]
 
@@ -177,3 +177,6 @@ class Gig(AbstractGig):
 
 
     rss_description = models.TextField( null=True, blank=True )
+
+    # We need to exclude the band, lest the reverse query in Band conflict
+    history = HistoricalRecords(excluded_fields=['band'])
