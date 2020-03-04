@@ -88,7 +88,7 @@
                         </div>
                     </div>
                 </div>
-            {% endif %}        
+            {% endif %}
             <div class="row">
                 <div class="form-group col-4">
                     <label for="gigcallinput" class="col-form-label">{% trans "Call Time" %}</label>
@@ -103,30 +103,37 @@
                     <input type="text" class="form-control" id="gigendinput" placeholder="" value="{{gig.endtime}}" name="gig_end">
                 </div>
             </div>
+{% endcomment %}            
             <div class="row">
                 <div class="form-group col-lg-4 col-md-4 col-12">
-                    <label for="gigaddressinput" class="col-form-label">{% trans "Address" %}</label>
-                    <input type="text" class="form-control" id="gigaddressinput" placeholder="{% trans "location_placeholder" %}" value="{{gig.address}}" name="gig_address">
+                    {{ form.address.errors }}
+                    {{ form.address.label_tag }}
+                    {% render_field form.address class="form-control" %}
                 </div>
                 <div class="form-group col-4">
-                    <label for="gigdressinput" class="col-form-label">{% trans "What To Wear" %}</label>
-                    <input type="text" class="form-control" id="gigdressinput" placeholder="{% trans "Pants Optional" %}" value="{{gig.dress}}" name="gig_dress">
+                    {{ form.dress.errors }}
+                    {{ form.dress.label_tag }}
+                    {% render_field form.dress class="form-control" %}
                 </div>
                 <div class="form-group col-4">
-                    <label for="gigpaidinput" class="col-form-label">{% trans "Pay Deal" %}</label>
-                    <input type="text" class="form-control" id="gigpaidinput" placeholder="{% trans "As If" %}" value="{{gig.paid}}" name="gig_paid">
+                    {{ form.paid.errors }}
+                    {{ form.paid.label_tag }}
+                    {% render_field form.paid class="form-control" %}
                 </div>
             </div>
             <div class="row">
                 <div class="form-group col-lg-4 col-md-4 col-12">
-                    <label for="gigleaderinput" class="col-form-label">{% trans "Leader" %}</label>
-                    <input type="text" class="form-control" id="gigleaderinput" placeholder="{% trans "leader_placeholder" %}" value="{{gig.leader}}" name="gig_leader">
+                    {{ form.leader.errors }}
+                    {{ form.leader.label_tag }}
+                    {% render_field form.leader class="form-control" %}
                 </div>
                 <div class="form-group col-lg-8 col-md-8 col-12">
-                    <label for="gigpostgiginput" class="col-form-label">{% trans "Post-gig Plans" %}</label>
-                    <input type="text" class="form-control" id="gigpostgiginput" placeholder="{% trans "postgig_placeholder" %}" value="{{gig.postgig}}" name="gig_postgig">
+                    {{ form.postgig.errors }}
+                    {{ form.postgig.label_tag }}
+                    {% render_field form.postgig class="form-control" %}
                 </div>
             </div>
+{% comment %}
             <div class="form-group">
                 <label for="gigdetailsinput" class="col-form-label">{% trans "More Details" %}</label>
                 <textarea class="form-control" rows="10" id="gigdetailsinput" placeholder="{% trans "who? what? where? when? why?" %}" name="gig_details">{{gig.details}}</textarea>
