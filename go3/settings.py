@@ -192,6 +192,7 @@ Q_CLUSTER = {
     'bulk': 10,
     'orm': 'default',
     'sync': _testing,
+    'catch_up': False, # don't run scheduled tasks many times if we come back from an extended downtime
 }
 
 # Email settings
