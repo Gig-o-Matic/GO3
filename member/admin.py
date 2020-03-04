@@ -55,6 +55,13 @@ class MemberAdmin(BaseUserAdmin):
         PreferencesInline,
     ]
 
+    def get_inlines(self, request, obj):
+        """Hook for specifying custom inlines."""
+        if obj:
+            return self.inlines
+        else:
+            return []
+
     add_form = MemberCreateForm
     add_fieldsets = (
         (None, {
