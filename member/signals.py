@@ -20,7 +20,7 @@ from .models import Member, MemberPreferences
 
 # signals to make sure a set of preferences is created for every user
 @receiver(post_save, sender=Member)
-def create_user_preferences(sender, instance, created, **kwargs):
+def handle_user_preferences(sender, instance, created, **kwargs):
     if created:
         MemberPreferences.objects.create(member=instance)
     else:
