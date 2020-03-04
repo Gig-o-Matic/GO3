@@ -46,9 +46,13 @@ class GigForm(forms.ModelForm):
 
     class Meta:
         model = Gig
-        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','postgig',
+        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','leader', 'postgig',
                 'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
+            'address': forms.TextInput(attrs={'placeholder': _('location_placeholder')}),
+            'dress': forms.TextInput(attrs={'placeholder': _('Pants Optional')}),
+            'paid': forms.TextInput(attrs={'placeholder': _('As If')}),
+            'postgig': forms.TextInput(attrs={'placeholder': _('postgig_placeholder')}),
         }
