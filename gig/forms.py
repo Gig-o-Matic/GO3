@@ -25,11 +25,18 @@ from django.utils.translation import gettext_lazy as _
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
         band = kwargs.pop('band', None)
+<<<<<<< HEAD
         user = kwargs.pop('user', None)
+=======
+>>>>>>> set gig form so it has an appropriate queryset for contact and leader
         super().__init__(
             label_suffix='',
             **kwargs
         )
+        if band:
+            self.fields['contact'].queryset = band.confirmed_members
+            self.fields['leader'].queryset = band.confirmed_members
+
 
         if user:
             self.fields['contact'].initial = user
