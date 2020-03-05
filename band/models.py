@@ -20,6 +20,7 @@ from django.db.models import Q
 from go3.colors import the_colors
 from .util import BandStatusChoices, AssocStatusChoices
 from member.util import MemberStatusChoices, AgendaChoices
+from django.apps import apps
 
 class Band(models.Model):
     name = models.CharField(max_length=200)
@@ -78,6 +79,10 @@ class Band(models.Model):
     @property
     def confirmed_assocs(self):
         return self.assocs.filter(status=AssocStatusChoices.CONFIRMED, member__status=MemberStatusChoices.ACTIVE)
+
+    @property
+    def confirmed_members(self):
+        return apps.get_model('member','Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
 
     def __str__(self):
         return self.name
