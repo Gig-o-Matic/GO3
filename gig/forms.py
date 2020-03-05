@@ -17,16 +17,22 @@
 
 from django import forms
 from .models import Gig
+from band.models import Band
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
+        band = kwargs.pop('band', None)
         super().__init__(
             label_suffix='',
             **kwargs
         )
+        if band:
+            self.fields['contact'].queryset = band.confirmed_members
+            self.fields['leader'].queryset = band.confirmed_members
+
 
     def clean(self):
         date = self.cleaned_data['date']
@@ -54,5 +60,5 @@ class GigForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'placeholder': _('location_placeholder')}),
             'dress': forms.TextInput(attrs={'placeholder': _('Pants Optional')}),
             'paid': forms.TextInput(attrs={'placeholder': _('As If')}),
-            'postgig': forms.TextInput(attrs={'placeholder': _('postgig_placeholder')}),
+            'postgig': forms.TextInput(attrs={'placeholder': _('postgig_placeholder')})
         }
