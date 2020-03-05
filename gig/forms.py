@@ -30,6 +30,10 @@ class GigForm(forms.ModelForm):
             label_suffix='',
             **kwargs
         )
+        if band:
+            self.fields['contact'].queryset = band.confirmed_members
+            self.fields['leader'].queryset = band.confirmed_members
+
 
         if user:
             self.fields['contact'].initial = user
