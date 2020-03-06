@@ -25,13 +25,19 @@ from django.utils.translation import gettext_lazy as _
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
         band = kwargs.pop('band', None)
+        user = kwargs.pop('user', None)
         super().__init__(
             label_suffix='',
             **kwargs
         )
+
+        if user:
+            self.fields['contact'].initial = user
+            self.fields['contact'].empty_label = None
         if band:
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
+
 
 
     def clean(self):
