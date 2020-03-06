@@ -58,6 +58,7 @@ class CreateView(generic.CreateView):
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(CreateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['band'] = Band.objects.get(id=self.kwargs['bk'])
+        kwargs['user'] = self.request.user
         return kwargs
 
     def form_valid(self, form):
