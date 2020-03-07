@@ -313,3 +313,13 @@ class MemberCalfeedTest(FSTestCase):
 
         cf = calfeed(request=None, pk=self.joeuser.cal_feed_id)
         self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)
+
+    def test_calfeeds_dirty(self):
+        self.joeuser.cal_feed_dirty = False
+        self.joeuser.save()
+
+        g = Gig.objects.first()
+        g.title = "Edited"
+        g.save()
+        self.joeuser.refresh_from_db()
+        self.assertTrue(self.joeuser.cal_feed_dirty)

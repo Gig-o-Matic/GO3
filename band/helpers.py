@@ -163,4 +163,4 @@ def confirm_assoc(request, ak):
 
 def set_calfeeds_dirty(band):
     """ called from gig post_save signal - when gig is updated, set calfeeds dirty for all members """
-    Member.filter(assoc__band=band).update(cal_feed_dirty=True)
+    Member.objects.filter(assocs__band=band).update(cal_feed_dirty=True)
