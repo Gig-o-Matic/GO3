@@ -178,5 +178,10 @@ class Gig(AbstractGig):
 
     rss_description = models.TextField( null=True, blank=True )
 
+    # for use in calfeeds
+    cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+
     # We need to exclude the band, lest the reverse query in Band conflict
-    history = HistoricalRecords(excluded_fields=['band'])
+    # We need to exclude the cal_feed_id, because we want it to be unique and the history table gets a copy of every change
+    history = HistoricalRecords(excluded_fields=['band','cal_feed_gig'])
+

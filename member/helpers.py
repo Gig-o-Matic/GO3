@@ -29,6 +29,7 @@ from member.models import Member
 from lib.email import DEFAULT_SUBJECT, SUBJECT
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 
 @login_required
@@ -103,8 +104,11 @@ def update_all_calfeeds():
 
 def calfeed(request, pk):
     try:
-        tf = get_calfeed(pk)
-    except ValueError:
+        if settings.DYNAMIC_CALFEED:
+            tf = prepare_calfeed(Member.objects.get(cal_feed_id=pk))
+        else:
+            tf = get_calfeed(pk)
+    except (ValueError, ValidationError):
         hr = HttpResponse()
         hr.status_code = 404
         return hr

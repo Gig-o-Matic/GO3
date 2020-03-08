@@ -69,7 +69,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
             with timezone.override(e.band.timezone):
                 event = Event()
                 event.add('dtstamp', timezone.now())
-                event.add('uid', the_uid)
+                event.add('uid', e.cal_feed_id)
                 event.add('summary', _make_summary(e))
                 event.add('dtstart', e.date)
                 event.add('dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
