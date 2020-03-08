@@ -133,15 +133,17 @@
                     {% render_field form.postgig class="form-control" %}
                 </div>
             </div>
+            <div class="form-group">
+                {{ form.details.errors }}
+                {{ form.details.label_tag }}
+                {% render_field form.details class="form-control" %}
+            </div>
+            <div class="form-group">
+                {{ form.setlist.errors }}
+                {{ form.setlist.label_tag }}
+                {% render_field form.setlist class="form-control" %}
+            </div>
 {% comment %}
-            <div class="form-group">
-                <label for="gigdetailsinput" class="col-form-label">{% trans "More Details" %}</label>
-                <textarea class="form-control" rows="10" id="gigdetailsinput" placeholder="{% trans "who? what? where? when? why?" %}" name="gig_details">{{gig.details}}</textarea>
-            </div>
-            <div class="form-group">
-                <label for="gigsetlistinput" class="col-form-label">{% trans "Setlist" %}</label>
-                <textarea class="form-control" rows="10" id="gigsetlistinput" placeholder="{% trans "setlist here" %}" name="gig_setlist">{{gig.setlist}}</textarea>
-            </div>
             {% if the_band.rss_feed %}
                 <div class="form-group">
                     <label for="gigrssdescriptioninput" class="col-form-label">{% trans "Description for RSS feed" %}</label>
@@ -161,30 +163,33 @@
                     </label>
                 </div>
             </div>
-            <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="gig_invite_occasionals" name="gig_invite_occasionals" 
-                        {% if the_band.send_updates_by_default %}checked{% endif %}                        
-                        >
-                    <label class="form-check-label" for="gig_invite_occasionals">
-                        {% if is_new or is_dupe %}
-                            {% trans "Invite occasional members" %}
-                        {% else %}
-                            {% trans "Also send update to occasional members" %}  
-                        {% endif %}
-                    </label>  
-                </div>
+{% endcomment %}
+            <div class="form-check form-check-inline">
+                {{ form.invite_occasionals.errors }}
+                {% render_field form.invite_occasionals class="form-control" %}
+                <!-- {{ form.invite_occasionals.label_tag }} -->
+                <label class="form-check-label" for="gig_invite_occasionals">
+                    {% if is_new or is_dupe %}
+                        {% trans "Invite occasional members" %}
+                    {% else %}
+                        {% trans "Also send update to occasional members" %}  
+                    {% endif %}
+                </label>  
             </div>
-            <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="gig_hide_from_calendar" name="gig_hide_from_calendar" 
+            <div class="form-check form-check-inline">
+                {{ form.hide_from_calendar.errors }}
+                {% render_field form.hide_from_calendar class="form-control" %}
+                {{ form.hide_from_calendar.label_tag }}
+            </div>
+                        <!-- <input class="form-check-input" type="checkbox" id="gig_hide_from_calendar" name="gig_hide_from_calendar" 
                         {% if gig.hide_from_calendar %}checked{% endif %}                        
                         >
                     <label class="form-check-label" for="gig_hide_from_calendar">
                         {% trans "Hide gig from calendars" %}
                     </label>
                 </div>
-            </div>
+            </div> -->
+{% comment %}
             {% if is_new %}
                 <div class="form-group">
                     <div class="form-check">
