@@ -47,11 +47,11 @@ class GigTest(TestCase):
         Assoc.objects.all().delete()
 
     def create_gig(self, start_date='auto', set_date='auto', end_date='auto'):
-        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone)) if start_date == 'auto' else start_date
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
-            date=thedate if start_date == 'auto' else start_date,
+            date=thedate,
             setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
             enddate=thedate + timedelta(hours=2) if end_date == 'auto' else end_date,
         )
@@ -192,8 +192,8 @@ class GigTest(TestCase):
         self.joeuser.save()
         self.band.timezone = 'America/New_York'
         self.band.save()
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
+        self.assoc_joe_and_create_gig(start_date=date)
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
         self.assertIn("01/02/2100 (Sat)", message.body)
