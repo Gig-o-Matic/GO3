@@ -144,15 +144,30 @@ class GigTest(TestCase):
 
     def test_gig_time_no_set(self):
         self.assoc_joe_and_create_gig(set_date=None)
-        self.assertIn('Time: noon (Call Time), 2 p.m. (End Time)\n', mail.outbox[0].body)
+        self.assertIn('Time: noon (Call Time), 2 p.m. (End Time)\nContact', mail.outbox[0].body)
 
     def test_gig_time_no_end(self):
         self.assoc_joe_and_create_gig(end_date=None)
-        self.assertIn('Time: noon (Call Time), 12:30 p.m. (Set Time)\n', mail.outbox[0].body)
+        self.assertIn('Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact', mail.outbox[0].body)
 
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_date=None, end_date=None)
-        self.assertIn('Time: noon (Call Time)\n', mail.outbox[0].body)
+        self.assertIn('Time: noon (Call Time)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_long_set(self):
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        self.assoc_joe_and_create_gig(start_date=date, set_date=date + timedelta(days=1), end_date=None)
+        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_long_end(self):
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        self.assoc_joe_and_create_gig(start_date=date, set_date=None, end_date=date + timedelta(days=1))
+        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nEnd Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_long_set_end(self):
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        self.assoc_joe_and_create_gig(start_date=date, set_date=date + timedelta(days=1), end_date=date+timedelta(days=1, hours=1))
+        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nEnd Time: 01/03/2100 1 p.m. (Sun)\nContact', mail.outbox[0].body)
 
     def test_new_gig_contact(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)

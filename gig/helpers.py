@@ -103,6 +103,12 @@ def generate_changes(latest, previous):
         changes.append((_('Details'), _('(See below.)'), None))
     return changes
 
+def is_single_day(gig):
+    end = gig.enddate or gig.setdate
+    if not end:
+        return True
+    return (end - gig.date) < datetime.timedelta(days=1)
+
 def email_from_plan(plan, template):
     gig = plan.gig
     with timezone.override(gig.band.timezone):
@@ -115,6 +121,7 @@ def email_from_plan(plan, template):
             'gig': gig,
             'changes': changes,
             'changes_title': join_trans(_(', '), (c[0] for c in changes)),
+            'single_day': is_single_day(gig),
             'contact_name': contact_name,
             'plan': plan,
             'status': plan.status,
