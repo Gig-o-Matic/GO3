@@ -192,6 +192,7 @@ Q_CLUSTER = {
     'bulk': 10,
     'orm': 'default',
     'sync': _testing,
+    'catch_up': False, # don't run scheduled tasks many times if we come back from an extended downtime
 }
 
 # Email settings
@@ -202,6 +203,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #EMAIL_HOST = ...
 #EMAIL_HOST_USER = ...
 #EMAIL_HOST_PASSWORD = ...
+
+# Calfeed settings
+DYNAMIC_CALFEED = False # True to generate calfeed on demand; False for disk cache
 
 try:
     from .settings_local import *
