@@ -89,24 +89,27 @@ def prepare_calfeed(member):
                       member.preferences.language, member.cal_feed_id)
     return cf
 
-
-def update_calfeed(member):
-    cf = prepare_calfeed(member)
-    save_calfeed(member.cal_feed_id, cf)
-
-
 def update_all_calfeeds():
+    """ request handler for updating cached calfeeds - should be called on a schedule """
+    if settings.DYNAMIC_CALFEED:
+        # if we're generating calfeeds dynamically, don't update the disk cache
+        Member.objects.filter(cal_feed_dirty=True).update(cal_feed_dirty=False)
+        return
+
     members = Member.objects.filter(cal_feed_dirty=True) 
     for m in members:
-        update_calfeed(m)
+        cf = prepare_calfeed(m)
+        save_calfeed(m.cal_feed_id, cf)
     members.update(cal_feed_dirty=False)
 
 
 def calfeed(request, pk):
     try:
         if settings.DYNAMIC_CALFEED:
+            # if the dynamic calfeed is set, just create the calfeed right now and return it
             tf = prepare_calfeed(Member.objects.get(cal_feed_id=pk))
         else:
+            # if using the task queue, get the calfeed from the disk cache
             tf = get_calfeed(pk)
     except (ValueError, ValidationError):
         hr = HttpResponse()

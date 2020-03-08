@@ -205,7 +205,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #EMAIL_HOST_PASSWORD = ...
 
 # Calfeed settings
-DYNAMIC_CALFEED = True # True to generate calfeed on demand; False for disk cache
+DYNAMIC_CALFEED = False # True to generate calfeed on demand; False for disk cache
 
 try:
     from .settings_local import *
