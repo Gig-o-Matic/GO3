@@ -52,11 +52,9 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
         """ description is the details, plus the setlist """
         x = ''
         if e.details:
-            # todo - need to do this replace?
-            x = '{0}'.format(e.details.replace('\r\n', '\\n'))
+            x = e.details
         if e.setlist:
-            x = '{0}\\n\\n{1}'.format(x, e.setlist.replace(
-                '\r\n', '\\n'))  # todo - need to do this replace?
+            x = f'{x}\\n\\n{e.setlist}'
         return x
 
     # set up language
