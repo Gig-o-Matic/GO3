@@ -235,7 +235,7 @@ class MemberCalfeedTest(FSTestCase):
             gig_status=Gig.StatusOptions.CONFIRMED,
             plan_answer=Plan.StatusChoices.DEFINITELY
         )
-        self.assertTrue(cf.find('EVENT') > 0)
+        self.assertTrue(cf.find(b'EVENT') > 0)
 
     def test_member_caldav_stream_filter_canceled(self):
         # test hiding canceled gigs
@@ -246,7 +246,7 @@ class MemberCalfeedTest(FSTestCase):
             gig_status=Gig.StatusOptions.CONFIRMED,
             plan_answer=Plan.StatusChoices.DEFINITELY
         )
-        self.assertTrue(cf.find('EVENT') > 0)
+        self.assertTrue(cf.find(b'EVENT') > 0)
 
         cf = self.make_caldav_stream(
             hide_canceled_gigs=True,
@@ -255,7 +255,7 @@ class MemberCalfeedTest(FSTestCase):
             gig_status=Gig.StatusOptions.CANCELLED,
             plan_answer=Plan.StatusChoices.DEFINITELY
         )
-        self.assertEqual(cf.find('EVENT'), -1)
+        self.assertEqual(cf.find(b'EVENT'), -1)
 
     def test_member_caldav_stream_filter_confirmed(self):
         # test showing only confirmed gigs
@@ -266,7 +266,7 @@ class MemberCalfeedTest(FSTestCase):
             gig_status=Gig.StatusOptions.CANCELLED,
             plan_answer=Plan.StatusChoices.DEFINITELY
         )
-        self.assertEqual(cf.find('EVENT'), -1)
+        self.assertEqual(cf.find(b'EVENT'), -1)
 
     def test_member_caldav_stream_committed(self):
         # test showing only committed gigs
@@ -277,7 +277,7 @@ class MemberCalfeedTest(FSTestCase):
             gig_status=Gig.StatusOptions.CONFIRMED,
             plan_answer=Plan.StatusChoices.DONT_KNOW
         )
-        self.assertEqual(cf.find('EVENT'), -1)
+        self.assertEqual(cf.find(b'EVENT'), -1)
 
     def test_member_caldav_stream_recent_only(self):
         # test showing only gigs in the last year
@@ -289,7 +289,7 @@ class MemberCalfeedTest(FSTestCase):
             plan_answer=Plan.StatusChoices.DEFINITELY,
             date=timezone.now() - timedelta(days=800)
         )
-        self.assertEqual(cf.find('EVENT'), -1)
+        self.assertEqual(cf.find(b'EVENT'), -1)
 
     def test_member_calfeed_bad_url(self):
         """ fail on bad calfeed url """

@@ -41,7 +41,59 @@ class EmailTest(TestCase):
         send_messages_async([mail.EmailMessage('Subject', 'Body', 'from@example.com', ['to@example.com'])] * 5)
         self.assertEqual(len(mail.outbox), 5)
 
-class CaldavTest(FSTestCase):
+
+class CaldavTest(TestCase):
+    def setUp(self):
+        """ fake a file system """
+        self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='d@e.f')
+        self.joeuser = Member.objects.create_user(email='g@h.i')
+        self.janeuser = Member.objects.create_user(email='j@k.l')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        self.testgig = self.create_gig()
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+        Gig.objects.all().delete()
+
+    def create_gig(self):
+        the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=pytz.timezone(self.band.timezone))
+        return Gig.objects.create(
+            title="New Gig",
+            band_id=self.band.id,
+            date=the_date,
+        )
+
+    def test_calfeed(self):
+        cf = make_calfeed('flim-flam', [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
+        self.assertTrue(cf.find(b'flim-flam')>0)
+        self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
+
+    def test_calfeed_event(self):
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.find(b'EVENT')>0)
+
+    def test_calfeed_event_no_enddate(self):
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE-TIME:20200229T143000Z')>0)
+        # with no end date set, caldeef should show an end date of an hour after start
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE-TIME:20200229T153000Z')>0)
+
+    def test_calfeed_event_enddate(self):
+        # set the end date and make sure the calfeed is updated
+        self.testgig.enddate = self.testgig.date + timedelta(hours=2)
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE-TIME:20200229T143000Z')>0)
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE-TIME:20200229T163000Z')>0)
+
+
+class CaldavFileTest(FSTestCase):
 
     def setUp(self):
         """ fake a file system """
@@ -51,7 +103,7 @@ class CaldavTest(FSTestCase):
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band')
         Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
-        g = self.create_gig()
+        self.testgig = self.create_gig()
         self.setUpPyfakefs()
         os.mkdir('calfeeds')
 
@@ -63,32 +115,25 @@ class CaldavTest(FSTestCase):
         Gig.objects.all().delete()
 
     def create_gig(self):
-        the_date = timezone.datetime(2100,1,2,tzinfo=pytz.timezone(self.band.timezone))
+        the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=pytz.timezone(self.band.timezone))
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
             date=the_date,
-            setdate=the_date + timedelta(minutes=30),
-            enddate=the_date + timedelta(hours=2)
         )
 
     def test_calfeed_save_and_get(self):
-        save_calfeed('testfile1','')
+        save_calfeed('testfile1',b'')
         cf = get_calfeed('testfile1')
         self.assertEqual(cf,'')
 
     def test_calfeed_save_content(self):
-        save_calfeed('testfile2','hi')
+        save_calfeed('testfile2',b'hi')
         cf = get_calfeed('testfile2')
         self.assertEqual(cf,'hi')
 
-    def test_calfeed(self):
-        cf = make_calfeed('flim-flam', [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.startswith('BEGIN:VCALENDAR'))
-        self.assertTrue(cf.find('flim-flam')>0)
-        self.assertTrue(cf.endswith('END:VCALENDAR\r\n'))
 
-    def test_calfeed_event(self):
-        cf = make_calfeed('flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find('EVENT')>0)
+
+
+
 

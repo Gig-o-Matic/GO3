@@ -16,6 +16,7 @@
 """
 from django.core.files.storage import FileSystemStorage
 from icalendar import Calendar, Event
+from datetime import timedelta
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 import os
@@ -27,7 +28,7 @@ filesys = FileSystemStorage("calfeeds", "calfeeds")
 def save_calfeed(tag, content):
     file_path = f'{tag}.txt'
 
-    with filesys.open(file_path, mode='wt') as f:
+    with filesys.open(file_path, mode='wb') as f:
         f.write(content)
 
 
@@ -71,7 +72,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('uid', the_uid)
                 event.add('summary', _make_summary(e))
                 event.add('dtstart', e.date)
-                event.add('dtend', e.enddate)
+                event.add('dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
                 event.add(
@@ -79,4 +80,4 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 # todo don't hardwire the URL
                 # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
                 cal.add_component(event)
-    return cal.to_ical().decode('ascii')
+    return cal.to_ical()
