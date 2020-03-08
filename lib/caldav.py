@@ -52,9 +52,11 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
         """ description is the details, plus the setlist """
         x = ''
         if e.details:
-            x = '{0}'.format(e.details.replace('\r\n', '\\n')) # todo - need to do this replace?
+            # todo - need to do this replace?
+            x = '{0}'.format(e.details.replace('\r\n', '\\n'))
         if e.setlist:
-            x = '{0}\\n\\n{1}'.format(x, e.setlist.replace('\r\n', '\\n')) # todo - need to do this replace?
+            x = '{0}\\n\\n{1}'.format(x, e.setlist.replace(
+                '\r\n', '\\n'))  # todo - need to do this replace?
         return x
 
     # set up language
@@ -72,7 +74,8 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('uid', e.cal_feed_id)
                 event.add('summary', _make_summary(e))
                 event.add('dtstart', e.date)
-                event.add('dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
+                event.add(
+                    'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
                 event.add(
