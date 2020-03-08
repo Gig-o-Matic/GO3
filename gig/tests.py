@@ -46,19 +46,19 @@ class GigTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
-    def create_gig(self):
+    def create_gig(self, start_date='auto', set_date='auto', end_date='auto'):
         thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone))
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
-            date=thedate,
-            setdate=thedate + timedelta(minutes=30),
-            enddate=thedate + timedelta(hours=2),
+            date=thedate if start_date == 'auto' else start_date,
+            setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
+            enddate=thedate + timedelta(hours=2) if end_date == 'auto' else end_date,
         )
 
-    def assoc_joe_and_create_gig(self):
+    def assoc_joe_and_create_gig(self, **kw):
         a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
+        g = self.create_gig(**kw)
         p = g.member_plans.filter(assoc=a).get()
         return g, a, p
 
@@ -141,6 +141,18 @@ class GigTest(TestCase):
         Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
         self.create_gig()
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_gig_time_no_set(self):
+        self.assoc_joe_and_create_gig(set_date=None)
+        self.assertIn('Time: noon (Call Time), 2 p.m. (End Time)\n', mail.outbox[0].body)
+
+    def test_gig_time_no_end(self):
+        self.assoc_joe_and_create_gig(end_date=None)
+        self.assertIn('Time: noon (Call Time), 12:30 p.m. (Set Time)\n', mail.outbox[0].body)
+
+    def test_gig_time_no_set_no_end(self):
+        self.assoc_joe_and_create_gig(set_date=None, end_date=None)
+        self.assertIn('Time: noon (Call Time)\n', mail.outbox[0].body)
 
     def test_new_gig_contact(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
