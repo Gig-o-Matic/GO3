@@ -63,8 +63,10 @@ class GigForm(forms.ModelForm):
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
-            'address': forms.TextInput(attrs={'placeholder': _('location_placeholder')}),
+            'address': forms.TextInput(attrs={'placeholder': _('Cloudcuckooland')}),
             'dress': forms.TextInput(attrs={'placeholder': _('Pants Optional')}),
             'paid': forms.TextInput(attrs={'placeholder': _('As If')}),
-            'postgig': forms.TextInput(attrs={'placeholder': _('postgig_placeholder')})
+            'postgig': forms.TextInput(attrs={'placeholder': _('Hit the streets!')}),
+            'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
+            'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
         }
