@@ -46,8 +46,8 @@ class GigTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
-    def create_gig(self):
-        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone))
+    def create_gig(self, tz=None):
+        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(tz if tz else self.band.timezone))
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
@@ -161,12 +161,13 @@ class GigTest(TestCase):
         self.assertIn('Nicht fixiert', message.body)
 
     def test_new_gig_time_localization(self):
+        """ show that a gig created in a timezone other than the band's will be translated properly in email """
         self.joeuser.preferences.language='en-US'
         self.joeuser.save()
         self.band.timezone = 'America/New_York'
         self.band.save()
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
+        g = self.create_gig(tz='UTC')
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
         self.assertIn("01/02/2100 (Sat)", message.body)
