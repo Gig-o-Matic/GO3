@@ -47,6 +47,7 @@ class GigForm(forms.ModelForm):
             self.fields['leader'].queryset = band.confirmed_members
 
     def clean(self):
+        self.tmp_send_update = self.cleaned_data['send_update']
         date = self.cleaned_data['date']
         if date < timezone.now():
             self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
@@ -62,10 +63,11 @@ class GigForm(forms.ModelForm):
 
         super().clean()
 
+    send_update = forms.BooleanField(required=False)
     class Meta:
         model = Gig
         fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','leader', 'postgig',
-                'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
+                'details','setlist','rss_description','invite_occasionals','hide_from_calendar','send_update']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
