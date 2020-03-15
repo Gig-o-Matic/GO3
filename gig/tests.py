@@ -16,12 +16,14 @@
 """
 import copy
 from django.core import mail
-from django.test import TestCase, override_settings
+from django.test import TestCase, override_settings, RequestFactory
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from .models import Gig, Plan
 from .helpers import send_reminder_email, send_snooze_reminders
+from .forms import GigForm
+from .views import CreateView
 from go3 import settings
 from datetime import timedelta, datetime, time
 from django.urls import reverse
@@ -37,8 +39,8 @@ class GigTest(TestCase):
         self.band_admin = Member.objects.create_user(email='d@e.f')
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
-        self.band = Band.objects.create(name='test band', timezone='UTC')
-        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
+        # Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -52,6 +54,7 @@ class GigTest(TestCase):
             title="New Gig",
             band_id=self.band.id,
             date=thedate,
+<<<<<<< HEAD
             setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
             enddate=thedate + timedelta(hours=2) if end_date == 'auto' else end_date,
         )
@@ -59,11 +62,43 @@ class GigTest(TestCase):
     def assoc_joe_and_create_gig(self, **kw):
         a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         g = self.create_gig(**kw)
+=======
+            setdate=thedate + timedelta(minutes=30),
+            enddate=thedate + timedelta(hours=2),
+            status=Gig.StatusOptions.UNKNOWN,
+        )
+
+    def create_gig_form(self, the_member):
+        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        f = GigForm(data={'title':'New Gig',
+                          'date':thedate, 
+                          'setdate':thedate + timedelta(minutes=30),
+                          'enddate':thedate + timedelta(hours=2),
+                          'contact':the_member,
+                          'status':Gig.StatusOptions.UNKNOWN,
+                          'send_update': True
+                          })
+        r = RequestFactory().get(f'/gig/create/{self.band.id}')
+        r.user = the_member
+        v = CreateView()
+        v.setup(r, bk=self.band.id)
+        v.form_valid(f)
+        return v.object
+
+    def assoc_joe(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        return a
+
+    def assoc_joe_and_create_gig(self):
+        a = self.assoc_joe()
+        g = self.create_gig_form(self.joeuser)
+>>>>>>> fixed gig tests now that just creating a test doesnt send emails - need to use the submit form
         p = g.member_plans.filter(assoc=a).get()
         return g, a, p
 
     def test_no_section(self):
         """ show that the band has a default section called 'No Section' """
+        self.assoc_joe()
         a = self.band.assocs.first()
         s = a.default_section
         self.assertTrue(s.is_default)
@@ -72,7 +107,7 @@ class GigTest(TestCase):
 
     def test_gig_plans(self):
         """ show that when a gig is created, every member has a plan """
-        g = self.create_gig()
+        g = self.create_gig(self.joeuser)
         self.assertEqual(g.plans.count(), self.band.assocs.count())
 
     def test_plan_section(self):
@@ -83,36 +118,50 @@ class GigTest(TestCase):
         self.assertEqual(self.band.sections.count(), 4)
 
         """ make the band's first assoc default to s1 section """
+        self.assoc_joe()
         a = self.band.assocs.first()
         a.default_section = s1
         a.save()
-        self.assertEqual(self.band_admin.assocs.first().default_section, s1)
-        self.assertEqual(self.band_admin.assocs.first().section, s1)
+        self.assertEqual(self.joeuser.assocs.first().default_section, s1)
+        self.assertEqual(self.joeuser.assocs.first().section, s1)
 
         """ now create a gig and find out what the member's plan says """
-        g = self.create_gig()
-        p = g.member_plans.first()
-        self.assertEqual(p.assoc.member, self.band_admin)
+        g = self.create_gig(self.band_admin)
+        p = g.member_plans.get(assoc__member=self.joeuser)
+        self.assertEqual(p.assoc.member, self.joeuser)
         self.assertEqual(p.plan_section, None) # we didn't set one so should be None
         self.assertEqual(p.section, s1) # should use the member's section
 
         """ change the member's default section and show that it changed for the gig """
         a.default_section=s2
         a.save()
-        p = g.plans.first()
+        p = g.plans.get(assoc__member=a.member)
         self.assertEqual(p.section, s2) # should use the member's section
 
         """ now show we override it if we set the plan section """
         p.plan_section = s3
         p.save()
-        p = g.plans.first()
+        p = g.plans.get(assoc__member=p.assoc.member)
         self.assertEqual(p.section, s3) # should use the override section
 
         """ now change the member's default but the plan should not change """
         a.default_section = s1
         a.save()
-        p = g.plans.first()
+        p = g.plans.get(assoc__member=a.member)
         self.assertEqual(p.section, s3) # should use the override section
+
+    def test_gig_create_permissions(self):
+        """ make sure that if I don't have permission to create a gig, I can't """
+        self.band.anyone_can_create_gigs = False
+        self.band.save()
+        with self.assertRaises(PermissionError):
+            self.create_gig_form(self.janeuser)
+
+    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    def test_new_gig_email(self):
+        self.create_gig_form(self.band_admin)
+        self.assertEqual(len(mail.outbox), 1)
+
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):

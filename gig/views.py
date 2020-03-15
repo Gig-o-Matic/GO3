@@ -74,7 +74,7 @@ class CreateView(generic.CreateView):
                 self.request.user)
 
         if has_permission is False:
-            raise(PermissionError, "Trying to create a gig without permission: {}".format(
+            raise PermissionError("Trying to create a gig without permission: {}".format(
                 self.request.user.email))
 
         form.instance.band = band
