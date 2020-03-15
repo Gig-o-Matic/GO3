@@ -23,6 +23,7 @@ from django import forms
 from .models import Gig, Plan
 from .forms import GigForm
 from band.models import Band
+from gig.helpers import notify_new_gig
 
 
 class DetailView(generic.DetailView):
@@ -77,7 +78,15 @@ class CreateView(generic.CreateView):
                 self.request.user.email))
 
         form.instance.band = band
-        return super(CreateView, self).form_valid(form)
+
+        result = super(CreateView, self).form_valid(form)
+
+        # call the super before sending notifications, so the object is saved
+        if form.cleaned_data['send_update']:
+            notify_new_gig(form.instance, created=True)
+            pass
+
+        return result
 
 
 class UpdateView(generic.UpdateView):
@@ -86,6 +95,15 @@ class UpdateView(generic.UpdateView):
 
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
+
+    def form_valid(self, form):
+        result = super(UpdateView, self).form_valid(form)
+
+        # call the super before sending notifications, so the object is saved
+        if form.cleaned_data['send_update']:
+            notify_new_gig(form.instance, created=False)
+
+        return result
 
 
 def answer(request, pk, val):
