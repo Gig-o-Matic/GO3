@@ -23,6 +23,12 @@ from django_q.tasks import async_task
 
 
 @receiver(post_save, sender=Gig)
+def create_member_plans(sender, instance, created, **kwargs):
+    """ if this is a new gig, make sure every member has a plan set """
+    if created:
+        x = instance.member_plans
+
+@receiver(post_save, sender=Gig)
 def set_calfeed_dirty(sender, instance, created, **kwargs):
     async_task('band.helpers.set_calfeeds_dirty', instance.band)
 
