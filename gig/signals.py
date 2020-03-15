@@ -23,13 +23,6 @@ from django_q.tasks import async_task
 
 
 @receiver(post_save, sender=Gig)
-def notify_new_gig(sender, instance, created, **kwargs):
-    # This will have the side effect of creating plans for all members
-    async_task('gig.helpers.send_email_from_gig', instance,
-               'email/new_gig.md' if created else 'email/edited_gig.md')
-
-
-@receiver(post_save, sender=Gig)
 def set_calfeed_dirty(sender, instance, created, **kwargs):
     async_task('band.helpers.set_calfeeds_dirty', instance.band)
 
