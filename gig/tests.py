@@ -48,24 +48,16 @@ class GigTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
-    def create_gig(self, start_date='auto', set_date='auto', end_date='auto'):
+    def create_gig(self, the_member, start_date='auto', set_date='auto', end_date='auto'):
         thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone)) if start_date == 'auto' else start_date
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
             date=thedate,
-<<<<<<< HEAD
             setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
             enddate=thedate + timedelta(hours=2) if end_date == 'auto' else end_date,
-        )
-
-    def assoc_joe_and_create_gig(self, **kw):
-        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig(**kw)
-=======
-            setdate=thedate + timedelta(minutes=30),
-            enddate=thedate + timedelta(hours=2),
-            status=Gig.StatusOptions.UNKNOWN,
+            contact=the_member,
+            status=Gig.StatusOptions.UNKNOWN
         )
 
     def create_gig_form(self, the_member):
@@ -92,7 +84,6 @@ class GigTest(TestCase):
     def assoc_joe_and_create_gig(self):
         a = self.assoc_joe()
         g = self.create_gig_form(self.joeuser)
->>>>>>> fixed gig tests now that just creating a test doesnt send emails - need to use the submit form
         p = g.member_plans.filter(assoc=a).get()
         return g, a, p
 
@@ -107,7 +98,7 @@ class GigTest(TestCase):
 
     def test_gig_plans(self):
         """ show that when a gig is created, every member has a plan """
-        g = self.create_gig(self.joeuser)
+        g = self.create_gig_form(self.joeuser)
         self.assertEqual(g.plans.count(), self.band.assocs.count())
 
     def test_plan_section(self):
@@ -159,12 +150,6 @@ class GigTest(TestCase):
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
-        self.create_gig_form(self.band_admin)
-        self.assertEqual(len(mail.outbox), 1)
-
-
-    @override_settings(TEMPLATES=MISSING_TEMPLATES)
-    def test_new_gig_email(self):
         g, a, p = self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)
 
@@ -178,271 +163,6 @@ class GigTest(TestCase):
         self.assertIn(f'{p.id}/{Plan.StatusChoices.DONT_KNOW}', message.body)
         self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
-
-    def test_new_gig_all_confirmed(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        self.create_gig()
-        self.assertEqual(len(mail.outbox), 2)
-
-    def test_new_gig_obey_email_me(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
-        self.create_gig()
-        self.assertEqual(len(mail.outbox), 1)
-
-    def test_gig_time_no_set(self):
-        self.assoc_joe_and_create_gig(set_date=None)
-        self.assertIn('Time: noon (Call Time), 2 p.m. (End Time)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_no_end(self):
-        self.assoc_joe_and_create_gig(end_date=None)
-        self.assertIn('Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_no_set_no_end(self):
-        self.assoc_joe_and_create_gig(set_date=None, end_date=None)
-        self.assertIn('Time: noon (Call Time)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_long_set(self):
-        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
-        self.assoc_joe_and_create_gig(start_date=date, set_date=date + timedelta(days=1), end_date=None)
-        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_long_end(self):
-        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
-        self.assoc_joe_and_create_gig(start_date=date, set_date=None, end_date=date + timedelta(days=1))
-        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nEnd Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_long_set_end(self):
-        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
-        self.assoc_joe_and_create_gig(start_date=date, set_date=date + timedelta(days=1), end_date=date+timedelta(days=1, hours=1))
-        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nEnd Time: 01/03/2100 1 p.m. (Sun)\nContact', mail.outbox[0].body)
-
-    def test_new_gig_contact(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1), contact=self.janeuser)
-
-        message = mail.outbox[0]
-        self.assertIn(self.janeuser.email, message.reply_to)
-        self.assertIn(self.janeuser.display_name, message.body)
-
-    def test_new_gig_localization(self):
-        self.joeuser.preferences.language = 'de'
-        self.joeuser.save()
-        self.assoc_joe_and_create_gig()
-
-        message = mail.outbox[0]
-        self.assertIn('02.01.2100 (Sa)', message.body)
-        self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
-        self.assertIn('Nicht fixiert', message.body)
-
-    def test_new_gig_time_localization(self):
-        self.joeuser.preferences.language='en-US'
-        self.joeuser.save()
-        self.band.timezone = 'America/New_York'
-        self.band.save()
-        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
-        self.assoc_joe_and_create_gig(start_date=date)
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertIn("01/02/2100 (Sat)", message.body)
-        self.assertIn('7 a.m. (Call Time), 7:30 a.m. (Set Time), 9 a.m. (End Time)', message.body)
-
-    def test_gig_time_daylight_savings(self):
-        self.band.timezone = 'America/New_York'
-        self.band.save()
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-
-        # DST information only out to 2037?
-        Gig.objects.create(
-            title="January Gig",
-            band_id=self.band.id,
-            date=timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
-        )
-        Gig.objects.create(
-            title="July Gig",
-            band_id=self.band.id,
-            date=timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
-        )
-        self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
-        self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
-
-
-    @override_settings(TEMPLATES=MISSING_TEMPLATES)
-    def test_reminder_email(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
-        mail.outbox = []
-        send_reminder_email(g)
-
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertIn('Reminder', message.subject)
-        self.assertIn('reminder', message.body)
-        self.assertNotIn('MISSING', message.subject)
-        self.assertNotIn('MISSING', message.body)
-
-    def test_no_reminder_to_decided(self):
-        g, a, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.DEFINITELY
-        p.save()
-        mail.outbox = []
-        send_reminder_email(g)
-
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_snooze_reminder(self):
-        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
-        g.member_plans.update(snooze_until=datetime.now(tz=timezone.get_current_timezone()))
-        mail.outbox = []
-        send_snooze_reminders()
-
-        self.assertEqual(len(mail.outbox), 2)
-        for message in mail.outbox:
-            self.assertIn('Reminder', message.subject)
-        self.assertEqual(g.member_plans.filter(snooze_until__isnull=False).count(), 0)
-
-    def test_snooze_until_cutoff(self):
-        joeassoc = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        janeassoc=Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
-        now = datetime.now(tz=timezone.get_current_timezone())
-        g.member_plans.filter(assoc=joeassoc).update(snooze_until=now)
-        g.member_plans.filter(assoc=janeassoc).update(snooze_until=now + timedelta(days=2))
-        mail.outbox = []
-        send_snooze_reminders()
-
-        self.assertEqual(len(mail.outbox), 1)
-
-    def test_snooze_until_null(self):
-        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        g = self.create_gig()
-        now = datetime.now(tz=timezone.get_current_timezone())
-        g.member_plans.filter(assoc=a).update(snooze_until=now)
-        mail.outbox = []
-        send_snooze_reminders()
-
-        self.assertEqual(len(mail.outbox), 1)
-
-    @override_settings(TEMPLATES=MISSING_TEMPLATES)
-    def test_gig_edit_email(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
-        mail.outbox = []
-        g.status = g.StatusOptions.CONFIRMED
-        g.save()
-
-        self.assertEqual(len(mail.outbox), 1)
-        message = mail.outbox[0]
-        self.assertIn('Edit', message.subject)
-        self.assertNotIn('Your current status', message.body)
-        self.assertIn('**can** make it', message.body)
-        self.assertIn("**can't** make it", message.body)
-        self.assertNotIn('MISSING', message.subject)
-        self.assertNotIn('MISSING', message.body)
-
-    def test_gig_edit_status(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
-        mail.outbox = []
-        g.status = g.StatusOptions.CONFIRMED
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn('Status', message.subject)
-        self.assertIn('Confirmed!', message.body)
-        self.assertIn("(was Unconfirmed)", message.body)
-
-    def test_gig_edit_call(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
-        mail.outbox = []
-        g.date = g.date + timedelta(hours=2)
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn('Call Time', message.subject)
-        self.assertIn('2 p.m.', message.body)
-        self.assertIn("(was noon)", message.body)
-
-    def test_gig_edit_add_time(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
-        g.setdate = None
-        g.save()
-
-        mail.outbox = []
-        g.setdate = g.date + timedelta(hours=2)
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn('Set Time', message.subject)
-        self.assertIn('2 p.m.', message.body)
-        self.assertIn("(was not set)", message.body)
-
-    def test_gig_edit_contact(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
-        mail.outbox = []
-        g.contact = self.janeuser
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn('Contact', message.subject)
-        self.assertIn(self.janeuser.display_name, message.body)
-        self.assertIn("(was ??)", message.body)
-
-    def test_gig_edit_trans(self):
-        self.joeuser.preferences.language = 'de'
-        self.joeuser.save()
-        g, _, _ = self.assoc_joe_and_create_gig()
-        mail.outbox = []
-        g.date = g.date + timedelta(hours=2)
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn('Beginn', message.subject)
-        # We need to check the previous time, since the current time will show
-        # up in the details block, which we're already checking to be localized
-        self.assertIn('12:00', message.body)
-
-    def test_gig_edit_definitely(self):
-        g, a, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.DEFINITELY
-        p.save()
-        mail.outbox = []
-        g.status = g.StatusOptions.CONFIRMED
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn(f'Your current status is "{Plan.StatusChoices.DEFINITELY.label}"', message.body)
-        self.assertNotIn('**can** make it', message.body)
-        self.assertIn("**can't** make it", message.body)
-
-    def test_gig_edit_cant(self):
-        g, a, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.CANT_DO_IT
-        p.save()
-        mail.outbox = []
-        g.status = g.StatusOptions.CONFIRMED
-        g.save()
-
-        message = mail.outbox[0]
-        self.assertIn(f'Your current status is "{Plan.StatusChoices.CANT_DO_IT.label}"', message.body)
-        self.assertIn('**can** make it', message.body)
-        self.assertNotIn("**can't** make it", message.body)
-    # @override_settings(TEMPLATES=MISSING_TEMPLATES)
-    # def test_new_gig_email(self):
-    #     g, a, p = self.assoc_joe_and_create_gig()
-    #     self.assertEqual(len(mail.outbox), 1)
-
-    #     message = mail.outbox[0]
-    #     self.assertIn(g.title, message.subject)
-    #     self.assertIn("01/02/2100 (Sat)", message.body)
-    #     self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
-    #     self.assertIn('Unconfirmed', message.body)
-    #     self.assertIn(f'{p.id}/{Plan.StatusChoices.DEFINITELY}', message.body)
-    #     self.assertIn(f'{p.id}/{Plan.StatusChoices.CANT_DO_IT}', message.body)
-    #     self.assertIn(f'{p.id}/{Plan.StatusChoices.DONT_KNOW}', message.body)
-    #     self.assertNotIn('MISSING', message.subject)
-    #     self.assertNotIn('MISSING', message.body)
 
     # def test_new_gig_all_confirmed(self):
     #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
