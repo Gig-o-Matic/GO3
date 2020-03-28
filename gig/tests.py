@@ -49,7 +49,7 @@ class GigTest(TestCase):
         Assoc.objects.all().delete()
 
     def create_gig(self, the_member, start_date='auto', set_date='auto', end_date='auto'):
-        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone)) if start_date == 'auto' else start_date
+        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC')) if start_date == 'auto' else start_date
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
@@ -60,18 +60,23 @@ class GigTest(TestCase):
             status=Gig.StatusOptions.UNKNOWN
         )
 
-    def create_gig_form(self, the_member):
-        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone(self.band.timezone))
+    def create_gig_form(self, **kwargs):
+
+        if 'date' in kwargs.keys():
+            thedate = kwargs['date']
+        else:
+            thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC'))
+
         f = GigForm(data={'title':'New Gig',
                           'date':thedate, 
                           'setdate':thedate + timedelta(minutes=30),
                           'enddate':thedate + timedelta(hours=2),
-                          'contact':the_member,
+                          'contact':kwargs['contact'] if 'contact' in kwargs.keys() else self.joeuser,
                           'status':Gig.StatusOptions.UNKNOWN,
                           'send_update': True
                           })
         r = RequestFactory().get(f'/gig/create/{self.band.id}')
-        r.user = the_member
+        r.user = kwargs['contact'] if 'contact' in kwargs.keys() else self.joeuser
         v = CreateView()
         v.setup(r, bk=self.band.id)
         v.form_valid(f)
@@ -83,7 +88,7 @@ class GigTest(TestCase):
 
     def assoc_joe_and_create_gig(self):
         a = self.assoc_joe()
-        g = self.create_gig_form(self.joeuser)
+        g = self.create_gig_form(contact=self.joeuser)
         p = g.member_plans.filter(assoc=a).get()
         return g, a, p
 
@@ -98,7 +103,7 @@ class GigTest(TestCase):
 
     def test_gig_plans(self):
         """ show that when a gig is created, every member has a plan """
-        g = self.create_gig_form(self.joeuser)
+        g = self.create_gig_form(contact=self.joeuser)
         self.assertEqual(g.plans.count(), self.band.assocs.count())
 
     def test_plan_section(self):
@@ -146,7 +151,7 @@ class GigTest(TestCase):
         self.band.anyone_can_create_gigs = False
         self.band.save()
         with self.assertRaises(PermissionError):
-            self.create_gig_form(self.janeuser)
+            self.create_gig_form(contact=self.janeuser)
 
     @override_settings(TEMPLATES=MISSING_TEMPLATES)
     def test_new_gig_email(self):
@@ -164,141 +169,133 @@ class GigTest(TestCase):
         self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
 
-    # def test_new_gig_all_confirmed(self):
-    #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     self.create_gig()
-    #     self.assertEqual(len(mail.outbox), 2)
+    def test_new_gig_all_confirmed(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        self.create_gig_form(contact=self.joeuser)
+        self.assertEqual(len(mail.outbox), 2)
 
-    # def test_new_gig_obey_email_me(self):
-    #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
-    #     self.create_gig()
-    #     self.assertEqual(len(mail.outbox), 1)
+    def test_new_gig_obey_email_me(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
+        self.create_gig_form(contact=self.joeuser)
+        self.assertEqual(len(mail.outbox), 1)
 
-    # def test_new_gig_contact(self):
-    #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     Gig.objects.create(title="New Gig", band_id=self.band.id, date=timezone.now() + timedelta(days=1), contact=self.janeuser)
+    def test_new_gig_contact(self):
+        self.assoc_joe_and_create_gig()
 
-    #     message = mail.outbox[0]
-    #     self.assertIn(self.janeuser.email, message.reply_to)
-    #     self.assertIn(self.janeuser.display_name, message.body)
+        message = mail.outbox[0]
+        self.assertIn(self.joeuser.email, message.reply_to)
+        self.assertIn(self.joeuser.display_name, message.body)
 
-    # def test_new_gig_localization(self):
-    #     self.joeuser.preferences.language = 'de'
-    #     self.joeuser.save()
-    #     self.assoc_joe_and_create_gig()
+    def test_new_gig_localization(self):
+        self.joeuser.preferences.language = 'de'
+        self.joeuser.save()
+        self.assoc_joe_and_create_gig()
 
-    #     message = mail.outbox[0]
-    #     self.assertIn('02.01.2100 (Sa)', message.body)
-    #     self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
-    #     self.assertIn('Nicht fixiert', message.body)
+        message = mail.outbox[0]
+        self.assertIn('02.01.2100 (Sa)', message.body)
+        self.assertIn('12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)', message.body)
+        self.assertIn('Nicht fixiert', message.body)
 
-    # def test_new_gig_time_localization(self):
-    #     self.joeuser.preferences.language='en-US'
-    #     self.joeuser.save()
-    #     self.band.timezone = 'America/New_York'
-    #     self.band.save()
-    #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     g = self.create_gig()
-    #     self.assertEqual(len(mail.outbox), 1)
-    #     message = mail.outbox[0]
-    #     self.assertIn("01/02/2100 (Sat)", message.body)
-    #     self.assertIn('7 a.m. (Call Time), 7:30 a.m. (Set Time), 9 a.m. (End Time)', message.body)
+    def test_new_gig_time_localization(self):
+        self.joeuser.preferences.language='en-US'
+        self.joeuser.save()
+        self.band.timezone = 'America/New_York'
+        self.band.save()
+        # Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        # g = self.create_gig()
+        self.assoc_joe_and_create_gig()
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn("01/02/2100 (Sat)", message.body)
+        self.assertIn('7 a.m. (Call Time), 7:30 a.m. (Set Time), 9 a.m. (End Time)', message.body)
 
-    # def test_gig_time_daylight_savings(self):
-    #     self.band.timezone = 'America/New_York'
-    #     self.band.save()
-    #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+    def test_gig_time_daylight_savings(self):
+        self.band.timezone = 'America/New_York'
+        self.band.save()
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
 
-    #     # DST information only out to 2037?
-    #     Gig.objects.create(
-    #         title="January Gig",
-    #         band_id=self.band.id,
-    #         date=timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
-    #     )
-    #     Gig.objects.create(
-    #         title="July Gig",
-    #         band_id=self.band.id,
-    #         date=timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
-    #     )
-    #     self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
-    #     self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
+        # DST information only out to 2037?
+        self.create_gig_form(date=timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC')))
+        self.create_gig_form(date=timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC')))
+        self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
+        self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
 
 
-    # @override_settings(TEMPLATES=MISSING_TEMPLATES)
-    # def test_reminder_email(self):
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     mail.outbox = []
-    #     send_reminder_email(g)
+    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    def test_reminder_email(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        send_reminder_email(g)
 
-    #     self.assertEqual(len(mail.outbox), 1)
-    #     message = mail.outbox[0]
-    #     self.assertIn('Reminder', message.subject)
-    #     self.assertIn('reminder', message.body)
-    #     self.assertNotIn('MISSING', message.subject)
-    #     self.assertNotIn('MISSING', message.body)
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('Reminder', message.subject)
+        self.assertIn('reminder', message.body)
+        self.assertNotIn('MISSING', message.subject)
+        self.assertNotIn('MISSING', message.body)
 
-    # def test_no_reminder_to_decided(self):
-    #     g, a, p = self.assoc_joe_and_create_gig()
-    #     p.status = Plan.StatusChoices.DEFINITELY
-    #     p.save()
-    #     mail.outbox = []
-    #     send_reminder_email(g)
+    def test_no_reminder_to_decided(self):
+        g, a, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+        mail.outbox = []
+        send_reminder_email(g)
 
-    #     self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
-    # def test_snooze_reminder(self):
-    #     Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     g = self.create_gig()
-    #     g.member_plans.update(snooze_until=datetime.now(tz=timezone.get_current_timezone()))
-    #     mail.outbox = []
-    #     send_snooze_reminders()
+    def test_snooze_reminder(self):
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig_form()
+        g.member_plans.update(snooze_until=datetime.now(tz=timezone.get_current_timezone()))
+        mail.outbox = []
+        send_snooze_reminders()
 
-    #     self.assertEqual(len(mail.outbox), 2)
-    #     for message in mail.outbox:
-    #         self.assertIn('Reminder', message.subject)
-    #     self.assertEqual(g.member_plans.filter(snooze_until__isnull=False).count(), 0)
+        self.assertEqual(len(mail.outbox), 2)
+        for message in mail.outbox:
+            self.assertIn('Reminder', message.subject)
+        self.assertEqual(g.member_plans.filter(snooze_until__isnull=False).count(), 0)
 
-    # def test_snooze_until_cutoff(self):
-    #     joeassoc = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     janeassoc=Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     g = self.create_gig()
-    #     now = datetime.now(tz=timezone.get_current_timezone())
-    #     g.member_plans.filter(assoc=joeassoc).update(snooze_until=now)
-    #     g.member_plans.filter(assoc=janeassoc).update(snooze_until=now + timedelta(days=2))
-    #     mail.outbox = []
-    #     send_snooze_reminders()
+    def test_snooze_until_cutoff(self):
+        joeassoc = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        janeassoc=Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig_form()
+        now = datetime.now(tz=timezone.get_current_timezone())
+        g.member_plans.filter(assoc=joeassoc).update(snooze_until=now)
+        g.member_plans.filter(assoc=janeassoc).update(snooze_until=now + timedelta(days=2))
+        mail.outbox = []
+        send_snooze_reminders()
 
-    #     self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
-    # def test_snooze_until_null(self):
-    #     a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-    #     g = self.create_gig()
-    #     now = datetime.now(tz=timezone.get_current_timezone())
-    #     g.member_plans.filter(assoc=a).update(snooze_until=now)
-    #     mail.outbox = []
-    #     send_snooze_reminders()
+    def test_snooze_until_null(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        g = self.create_gig_form()
+        now = datetime.now(tz=timezone.get_current_timezone())
+        g.member_plans.filter(assoc=a).update(snooze_until=now)
+        mail.outbox = []
+        send_snooze_reminders()
 
-    #     self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
-    # @override_settings(TEMPLATES=MISSING_TEMPLATES)
-    # def test_gig_edit_email(self):
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     mail.outbox = []
-    #     g.status = g.StatusOptions.CONFIRMED
-    #     g.save()
+    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    def test_gig_edit_email(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        g.status = g.StatusOptions.CONFIRMED
+        g.save()
 
-    #     self.assertEqual(len(mail.outbox), 1)
-    #     message = mail.outbox[0]
-    #     self.assertIn('Edit', message.subject)
-    #     self.assertNotIn('Your current status', message.body)
-    #     self.assertIn('**can** make it', message.body)
-    #     self.assertIn("**can't** make it", message.body)
-    #     self.assertNotIn('MISSING', message.subject)
-    #     self.assertNotIn('MISSING', message.body)
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('Edit', message.subject)
+        self.assertNotIn('Your current status', message.body)
+        self.assertIn('**can** make it', message.body)
+        self.assertIn("**can't** make it", message.body)
+        self.assertNotIn('MISSING', message.subject)
+        self.assertNotIn('MISSING', message.body)
 
     # def test_gig_edit_status(self):
     #     g, _, _ = self.assoc_joe_and_create_gig()
