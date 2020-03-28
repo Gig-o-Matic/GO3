@@ -23,7 +23,7 @@ from band.util import AssocStatusChoices
 from .models import Gig, Plan
 from .helpers import send_reminder_email, send_snooze_reminders
 from .forms import GigForm
-from .views import CreateView
+from .views import CreateView, UpdateView
 from go3 import settings
 from datetime import timedelta, datetime, time
 from django.urls import reverse
@@ -78,6 +78,27 @@ class GigTest(TestCase):
         r = RequestFactory().get(f'/gig/create/{self.band.id}')
         r.user = kwargs['contact'] if 'contact' in kwargs.keys() else self.joeuser
         v = CreateView()
+        v.setup(r, bk=self.band.id)
+        v.form_valid(f)
+        return v.object
+
+    def update_gig_form(self, the_gig, **kwargs):
+        data={
+            'title':the_gig.title,
+            'date':the_gig.date,
+            'setdate':the_gig.setdate,
+            'enddate':the_gig.enddate,
+            'contact':the_gig.contact,
+            'status':the_gig.status,
+            'send_update':True
+        }
+        for x in kwargs.keys():
+            data[x]=kwargs[x]
+
+        f = GigForm(instance=the_gig, data=data)
+
+        r = RequestFactory().get(f'/gig/{the_gig.id}/update/{self.band.id}')
+        v = UpdateView()
         v.setup(r, bk=self.band.id)
         v.form_valid(f)
         return v.object
@@ -287,6 +308,7 @@ class GigTest(TestCase):
         mail.outbox = []
         g.status = g.StatusOptions.CONFIRMED
         g.save()
+        self.update_gig_form(g)
 
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
@@ -297,66 +319,61 @@ class GigTest(TestCase):
         self.assertNotIn('MISSING', message.subject)
         self.assertNotIn('MISSING', message.body)
 
-    # def test_gig_edit_status(self):
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     mail.outbox = []
-    #     g.status = g.StatusOptions.CONFIRMED
-    #     g.save()
+    def test_gig_edit_status(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        self.update_gig_form(g, status=g.StatusOptions.CONFIRMED)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn('Status', message.subject)
-    #     self.assertIn('Confirmed!', message.body)
-    #     self.assertIn("(was Unconfirmed)", message.body)
+        message = mail.outbox[0]
+        self.assertIn('Status', message.subject)
+        self.assertIn('Confirmed!', message.body)
+        self.assertIn("(was Unconfirmed)", message.body)
 
-    # def test_gig_edit_call(self):
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     mail.outbox = []
-    #     g.date = g.date + timedelta(hours=2)
-    #     g.save()
+    def test_gig_edit_call(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        self.update_gig_form(g, date=g.date + timedelta(hours=2), enddate=None, setdate=None)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn('Call Time', message.subject)
-    #     self.assertIn('2 p.m.', message.body)
-    #     self.assertIn("(was noon)", message.body)
 
-    # def test_gig_edit_add_time(self):
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     g.setdate = None
-    #     g.save()
+        message = mail.outbox[0]
+        self.assertIn('Call Time', message.subject)
+        self.assertIn('2 p.m.', message.body)
+        self.assertIn("(was noon)", message.body)
 
-    #     mail.outbox = []
-    #     g.setdate = g.date + timedelta(hours=2)
-    #     g.save()
+    def test_gig_edit_add_time(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.update_gig_form(g, setdate=None)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn('Set Time', message.subject)
-    #     self.assertIn('2 p.m.', message.body)
-    #     self.assertIn("(was not set)", message.body)
+        mail.outbox = []
+        self.update_gig_form(g, setdate=g.date + timedelta(hours=2))
 
-    # def test_gig_edit_contact(self):
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     mail.outbox = []
-    #     g.contact = self.janeuser
-    #     g.save()
+        message = mail.outbox[0]
+        self.assertIn('Set Time', message.subject)
+        self.assertIn('2 p.m.', message.body)
+        self.assertIn("(was not set)", message.body)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn('Contact', message.subject)
-    #     self.assertIn(self.janeuser.display_name, message.body)
-    #     self.assertIn("(was ??)", message.body)
+    def test_gig_edit_contact(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        self.update_gig_form(g, contact=self.janeuser)
 
-    # def test_gig_edit_trans(self):
-    #     self.joeuser.preferences.language = 'de'
-    #     self.joeuser.save()
-    #     g, _, _ = self.assoc_joe_and_create_gig()
-    #     mail.outbox = []
-    #     g.date = g.date + timedelta(hours=2)
-    #     g.save()
+        message = mail.outbox[0]
+        self.assertIn('Contact', message.subject)
+        self.assertIn(self.janeuser.display_name, message.body)
+        self.assertIn(f"(was {self.joeuser.display_name})", message.body)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn('Beginn', message.subject)
-    #     # We need to check the previous time, since the current time will show
-    #     # up in the details block, which we're already checking to be localized
-    #     self.assertIn('12:00', message.body)
+    def test_gig_edit_trans(self):
+        self.joeuser.preferences.language = 'de'
+        self.joeuser.save()
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        self.update_gig_form(g, date=g.date + timedelta(hours=2), enddate=None, setdate=None)
+
+        message = mail.outbox[0]
+        self.assertIn('Beginn', message.subject)
+        # We need to check the previous time, since the current time will show
+        # up in the details block, which we're already checking to be localized
+        self.assertIn('12:00', message.body)
 
     # def test_gig_edit_definitely(self):
     #     g, a, p = self.assoc_joe_and_create_gig()
