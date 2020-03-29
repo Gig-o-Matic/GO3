@@ -375,31 +375,29 @@ class GigTest(TestCase):
         # up in the details block, which we're already checking to be localized
         self.assertIn('12:00', message.body)
 
-    # def test_gig_edit_definitely(self):
-    #     g, a, p = self.assoc_joe_and_create_gig()
-    #     p.status = Plan.StatusChoices.DEFINITELY
-    #     p.save()
-    #     mail.outbox = []
-    #     g.status = g.StatusOptions.CONFIRMED
-    #     g.save()
+    def test_gig_edit_definitely(self):
+        g, a, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.DEFINITELY
+        p.save()
+        mail.outbox = []
+        self.update_gig_form(g, status=g.StatusOptions.CONFIRMED)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn(f'Your current status is "{Plan.StatusChoices.DEFINITELY.label}"', message.body)
-    #     self.assertNotIn('**can** make it', message.body)
-    #     self.assertIn("**can't** make it", message.body)
+        message = mail.outbox[0]
+        self.assertIn(f'Your current status is "{Plan.StatusChoices.DEFINITELY.label}"', message.body)
+        self.assertNotIn('**can** make it', message.body)
+        self.assertIn("**can't** make it", message.body)
 
-    # def test_gig_edit_cant(self):
-    #     g, a, p = self.assoc_joe_and_create_gig()
-    #     p.status = Plan.StatusChoices.CANT_DO_IT
-    #     p.save()
-    #     mail.outbox = []
-    #     g.status = g.StatusOptions.CONFIRMED
-    #     g.save()
+    def test_gig_edit_cant(self):
+        g, a, p = self.assoc_joe_and_create_gig()
+        p.status = Plan.StatusChoices.CANT_DO_IT
+        p.save()
+        mail.outbox = []
+        self.update_gig_form(g, status=g.StatusOptions.CONFIRMED)
 
-    #     message = mail.outbox[0]
-    #     self.assertIn(f'Your current status is "{Plan.StatusChoices.CANT_DO_IT.label}"', message.body)
-    #     self.assertIn('**can** make it', message.body)
-    #     self.assertNotIn("**can't** make it", message.body)
+        message = mail.outbox[0]
+        self.assertIn(f'Your current status is "{Plan.StatusChoices.CANT_DO_IT.label}"', message.body)
+        self.assertIn('**can** make it', message.body)
+        self.assertNotIn("**can't** make it", message.body)
 
     def test_answer_yes(self):
         _, _, p = self.assoc_joe_and_create_gig()
