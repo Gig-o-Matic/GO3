@@ -64,11 +64,6 @@ class GigForm(forms.ModelForm):
 
     send_update = forms.BooleanField(required=False)
 
-    # def is_valid(self):
-    #     if self.cleaned_data['send_update']:
-    #         send_gig_announcements(self)
-    #     return super().is_valid()
-
     class Meta:
         model = Gig
         fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','leader', 'postgig',
