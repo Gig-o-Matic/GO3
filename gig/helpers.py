@@ -159,6 +159,5 @@ def send_snooze_reminders():
     unsnooze.update(snooze_until=None)
 
 def notify_new_gig(gig, created):
-    # This will have the side effect of creating plans for all members
     async_task('gig.helpers.send_email_from_gig', gig,
                'email/new_gig.md' if created else 'email/edited_gig.md')
