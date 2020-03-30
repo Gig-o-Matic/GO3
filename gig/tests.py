@@ -62,21 +62,20 @@ class GigTest(TestCase):
 
     def create_gig_form(self, **kwargs):
 
-        if 'date' in kwargs.keys():
-            thedate = kwargs['date']
-        else:
-            thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC'))
+        date = kwargs.get('date', timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC')))
+        setdate = kwargs.get('setdate', date + timedelta(minutes=30))
+        enddate = kwargs.get('enddate', date + timedelta(hours=2))
 
         f = GigForm(data={'title':'New Gig',
-                          'date':thedate, 
-                          'setdate':thedate + timedelta(minutes=30),
-                          'enddate':thedate + timedelta(hours=2),
-                          'contact':kwargs['contact'] if 'contact' in kwargs.keys() else self.joeuser,
+                          'date':date, 
+                          'setdate':setdate,
+                          'enddate':enddate,
+                          'contact':kwargs.get('contact', self.joeuser),
                           'status':Gig.StatusOptions.UNKNOWN,
                           'send_update': True
                           })
         r = RequestFactory().get(f'/gig/create/{self.band.id}')
-        r.user = kwargs['contact'] if 'contact' in kwargs.keys() else self.joeuser
+        r.user = kwargs.get('contact', self.joeuser)
         v = CreateView()
         v.setup(r, bk=self.band.id)
         v.form_valid(f)
@@ -107,9 +106,9 @@ class GigTest(TestCase):
         a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         return a
 
-    def assoc_joe_and_create_gig(self):
+    def assoc_joe_and_create_gig(self, **kwargs):
         a = self.assoc_joe()
-        g = self.create_gig_form(contact=self.joeuser)
+        g = self.create_gig_form(contact=self.joeuser, **kwargs)
         p = g.member_plans.filter(assoc=a).get()
         return g, a, p
 
@@ -201,6 +200,33 @@ class GigTest(TestCase):
         Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED, email_me=False)
         self.create_gig_form(contact=self.joeuser)
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_gig_time_no_set(self):
+        self.assoc_joe_and_create_gig(setdate=None)
+        self.assertIn('Time: noon (Call Time), 2 p.m. (End Time)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_no_end(self):
+        self.assoc_joe_and_create_gig(enddate=None)
+        self.assertIn('Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_no_set_no_end(self):
+        self.assoc_joe_and_create_gig(setdate=None, enddate=None)
+        self.assertIn('Time: noon (Call Time)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_long_set(self):
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        self.assoc_joe_and_create_gig(date=date, setdate=date + timedelta(days=1), enddate=None)
+        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_long_end(self):
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        self.assoc_joe_and_create_gig(date=date, setdate=None, enddate=date + timedelta(days=1))
+        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nEnd Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
+
+    def test_gig_time_long_set_end(self):
+        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
+        self.assoc_joe_and_create_gig(date=date, setdate=date + timedelta(days=1), enddate=date+timedelta(days=1, hours=1))
+        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nEnd Time: 01/03/2100 1 p.m. (Sun)\nContact', mail.outbox[0].body)
 
     def test_new_gig_contact(self):
         self.assoc_joe_and_create_gig()
