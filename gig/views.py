@@ -52,10 +52,6 @@ class CreateView(generic.CreateView):
         context['the_band'] = Band.objects.get(id=self.kwargs['bk'])
         return context
 
-    # def get_initial(self):
-    #     initial = super(CreateView, self).get_initial()
-    #     initial['contact'] = Band.objects.get(id=self.kwargs['bk']).confirmed_members
-    #     return initial
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(CreateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['band'] = Band.objects.get(id=self.kwargs['bk'])
