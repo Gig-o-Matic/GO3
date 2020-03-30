@@ -38,14 +38,6 @@ class GigForm(forms.ModelForm):
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
 
-
-        if user:
-            self.fields['contact'].initial = user
-            self.fields['contact'].empty_label = None
-        if band:
-            self.fields['contact'].queryset = band.confirmed_members
-            self.fields['leader'].queryset = band.confirmed_members
-
     def clean(self):
         date = self.cleaned_data['date']
         if date < timezone.now():
