@@ -25,7 +25,3 @@ def handle_user_preferences(sender, instance, created, **kwargs):
         MemberPreferences.objects.create(member=instance)
     else:
         instance.preferences.save()
-
-# @receiver(post_save, sender=Member)
-# def save_user_preferences(sender, instance, **kwargs):
-#     instance.preferences.save()
