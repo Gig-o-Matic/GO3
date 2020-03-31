@@ -94,10 +94,10 @@ class AbstractGig(models.Model):
 
     address = models.TextField(null=True, blank=True)
     class StatusOptions(models.IntegerChoices):
-            UNKNOWN = 0
-            CONFIRMED = 1
-            CANCELLED = 2
-            ASKING = 3
+            UNKNOWN = 0, _("Unknown")
+            CONFIRMED = 1, _("Confirmed")
+            CANCELLED = 2, _("Cancelled")
+            ASKING = 3, _("Asking")
     status = models.IntegerField(choices=StatusOptions.choices, default=StatusOptions.UNKNOWN)
 
     @property

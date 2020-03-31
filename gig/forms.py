@@ -17,16 +17,26 @@
 
 from django import forms
 from .models import Gig
+from band.models import Band
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
+        band = kwargs.pop('band', None)
+        user = kwargs.pop('user', None)
         super().__init__(
             label_suffix='',
             **kwargs
         )
+
+        if user:
+            self.fields['contact'].initial = user
+            self.fields['contact'].empty_label = None
+        if band:
+            self.fields['contact'].queryset = band.confirmed_members
+            self.fields['leader'].queryset = band.confirmed_members
 
     def clean(self):
         date = self.cleaned_data['date']
@@ -44,11 +54,19 @@ class GigForm(forms.ModelForm):
 
         super().clean()
 
+    send_update = forms.BooleanField(required=False)
+
     class Meta:
         model = Gig
-        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','postgig',
-                'details','setlist','rss_description','invite_occasionals','hide_from_calendar']
+        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','leader', 'postgig',
+                'details','setlist','rss_description','invite_occasionals','hide_from_calendar','send_update']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
+            'address': forms.TextInput(attrs={'placeholder': _('Cloudcuckooland')}),
+            'dress': forms.TextInput(attrs={'placeholder': _('Pants Optional')}),
+            'paid': forms.TextInput(attrs={'placeholder': _('As If')}),
+            'postgig': forms.TextInput(attrs={'placeholder': _('Hit the streets!')}),
+            'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
+            'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
         }

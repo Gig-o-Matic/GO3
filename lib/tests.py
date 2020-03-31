@@ -92,6 +92,32 @@ class CaldavTest(TestCase):
         self.assertTrue(cf.find(b'DTSTART;VALUE=DATE-TIME:20200229T143000Z')>0)
         self.assertTrue(cf.find(b'DTEND;VALUE=DATE-TIME:20200229T163000Z')>0)
 
+    def test_calfeed_description(self):
+        self.testgig.details = 'test desc'
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertIn(b'DESCRIPTION:test desc\r\n',cf)
+
+    def test_calfeed_setlist(self):
+        self.testgig.setlist = 'test set'
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertIn(b'DESCRIPTION:test set\r\n',cf)
+
+    def test_calfeed_details_setlist(self):
+        self.testgig.details = 'test details'
+        self.testgig.setlist = 'test set'
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n',cf)
+
+    def test_calfeed_summary(self):
+        self.testgig.details = 'test details'
+        self.testgig.setlist = 'test set'
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertIn(b'SUMMARY:test band:New Gig (Unknown)\r\n',cf)
+    
 
 class CaldavFileTest(FSTestCase):
 

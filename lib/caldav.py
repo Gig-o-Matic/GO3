@@ -45,19 +45,15 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
     """ construct an ical-compliant stream from a list of events """
 
     def _make_summary(event):
-        """ summary is the title, plus band name and status """
-        return '{0}:{1} {2}'.format(event.band.name, event.title, event.status)
+        """ makes the summary: the title, plus band name and status """
+        return f'{event.band.name}:{event.title} ({event.StatusOptions(event.status).label})'
 
     def _make_description(event):
         """ description is the details, plus the setlist """
-        x = ''
-        if e.details:
-            # todo - need to do this replace?
-            x = '{0}'.format(e.details.replace('\r\n', '\\n'))
-        if e.setlist:
-            x = '{0}\\n\\n{1}'.format(x, e.setlist.replace(
-                '\r\n', '\\n'))  # todo - need to do this replace?
-        return x
+        deets = event.details if event.details else ''
+        setlist = event.setlist if event.setlist else ''
+        space = '\n\n' if deets and setlist else ''
+        return f'{deets}{space}{setlist}'
 
     # set up language
     cal = Calendar()

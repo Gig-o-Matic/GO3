@@ -27,6 +27,8 @@ from band.models import Section, AssocStatusChoices
 from member.helpers import prepare_email
 from lib.email import send_messages_async
 from lib.translation import join_trans
+from django_q.tasks import async_task
+
 
 @login_required
 def update_plan(request, pk, val):
@@ -155,3 +157,7 @@ def send_snooze_reminders():
                                    gig__date__gt=now)
     send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
     unsnooze.update(snooze_until=None)
+
+def notify_new_gig(gig, created):
+    async_task('gig.helpers.send_email_from_gig', gig,
+               'email/new_gig.md' if created else 'email/edited_gig.md')
