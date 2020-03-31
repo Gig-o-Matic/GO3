@@ -118,6 +118,13 @@ class CaldavTest(TestCase):
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertIn(b'SUMMARY:test band:New Gig (Unknown)\r\n',cf)
     
+    def test_calfeed_translation(self):
+        self.testgig.details = 'test details'
+        self.testgig.setlist = 'test set'
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),'de', self.joeuser.cal_feed_id)
+        self.assertIn(b'SUMMARY:test band:New Gig (Unbekannt)\r\n',cf)
+
 
 class CaldavFileTest(FSTestCase):
 
