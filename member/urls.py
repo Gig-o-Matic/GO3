@@ -33,5 +33,6 @@ urlpatterns = [
     path('calfeed/<uuid:pk>', helpers.calfeed),
 
     path('invite', views.invite, name='member-invite'),
+    path('invite/<uuid:pk>', views.accept_invite, name='member-invite-accept'),
 
 ]

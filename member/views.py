@@ -169,3 +169,7 @@ def invite(request):
             invited.append(email)
 
     return JsonResponse({'invited': invited, 'in_band': in_band, 'invalid': invalid})
+
+
+def accept_invite(request, pk):
+    return "OK"

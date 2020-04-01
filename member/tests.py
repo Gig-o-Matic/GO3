@@ -423,6 +423,7 @@ class InviteTest(TestCase):
         self.assertIn(self.band.name, message.body)
         self.assertIn('get started', message.body)
         self.assertNotIn('existing', message.body)
+        self.assertIn(reverse('member-invite-accept', args=[invite.id]), message.body)
         self.assertNotIn(MISSING, message.body)
 
     @flag_missing_vars
@@ -433,4 +434,5 @@ class InviteTest(TestCase):
         self.assertIn(self.band.name, message.body)
         self.assertNotIn('get started', message.body)
         self.assertIn('existing', message.body)
+        self.assertIn(reverse('member-invite-accept', args=[invite.id]), message.body)
         self.assertNotIn(MISSING, message.body)
