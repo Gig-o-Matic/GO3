@@ -16,7 +16,7 @@
 """
 import copy
 from django.core import mail
-from django.test import TestCase, override_settings, RequestFactory
+from django.test import TestCase, RequestFactory
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
@@ -29,9 +29,7 @@ from datetime import timedelta, datetime, time
 from django.urls import reverse
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
-
-MISSING_TEMPLATES = copy.deepcopy(settings.TEMPLATES)
-MISSING_TEMPLATES[0]['OPTIONS']['string_if_invalid'] = 'MISSING: %s'
+from lib.template_test import MISSING, flag_missing_vars
 
 class GigTest(TestCase):
     def setUp(self):
@@ -67,7 +65,7 @@ class GigTest(TestCase):
         enddate = kwargs.get('enddate', date + timedelta(hours=2))
 
         f = GigForm(data={'title':'New Gig',
-                          'date':date, 
+                          'date':date,
                           'setdate':setdate,
                           'enddate':enddate,
                           'contact':kwargs.get('contact', self.joeuser),
@@ -173,7 +171,7 @@ class GigTest(TestCase):
         with self.assertRaises(PermissionError):
             self.create_gig_form(contact=self.janeuser)
 
-    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    @flag_missing_vars
     def test_new_gig_email(self):
         g, a, p = self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)
@@ -186,8 +184,8 @@ class GigTest(TestCase):
         self.assertIn(f'{p.id}/{Plan.StatusChoices.DEFINITELY}', message.body)
         self.assertIn(f'{p.id}/{Plan.StatusChoices.CANT_DO_IT}', message.body)
         self.assertIn(f'{p.id}/{Plan.StatusChoices.DONT_KNOW}', message.body)
-        self.assertNotIn('MISSING', message.subject)
-        self.assertNotIn('MISSING', message.body)
+        self.assertNotIn(MISSING, message.subject)
+        self.assertNotIn(MISSING, message.body)
 
     def test_new_gig_all_confirmed(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
@@ -270,7 +268,7 @@ class GigTest(TestCase):
         self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
 
 
-    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    @flag_missing_vars
     def test_reminder_email(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -280,8 +278,8 @@ class GigTest(TestCase):
         message = mail.outbox[0]
         self.assertIn('Reminder', message.subject)
         self.assertIn('reminder', message.body)
-        self.assertNotIn('MISSING', message.subject)
-        self.assertNotIn('MISSING', message.body)
+        self.assertNotIn(MISSING, message.subject)
+        self.assertNotIn(MISSING, message.body)
 
     def test_no_reminder_to_decided(self):
         g, a, p = self.assoc_joe_and_create_gig()
@@ -328,7 +326,7 @@ class GigTest(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
 
-    @override_settings(TEMPLATES=MISSING_TEMPLATES)
+    @flag_missing_vars
     def test_gig_edit_email(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -342,8 +340,8 @@ class GigTest(TestCase):
         self.assertNotIn('Your current status', message.body)
         self.assertIn('**can** make it', message.body)
         self.assertIn("**can't** make it", message.body)
-        self.assertNotIn('MISSING', message.subject)
-        self.assertNotIn('MISSING', message.body)
+        self.assertNotIn(MISSING, message.subject)
+        self.assertNotIn(MISSING, message.body)
 
     def test_gig_edit_status(self):
         g, _, _ = self.assoc_joe_and_create_gig()

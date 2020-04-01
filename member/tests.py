@@ -24,6 +24,8 @@ from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_email, prepare_calfeed, calfeed, update_all_calfeeds
 from lib.email import DEFAULT_SUBJECT
+from lib.template_test import MISSING, flag_missing_vars
+from django.core import mail
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import resolve, reverse
 from django.utils import timezone
@@ -331,6 +333,7 @@ class InviteTest(TestCase):
         self.super = Member.objects.create_user(email='super@example.com', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='admin@example.com')
         self.joeuser = Member.objects.create_user(email='joe@example.com')
+        self.janeuser = Member.objects.create_user(email='jane@example.com')
         self.band = Band.objects.create(name='test band')
         Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
         Assoc.objects.create(member=self.joeuser, band=self.band)
@@ -372,6 +375,15 @@ class InviteTest(TestCase):
             {'invited': [], 'in_band': ['joe@example.com'], 'invalid': []})
         self.assertEqual(Invite.objects.count(), 0)
 
+    def test_invite_member(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'jane@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': ['jane@example.com'], 'in_band': [], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 1)
+
     def test_invite_invalid(self):
         self.client.force_login(self.band_admin)
         response = self.client.post(reverse('member-invite'),
@@ -397,3 +409,28 @@ class InviteTest(TestCase):
         response = self.client.post(reverse('member-invite'),
             {'bk': self.band.id, 'emails': 'new@example.com'})
         self.assertIsInstance(response, HttpResponseRedirect)
+
+    def test_invite_email(self):
+        Invite.objects.create(email='new@example.com', band=self.band)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['new@example.com'])
+
+    @flag_missing_vars
+    def test_invite_new_email(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, 'Invitation to Join Gig-o-Matic')
+        self.assertIn(self.band.name, message.body)
+        self.assertIn('get started', message.body)
+        self.assertNotIn('existing', message.body)
+        self.assertNotIn(MISSING, message.body)
+
+    @flag_missing_vars
+    def test_invite_existing_email(self):
+        invite = Invite.objects.create(email=self.janeuser.email, band=self.band)
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, 'Gig-o-Matic New Band Invite')
+        self.assertIn(self.band.name, message.body)
+        self.assertNotIn('get started', message.body)
+        self.assertIn('existing', message.body)
+        self.assertNotIn(MISSING, message.body)

@@ -26,7 +26,7 @@ from datetime import timedelta
 from gig.models import Gig, Plan
 from member.models import Member
 
-from lib.email import DEFAULT_SUBJECT, SUBJECT
+from lib.email import DEFAULT_SUBJECT, SUBJECT, send_messages_async
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -61,6 +61,11 @@ def prepare_email(member, template, context=None, **kw):
         subject, text, to=[member.email_line], **kw)
     message.attach_alternative(html, 'text/html')
     return message
+
+
+def send_invite(invite):
+    new = (Member.objects.filter(email=invite.email).count() == 0)
+    send_messages_async([prepare_email(invite, 'email/invite.md', {'new': new})])
 
 
 def prepare_calfeed(member):
