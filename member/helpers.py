@@ -96,7 +96,7 @@ def update_all_calfeeds():
         Member.objects.filter(cal_feed_dirty=True).update(cal_feed_dirty=False)
         return
 
-    members = Member.objects.filter(cal_feed_dirty=True) 
+    members = Member.objects.filter(cal_feed_dirty=True)
     for m in members:
         cf = prepare_calfeed(m)
         save_calfeed(m.cal_feed_id, cf)

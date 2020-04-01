@@ -51,7 +51,7 @@ class DetailView(generic.DetailView):
             ok_to_show = True
         else:
             is_me = False
-            
+
         # # find the bands this member is associated with
         the_member_bands = [a.band for a in the_member.assocs.all()]
 
@@ -69,7 +69,7 @@ class DetailView(generic.DetailView):
             # if ok_to_show == False:
             #     # check to see if we're sharing our profile - if not, bail!
             #     if (the_member.preferences and the_member.preferences.share_profile == False) and the_user.is_superuser == False:
-            #         return self.redirect('/')            
+            #         return self.redirect('/')
 
         # email_change = self.request.get('emailAddressChanged',False)
         # if email_change:
@@ -111,7 +111,7 @@ class UpdateView(BaseUpdateView):
 
 class PreferencesUpdateView(BaseUpdateView):
     model = MemberPreferences
-    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed', 
+    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
               'calendar_show_only_committed']
 
     def get_success_url(self):
