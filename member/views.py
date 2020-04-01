@@ -15,17 +15,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.http import HttpResponse
-from .models import Member, MemberPreferences
+from django.http import HttpResponse, JsonResponse
+from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc
 from django.views import generic
+from django.views.decorators.http import require_POST
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.urls import reverse
 from django.views.generic.base import TemplateView
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from go3.colors import the_colors
 from django.utils import translation
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.core.validators import validate_email
+from django.core.exceptions import PermissionDenied, ValidationError
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
@@ -134,3 +139,33 @@ class OtherBandsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
         return context
+
+
+@require_POST
+@login_required
+def invite(request):
+    bk = request.POST.get('bk', None)
+    band = get_object_or_404(Band, pk=bk)
+    emails = request.POST.get('emails', '').split('\n')
+
+    user_is_band_admin = Assoc.objects.filter(
+        member=request.user, band=band, is_admin=True).count() == 1
+
+    if not (user_is_band_admin or request.user.is_superuser):
+        raise PermissionDenied
+
+    invited, in_band, invalid = [], [], []
+    for email in emails:
+        try:
+            validate_email(email)
+        except ValidationError:
+            invalid.append(email)
+            continue
+
+        if Assoc.objects.filter(member__email=email, band=band).count() > 0:
+            in_band.append(email)
+        else:
+            Invite.objects.create(band=band, email=email, language=request.user.preferences.language)
+            invited.append(email)
+
+    return JsonResponse({'invited': invited, 'in_band': in_band, 'invalid': invalid})

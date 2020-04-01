@@ -24,8 +24,9 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
-from band.models import Assoc
+from band.models import Assoc, Band
 from go3.settings import LANGUAGES
+from types import SimpleNamespace
 import uuid
 
 class MemberManager(BaseUserManager):
@@ -164,3 +165,23 @@ class MemberPreferences(models.Model):
     show_long_agenda = models.BooleanField(default=True)
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
+
+
+class Invite(models.Model):
+    """
+    An invitation sent to an email address.  The recipient can sign up with that or
+    another email address.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    band = models.ForeignKey(Band, related_name="invites", on_delete=models.CASCADE)
+    email = models.EmailField(_('email address'))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
+
+    @property
+    def email_line(self):
+        return self.email
+
+    # We want language to work as it does for members
+    @property
+    def preferences(self):
+        return SimpleNamespace(language=self.language)

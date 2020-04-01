@@ -18,13 +18,14 @@
 from unittest.mock import patch, mock_open
 
 from django.test import TestCase, RequestFactory
-from .models import Member, MemberPreferences
+from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc
 from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_email, prepare_calfeed, calfeed, update_all_calfeeds
 from lib.email import DEFAULT_SUBJECT
-from django.urls import resolve
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.urls import resolve, reverse
 from django.utils import timezone
 from datetime import timedelta
 import pytz
@@ -323,3 +324,76 @@ class MemberCalfeedTest(FSTestCase):
         g.save()
         self.joeuser.refresh_from_db()
         self.assertTrue(self.joeuser.cal_feed_dirty)
+
+
+class InviteTest(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(email='super@example.com', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@example.com')
+        self.joeuser = Member.objects.create_user(email='joe@example.com')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        Assoc.objects.create(member=self.joeuser, band=self.band)
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+        Invite.objects.all().delete()
+
+    def assertOK(self, response):
+        self.assertEqual(response.status_code, 200)
+
+    def test_invite_one(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': ['new@example.com'], 'in_band': [], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 1)
+
+    def test_invite_several(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com\ntwo@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': ['new@example.com', 'two@example.com'], 'in_band': [], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 2)
+
+    def test_invite_existing(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'joe@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': [], 'in_band': ['joe@example.com'], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_invalid(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'notanemailaddress'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': [], 'in_band': [], 'invalid': ['notanemailaddress']})
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_super(self):
+        self.client.force_login(self.super)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertOK(response)
+
+    def test_invite_non_admin(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertIsInstance(response, HttpResponseForbidden)
+
+    def test_invite_no_user(self):
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertIsInstance(response, HttpResponseRedirect)
