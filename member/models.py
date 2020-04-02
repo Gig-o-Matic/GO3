@@ -173,7 +173,7 @@ class Invite(models.Model):
     another email address.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    band = models.ForeignKey(Band, related_name="invites", on_delete=models.CASCADE)
+    band = models.ForeignKey(Band, related_name="invites", on_delete=models.CASCADE, null=True)
     email = models.EmailField(_('email address'))
     language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
 

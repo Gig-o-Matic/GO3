@@ -65,7 +65,8 @@ def prepare_email(member, template, context=None, **kw):
 
 def send_invite(invite):
     new = (Member.objects.filter(email=invite.email).count() == 0)
-    send_messages_async([prepare_email(invite, 'email/invite.md', {'new': new})])
+    template = 'email/invite.md' if invite.band else 'email/signup.md'
+    send_messages_async([prepare_email(invite, template, {'new': new})])
 
 
 def prepare_calfeed(member):

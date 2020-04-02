@@ -180,13 +180,13 @@ def accept_invite(request, pk):
 
     if member:
         if (not request.user.is_authenticated) or (request.user == member):
-            if Assoc.objects.filter(band=invite.band, member=member).count() == 0:
+            if invite.band and Assoc.objects.filter(band=invite.band, member=member).count() == 0:
                 Assoc.objects.create(band=invite.band, member=member,
                                      status=AssocStatusChoices.CONFIRMED)
             invite.delete()
             if request.user.is_authenticated:
                 return redirect('member-detail', pk=member.id)
-            return render(request, 'member/accepted.html', {'band_name': invite.band.name})
+            return render(request, 'member/accepted.html', {'band_name': invite.band.name if invite.band else None})
 
         # User is signed in as a different Member
         return "Hmmm"
@@ -221,3 +221,15 @@ def create_member(request):
 
     Member.objects.create_user(invite.email, password, username=name, nickname=nickname)
     return redirect('member-invite-accept', pk=invite.id)
+
+@require_POST
+def signup(request):
+    email = request.POST.get('email')
+    if Member.objects.filter(email=email).count() > 0:
+        return JsonResponse({'status': 'failure', 'error': 'member exists'})
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({'status': 'failure', 'error': 'invalid email'})
+    Invite.objects.create(band=None, email=email)
+    return JsonResponse({'status': 'success'})

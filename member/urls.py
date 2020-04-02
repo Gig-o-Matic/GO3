@@ -36,5 +36,6 @@ urlpatterns = [
     path('invite/<uuid:pk>', views.accept_invite, name='member-invite-accept'),
     path('create', views.create_member, name='member-create'),
     path('create/<uuid:pk>', views.create_form, name='member-create-form'),
+    path('signup', views.signup, name='member-signup'),
 
 ]
