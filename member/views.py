@@ -17,7 +17,7 @@
 
 from django.http import HttpResponse, JsonResponse
 from .models import Member, MemberPreferences, Invite
-from band.models import Band, Assoc
+from band.models import Band, Assoc, AssocStatusChoices
 from django.views import generic
 from django.views.decorators.http import require_POST
 from django.views.generic.edit import UpdateView as BaseUpdateView
@@ -28,7 +28,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from go3.colors import the_colors
 from django.utils import translation
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 
@@ -172,4 +172,22 @@ def invite(request):
 
 
 def accept_invite(request, pk):
-    return "OK"
+    invite = get_object_or_404(Invite, pk=pk)
+    member = Member.objects.filter(email=invite.email).first()
+    if member:
+        if (not request.user.is_authenticated) or (request.user == member):
+            Assoc.objects.create(band=invite.band, member=member, status=AssocStatusChoices.CONFIRMED)
+            invite.delete()
+            if request.user.is_authenticated:
+                return redirect('member-detail', pk=member.id)
+            return render(request, 'member/accepted.html', {'band_name': invite.band.name})
+
+        # User is signed in as a different Member
+        return "Hmmm"
+
+    # No Member currently
+    if request.user.is_authenticated:
+        return render(request, 'member/claim_invite.html', {'invite': invite})
+
+    # New user
+    return render(request, 'member/create.html', {'invite': invite})
