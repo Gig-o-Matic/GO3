@@ -196,4 +196,28 @@ def accept_invite(request, pk):
         return render(request, 'member/claim_invite.html', {'invite': invite})
 
     # New user
-    return render(request, 'member/create.html', {'invite': invite})
+    return redirect('member-create-form', pk=invite.id)
+
+
+def create_form(request, pk):
+    invite = get_object_or_404(Invite, pk=pk)
+    # TODO:
+    return JsonResponse("HTML form to submit to create_member, along with flash message display", safe=False)
+
+@require_POST
+def create_member(request):
+    invite = get_object_or_404(Invite, pk=request.POST.get('invite'))
+    if Member.objects.filter(email=invite.email).count() > 0:
+        # TODO: Now what?!?
+        return render(request, 'member/error.html', {'message': 'The user you are trying to create already exists.'})
+
+    name = request.POST.get('name')
+    nickname = request.POST.get('nickname')
+    password = request.POST.get('password')
+    confirm_password = request.POST.get('confirm_password')
+    if password != confirm_password:
+        # TODO: Flash message
+        return redirect('member-create-form', pk=invite.id)
+
+    Member.objects.create_user(invite.email, password, username=name, nickname=nickname)
+    return redirect('member-invite-accept', pk=invite.id)

@@ -449,6 +449,7 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
+        self.assertIn('member/accepted.html', (t.name for t in response.templates))
         self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
         self.assertEqual(Invite.objects.count(), 0)
 
@@ -466,6 +467,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
+        self.assertIn('member/claim_invite.html', (t.name for t in response.templates))
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
@@ -473,7 +475,7 @@ class InviteTest(TestCase):
         n_assoc = Assoc.objects.count()
         invite = Invite.objects.create(email='new@example.com', band=self.band)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
-        self.assertOK(response)
+        self.assertRedirects(response, reverse('member-create-form', args=[invite.id]))
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
@@ -492,3 +494,40 @@ class InviteTest(TestCase):
         self.assertRedirects(response, reverse('member-detail', args=[self.joeuser.id]))
         self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(), 1)
         self.assertEqual(Invite.objects.count(), 0)
+
+    def test_create_member(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.post(reverse('member-create'),
+                                    {'name': 'New',
+                                     'nickname': 'new',
+                                     'password': '12345',
+                                     'confirm_password': '12345',
+                                     'invite': str(invite.id)})
+        self.assertRedirects(response, reverse('member-invite-accept', args=[invite.id]))
+        new = Member.objects.filter(email='new@example.com').get()
+        self.assertEqual(new.username, 'New')
+        self.assertEqual(new.nickname, 'new')
+
+    def test_create_duplicate_member(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band)
+        response = self.client.post(reverse('member-create'),
+                                    {'name': 'New',
+                                     'nickname': 'new',
+                                     'password': '12345',
+                                     'confirm_password': '12345',
+                                     'invite': str(invite.id)})
+        self.assertOK(response)
+        self.assertIn('member/error.html', (t.name for t in response.templates))
+        self.assertIn(b'already exists', response.content)
+        self.assertEqual(Member.objects.filter(email='jane@example.com').count(), 1)
+
+    def test_create_bad_password(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.post(reverse('member-create'),
+                                    {'name': 'New',
+                                     'nickname': 'new',
+                                     'password': '12345',
+                                     'confirm_password': '54321',
+                                     'invite': str(invite.id)})
+        self.assertRedirects(response, reverse('member-create-form', args=[invite.id]))
+        self.assertEqual(Member.objects.filter(email='new@example.com').count(), 0)
