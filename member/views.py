@@ -23,6 +23,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.urls import reverse
 from django.views.generic.base import TemplateView
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from go3.colors import the_colors
@@ -219,7 +220,8 @@ def create_member(request):
         # TODO: Flash message
         return redirect('member-create-form', pk=invite.id)
 
-    Member.objects.create_user(invite.email, password, username=name, nickname=nickname)
+    member = Member.objects.create_user(invite.email, password, username=name, nickname=nickname)
+    login(request, member)
     return redirect('member-invite-accept', pk=invite.id)
 
 @require_POST
