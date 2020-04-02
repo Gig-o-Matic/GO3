@@ -476,3 +476,19 @@ class InviteTest(TestCase):
         self.assertOK(response)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_claim(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.force_login(self.janeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]), {'claim': 'true'})
+        self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
+        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_accept_invite_duplicate_assoc(self):
+        invite = Invite.objects.create(email='joe@example.com', band=self.band)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]), {'claim': 'true'})
+        self.assertRedirects(response, reverse('member-detail', args=[self.joeuser.id]))
+        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(), 1)
+        self.assertEqual(Invite.objects.count(), 0)

@@ -173,10 +173,16 @@ def invite(request):
 
 def accept_invite(request, pk):
     invite = get_object_or_404(Invite, pk=pk)
-    member = Member.objects.filter(email=invite.email).first()
+    if request.user.is_authenticated and request.GET.get('claim') == 'true':
+        member = request.user
+    else:
+        member = Member.objects.filter(email=invite.email).first()
+
     if member:
         if (not request.user.is_authenticated) or (request.user == member):
-            Assoc.objects.create(band=invite.band, member=member, status=AssocStatusChoices.CONFIRMED)
+            if Assoc.objects.filter(band=invite.band, member=member).count() == 0:
+                Assoc.objects.create(band=invite.band, member=member,
+                                     status=AssocStatusChoices.CONFIRMED)
             invite.delete()
             if request.user.is_authenticated:
                 return redirect('member-detail', pk=member.id)
