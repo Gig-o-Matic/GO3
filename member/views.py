@@ -36,7 +36,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
 
@@ -187,7 +187,9 @@ def accept_invite(request, pk):
             invite.delete()
             if request.user.is_authenticated:
                 return redirect('member-detail', pk=member.id)
-            return render(request, 'member/accepted.html', {'band_name': invite.band.name if invite.band else None})
+            return render(request, 'member/accepted.html',
+                          {'band_name': invite.band.name if invite.band else None,
+                           'member_id': member.id})
 
         # User is signed in as a different Member
         return "Hmmm"

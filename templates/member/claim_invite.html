@@ -1,0 +1,19 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Schedule" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+        <div class="page-header">{% trans "Accept Invite?" %}</div>
+            {% url 'logout' as logout %}
+            {% blocktrans with band_name=invite.band.name invite_email=invite.email user_email=user.email request_path=request.path path_encoded=request.path|urlencode %}
+                <p>This invitation to join {{ band_name }} was sent to <tt>{{ invite_email }}</tt>.  However, you are currently logged in as <tt>{{ user_email }}</tt>.</p>
+                <p><a href="{{ request_path }}?claim=true" class="btn btn-primary">Accept invite</a> as <tt>{{ user_email }}</tt>.</p>
+                <p><a href="{{ logout }}?next={{ path_encoded }}" class="btn btn-secondary">Log out</a> to be able to create an account for <tt>{{ invite_email }}</tt>.</p>
+            {% endblocktrans %}
+    </div>
+</div>
+{% endblock content %}
