@@ -338,6 +338,7 @@ class InviteTest(TestCase):
         self.band = Band.objects.create(name='test band')
         Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
         Assoc.objects.create(member=self.joeuser, band=self.band)
+        self.password = 'sb8bBb5cGmE2uNn'  # Random value, but validates
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -518,7 +519,7 @@ class InviteTest(TestCase):
         n_assoc = Assoc.objects.count()
         invite = Invite.objects.create(email='new@example.com', band=self.band)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
-        self.assertRedirects(response, reverse('member-create-form', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-create', args=[invite.id]))
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
@@ -526,7 +527,7 @@ class InviteTest(TestCase):
         n_assoc = Assoc.objects.count()
         invite = Invite.objects.create(email='new@example.com', band=None)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
-        self.assertRedirects(response, reverse('member-create-form', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-create', args=[invite.id]))
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
@@ -548,12 +549,11 @@ class InviteTest(TestCase):
 
     def test_create_member(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
-        response = self.client.post(reverse('member-create'),
-                                    {'name': 'New',
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
                                      'nickname': 'new',
-                                     'password': '12345',
-                                     'confirm_password': '12345',
-                                     'invite': str(invite.id)})
+                                     'password1': self.password,
+                                     'password2': self.password})
         # We redirect to the accept invite page, which redirects to the member profile
         self.assertRedirects(response,
                              reverse('member-invite-accept', args=[invite.id]),
@@ -564,12 +564,11 @@ class InviteTest(TestCase):
 
     def test_create_member_no_band(self):
         invite = Invite.objects.create(email='new@example.com', band=None)
-        response = self.client.post(reverse('member-create'),
-                                    {'name': 'New',
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
                                      'nickname': 'new',
-                                     'password': '12345',
-                                     'confirm_password': '12345',
-                                     'invite': str(invite.id)})
+                                     'password1': self.password,
+                                     'password2': self.password})
         # We redirect to the accept invite page, which redirects to the member profile
         self.assertRedirects(response,
                              reverse('member-invite-accept', args=[invite.id]),
@@ -580,48 +579,44 @@ class InviteTest(TestCase):
 
     def test_create_member_full_redirect(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
-        response = self.client.post(reverse('member-create'),
-                                    {'name': 'New',
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
                                      'nickname': 'new',
-                                     'password': '12345',
-                                     'confirm_password': '12345',
-                                     'invite': str(invite.id)},
+                                     'password1': self.password,
+                                     'password2': self.password},
                                     follow=True)
         self.assertOK(response)
         self.assertIn('member/member_detail.html', (t.name for t in response.templates))
 
     def test_create_duplicate_member(self):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
-        response = self.client.post(reverse('member-create'),
-                                    {'name': 'New',
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
                                      'nickname': 'new',
-                                     'password': '12345',
-                                     'confirm_password': '12345',
-                                     'invite': str(invite.id)})
+                                     'password1': self.password,
+                                     'password2': self.password})
         self.assertOK(response)
-        self.assertIn('member/error.html', (t.name for t in response.templates))
         self.assertIn(b'already exists', response.content)
         self.assertEqual(Member.objects.filter(email='jane@example.com').count(), 1)
 
     def test_create_bad_password(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
-        response = self.client.post(reverse('member-create'),
-                                    {'name': 'New',
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
                                      'nickname': 'new',
-                                     'password': '12345',
-                                     'confirm_password': '54321',
-                                     'invite': str(invite.id)})
-        self.assertRedirects(response, reverse('member-create-form', args=[invite.id]))
+                                     'password1': self.password,
+                                     'password2': '54321'})
+        self.assertOK(response)
+        self.assertIn(b'The two password fields didn\xe2\x80\x99t match.', response.content)
         self.assertEqual(Member.objects.filter(email='new@example.com').count(), 0)
 
     def test_create_gets_logged_in(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
-        self.client.post(reverse('member-create'),
-                         {'name': 'New',
+        self.client.post(reverse('member-create', args=[invite.id]),
+                         {'username': 'New',
                           'nickname': 'new',
-                          'password': '12345',
-                          'confirm_password': '12345',
-                          'invite': str(invite.id)})
+                          'password1': self.password,
+                          'password2': self.password})
         self.assertTrue(auth.get_user(self.client).is_authenticated)
 
     def test_signup(self):

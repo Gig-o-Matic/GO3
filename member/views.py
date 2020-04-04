@@ -16,14 +16,15 @@
 """
 
 from django.http import HttpResponse, JsonResponse
+from .forms import MemberCreateForm
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from django.views import generic
 from django.views.decorators.http import require_POST
-from django.views.generic.edit import UpdateView as BaseUpdateView
-from django.urls import reverse
+from django.views.generic.edit import UpdateView as BaseUpdateView, CreateView
+from django.urls import reverse, reverse_lazy
 from django.views.generic.base import TemplateView
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from go3.colors import the_colors
@@ -199,32 +200,29 @@ def accept_invite(request, pk):
         return render(request, 'member/claim_invite.html', {'invite': invite})
 
     # New user
-    return redirect('member-create-form', pk=invite.id)
+    return redirect('member-create', pk=invite.id)
 
 
-def create_form(request, pk):
-    invite = get_object_or_404(Invite, pk=pk)
-    # TODO:
-    return JsonResponse("HTML form to submit to create_member, along with flash message display", safe=False)
+class MemberCreateView(CreateView):
+    template_name = 'member/create.html'
+    form_class = MemberCreateForm
+    model = Member
 
-@require_POST
-def create_member(request):
-    invite = get_object_or_404(Invite, pk=request.POST.get('invite'))
-    if Member.objects.filter(email=invite.email).count() > 0:
-        # TODO: Now what?!?
-        return render(request, 'member/error.html', {'message': 'The user you are trying to create already exists.'})
+    def get_form_kwargs(self):
+        self.invite = get_object_or_404(Invite, pk=self.kwargs['pk'])
+        kwargs = super().get_form_kwargs()
+        kwargs['invite'] = self.invite
+        return kwargs
 
-    name = request.POST.get('name')
-    nickname = request.POST.get('nickname')
-    password = request.POST.get('password')
-    confirm_password = request.POST.get('confirm_password')
-    if password != confirm_password:
-        # TODO: Flash message
-        return redirect('member-create-form', pk=invite.id)
+    def form_valid(self, form):
+        retval = super().form_valid(form)
+        member = authenticate(username=self.invite.email, password=form.cleaned_data['password1'])
+        login(self.request, member)
+        return retval
 
-    member = Member.objects.create_user(invite.email, password, username=name, nickname=nickname)
-    login(request, member)
-    return redirect('member-invite-accept', pk=invite.id)
+    def get_success_url(self):
+        return reverse('member-invite-accept', kwargs={'pk': str(self.invite.id)})
+
 
 @require_POST
 def signup(request):
