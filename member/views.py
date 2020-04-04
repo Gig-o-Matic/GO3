@@ -22,7 +22,7 @@ from band.models import Band, Assoc, AssocStatusChoices
 from django.views import generic
 from django.views.decorators.http import require_POST
 from django.views.generic.edit import UpdateView as BaseUpdateView, CreateView
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
