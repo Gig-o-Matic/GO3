@@ -399,6 +399,14 @@ class InviteTest(TestCase):
             {'invited': [], 'in_band': [], 'invalid': ['notanemailaddress']})
         self.assertEqual(Invite.objects.count(), 0)
 
+    def test_invite_gets_language(self):
+        self.band_admin.preferences.language = 'de'
+        self.band_admin.preferences.save()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertEqual(Invite.objects.filter(email='new@example.com', language='de').count(), 1)
+
     def test_invite_super(self):
         self.client.force_login(self.super)
         response = self.client.post(reverse('member-invite'),
@@ -631,6 +639,17 @@ class InviteTest(TestCase):
                           'nickname': 'new',
                           'password1': self.password,
                           'password2': self.password})
+        self.assertTrue(auth.get_user(self.client).is_authenticated)
+
+    def test_create_gets_invite_language(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band, language="de")
+        self.client.post(reverse('member-create', args=[invite.id]),
+                         {'username': 'New',
+                          'nickname': 'new',
+                          'password1': self.password,
+                          'password2': self.password})
+        new_member = Member.objects.get(email='new@example.com')
+        self.assertEqual(new_member.preferences.language, 'de')
         self.assertTrue(auth.get_user(self.client).is_authenticated)
 
     def test_signup(self):

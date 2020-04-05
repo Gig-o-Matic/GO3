@@ -189,6 +189,7 @@ def accept_invite(request, pk):
         invite.delete()
         if request.user.is_authenticated:
             return redirect('member-detail', pk=member.id)
+        translation.activate(invite.language)
         return render(request, 'member/accepted.html',
                         {'band_name': invite.band.name if invite.band else None,
                         'member_id': member.id})
@@ -207,6 +208,7 @@ class MemberCreateView(CreateView):
 
     def get_form_kwargs(self):
         self.invite = get_object_or_404(Invite, pk=self.kwargs['pk'])
+        translation.activate(self.invite.language)
         kwargs = super().get_form_kwargs()
         kwargs['invite'] = self.invite
         return kwargs
@@ -220,6 +222,8 @@ class MemberCreateView(CreateView):
     def form_valid(self, form):
         retval = super().form_valid(form)
         member = authenticate(username=self.invite.email, password=form.cleaned_data['password1'])
+        member.preferences.language = self.invite.language
+        #member.preferences.save()  # Why isn't this necessary?
         login(self.request, member)
         return retval
 
