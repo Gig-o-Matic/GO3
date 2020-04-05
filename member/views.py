@@ -180,24 +180,21 @@ def accept_invite(request, pk):
     else:
         member = Member.objects.filter(email=invite.email).first()
 
-    if member:
-        if (not request.user.is_authenticated) or (request.user == member):
-            if invite.band and Assoc.objects.filter(band=invite.band, member=member).count() == 0:
-                Assoc.objects.create(band=invite.band, member=member,
-                                     status=AssocStatusChoices.CONFIRMED)
-            invite.delete()
-            if request.user.is_authenticated:
-                return redirect('member-detail', pk=member.id)
-            return render(request, 'member/accepted.html',
-                          {'band_name': invite.band.name if invite.band else None,
-                           'member_id': member.id})
+    if (member and                             # Won't need to create a Member
+        (not request.user.is_authenticated or  # They're probably just not logged in
+         request.user == member)):             # They are logged in
+        if invite.band and Assoc.objects.filter(band=invite.band, member=member).count() == 0:
+            Assoc.objects.create(band=invite.band, member=member,
+                                 status=AssocStatusChoices.CONFIRMED)
+        invite.delete()
+        if request.user.is_authenticated:
+            return redirect('member-detail', pk=member.id)
+        return render(request, 'member/accepted.html',
+                        {'band_name': invite.band.name if invite.band else None,
+                        'member_id': member.id})
 
-        # User is signed in as a different Member
-        return "Hmmm"
-
-    # No Member currently
-    if request.user.is_authenticated:
-        return render(request, 'member/claim_invite.html', {'invite': invite})
+    if request.user.is_authenticated:  # The user is signed in, but as a different user
+        return render(request, 'member/claim_invite.html', {'invite': invite, 'member': member})
 
     # New user
     return redirect('member-create', pk=invite.id)

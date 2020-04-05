@@ -350,6 +350,10 @@ class InviteTest(TestCase):
     def assertOK(self, response):
         self.assertEqual(response.status_code, 200)
 
+    def assertRenderedWith(self, response, template_name):
+        self.assertIn(template_name, (t.name for t in response.templates),
+                      f'Response not rendered with {template_name}.')
+
     def test_invite_one(self):
         self.client.force_login(self.band_admin)
         response = self.client.post(reverse('member-invite'),
@@ -467,7 +471,7 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertIn('member/accepted.html', (t.name for t in response.templates))
+        self.assertRenderedWith(response, 'member/accepted.html')
         self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
         self.assertEqual(Invite.objects.count(), 0)
 
@@ -475,25 +479,33 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=None)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertIn('member/accepted.html', (t.name for t in response.templates))
+        self.assertRenderedWith(response, 'member/accepted.html')
         self.assertEqual(Assoc.objects.filter(member=self.janeuser).count(), 0)
         self.assertEqual(Invite.objects.count(), 0)
 
     def test_accept_invite_logged_in_other(self):
+        n_assoc = Assoc.objects.count()
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
         self.client.force_login(self.joeuser)
-        # TODO: Figure out what's supposed to happen here!
-        #response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
-        #self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
-        #self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'accept the invite as', response.content)
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
     def test_accept_invite_logged_in_other_no_band(self):
+        # Note that this is a completely weird state to get into.  This test is merely to
+        # check that nothing blows up.
+        n_assoc = Assoc.objects.count()
         invite = Invite.objects.create(email='jane@example.com', band=None)
         self.client.force_login(self.joeuser)
-        # TODO: Figure out what's supposed to happen here!
-        #response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
-        #self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
-        #self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'accept the invite as', response.content)
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
     def test_accept_invite_no_member_logged_in(self):
         n_assoc = Assoc.objects.count()
@@ -501,7 +513,8 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertIn('member/claim_invite.html', (t.name for t in response.templates))
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'create an account for', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
@@ -511,7 +524,8 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertIn('member/claim_invite.html', (t.name for t in response.templates))
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'create an account for', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
 
@@ -586,7 +600,7 @@ class InviteTest(TestCase):
                                      'password2': self.password},
                                     follow=True)
         self.assertOK(response)
-        self.assertIn('member/member_detail.html', (t.name for t in response.templates))
+        self.assertRenderedWith(response, 'member/member_detail.html')
 
     def test_create_duplicate_member(self):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
