@@ -211,6 +211,12 @@ class MemberCreateView(CreateView):
         kwargs['invite'] = self.invite
         return kwargs
 
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['email'] = self.invite.email
+        context['band_name'] = self.invite.band.name if self.invite.band else None
+        return context
+
     def form_valid(self, form):
         retval = super().form_valid(form)
         member = authenticate(username=self.invite.email, password=form.cleaned_data['password1'])

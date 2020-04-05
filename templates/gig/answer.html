@@ -1,15 +1,7 @@
-{% extends 'base/go3base.html' %}
+{% extends 'base/logged_out.html' %}
 {% load i18n %}
 
 {% block title %}{% trans "Answered!" %}{% endblock title %}
-
-{% block navbar %}
-    <!-- no navbar -->
-{% endblock navbar %}
-
-{% block wrapclass %}
-class="landingwrap"
-{% endblock wrapclass %}
 
 {% block content %}
     <div id="landingpage_content">
@@ -24,14 +16,3 @@ class="landingwrap"
         </p>
     </div>
 {% endblock content %}
-
-{% block footer %}
-{% endblock footer %}
-
-{% block localscripts %}
-<script src="/js/randomback.js"></script>
-{% endblock localscripts %}
-
-{% block navbarscripts %}
-    <!-- no navbar -->
-{% endblock navbarscripts %}

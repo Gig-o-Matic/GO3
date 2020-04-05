@@ -12,7 +12,7 @@ class MemberCreateForm(UserCreationForm):
 
     def __init__(self, *args, **kw):
         self.invite = kw.pop('invite')
-        super().__init__(*args, **kw)
+        super().__init__(*args, label_suffix='', **kw)
 
     def clean(self):
         super().clean()

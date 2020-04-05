@@ -1,4 +1,67 @@
-<form method="POST">{% csrf_token %}
-    {{ form }}
-    <input type="submit">
-</form>
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Create Account" %}{% endblock title %}
+
+{% block content %}
+    <div id="landingpage_content">
+        <h3>{% trans "Create Account" %}</h3>
+        <form method="post" class="form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="row">
+                <div class="col-6">
+                    <p>{% trans "Welcome to Gig-o-Matic!" %}</p>
+                    <p>
+                        {% if band_name %}
+                            {% blocktrans %}
+                                To join {{ band_name }} on Gig-o-Matic, you will need to create an account.
+                            {% endblocktrans %}
+                        {% else %}
+                            {% trans "Thank you for confirming your email address.  You may now finish creating your Gig-o-matic account." %}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="form-group col-6">
+                    <label for="email">{% trans "Email" %}</label>
+                    <input type="text" value="{{ email }}" id="email" class="form-control" disabled>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-6">
+                    {{ form.username.errors }}
+                    {{ form.username.label_tag }}
+                    {% render_field form.username class="form-control" %}
+                </div>
+                <div class="form-group col-6">
+                    {{ form.nickname.errors }}
+                    {{ form.nickname.label_tag }}
+                    {% render_field form.nickname class="form-control" %}
+                </div>
+            </div>
+            {% if form.password1.errors or form.password2.errors %}
+                <div class="form-group">
+                    {{ form.password1.errors }}
+                    {{ form.password2.errors }}
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="form-group col-6">
+                    {{ form.password1.label_tag }}
+                    {% render_field form.password1 class="form-control" %}
+                </div>
+                <div class="form-group col-6">
+                    {{ form.password2.label_tag }}
+                    {% render_field form.password2 class="form-control" %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-12 col-md-6 ml-auto text-right">
+                    <input type="submit" value="{% trans 'Create Account' %}"   class="btn btn-primary">
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
