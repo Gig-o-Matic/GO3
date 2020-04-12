@@ -92,6 +92,9 @@ class UpdateView(generic.UpdateView):
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
+    def clean_date(self):
+        pass
+
     def form_valid(self, form):
         result = super(UpdateView, self).form_valid(form)
 

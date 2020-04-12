@@ -37,6 +37,7 @@ class GigForm(forms.ModelForm):
         if band:
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
+        
 
     def clean(self):
         date = self.cleaned_data['date']
@@ -58,6 +59,8 @@ class GigForm(forms.ModelForm):
 
     class Meta:
         model = Gig
+        localized_fields = '__all__'
+
         fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','leader', 'postgig',
                 'details','setlist','rss_description','invite_occasionals','hide_from_calendar','send_update']
 
@@ -69,4 +72,5 @@ class GigForm(forms.ModelForm):
             'postgig': forms.TextInput(attrs={'placeholder': _('Hit the streets!')}),
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
+            'date': forms.TextInput(),
         }

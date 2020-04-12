@@ -5,7 +5,7 @@
 {% block title %}{% trans "Gig Edit" %}{% endblock title %}
 
 {% block headcontent %}
-<link href="/timepicker/jquery.timepicker.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
 {% endblock headcontent %}
 
 {% block content %}
@@ -51,7 +51,20 @@
                 <div class="form-group col-4">
                     {{ form.date.errors }}
                     {{ form.date.label_tag }}
+{% comment %}
                     {% render_field form.date class="form-control" %}
+{% endcomment %}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_date_widget" data-target-input="nearest">
+                            {% comment %}
+                            {% render_field form.date class="form-control datetimepicker-input" data-target="#id_date_widget" %}
+                            {% endcomment %}
+                            <input type="text" name="date" class="form-control datetimepicker-input" id="id_date" data-target="#id_date_widget" required/>
+                            <div class="input-group-append" data-target="#id_date_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group col-4">
                     {{ form.enddate.errors }}
@@ -286,16 +299,11 @@
 {% endblock modal %}
 
 {% block localscripts %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script>
+
 {% comment %}
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.css"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
-{% if the_user.preferences.locale == 'en_GB' %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.en-GB.min.js"></script>
-{% elif the_user.preferences.locale != 'en' %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.{{ the_user.preferences.locale }}.min.js"></script>
-{% endif %}
 <script src="/js/jquery.validate.js"></script>
-<script src="/timepicker/jquery.timepicker.min.js"></script>
 {% if the_user.preferences.locale == 'en' %}
 <script src='/js/moment.min.js'></script>
 {% else %}
@@ -308,8 +316,16 @@
 {% else %}
     {% set locale_fix = the_user.preferences.locale %}
 {% endif %}
+{% endcomment %}
 
+<script type="text/javascript">
 $(document).ready(function () {
+    $('#id_date_widget').datetimepicker({
+        locale: '{{ user.preferences.language }}',
+        defaultDate: '{{ object.date.isoformat }}',
+        format: 'L',
+    });
+{% comment %}    
     $('#gigdateinput').datepicker({
                 language: '{{ locale_fix }}'
             });
@@ -382,9 +398,12 @@ $(document).ready(function () {
     $('#gigcallinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
     $('#gigsetinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
     $('#gigendinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
-      
-    updateContactList('{{the_band.id}}');
+
+
+        updateContactList('{{the_band.id}}');
+    {% endcomment %}      
 });
+{% comment %}
 
 jQuery.validator.addMethod("greaterThan", 
 function(value, element, params) {
@@ -455,7 +474,7 @@ function setSeries() {
         $('#gignumberseriesinput').hide();
 };
 
-</script>
 {% endcomment %}
+</script>
 {% endblock localscripts %}
 
