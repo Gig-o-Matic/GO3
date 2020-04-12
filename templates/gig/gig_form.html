@@ -49,12 +49,27 @@
              
             <div class="row">
                 <div class="form-group col-4">
+<<<<<<< HEAD
                     {{ form.call_date.errors }}
                     {{ form.call_date.label_tag }}
                     <div class="form-group">
                         <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
                             <input type="text" name="call_date" class="form-control datetimepicker-input" id="id_call_date" data-target="#id_call_date_widget" required/>
                             <div class="input-group-append" data-target="#id_call_date_widget" data-toggle="datetimepicker">
+=======
+                    {{ form.date.errors }}
+                    {{ form.date.label_tag }}
+{% comment %}
+                    {% render_field form.date class="form-control" %}
+{% endcomment %}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_date_widget" data-target-input="nearest">
+                            {% comment %}
+                            {% render_field form.date class="form-control datetimepicker-input" data-target="#id_date_widget" %}
+                            {% endcomment %}
+                            <input type="text" name="date" class="form-control datetimepicker-input" id="id_date" data-target="#id_date_widget" required/>
+                            <div class="input-group-append" data-target="#id_date_widget" data-toggle="datetimepicker">
+>>>>>>> fixed datepicker to use a new one compatible with bootstrap 4
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
                         </div>
@@ -473,7 +488,11 @@ $(document).ready(function () {
     $('#gigendinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
 
 
+<<<<<<< HEAD
         updateContactList('{{band.id}}');
+=======
+        updateContactList('{{the_band.id}}');
+>>>>>>> fixed datepicker to use a new one compatible with bootstrap 4
     {% endcomment %}      
 });
 {% comment %}
