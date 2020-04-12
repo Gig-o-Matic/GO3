@@ -73,4 +73,5 @@ class GigForm(forms.ModelForm):
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
             'date': forms.TextInput(),
+            'enddate': forms.TextInput(),
         }

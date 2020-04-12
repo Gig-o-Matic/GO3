@@ -51,9 +51,6 @@
                 <div class="form-group col-4">
                     {{ form.date.errors }}
                     {{ form.date.label_tag }}
-{% comment %}
-                    {% render_field form.date class="form-control" %}
-{% endcomment %}
                     <div class="form-group">
                         <div class="input-group date" id="id_date_widget" data-target-input="nearest">
                             {% comment %}
@@ -69,7 +66,17 @@
                 <div class="form-group col-4">
                     {{ form.enddate.errors }}
                     {{ form.enddate.label_tag }}
-                    {% render_field form.enddate class="form-control" %}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_enddate_widget" data-target-input="nearest">
+                            {% comment %}
+                            {% render_field form.date class="form-control datetimepicker-input" data-target="#id_enddate_widget" %}
+                            {% endcomment %}
+                            <input type="text" name="enddate" class="form-control datetimepicker-input" id="id_enddate" data-target="#id_enddate_widget" required/>
+                            <div class="input-group-append" data-target="#id_enddate_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 {% comment %}                    
@@ -322,7 +329,16 @@
 $(document).ready(function () {
     $('#id_date_widget').datetimepicker({
         locale: '{{ user.preferences.language }}',
-        defaultDate: '{{ object.date.isoformat }}',
+        {% if object.date %}
+            defaultDate: '{{ object.date.isoformat }}',
+        {% endif %}
+        format: 'L',
+    });
+    $('#id_enddate_widget').datetimepicker({
+        locale: '{{ user.preferences.language }}',
+        {% if object.enddate %}
+            defaultDate: '{{ object.enddate.isoformat }}',
+        {% endif %}
         format: 'L',
     });
 {% comment %}    
