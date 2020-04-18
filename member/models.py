@@ -26,7 +26,7 @@ from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
 from band.models import Assoc, Band
 from go3.settings import LANGUAGES
-from types import SimpleNamespace
+from lib.email import EmailRecipient
 import uuid
 
 class MemberManager(BaseUserManager):
@@ -101,10 +101,6 @@ class Member(AbstractUser):
         return self.username if self.username else self.email
 
     @property
-    def email_line(self):
-        return f'{self.username} <{self.email}>' if self.username else self.email
-
-    @property
     def band_count(self):
         """ return number of bands for which I'm confirmed """
         return Assoc.member_assocs.confirmed_count(self)
@@ -134,6 +130,10 @@ class Member(AbstractUser):
         else:
             the_motd = None
         return the_motd.text if the_motd else None
+
+    def as_email_recipient(self):
+        return EmailRecipient(name=self.username, email=self.email,
+                              language=self.preferences.language)
 
     objects = MemberManager()
 
@@ -177,11 +177,5 @@ class Invite(models.Model):
     email = models.EmailField(_('email address'))
     language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
 
-    @property
-    def email_line(self):
-        return self.email
-
-    # We want language to work as it does for members
-    @property
-    def preferences(self):
-        return SimpleNamespace(language=self.language)
+    def as_email_recipient(self):
+        return EmailRecipient(email=self.email, language=self.language)

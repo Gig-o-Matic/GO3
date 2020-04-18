@@ -24,8 +24,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import template_localtime
 from .models import Gig, Plan
 from band.models import Section, AssocStatusChoices
-from member.helpers import prepare_email
-from lib.email import send_messages_async
+from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
 
@@ -130,7 +129,7 @@ def email_from_plan(plan, template):
             'status_label': Plan.StatusChoices(plan.status).label,
             **Plan.StatusChoices.__members__,
         }
-        return prepare_email(member, template, context, reply_to=[contact_email])
+        return prepare_email(member.as_email_recipient(), template, context, reply_to=[contact_email])
 
 def send_emails_from_plans(plans_query, template):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,

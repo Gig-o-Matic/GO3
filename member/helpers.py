@@ -15,18 +15,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse
-from django.template.loader import render_to_string
-from django.utils import timezone, translation
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from markdown import markdown
 from datetime import timedelta
 
 from gig.models import Gig, Plan
 from member.models import Member
 
-from lib.email import DEFAULT_SUBJECT, SUBJECT, send_messages_async
+from lib.email import prepare_email, send_messages_async
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -44,29 +41,14 @@ def motd_seen(request, pk):
     return HttpResponse()
 
 
-def prepare_email(member, template, context=None, **kw):
-    if not context:
-        context = dict()
-    context['member'] = member
-
-    with translation.override(member.preferences.language):
-        text = render_to_string(template, context).strip()
-    if text.startswith(SUBJECT):
-        subject, text = [t.strip() for t in text[len(SUBJECT):].split('\n', 1)]
-    else:
-        subject = DEFAULT_SUBJECT
-    html = markdown(text, extensions=['nl2br'])
-
-    message = EmailMultiAlternatives(
-        subject, text, to=[member.email_line], **kw)
-    message.attach_alternative(html, 'text/html')
-    return message
-
-
 def send_invite(invite):
-    new = (Member.objects.filter(email=invite.email).count() == 0)
+    context = {
+        'new': (Member.objects.filter(email=invite.email).count() == 0),
+        'invite_id': invite.id,
+        'band_name': invite.band.name if invite.band else None
+    }
     template = 'email/invite.md' if invite.band else 'email/signup.md'
-    send_messages_async([prepare_email(invite, template, {'new': new})])
+    send_messages_async([prepare_email(invite.as_email_recipient(), template, context)])
 
 
 def prepare_calfeed(member):
