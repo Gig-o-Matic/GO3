@@ -24,8 +24,9 @@ from django.utils.translation import gettext_lazy as _
 import datetime
 from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
-from band.models import Assoc
+from band.models import Assoc, Band
 from go3.settings import LANGUAGES
+from lib.email import EmailRecipient
 import uuid
 
 class MemberManager(BaseUserManager):
@@ -100,10 +101,6 @@ class Member(AbstractUser):
         return self.username if self.username else self.email
 
     @property
-    def email_line(self):
-        return f'{self.username} <{self.email}>' if self.username else self.email
-
-    @property
     def band_count(self):
         """ return number of bands for which I'm confirmed """
         return Assoc.member_assocs.confirmed_count(self)
@@ -133,6 +130,10 @@ class Member(AbstractUser):
         else:
             the_motd = None
         return the_motd.text if the_motd else None
+
+    def as_email_recipient(self):
+        return EmailRecipient(name=self.username, email=self.email,
+                              language=self.preferences.language)
 
     objects = MemberManager()
 
@@ -164,3 +165,17 @@ class MemberPreferences(models.Model):
     show_long_agenda = models.BooleanField(default=True)
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
+
+
+class Invite(models.Model):
+    """
+    An invitation sent to an email address.  The recipient can sign up with that or
+    another email address.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    band = models.ForeignKey(Band, related_name="invites", on_delete=models.CASCADE, null=True)
+    email = models.EmailField(_('email address'))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
+
+    def as_email_recipient(self):
+        return EmailRecipient(email=self.email, language=self.language)

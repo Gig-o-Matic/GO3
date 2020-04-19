@@ -15,22 +15,29 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.http import HttpResponse
-from .models import Member, MemberPreferences
-from band.models import Band, Assoc
+from django.http import HttpResponse, JsonResponse
+from .forms import MemberCreateForm
+from .models import Member, MemberPreferences, Invite
+from band.models import Band, Assoc, AssocStatusChoices
 from django.views import generic
-from django.views.generic.edit import UpdateView as BaseUpdateView
+from django.views.decorators.http import require_POST
+from django.views.generic.edit import UpdateView as BaseUpdateView, CreateView
 from django.urls import reverse
 from django.views.generic.base import TemplateView
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from go3.colors import the_colors
 from django.utils import translation
 from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect, render
+from django.core.validators import validate_email
+from django.core.exceptions import PermissionDenied, ValidationError
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
 
@@ -46,7 +53,7 @@ class DetailView(generic.DetailView):
             ok_to_show = True
         else:
             is_me = False
-            
+
         # # find the bands this member is associated with
         the_member_bands = [a.band for a in the_member.assocs.all()]
 
@@ -64,7 +71,7 @@ class DetailView(generic.DetailView):
             # if ok_to_show == False:
             #     # check to see if we're sharing our profile - if not, bail!
             #     if (the_member.preferences and the_member.preferences.share_profile == False) and the_user.is_superuser == False:
-            #         return self.redirect('/')            
+            #         return self.redirect('/')
 
         # email_change = self.request.get('emailAddressChanged',False)
         # if email_change:
@@ -106,7 +113,7 @@ class UpdateView(BaseUpdateView):
 
 class PreferencesUpdateView(BaseUpdateView):
     model = MemberPreferences
-    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed', 
+    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
               'calendar_show_only_committed']
 
     def get_success_url(self):
@@ -134,3 +141,104 @@ class OtherBandsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
         return context
+
+
+@require_POST
+@login_required
+def invite(request):
+    bk = request.POST.get('bk', None)
+    band = get_object_or_404(Band, pk=bk)
+    emails = request.POST.get('emails', '').split('\n')
+
+    user_is_band_admin = Assoc.objects.filter(
+        member=request.user, band=band, is_admin=True).count() == 1
+
+    if not (user_is_band_admin or request.user.is_superuser):
+        raise PermissionDenied
+
+    invited, in_band, invalid = [], [], []
+    for email in emails:
+        try:
+            validate_email(email)
+        except ValidationError:
+            invalid.append(email)
+            continue
+
+        if Assoc.objects.filter(member__email=email, band=band).count() > 0:
+            in_band.append(email)
+        else:
+            Invite.objects.create(band=band, email=email, language=request.user.preferences.language)
+            invited.append(email)
+
+    return JsonResponse({'invited': invited, 'in_band': in_band, 'invalid': invalid})
+
+
+def accept_invite(request, pk):
+    invite = get_object_or_404(Invite, pk=pk)
+    if request.user.is_authenticated and request.GET.get('claim') == 'true':
+        member = request.user
+    else:
+        member = Member.objects.filter(email=invite.email).first()
+
+    if (member and                             # Won't need to create a Member
+        (not request.user.is_authenticated or  # They're probably just not logged in
+         request.user == member)):             # They are logged in
+        if invite.band and Assoc.objects.filter(band=invite.band, member=member).count() == 0:
+            Assoc.objects.create(band=invite.band, member=member,
+                                 status=AssocStatusChoices.CONFIRMED)
+        invite.delete()
+        if request.user.is_authenticated:
+            return redirect('member-detail', pk=member.id)
+        translation.activate(invite.language)
+        return render(request, 'member/accepted.html',
+                        {'band_name': invite.band.name if invite.band else None,
+                        'member_id': member.id})
+
+    if request.user.is_authenticated:  # The user is signed in, but as a different user
+        return render(request, 'member/claim_invite.html', {'invite': invite, 'member': member})
+
+    # New user
+    return redirect('member-create', pk=invite.id)
+
+
+class MemberCreateView(CreateView):
+    template_name = 'member/create.html'
+    form_class = MemberCreateForm
+    model = Member
+
+    def get_form_kwargs(self):
+        self.invite = get_object_or_404(Invite, pk=self.kwargs['pk'])
+        translation.activate(self.invite.language)
+        kwargs = super().get_form_kwargs()
+        kwargs['invite'] = self.invite
+        return kwargs
+
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['email'] = self.invite.email
+        context['band_name'] = self.invite.band.name if self.invite.band else None
+        return context
+
+    def form_valid(self, form):
+        retval = super().form_valid(form)
+        member = authenticate(username=self.invite.email, password=form.cleaned_data['password1'])
+        member.preferences.language = self.invite.language
+        #member.preferences.save()  # Why isn't this necessary?
+        login(self.request, member)
+        return retval
+
+    def get_success_url(self):
+        return reverse('member-invite-accept', kwargs={'pk': str(self.invite.id)})
+
+
+@require_POST
+def signup(request):
+    email = request.POST.get('email')
+    if Member.objects.filter(email=email).count() > 0:
+        return JsonResponse({'status': 'failure', 'error': 'member exists'})
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({'status': 'failure', 'error': 'invalid email'})
+    Invite.objects.create(band=None, email=email)
+    return JsonResponse({'status': 'success'})

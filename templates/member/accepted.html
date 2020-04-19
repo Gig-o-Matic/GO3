@@ -1,0 +1,18 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Invite Accepted!" %}{% endblock title %}
+
+{% block content %}
+    <div id="landingpage_content">
+        <h3>{% trans "OK!" %}</h3>
+        <br>
+        <p>{% blocktrans %}You have accepted an invite to join {{ band_name }}. {% endblocktrans %}</p>
+        <p>
+            {% url 'member-detail' member_id as profile_url %}
+            {% blocktrans %}
+            You can adjust your membership settings on your <a href="{{ profile_url }}">profile page</a> (log-in required).
+            {% endblocktrans %}
+        </p>
+    </div>
+{% endblock content %}

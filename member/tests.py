@@ -18,13 +18,17 @@
 from unittest.mock import patch, mock_open
 
 from django.test import TestCase, RequestFactory
-from .models import Member, MemberPreferences
+from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc
 from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
-from .helpers import prepare_email, prepare_calfeed, calfeed, update_all_calfeeds
-from lib.email import DEFAULT_SUBJECT
-from django.urls import resolve
+from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
+from lib.email import DEFAULT_SUBJECT, prepare_email
+from lib.template_test import MISSING, flag_missing_vars
+from django.contrib import auth
+from django.core import mail
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.urls import resolve, reverse
 from django.utils import timezone
 from datetime import timedelta
 import pytz
@@ -101,66 +105,72 @@ class MemberEmailTest(TestCase):
         self.patcher.stop()
 
     def test_markdown_mail(self):
-        message = prepare_email(self.member, 't:**Markdown**')
+        message = prepare_email(self.member.as_email_recipient(), 't:**Markdown**')
         self.assertIn('**Markdown**', message.body)
         self.assertEqual(len(message.alternatives), 1)
         self.assertEqual(message.alternatives[0][1], 'text/html')
         self.assertIn('<strong>Markdown</strong>', message.alternatives[0][0])
 
     def test_markdown_template(self):
-        message = prepare_email(self.member, 't:{{ key }}', {'key': 'value'})
+        message = prepare_email(self.member.as_email_recipient(), 't:{{ key }}', {'key': 'value'})
         self.assertIn('value', message.body)
         self.assertIn('value', message.alternatives[0][0])
 
     def test_markdown_template_member(self):
-        message = prepare_email(self.member, 't:{{ member.email }}')
+        message = prepare_email(self.member.as_email_recipient(), 't:{{ recipient.email }}')
         self.assertIn(self.member.email, message.body)
         self.assertIn(self.member.email, message.alternatives[0][0])
 
     def test_markdown_default_subject(self):
-        message = prepare_email(self.member, 't:Body')
+        message = prepare_email(self.member.as_email_recipient(), 't:Body')
         self.assertEqual(message.subject, DEFAULT_SUBJECT)
         self.assertEqual(message.body, 'Body')
 
     def test_markdown_subject(self):
-        message = prepare_email(self.member, 't:Subject: Custom\nBody')
+        message = prepare_email(self.member.as_email_recipient(), 't:Subject: Custom\nBody')
         self.assertEqual(message.subject, 'Custom')
         self.assertEqual(message.body, 'Body')
 
     def test_markdown_html_escape(self):
-        message = prepare_email(self.member, 't:1 < 2')
+        message = prepare_email(self.member.as_email_recipient(), 't:1 < 2')
         self.assertIn('<', message.body)
         self.assertIn('&lt;', message.alternatives[0][0])
 
     def test_email_to_no_username(self):
-        message = prepare_email(self.member, 't:')
+        message = prepare_email(self.member.as_email_recipient(), 't:')
         self.assertEqual(message.to[0], 'member@example.com')
 
     def test_email_to_username(self):
         self.member.username = 'Member Username'
-        message = prepare_email(self.member, 't:')
+        message = prepare_email(self.member.as_email_recipient(), 't:')
         self.assertEqual(message.to[0], 'Member Username <member@example.com>')
 
     def test_translation_en(self):
         message = prepare_email(
-            self.member, 't:{% load i18n %}{% blocktrans %}Translated text{% endblocktrans %}')
+            self.member.as_email_recipient(),
+            't:{% load i18n %}{% blocktrans %}Translated text{% endblocktrans %}'
+        )
         self.assertEqual(message.body, 'Translated text')
 
     def test_translation_de(self):
         self.member.preferences.language = 'de'
         # This translation is already provided by Django
         message = prepare_email(
-            self.member, 't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}')
+            self.member.as_email_recipient(),
+            't:{% load i18n %}{% blocktrans %}German{% endblocktrans %}'
+        )
         self.assertEqual(message.body, 'Deutsch')
 
     def test_translation_before_subject(self):
         message = prepare_email(
-            self.member, 't:{% load i18n %}\nSubject: {% blocktrans %}Subject Line{% endblocktrans %}\n\n{% blocktrans %}Body{% endblocktrans %}')
+            self.member.as_email_recipient(),
+            't:{% load i18n %}\nSubject: {% blocktrans %}Subject Line{% endblocktrans %}\n\n{% blocktrans %}Body{% endblocktrans %}'
+        )
         self.assertEqual(message.subject, "Subject Line")
         self.assertEqual(message.body, "Body")
 
     def test_markdown_new_lines(self):
-        message = prepare_email(self.member, 't:Line one\nLine two')
+        message = prepare_email(self.member.as_email_recipient(), 't:Line one\nLine two')
         self.assertIn('\n', message.body)
         # We want a new line, but it could show up as "<br>" or "<br />"
         self.assertIn('<br', message.alternatives[0][0])
@@ -323,3 +333,345 @@ class MemberCalfeedTest(FSTestCase):
         g.save()
         self.joeuser.refresh_from_db()
         self.assertTrue(self.joeuser.cal_feed_dirty)
+
+
+class InviteTest(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(email='super@example.com', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@example.com')
+        self.joeuser = Member.objects.create_user(email='joe@example.com')
+        self.janeuser = Member.objects.create_user(email='jane@example.com')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        Assoc.objects.create(member=self.joeuser, band=self.band)
+        self.password = 'sb8bBb5cGmE2uNn'  # Random value, but validates
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+        Invite.objects.all().delete()
+
+    def assertOK(self, response):
+        self.assertEqual(response.status_code, 200)
+
+    def assertRenderedWith(self, response, template_name):
+        self.assertIn(template_name, (t.name for t in response.templates),
+                      f'Response not rendered with {template_name}.')
+
+    def test_invite_one(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': ['new@example.com'], 'in_band': [], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 1)
+
+    def test_invite_several(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com\ntwo@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': ['new@example.com', 'two@example.com'], 'in_band': [], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 2)
+
+    def test_invite_existing(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'joe@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': [], 'in_band': ['joe@example.com'], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_member(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'jane@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': ['jane@example.com'], 'in_band': [], 'invalid': []})
+        self.assertEqual(Invite.objects.count(), 1)
+
+    def test_invite_invalid(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'notanemailaddress'})
+        self.assertOK(response)
+        self.assertEqual(response.json(),
+            {'invited': [], 'in_band': [], 'invalid': ['notanemailaddress']})
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_gets_language(self):
+        self.band_admin.preferences.language = 'de'
+        self.band_admin.preferences.save()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertEqual(Invite.objects.filter(email='new@example.com', language='de').count(), 1)
+
+    def test_invite_super(self):
+        self.client.force_login(self.super)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertOK(response)
+
+    def test_invite_non_admin(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertIsInstance(response, HttpResponseForbidden)
+
+    def test_invite_no_user(self):
+        response = self.client.post(reverse('member-invite'),
+            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.assertIsInstance(response, HttpResponseRedirect)
+
+    def test_invite_email(self):
+        Invite.objects.create(email='new@example.com', band=self.band)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['new@example.com'])
+
+    @flag_missing_vars
+    def test_invite_new_email(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, 'Invitation to Join Gig-o-Matic')
+        self.assertIn(self.band.name, message.body)
+        self.assertIn('get started', message.body)
+        self.assertNotIn('existing', message.body)
+        self.assertIn(reverse('member-invite-accept', args=[invite.id]), message.body)
+        self.assertNotIn(MISSING, message.body)
+
+    @flag_missing_vars
+    def test_invite_existing_email(self):
+        invite = Invite.objects.create(email=self.janeuser.email, band=self.band)
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, 'Gig-o-Matic New Band Invite')
+        self.assertIn(self.band.name, message.body)
+        self.assertNotIn('get started', message.body)
+        self.assertIn('existing', message.body)
+        self.assertIn(reverse('member-invite-accept', args=[invite.id]), message.body)
+        self.assertNotIn(MISSING, message.body)
+
+    @flag_missing_vars
+    def test_invite_no_band_email(self):
+        invite = Invite.objects.create(email='new@example.com', band=None)
+        message = mail.outbox[0]
+        self.assertEqual(message.subject, 'Confirm your Email to Join Gig-o-Matic')
+        self.assertIn(reverse('member-invite-accept', args=[invite.id]), message.body)
+        self.assertNotIn(MISSING, message.body)
+
+    def test_accept_invite_logged_in(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band)
+        self.client.force_login(self.janeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
+        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_accept_invite_logged_in_no_band(self):
+        invite = Invite.objects.create(email='jane@example.com')
+        self.client.force_login(self.janeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
+        self.assertEqual(Assoc.objects.filter(member=self.janeuser).count(), 0)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_accept_invite_logged_out(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/accepted.html')
+        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_accept_invite_logged_out_no_band(self):
+        invite = Invite.objects.create(email='jane@example.com', band=None)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/accepted.html')
+        self.assertEqual(Assoc.objects.filter(member=self.janeuser).count(), 0)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_accept_invite_logged_in_other(self):
+        n_assoc = Assoc.objects.count()
+        invite = Invite.objects.create(email='jane@example.com', band=self.band)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'accept the invite as', response.content)
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_logged_in_other_no_band(self):
+        # Note that this is a completely weird state to get into.  This test is merely to
+        # check that nothing blows up.
+        n_assoc = Assoc.objects.count()
+        invite = Invite.objects.create(email='jane@example.com', band=None)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'accept the invite as', response.content)
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_no_member_logged_in(self):
+        n_assoc = Assoc.objects.count()
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'create an account for', response.content)
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_no_member_logged_in_no_band(self):
+        n_assoc = Assoc.objects.count()
+        invite = Invite.objects.create(email='new@example.com', band=None)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertIn(b'create an account for', response.content)
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_no_member_logged_out(self):
+        n_assoc = Assoc.objects.count()
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-create', args=[invite.id]))
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_no_member_logged_out_no_band(self):
+        n_assoc = Assoc.objects.count()
+        invite = Invite.objects.create(email='new@example.com', band=None)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-create', args=[invite.id]))
+        self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
+        self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
+
+    def test_accept_invite_claim(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.force_login(self.janeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]), {'claim': 'true'})
+        self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
+        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_accept_invite_duplicate_assoc(self):
+        invite = Invite.objects.create(email='joe@example.com', band=self.band)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-invite-accept', args=[invite.id]), {'claim': 'true'})
+        self.assertRedirects(response, reverse('member-detail', args=[self.joeuser.id]))
+        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(), 1)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_create_member(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
+                                     'nickname': 'new',
+                                     'password1': self.password,
+                                     'password2': self.password})
+        # We redirect to the accept invite page, which redirects to the member profile
+        self.assertRedirects(response,
+                             reverse('member-invite-accept', args=[invite.id]),
+                             target_status_code=302)
+        new = Member.objects.filter(email='new@example.com').get()
+        self.assertEqual(new.username, 'New')
+        self.assertEqual(new.nickname, 'new')
+
+    def test_create_member_no_band(self):
+        invite = Invite.objects.create(email='new@example.com', band=None)
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
+                                     'nickname': 'new',
+                                     'password1': self.password,
+                                     'password2': self.password})
+        # We redirect to the accept invite page, which redirects to the member profile
+        self.assertRedirects(response,
+                             reverse('member-invite-accept', args=[invite.id]),
+                             target_status_code=302)
+        new = Member.objects.filter(email='new@example.com').get()
+        self.assertEqual(new.username, 'New')
+        self.assertEqual(new.nickname, 'new')
+
+    def test_create_member_full_redirect(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
+                                     'nickname': 'new',
+                                     'password1': self.password,
+                                     'password2': self.password},
+                                    follow=True)
+        self.assertOK(response)
+        self.assertRenderedWith(response, 'member/member_detail.html')
+
+    def test_create_duplicate_member(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band)
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
+                                     'nickname': 'new',
+                                     'password1': self.password,
+                                     'password2': self.password})
+        self.assertOK(response)
+        self.assertIn(b'already exists', response.content)
+        self.assertEqual(Member.objects.filter(email='jane@example.com').count(), 1)
+
+    def test_create_bad_password(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.post(reverse('member-create', args=[invite.id]),
+                                    {'username': 'New',
+                                     'nickname': 'new',
+                                     'password1': self.password,
+                                     'password2': '54321'})
+        self.assertOK(response)
+        self.assertIn(b'The two password fields didn\xe2\x80\x99t match.', response.content)
+        self.assertEqual(Member.objects.filter(email='new@example.com').count(), 0)
+
+    def test_create_gets_logged_in(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.post(reverse('member-create', args=[invite.id]),
+                         {'username': 'New',
+                          'nickname': 'new',
+                          'password1': self.password,
+                          'password2': self.password})
+        self.assertTrue(auth.get_user(self.client).is_authenticated)
+
+    def test_create_gets_invite_language(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band, language="de")
+        self.client.post(reverse('member-create', args=[invite.id]),
+                         {'username': 'New',
+                          'nickname': 'new',
+                          'password1': self.password,
+                          'password2': self.password})
+        new_member = Member.objects.get(email='new@example.com')
+        self.assertEqual(new_member.preferences.language, 'de')
+        self.assertTrue(auth.get_user(self.client).is_authenticated)
+
+    def test_signup(self):
+        response = self.client.post(reverse('member-signup'), {'email': 'new@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(), {'status': 'success'})
+        self.assertEqual(Invite.objects.filter(email='new@example.com', band=None).count(), 1)
+
+    def test_signup_duplicate(self):
+        response = self.client.post(reverse('member-signup'), {'email': 'joe@example.com'})
+        self.assertOK(response)
+        self.assertEqual(response.json(), {'status': 'failure', 'error': 'member exists'})
+        self.assertEqual(Invite.objects.filter(email='joe@example.com').count(), 0)
+
+    def test_signup_invalid(self):
+        response = self.client.post(reverse('member-signup'), {'email': 'invalid'})
+        self.assertOK(response)
+        self.assertEqual(response.json(), {'status': 'failure', 'error': 'invalid email'})
+        self.assertEqual(Invite.objects.filter(email='invalid').count(), 0)

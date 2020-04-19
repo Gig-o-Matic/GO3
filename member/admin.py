@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm
 # from django.contrib.auth.models import User
-from .models import Member, MemberPreferences
+from .models import Member, MemberPreferences, Invite
 
 class MemberCreateForm(UserCreationForm):
     class Meta:
@@ -75,3 +75,4 @@ class MemberAdmin(BaseUserAdmin):
 
 admin.site.register(Member, MemberAdmin)
 admin.site.register(MemberPreferences)
+admin.site.register(Invite)
