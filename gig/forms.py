@@ -41,12 +41,29 @@ class GigForm(forms.ModelForm):
 
     def clean(self):
         date = self.cleaned_data['date']
+        setdate = date
+        enddate = self.cleaned_data['enddate'] or date
+
+        call_time = self.cleaned_data['call_time']
+        set_time = self.cleaned_data['set_time']
+        end_time = self.cleaned_data['end_time']
+
+        if call_time:
+            date = date.replace(hour=call_time.hour, minute=call_time.minute)
+        elif set_time:
+            date = date.replace(hour=set_time.hour, minute=set_time.minute)
+
+        if set_time:
+            setdate = setdate.replace(hour=set_time.hour, minute=set_time.minute)
+
+        if end_time:
+            enddate = enddate.replace(hour=end_time.hour, minute=end_time.hour)
+            
         if date < timezone.now():
             self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
         setdate = self.cleaned_data['setdate']
         if setdate and setdate < date:
             self.add_error('setdate', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
-        enddate = self.cleaned_data['enddate']
         if enddate:
             if enddate < date:
                 self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
@@ -56,13 +73,17 @@ class GigForm(forms.ModelForm):
         super().clean()
 
     send_update = forms.BooleanField(required=False)
+    call_time = forms.TimeField(required=False)
+    set_time = forms.TimeField(required=False)
+    end_time = forms.TimeField(required=False)
 
     class Meta:
         model = Gig
         localized_fields = '__all__'
 
-        fields = ['title','contact','status','is_private','date','setdate','enddate','address','dress','paid','leader', 'postgig',
-                'details','setlist','rss_description','invite_occasionals','hide_from_calendar','send_update']
+        fields = ['title','contact','status','is_private','date','setdate','enddate','call_time', 'set_time', 'end_time', 
+                'address','dress','paid','leader', 'postgig', 'details','setlist','rss_description','invite_occasionals',
+                'hide_from_calendar','send_update']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
