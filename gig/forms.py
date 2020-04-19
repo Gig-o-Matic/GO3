@@ -26,10 +26,18 @@ class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
         band = kwargs.pop('band', None)
         user = kwargs.pop('user', None)
+
         super().__init__(
             label_suffix='',
             **kwargs
         )
+
+        if kwargs['instance'] is None:
+            self.fields['send_update'].label = _('Email members about this new gig')
+            self.fields['invite_occasionals'].label = _('Invite occasional members')
+        else:
+            self.fields['send_update'].label = _('Email members about change')
+            self.fields['invite_occasionals'].label = _('Also send update to occasional members')
 
         if user:
             self.fields['contact'].initial = user
@@ -41,23 +49,8 @@ class GigForm(forms.ModelForm):
 
     def clean(self):
         date = self.cleaned_data['date']
-        setdate = date
-        enddate = self.cleaned_data['enddate'] or date
-
-        call_time = self.cleaned_data['call_time']
-        set_time = self.cleaned_data['set_time']
-        end_time = self.cleaned_data['end_time']
-
-        if call_time:
-            date = date.replace(hour=call_time.hour, minute=call_time.minute)
-        elif set_time:
-            date = date.replace(hour=set_time.hour, minute=set_time.minute)
-
-        if set_time:
-            setdate = setdate.replace(hour=set_time.hour, minute=set_time.minute)
-
-        if end_time:
-            enddate = enddate.replace(hour=end_time.hour, minute=end_time.hour)
+        setdate = self.cleaned_data['setdate'] or date
+        enddate = self.cleaned_data['enddate'] or setdate
             
         if date < timezone.now():
             self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
@@ -72,16 +65,13 @@ class GigForm(forms.ModelForm):
 
         super().clean()
 
-    send_update = forms.BooleanField(required=False)
-    call_time = forms.TimeField(required=False)
-    set_time = forms.TimeField(required=False)
-    end_time = forms.TimeField(required=False)
+    send_update = forms.BooleanField(required=False, label=_('Email members about change'))
 
     class Meta:
         model = Gig
         localized_fields = '__all__'
 
-        fields = ['title','contact','status','is_private','date','setdate','enddate','call_time', 'set_time', 'end_time', 
+        fields = ['title','contact','status','is_private','date','setdate','enddate', 
                 'address','dress','paid','leader', 'postgig', 'details','setlist','rss_description','invite_occasionals',
                 'hide_from_calendar','send_update']
 
@@ -94,5 +84,28 @@ class GigForm(forms.ModelForm):
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
             'date': forms.TextInput(),
+            'setdate': forms.TextInput(),
             'enddate': forms.TextInput(),
+        }
+
+        labels = {
+            'title': _('Gig Title'),
+            'contact': _('Contact'),
+            'status': _('Status'),
+
+            'date': _('Date'),
+            'setdate': _('Set Date'),
+            'enddate': _('End Date'),
+
+            'address': _('Address'),
+            'dress': _('What to Wear'),
+            'paid': _('Pay Deal'),
+
+            'leader': _('Leader'),
+            'postgig': _('Post-gig Plans'),
+            'details': _('Details'),
+            'setlist': _('Setlist'),
+
+            'hide_from_calendar': _('hide from calendar'),
+            'invite_occasionals': _('Invite occasional members')
         }

@@ -61,6 +61,18 @@
                     </div>
                 </div>
                 <div class="form-group col-4">
+                    {{ form.setdate.errors }}
+                    {{ form.setdate.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_setdate_widget" data-target-input="nearest">
+                            <input type="text" name="setdate" class="form-control datetimepicker-input" id="id_setdate" data-target="#id_setdate_widget"/>
+                            <div class="input-group-append" data-target="#id_setdate_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-4">
                     {{ form.enddate.errors }}
                     {{ form.enddate.label_tag }}
                     <div class="form-group">
@@ -103,45 +115,8 @@
                     </div>
                 </div>
             {% endif %}
-{% endcomment %}            
-            <div class="row">
-                <div class="form-group col-4">
-                    {{ form.call_time.errors }}
-                    {{ form.call_time.label_tag }}
-                    <div class="form-group">
-                        <div class="input-group date" id="id_call_time_widget" data-target-input="nearest">
-                            <input type="text" name="call_time" class="form-control datetimepicker-input" id="id_call_time" data-target="#id_call_time_widget"/>
-                            <div class="input-group-append" data-target="#id_call_time_widget" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group col-4">
-                    {{ form.set_time.errors }}
-                    {{ form.set_time.label_tag }}
-                    <div class="form-group">
-                        <div class="input-group date" id="id_set_time_widget" data-target-input="nearest">
-                            <input type="text" name="set_time" class="form-control datetimepicker-input" id="id_set_time" data-target="#id_set_time_widget"/>
-                            <div class="input-group-append" data-target="#id_set_time_widget" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group col-4">
-                    {{ form.end_time.errors }}
-                    {{ form.end_time.label_tag }}
-                    <div class="form-group">
-                        <div class="input-group date" id="id_end_time_widget" data-target-input="nearest">
-                            <input type="text" name="end_time" class="form-control datetimepicker-input" id="id_end_time" data-target="#id_end_time_widget"/>
-                            <div class="input-group-append" data-target="#id_end_time_widget" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+{% endcomment %}
+
             <div class="row">
                 <div class="form-group col-lg-4 col-md-4 col-12">
                     {{ form.address.errors }}
@@ -341,39 +316,42 @@
 <script type="text/javascript">
 $(document).ready(function () {
     $('#id_date_widget').datetimepicker({
+        icons: {
+                    time: "fa fa-clock",
+                    date: "fa fa-calendar",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down"
+                },
         locale: '{{ user.preferences.language }}',
         {% if object.date %}
             defaultDate: '{{ object.date.isoformat }}',
         {% endif %}
-        format: 'L',
     });
     $('#id_enddate_widget').datetimepicker({
+        icons: {
+                    time: "fa fa-clock",
+                    date: "fa fa-calendar",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down"
+                },
         locale: '{{ user.preferences.language }}',
+        keepInvalid: True,
         {% if object.enddate %}
             defaultDate: '{{ object.enddate.isoformat }}',
         {% endif %}
-        format: 'L',
     });
-    $('#id_call_time_widget').datetimepicker({
+    $('#id_setdate_widget').datetimepicker({
+        icons: {
+                    time: "fa fa-clock",
+                    date: "fa fa-calendar",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down"
+                },
         locale: '{{ user.preferences.language }}',
-        {% if object.date %}
-            defaultDate: '{{ object.date.isoformat }}',
-        {% endif %}
-        format: 'LT',
-    });
-    $('#id_set_time_widget').datetimepicker({
-        locale: '{{ user.preferences.language }}',
+        keepInvalid: True,
         {% if object.setdate %}
             defaultDate: '{{ object.setdate.isoformat }}',
         {% endif %}
-        format: 'LT',
-    });
-    $('#id_end_time_widget').datetimepicker({
-        locale: '{{ user.preferences.language }}',
-        {% if object.enddate %}
-            defaultDate: '{{ object.enddate.isoformat }}',
-        {% endif %}
-        format: 'LT',
     });
 
 {% comment %}    
