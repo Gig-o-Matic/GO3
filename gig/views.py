@@ -49,7 +49,7 @@ class CreateView(generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
-        context['the_band'] = Band.objects.get(id=self.kwargs['bk'])
+        context['band'] = Band.objects.get(id=self.kwargs['bk'])
         return context
 
     def get_form_kwargs(self, *args, **kwargs):
