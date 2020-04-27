@@ -453,6 +453,13 @@ class InviteTest(TestCase):
         self.assertRedirects(response, reverse('band-detail', args=[self.band.id]))
         self.assertEqual(Invite.objects.count(), 0)
 
+    def test_invite_delete_own(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band)
+        self.client.force_login(self.janeuser)
+        response = self.client.get(reverse('member-delete-invite', args=[invite.id]))
+        self.assertRedirects(response, reverse('member-detail', args=[self.janeuser.id]))
+        self.assertEqual(Invite.objects.count(), 0)
+
     def test_invite_delete_super(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
         self.client.force_login(self.super)

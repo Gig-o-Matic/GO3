@@ -263,10 +263,13 @@ def delete_invite(request, pk):
     invite = get_object_or_404(Invite, pk=pk)
     user_is_band_admin = Assoc.objects.filter(
         member=request.user, band=invite.band, is_admin=True).count() == 1
-    if not (user_is_band_admin or request.user.is_superuser):
+    user_is_invitee = (request.user.email == invite.email)
+    if not (user_is_band_admin or user_is_invitee or request.user.is_superuser):
         raise PermissionDenied
 
     invite.delete()
+    if user_is_invitee:
+        return redirect('member-detail', pk=request.user.id)
     return redirect('band-detail', pk=invite.band.id)
 
 
