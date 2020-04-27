@@ -446,6 +446,37 @@ class InviteTest(TestCase):
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertIn('/accounts/login', response.url)
 
+    def test_invite_delete(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.force_login(self.band_admin)
+        response = self.client.get(reverse('member-delete-invite', args=[invite.id]))
+        self.assertRedirects(response, reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_delete_super(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.force_login(self.super)
+        response = self.client.get(reverse('member-delete-invite', args=[invite.id]))
+        # The band-detail view currently fails if the user has no Assoc, so we
+        # can't check if the redirected page actually loads.
+        self.assertRedirects(response, reverse('band-detail', args=[self.band.id]),
+                             fetch_redirect_response=False)
+        self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_delete_non_admin(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-delete-invite', args=[invite.id]))
+        self.assertIsInstance(response, HttpResponseForbidden)
+        self.assertEqual(Invite.objects.count(), 1)
+
+    def test_invite_delete_no_user(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        response = self.client.get(reverse('member-delete-invite', args=[invite.id]))
+        self.assertIsInstance(response, HttpResponseRedirect)
+        self.assertIn('/accounts/login', response.url)
+        self.assertEqual(Invite.objects.count(), 1)
+
     def test_invite_email(self):
         Invite.objects.create(email='new@example.com', band=self.band)
         self.assertEqual(len(mail.outbox), 1)

@@ -258,6 +258,18 @@ class MemberCreateView(CreateView):
         return reverse('member-invite-accept', kwargs={'pk': str(self.invite.id)})
 
 
+@login_required
+def delete_invite(request, pk):
+    invite = get_object_or_404(Invite, pk=pk)
+    user_is_band_admin = Assoc.objects.filter(
+        member=request.user, band=invite.band, is_admin=True).count() == 1
+    if not (user_is_band_admin or request.user.is_superuser):
+        raise PermissionDenied
+
+    invite.delete()
+    return redirect('band-detail', pk=invite.band.id)
+
+
 @require_POST
 def signup(request):
     email = request.POST.get('email')
