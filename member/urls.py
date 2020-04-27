@@ -32,7 +32,7 @@ urlpatterns = [
 
     path('calfeed/<uuid:pk>', helpers.calfeed),
 
-    path('invite', views.invite, name='member-invite'),
+    path('invite/<int:bk>', views.InviteView.as_view(), name='member-invite'),
     path('invite/<uuid:pk>', views.accept_invite, name='member-invite-accept'),
     path('create/<uuid:pk>', views.MemberCreateView.as_view(), name='member-create'),
     path('signup', views.signup, name='member-signup'),

@@ -31,6 +31,7 @@ import logging
 import os
 import sys
 from django.utils.translation import gettext_lazy as _
+from django.contrib.messages import constants as messages
 
 _testing = False
 if len(sys.argv) > 1 and sys.argv[1] == 'test':
@@ -206,6 +207,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Calfeed settings
 DYNAMIC_CALFEED = False # True to generate calfeed on demand; False for disk cache
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger'
+}
 
 try:
     from .settings_local import *

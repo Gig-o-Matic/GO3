@@ -362,73 +362,79 @@ class InviteTest(TestCase):
 
     def test_invite_one(self):
         self.client.force_login(self.band_admin)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'new@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com'}, follow=True)
         self.assertOK(response)
-        self.assertEqual(response.json(),
-            {'invited': ['new@example.com'], 'in_band': [], 'invalid': []})
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Invitations sent to new@example.com')
         self.assertEqual(Invite.objects.count(), 1)
 
     def test_invite_several(self):
         self.client.force_login(self.band_admin)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'new@example.com\ntwo@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com\ntwo@example.com'}, follow=True)
         self.assertOK(response)
-        self.assertEqual(response.json(),
-            {'invited': ['new@example.com', 'two@example.com'], 'in_band': [], 'invalid': []})
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Invitations sent to new@example.com, two@example.com')
         self.assertEqual(Invite.objects.count(), 2)
 
     def test_invite_existing(self):
         self.client.force_login(self.band_admin)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'joe@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'joe@example.com'}, follow=True)
         self.assertOK(response)
-        self.assertEqual(response.json(),
-            {'invited': [], 'in_band': ['joe@example.com'], 'invalid': []})
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'These users are already in the band: joe@example.com')
         self.assertEqual(Invite.objects.count(), 0)
 
     def test_invite_member(self):
         self.client.force_login(self.band_admin)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'jane@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'jane@example.com'}, follow=True)
         self.assertOK(response)
-        self.assertEqual(response.json(),
-            {'invited': ['jane@example.com'], 'in_band': [], 'invalid': []})
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Invitations sent to jane@example.com')
         self.assertEqual(Invite.objects.count(), 1)
 
     def test_invite_invalid(self):
         self.client.force_login(self.band_admin)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'notanemailaddress'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'notanemailaddress'}, follow=True)
         self.assertOK(response)
-        self.assertEqual(response.json(),
-            {'invited': [], 'in_band': [], 'invalid': ['notanemailaddress']})
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Invalid email addresses: notanemailaddress')
         self.assertEqual(Invite.objects.count(), 0)
 
     def test_invite_gets_language(self):
         self.band_admin.preferences.language = 'de'
         self.band_admin.preferences.save()
         self.client.force_login(self.band_admin)
-        self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'new@example.com'})
+        self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com'})
         self.assertEqual(Invite.objects.filter(email='new@example.com', language='de').count(), 1)
 
     def test_invite_super(self):
         self.client.force_login(self.super)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'new@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com'}, follow=True)
         self.assertOK(response)
 
     def test_invite_non_admin(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'new@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com'})
         self.assertIsInstance(response, HttpResponseForbidden)
 
     def test_invite_no_user(self):
-        response = self.client.post(reverse('member-invite'),
-            {'bk': self.band.id, 'emails': 'new@example.com'})
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com'})
         self.assertIsInstance(response, HttpResponseRedirect)
+        self.assertIn('/accounts/login', response.url)
 
     def test_invite_email(self):
         Invite.objects.create(email='new@example.com', band=self.band)

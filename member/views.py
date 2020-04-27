@@ -16,19 +16,23 @@
 """
 
 from django.http import HttpResponse, JsonResponse
-from .forms import MemberCreateForm
+from .forms import MemberCreateForm, InviteForm
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
+from lib.translation import join_trans
 from django.views import generic
 from django.views.decorators.http import require_POST
-from django.views.generic.edit import UpdateView as BaseUpdateView, CreateView
+from django.views.generic.edit import UpdateView as BaseUpdateView, CreateView, FormView
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from go3.colors import the_colors
 from django.utils import translation
+from django.utils.text import format_lazy
+from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
@@ -143,34 +147,57 @@ class OtherBandsView(LoginRequiredMixin, TemplateView):
         return context
 
 
-@require_POST
-@login_required
-def invite(request):
-    bk = request.POST.get('bk', None)
-    band = get_object_or_404(Band, pk=bk)
-    emails = request.POST.get('emails', '').split('\n')
+class InviteView(LoginRequiredMixin, FormView):
+    template_name = 'member/band_invite.html'
+    form_class = InviteForm
 
-    user_is_band_admin = Assoc.objects.filter(
-        member=request.user, band=band, is_admin=True).count() == 1
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        band = get_object_or_404(Band, pk=self.kwargs['bk'])
+        context['band'] = band
+        return context
 
-    if not (user_is_band_admin or request.user.is_superuser):
-        raise PermissionDenied
+    def form_valid(self, form):
+        band = get_object_or_404(Band, pk=self.kwargs['bk'])
+        emails = form.cleaned_data['emails'].split()
 
-    invited, in_band, invalid = [], [], []
-    for email in emails:
-        try:
-            validate_email(email)
-        except ValidationError:
-            invalid.append(email)
-            continue
+        user_is_band_admin = Assoc.objects.filter(
+            member=self.request.user, band=band, is_admin=True).count() == 1
 
-        if Assoc.objects.filter(member__email=email, band=band).count() > 0:
-            in_band.append(email)
-        else:
-            Invite.objects.create(band=band, email=email, language=request.user.preferences.language)
-            invited.append(email)
+        if not (user_is_band_admin or self.request.user.is_superuser):
+            raise PermissionDenied
 
-    return JsonResponse({'invited': invited, 'in_band': in_band, 'invalid': invalid})
+        invited, in_band, invalid = [], [], []
+        for email in emails:
+            try:
+                validate_email(email)
+            except ValidationError:
+                invalid.append(email)
+                continue
+
+            if Assoc.objects.filter(member__email=email, band=band).count() > 0:
+                in_band.append(email)
+            else:
+                Invite.objects.create(band=band, email=email, language=self.request.user.preferences.language)
+                invited.append(email)
+
+        if invalid:
+            messages.error(self.request,
+                           format_lazy(_('Invalid email addresses: {e}'),
+                                       e=join_trans(_(', '), invalid)))
+        if invited:
+            messages.success(self.request,
+                             format_lazy(_('Invitations sent to {e}'),
+                                         e=join_trans(_(', '), invited)))
+        if in_band:
+            messages.info(self.request,
+                          format_lazy(_('These users are already in the band: {e}'),
+                                      e=join_trans(_(', '), in_band)))
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('member-invite', args=[self.kwargs['bk']])
 
 
 def accept_invite(request, pk):

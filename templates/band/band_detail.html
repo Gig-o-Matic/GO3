@@ -125,7 +125,7 @@
                             </div>
                         </div>
                     {% endif %}
-                {% endif %}                    
+                {% endif %}
             </div> <!-- card-body -->
         </div> <!-- card -->
 
@@ -254,11 +254,6 @@
                                     <button class="btn btn-primary btn-sm" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></button>
                                 {% endif %}
                             </div>
-                            {% if the_user_is_band_admin or request.user.is_superuser %}
-                                <div class="ml-auto">
-                                    <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
-                                </div>
-                            {% endif %}
                         {% else %}
                             <div class="col-3">
                                 {% trans "Sections" %}
@@ -269,11 +264,11 @@
                                         <a class="btn btn-primary btn-sm" href="#" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></a>
                                     {% endif %}
                             </div>
-                            {% if the_user_is_band_admin or request.user.is_superuser %}
-                                <div class="ml-auto">
-                                    <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
-                                </div>
-                            {% endif %}
+                        {% endif %}
+                        {% if the_user_is_band_admin or request.user.is_superuser %}
+                            <div class="ml-auto">
+                                <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -313,7 +308,7 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-12">
-                                        <a class="btn btn-primary btn-sm" href="band_invite.html?bk={{ band.id }}">{% trans "Invite Members" %}</a>
+                                        <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
                                         <a class="btn btn-primary btn-sm" href="member_spreadsheet?bk={{band.id}}">{% trans "Download Member List" %}</a>
                                         <a class="btn btn-primary btn-sm" href="member_emails?bk={{band.id}}">{% trans "Get Member Emails" %}</a>
 
