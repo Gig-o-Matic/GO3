@@ -159,7 +159,7 @@ class InviteView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         band = get_object_or_404(Band, pk=self.kwargs['bk'])
-        emails = form.cleaned_data['emails'].split()
+        emails = form.cleaned_data['emails'].replace(',', ' ').split()
 
         user_is_band_admin = Assoc.objects.filter(
             member=self.request.user, band=band, is_admin=True).count() == 1

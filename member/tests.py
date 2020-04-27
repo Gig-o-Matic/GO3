@@ -380,6 +380,16 @@ class InviteTest(TestCase):
         self.assertEqual(str(messages[0]), 'Invitations sent to new@example.com, two@example.com')
         self.assertEqual(Invite.objects.count(), 2)
 
+    def test_invite_comma(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com,two@example.com'}, follow=True)
+        self.assertOK(response)
+        messages = list(response.context['messages'])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Invitations sent to new@example.com, two@example.com')
+        self.assertEqual(Invite.objects.count(), 2)
+
     def test_invite_existing(self):
         self.client.force_login(self.band_admin)
         response = self.client.post(reverse('member-invite', args=[self.band.id]),
