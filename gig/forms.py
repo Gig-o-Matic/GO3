@@ -18,7 +18,7 @@
 from django import forms
 from .models import Gig
 from band.models import Band
-from django.utils import timezone
+from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
