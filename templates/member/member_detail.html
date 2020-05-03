@@ -52,29 +52,27 @@
                     {% endif %}
                 {% endif %}
                 {% if member.statement %}
-	                <div>&nbsp;</div>
-                    <div class="row">
+                    <div class="row mt-4">
                         <div class="col-sm-3 col-12">{% trans "Personal Statement" %}</div>
                         <div class="col-sm-9 col-12">{{  member.statement|escape }}</div>
                     </div>
                 {% endif %}
                 {% if not member_is_me or True %}
-	                <div>&nbsp;</div>
-		            <div class="row">
-		                <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
-		                <div class="col-sm-9 col-12">
+                    <div class="row mt-4">
+                        <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
+                        <div class="col-sm-9 col-12">
                             {% for the_band in the_member_bands %}
-		                        <a href="{% url 'band-detail' pk=the_band.id %}">{{ the_band.name }}</a>{% if forloop.last == False %}, {% endif %}
+                                <a href="{% url 'band-detail' pk=the_band.id %}">{{ the_band.name }}</a>{% if forloop.last == False %}, {% endif %}
                             {% endfor %}
                         </div>
-		            </div>
-		        {% endif %}
-		    </div>
-		</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
 
         {% if  member.images %}
         {% comment %}TODO{% endcomment %}
-            <div class="card">
+            <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
                         <div class="col-12">
@@ -103,12 +101,10 @@
 
                 </div>
             </div>
-            <div>&nbsp;</div>
-        {% endif %}            
+        {% endif %}
 
         {% if user.id == request.user.id or request.user.is_superuser %}
-	        <div>&nbsp;</div>
-            <div class="card">
+            <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
                         <div class="col-12">
@@ -116,7 +112,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">        
+                <div class="card-body">
                     <div id="bandlist">
                         <i class="fas fa-spinner fa-pulse"></i>
                     </div>
@@ -125,21 +121,20 @@
                 </div>
             </div>
 
-	        <div>&nbsp;</div>
-            <div class="card">
-	            <div class="card-header">
-	                <div class="row titlerow">
-	                    <div class="col-4">
-	                        {% trans "Preferences" %}
-	                    </div>
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-4">
+                            {% trans "Preferences" %}
+                        </div>
                         {% if user.id == request.user.id or request.user.is_superuser %}
-	                        <div class="ml-auto">
-	                            <a class="btn btn-primary btn-sm" href="/member/{{  member.id }}/preferences/update/">{% trans "Edit" %}</a>
-	                        </div>
-	                    {% endif %}
-	                </div>
-	            </div>
-	            <div class="card-body">
+                            <div class="ml-auto">
+                                <a class="btn btn-primary btn-sm" href="/member/{{  member.id }}/preferences/update/">{% trans "Edit" %}</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Hide canceled gigs" %}:</div>
                         <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
@@ -178,31 +173,31 @@
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                     </div>
                     {% if the_user_is_superuser %}
-	                    <br>
-	                    <div class="row">
-	                        <div class="col-sm-3 col-12">Verified:</div>
-	                        <div class="col-sm-9 col-12">
-	                        	{{  member.verified }}
-	                        	{% if  member.verified == False %}
-	                        		<a class="btn btn-primary btn-sm" href="/verify_member?mk={{  member.id }}">verify</a>
-	                        	{% endif %}
-	                        </div>
-	                    </div>
-	                    <br>
-	                    <div class="row">
-	                        <div class="col-sm-3 col-12">{% trans "Last Activity:" %}</div>
-	                        <div class="col-sm-9 col-12">
-	                            {% if  member.last_activity %}
-	                                {{  member.last_activity }}
-	                            {% else %}
-	                                None since 2014-10-18
-	                            {% endif %}
-	                        </div>
-	                    </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-3 col-12">Verified:</div>
+                            <div class="col-sm-9 col-12">
+                                {{  member.verified }}
+                                {% if  member.verified == False %}
+                                    <a class="btn btn-primary btn-sm" href="/verify_member?mk={{  member.id }}">verify</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-sm-3 col-12">{% trans "Last Activity:" %}</div>
+                            <div class="col-sm-9 col-12">
+                                {% if  member.last_activity %}
+                                    {{  member.last_activity }}
+                                {% else %}
+                                    None since 2014-10-18
+                                {% endif %}
+                            </div>
+                        </div>
                     {% endif %}
-	            </div>
-	        </div> <!-- card -->
-	    {% endif %}
+                </div>
+            </div> <!-- card -->
+        {% endif %}
     </div>
 </div>
 {% endblock content %}
@@ -351,8 +346,7 @@ function setupClick() {
 
 $(document).ready(function() {
     updateBands();
-    setupClick();    
+    setupClick();
 });
 </script>
 {% endblock localscripts %}
-
