@@ -219,6 +219,9 @@ def accept_invite(request, pk):
                                  status=AssocStatusChoices.CONFIRMED)
         invite.delete()
         if request.user.is_authenticated:
+            messages.success(request,
+                             format_lazy(_('You are now a member of {band}.'),
+                                         band=invite.band.name))
             return redirect('member-detail', pk=member.id)
         translation.activate(invite.language)
         return render(request, 'member/accepted.html',
@@ -273,6 +276,9 @@ def delete_invite(request, pk):
 
     invite.delete()
     if user_is_invitee:
+        messages.info(request,
+                      format_lazy(_('Your invitation to join {band} has been deleted.'),
+                                  band=invite.band.name))
         return redirect('member-detail', pk=request.user.id)
     return redirect('band-detail', pk=invite.band.id)
 
