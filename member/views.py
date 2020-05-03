@@ -104,6 +104,10 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         context['show_email'] = show_email
         context['show_phone'] = show_phone
         context['member_is_me'] = the_user.id == the_member.id
+        if is_me or the_user.is_superuser:
+            context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
+        else:
+            context['invites'] = None
 
         return context
 

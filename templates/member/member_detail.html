@@ -104,6 +104,33 @@
         {% endif %}
 
         {% if user.id == request.user.id or request.user.is_superuser %}
+            {% if invites %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <div class="row titlerow">
+                            <div class="col-12">
+                                {% trans "Invites" %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% for invite in invites %}
+                            <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                                <div class="col-4">
+                                    <a href="{% url 'band-detail' pk=invite.band.id %}">{{ invite.band.name }}</a>
+                                </div>
+                                <div class="col-4">
+                                    <a href="{% url 'member-invite-accept' pk=invite.id %}" class="btn btn-primary btn-sm">{% trans "Accept Invitation" %}</a>
+                                </div>
+                                <div class="col-4">
+                                    <a href="{% url 'member-invite-delete' pk=invite.id %}" class="btn btn-secondary btn-sm">{% trans "Decline Invitation" %}</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
             <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
