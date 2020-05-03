@@ -315,6 +315,7 @@
 
 <script type="text/javascript">
 $(document).ready(function () {
+{% comment %}    
     $('#id_date_widget').datetimepicker({
         icons: {
                     time: "fa fa-clock",
@@ -327,19 +328,6 @@ $(document).ready(function () {
             defaultDate: '{{ object.date.isoformat }}',
         {% endif %}
     });
-    $('#id_enddate_widget').datetimepicker({
-        icons: {
-                    time: "fa fa-clock",
-                    date: "fa fa-calendar",
-                    up: "fa fa-arrow-up",
-                    down: "fa fa-arrow-down"
-                },
-        locale: '{{ user.preferences.language }}',
-        keepInvalid: True,
-        {% if object.enddate %}
-            defaultDate: '{{ object.enddate.isoformat }}',
-        {% endif %}
-    });
     $('#id_setdate_widget').datetimepicker({
         icons: {
                     time: "fa fa-clock",
@@ -348,11 +336,31 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down"
                 },
         locale: '{{ user.preferences.language }}',
-        keepInvalid: True,
         {% if object.setdate %}
             defaultDate: '{{ object.setdate.isoformat }}',
         {% endif %}
     });
+    $('#id_enddate_widget').datetimepicker({
+        icons: {
+                    time: "fa fa-clock",
+                    date: "fa fa-calendar",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down"
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.enddate %}
+            defaultDate: '{{ object.enddate.isoformat }}',
+        {% endif %}
+    });
+
+    $('#id_date_widget').on("change.datetimepicker", function (e) {
+        console.log("YES");
+        $('#id_setdate_widget').datetimepicker('minDate', e.date);
+    });
+    $('#id_setdate_widget').on("change.datetimepicker", function (e) {
+        $('#id_enddate_widget').datetimepicker('minDate', e.date);
+    });
+{% endcomment %}
 
 {% comment %}    
     $.validator.addMethod(
