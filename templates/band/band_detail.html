@@ -228,7 +228,7 @@
                                 {{ m.email }}
                             </div>
                             <div class="col-md-3 col-sm-3 col-3">
-                                <a href="{% url 'member-delete-invite' pk=m.id %}">{% trans "forget the invite" %}</a>
+                                <a href="{% url 'member-invite-delete' pk=m.id %}">{% trans "forget the invite" %}</a>
                             </div>
                         </div>
                         {% endfor %}
