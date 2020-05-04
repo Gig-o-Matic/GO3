@@ -36,6 +36,7 @@ from django.urls import include, path
 urlpatterns =[
     path('', include('agenda.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('band/', include('band.urls')),
     path('member/', include('member.urls')),
     path('gig/', include('gig.urls')),
