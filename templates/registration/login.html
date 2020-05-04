@@ -1,33 +1,78 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
 
-  {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
-  {% endif %}
-  
-  {% if next %}
-    {% if user.is_authenticated %}
-      <p>Your account doesn't have access to this page. To proceed,
-      please login with an account that has access.</p>
-    {% else %}
-      <p>Please login to see this page.</p>
-    {% endif %}
-  {% endif %}
-  
-  <form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
-    <table>
-      <tr>
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }}</td>
-      </tr>
-      <tr>
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }}</td>
-      </tr>
-    </table>
-    <input type="submit" value="login" />
-    <input type="hidden" name="next" value="{{ next }}" />
-  </form>
-  
-  {# Assumes you setup the password_reset view in your URLconf #}
-  <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
-  
+{% block title %}{% trans "Login" %}{% endblock title %}
+
+{% block content %}
+    <div id="landingpage_content">
+        <div class="row">
+            <div class="page-header col-md-11 col-12 ml-auto">
+                <h3>{% trans "Welcome to Gig-o-Matic!" %}</h3>
+            </div>
+        </div>
+        <div class="row">
+            <br>
+        </div>
+
+        {% if form.errors %}
+            <div class="row">
+                <div class="col-md-11 col-12 ml-auto">
+                    <strong>{% trans "Login failed!" %}</strong> {% trans "Check your credentials and try again." %}
+                </div>
+            </div>
+            <div class="row">
+                <br>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-11 col-12 ml-auto">
+                <form class="form" role="form" action= "{% url 'login' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                        <div class="col-form-label col-lg-3 text-lg-right">{{ form.username.label_tag}}</div>
+                        <div class="col-lg-8 col-12">{% render_field form.username class="form-control" %}</div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-form-label col-lg-3 text-lg-right">{{ form.password.label_tag}}</div>
+                        <div class="col-lg-8 col-12">{% render_field form.password class="form-control" %}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-9 ml-auto">
+                            <button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
+                            <a href="{% url 'password_reset' %}">{% trans "Forgot password?" %}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <br>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-9 ml-auto">
+                            {% trans "Not a member?" %}
+                            <a href="/signup{% if locale %}?locale={{ locale }}{% endif %}">{% trans "Sign Up!" %}</a>
+                        </div>
+                    </div>
+
+
+                </form>
+
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-11 ml-auto">
+                {% for lang in languages %}
+                {{ lang }}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-11 ml-auto">
+                {% blocktrans %}Want your band on the Gig-o? Click <a href="/help_band_request.html?locale={{ locale }}">here</a>.{% endblocktrans %}
+                {% blocktrans %}What is the Gig-o-Matic, anyway? Click <a href="/whatis.html?locale={{ locale }}">here</a>!{% endblocktrans %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
