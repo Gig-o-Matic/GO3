@@ -177,6 +177,7 @@ def accept_invite(request, pk):
     invite = get_object_or_404(Invite, pk=pk)
 
     if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
+        # We need the language active before we try to render anything.
         translation.activate(invite.language)
         def set_language(response):
             response.set_cookie(settings.LANGUAGE_COOKIE_NAME, invite.language)
