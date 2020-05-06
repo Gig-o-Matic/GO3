@@ -66,12 +66,17 @@ class GigForm(forms.ModelForm):
         super().clean()
 
     send_update = forms.BooleanField(required=False, label=_('Email members about change'))
+    call_date = forms.Field()
+    call_time = forms.Field()
+    set_time = forms.Field()
+    end_time = forms.Field()
+    end_date = forms.Field()
 
     class Meta:
         model = Gig
         localized_fields = '__all__'
 
-        fields = ['title','contact','status','is_private','date','setdate','enddate', 
+        fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
                 'address','dress','paid','leader', 'postgig', 'details','setlist','rss_description','invite_occasionals',
                 'hide_from_calendar','send_update']
 
@@ -83,9 +88,9 @@ class GigForm(forms.ModelForm):
             'postgig': forms.TextInput(attrs={'placeholder': _('Hit the streets!')}),
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
-            'date': forms.TextInput(),
-            'setdate': forms.TextInput(),
-            'enddate': forms.TextInput(),
+            # 'date': forms.TextInput(),
+            # 'setdate': forms.TextInput(),
+            # 'enddate': forms.TextInput(),
         }
 
         labels = {
@@ -93,9 +98,8 @@ class GigForm(forms.ModelForm):
             'contact': _('Contact'),
             'status': _('Status'),
 
-            'date': _('Date'),
-            'setdate': _('Set Date'),
-            'enddate': _('End Date'),
+            'call_date': _('Date'),
+            'end_date': _('End Date'),
 
             'address': _('Address'),
             'dress': _('What to Wear'),

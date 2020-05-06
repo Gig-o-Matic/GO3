@@ -49,36 +49,63 @@
              
             <div class="row">
                 <div class="form-group col-4">
-                    {{ form.date.errors }}
-                    {{ form.date.label_tag }}
+                    {{ form.call_date.errors }}
+                    {{ form.call_date.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
+                            <input type="text" name="call_date" class="form-control datetimepicker-input" id="id_call_date" data-target="#id_call_date_widget" required/>
+                            <div class="input-group-append" data-target="#id_call_date_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-4">
+                    {{ form.end_date.errors }}
+                    {{ form.end_date.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_end_date_widget" data-target-input="nearest">
+                            <input type="text" name="end_date" class="form-control datetimepicker-input" id="id_end_date" data-target="#id_end_date_widget"/>
+                            <div class="input-group-append" data-target="#id_end_date_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-4">
+                    {{ form.call_time.errors }}
+                    {{ form.call_time.label_tag }}
                     <div class="form-group">
                         <div class="input-group date" id="id_date_widget" data-target-input="nearest">
-                            <input type="text" name="date" class="form-control datetimepicker-input" id="id_date" data-target="#id_date_widget" required/>
-                            <div class="input-group-append" data-target="#id_date_widget" data-toggle="datetimepicker">
+                            <input type="text" name="call_time" class="form-control datetimepicker-input" id="id_call_time" data-target="#id_call_time_widget" required/>
+                            <div class="input-group-append" data-target="#id_call_time_widget" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group col-4">
-                    {{ form.setdate.errors }}
-                    {{ form.setdate.label_tag }}
+                    {{ form.set_time.errors }}
+                    {{ form.set_time.label_tag }}
                     <div class="form-group">
-                        <div class="input-group date" id="id_setdate_widget" data-target-input="nearest">
-                            <input type="text" name="setdate" class="form-control datetimepicker-input" id="id_setdate" data-target="#id_setdate_widget"/>
-                            <div class="input-group-append" data-target="#id_setdate_widget" data-toggle="datetimepicker">
+                        <div class="input-group date" id="id_set_time_widget" data-target-input="nearest">
+                            <input type="text" name="set_time" class="form-control datetimepicker-input" id="id_set_time" data-target="#id_set_time_widget"/>
+                            <div class="input-group-append" data-target="#id_set_time_widget" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group col-4">
-                    {{ form.enddate.errors }}
-                    {{ form.enddate.label_tag }}
+                    {{ form.end_time.errors }}
+                    {{ form.end_time.label_tag }}
                     <div class="form-group">
-                        <div class="input-group date" id="id_enddate_widget" data-target-input="nearest">
-                            <input type="text" name="enddate" class="form-control datetimepicker-input" id="id_enddate" data-target="#id_enddate_widget"/>
-                            <div class="input-group-append" data-target="#id_enddate_widget" data-toggle="datetimepicker">
+                        <div class="input-group date" id="id_end_time_widget" data-target-input="nearest">
+                            <input type="text" name="end_time" class="form-control datetimepicker-input" id="id_end_time" data-target="#id_end_time_widget"/>
+                            <div class="input-group-append" data-target="#id_end_time_widget" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
                         </div>
@@ -315,44 +342,67 @@
 
 <script type="text/javascript">
 $(document).ready(function () {
-{% comment %}    
-    $('#id_date_widget').datetimepicker({
+    $('#id_call_date_widget').datetimepicker({
+        format: 'L',
         icons: {
-                    time: "fa fa-clock",
                     date: "fa fa-calendar",
                     up: "fa fa-arrow-up",
-                    down: "fa fa-arrow-down"
+                    down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
         {% if object.date %}
-            defaultDate: '{{ object.date.isoformat }}',
+            defaultDate: '{{ object.date }}',
         {% endif %}
     });
-    $('#id_setdate_widget').datetimepicker({
+    $('#id_end_date_widget').datetimepicker({
+        format: 'L',
         icons: {
-                    time: "fa fa-clock",
                     date: "fa fa-calendar",
                     up: "fa fa-arrow-up",
-                    down: "fa fa-arrow-down"
-                },
-        locale: '{{ user.preferences.language }}',
-        {% if object.setdate %}
-            defaultDate: '{{ object.setdate.isoformat }}',
-        {% endif %}
-    });
-    $('#id_enddate_widget').datetimepicker({
-        icons: {
-                    time: "fa fa-clock",
-                    date: "fa fa-calendar",
-                    up: "fa fa-arrow-up",
-                    down: "fa fa-arrow-down"
+                    down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
         {% if object.enddate %}
-            defaultDate: '{{ object.enddate.isoformat }}',
+            defaultDate: '{{ object.enddate }}',
         {% endif %}
     });
-
+    $('#id_call_time_widget').datetimepicker({
+        format: 'LT',
+        icons: {
+                    time: "fa fa-clock",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.calldate %}
+            defaultDate: '{{ object.calldate }}',
+        {% endif %}
+    });
+    $('#id_set_time_widget').datetimepicker({
+        format: 'LT',
+        icons: {
+                    time: "fa fa-clock",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.setdate %}
+            defaultDate: '{{ object.setdate }}',
+        {% endif %}
+    });
+    $('#id_end_time_widget').datetimepicker({
+        format: 'LT',
+        icons: {
+                    time: "fa fa-clock",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.enddate %}
+            defaultDate: '{{ object.enddate }}',
+        {% endif %}
+    });
+{% comment %}
     $('#id_date_widget').on("change.datetimepicker", function (e) {
         console.log("YES");
         $('#id_setdate_widget').datetimepicker('minDate', e.date);
