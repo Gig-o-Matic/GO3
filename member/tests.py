@@ -357,10 +357,6 @@ class InviteTest(TestCase):
     def assertOK(self, response):
         self.assertEqual(response.status_code, 200)
 
-    def assertRenderedWith(self, response, template_name):
-        self.assertIn(template_name, (t.name for t in response.templates),
-                      f'Response not rendered with {template_name}.')
-
     def assertRenderLanguage(self, lang, render_cmd='django.shortcuts.render'):
         test_case = self
 
@@ -580,7 +576,7 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/accepted.html')
+        self.assertTemplateUsed(response, 'member/accepted.html')
         self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
         self.assertEqual(Invite.objects.count(), 0)
 
@@ -588,7 +584,7 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=None)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/accepted.html')
+        self.assertTemplateUsed(response, 'member/accepted.html')
         self.assertEqual(Assoc.objects.filter(member=self.janeuser).count(), 0)
         self.assertEqual(Invite.objects.count(), 0)
 
@@ -598,7 +594,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'accept the invite as', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -611,7 +607,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'accept the invite as', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -622,7 +618,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'create an account for', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -633,7 +629,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'create an account for', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -730,7 +726,7 @@ class InviteTest(TestCase):
                                      'password2': self.password},
                                     follow=True)
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/member_detail.html')
+        self.assertTemplateUsed(response, 'member/member_detail.html')
 
     def test_create_duplicate_member(self):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
