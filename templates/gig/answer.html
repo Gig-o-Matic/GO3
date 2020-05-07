@@ -3,16 +3,14 @@
 
 {% block title %}{% trans "Answered!" %}{% endblock title %}
 
-{% block content %}
-    <div id="landingpage_content">
-        <h3>{% trans "OK!" %}</h3>
-        <br>
-        <p>{% trans "Your answer has been submitted - thanks!" %}</p>
-        <p>
-            {% url 'gig-detail' gig_id as gig_url %}
-            {% blocktrans %}
-            More details on the <a href="{{ gig_url }}">gig info page</a> (log-in required).
-            {% endblocktrans %}
-        </p>
-    </div>
-{% endblock content %}
+{% block pageheader %}{% trans "OK!" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>{% trans "Your answer has been submitted - thanks!" %}</p>
+<p>
+    {% url 'gig-detail' gig_id as gig_url %}
+    {% blocktrans %}
+    More details on the <a href="{{ gig_url }}">gig info page</a> (log-in required).
+    {% endblocktrans %}
+</p>
+{% endblock pagecontent %}

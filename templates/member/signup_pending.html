@@ -4,16 +4,8 @@
 
 {% block title %}{% trans "Signed Up!" %}{% endblock title %}
 
-{% block content %}
-    <div id="landingpage_content">
-        <div class="row">
-            <div class="mx-auto col-md-8 col-12">
-                <div class="page-header mb-4">
-                    <h3>{% trans "Signed Up!" %}</h3>
-                </div>
+{% block pageheader %}{% trans "Signed Up!" %}{% endblock pageheader %}
 
-                <p>{% blocktrans %}Great job&mdash;you've signed up. A confirmation email has been sent to {{ email }}.  Follow those directions to complete the process.{% endblocktrans %}</p>
-            </div>
-        </div>
-    </div>
-{% endblock %}
+{% block pagecontent %}
+<p>{% blocktrans %}Great job&mdash;you've signed up. A confirmation email has been sent to {{ email }}.  Follow those directions to complete the process.{% endblocktrans %}</p>
+{% endblock pagecontent %}

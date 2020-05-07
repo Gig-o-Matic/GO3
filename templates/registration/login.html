@@ -4,114 +4,79 @@
 
 {% block title %}{% trans "Login" %}{% endblock title %}
 
-{% block content %}
-    <div id="landingpage_content">
-        <div class="row">
-            <div class="page-header col-md-11 col-12 ml-auto">
-                <h3>{% trans "Welcome to Gig-o-Matic!" %}</h3>
-            </div>
-        </div>
-        <div class="row">
-            <br>
-        </div>
+{% block pageheader %}{% trans "Welcome to Gig-o-Matic!" %}{% endblock pageheader %}
 
-        {% if messages %}
-            <div class="row">
-                <div class="col-md-11 col-12 ml-auto">
-                    {% include 'base/messages.html' %}
-                </div>
-            </div>
-        {% endif %}
+{% block pagecontent %}
+{% include 'base/messages.html' %}
 
-        {% if form.errors %}
-            <div class="row">
-                <div class="col-md-11 col-12 ml-auto">
-                    <strong>{% trans "Login failed!" %}</strong> {% trans "Check your credentials and try again." %}
-                </div>
-            </div>
-            <div class="row">
-                <br>
-            </div>
-        {% endif %}
+{% if form.errors %}
+<div class="mb-4">
+    <strong>{% trans "Login failed!" %}</strong> {% trans "Check your credentials and try again." %}
+</div>
+{% endif %}
 
-        <div class="row">
-            <div class="col-md-11 col-12 ml-auto">
-                <form class="form" role="form" action= "{% url 'login' %}" method="POST">
-                    {% csrf_token %}
-                    <div class="form-group row">
-                        <div class="col-form-label col-lg-3 text-lg-right">{{ form.username.label_tag}}</div>
-                        <div class="col-lg-8 col-12">{% render_field form.username class="form-control" %}</div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-form-label col-lg-3 text-lg-right">{{ form.password.label_tag}}</div>
-                        <div class="col-lg-8 col-12">{% render_field form.password class="form-control" %}</div>
-                    </div>
+<form class="form" role="form" action= "{% url 'login' %}" method="POST">
+    {% csrf_token %}
+    <div class="form-group row">
+        <div class="col-form-label col-lg-3 text-lg-right">{{ form.username.label_tag}}</div>
+        <div class="col-lg-8 col-12">{% render_field form.username class="form-control" %}</div>
+    </div>
+    <div class="form-group row">
+        <div class="col-form-label col-lg-3 text-lg-right">{{ form.password.label_tag}}</div>
+        <div class="col-lg-8 col-12">{% render_field form.password class="form-control" %}</div>
+    </div>
 
-                    <div class="row">
-                        <div class="col-lg-9 ml-auto">
-                            <button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
-                            <a href="{% url 'password_reset' %}">{% trans "Forgot password?" %}</a>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <br>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-9 ml-auto">
-                            {% trans "Not a member?" %}
-                            <a href="{% url 'member-signup' %}">{% trans "Sign Up!" %}</a>
-                        </div>
-                    </div>
-
-
-                </form>
-
-            </div>
-        </div>
-        <br>
-        <div class="row">
-            <div class="col-md-11 ml-auto">
-                {% get_current_language as current_code %}
-                {% get_available_languages as languages %}
-                <style>
-                    #langs {
-                        display: flex;
-                    }
-                    #langs > form:not(:first-child)::before {
-                        content: '|';
-                        display: inline;
-                    }
-                    #langs [type=submit] {
-                        border: none;
-                        background: none;
-                        color: #428bca;
-                    }
-                    #langs [type=submit]:hover {
-                        color: #0056b3;
-                        text-decoration: underline;
-                    }
-                    #langs > form:first-child [type=submit] {
-                        padding-left: 0;
-                    }
-                </style>
-                <div id="langs">
-                    {% for code, _ in LANGUAGES %}
-                        {% if code != current_code %}
-                            <form action="{% url 'set_language' %}" method="post" class="form-inline">
-                                {% csrf_token %}
-                                <input name="language" type="hidden" value="{{ code }}">
-                                <input type="submit" value="{{ code | language_name_local }}{% if '-' in code %} ({{ code | slice:'3:' | upper }}){% endif %}">
-                            </form>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-11 ml-auto">
-                {% blocktrans %}Want your band on the Gig-o? Click <a href="/help_band_request.html">here</a>.{% endblocktrans %}
-                {% blocktrans %}What is the Gig-o-Matic, anyway? Click <a href="/whatis.html">here</a>!{% endblocktrans %}
-            </div>
+    <div class="form-group row">
+        <div class="col-lg-9 ml-auto">
+            <button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
+            <a href="{% url 'password_reset' %}">{% trans "Forgot password?" %}</a>
         </div>
     </div>
-{% endblock %}
+    <div class="form-group row">
+        <div class="col-lg-9 ml-auto">
+            {% trans "Not a member?" %}
+            <a href="{% url 'member-signup' %}">{% trans "Sign Up!" %}</a>
+        </div>
+    </div>
+</form>
+
+{% get_current_language as current_code %}
+{% get_available_languages as languages %}
+<style>
+    #langs {
+        display: flex;
+    }
+    #langs > form:not(:first-child)::before {
+        content: '|';
+        display: inline;
+    }
+    #langs [type=submit] {
+        border: none;
+        background: none;
+        color: #428bca;
+    }
+    #langs [type=submit]:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    #langs > form:first-child [type=submit] {
+        padding-left: 0;
+    }
+</style>
+<div id="langs">
+    {% for code, _ in LANGUAGES %}
+        {% if code != current_code %}
+            <form action="{% url 'set_language' %}" method="post" class="form-inline">
+                {% csrf_token %}
+                <input name="language" type="hidden" value="{{ code }}">
+                <input type="submit" value="{{ code | language_name_local }}{% if '-' in code %} ({{ code | slice:'3:' | upper }}){% endif %}">
+            </form>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<div>
+    {% blocktrans %}Want your band on the Gig-o? Click <a href="/help_band_request.html">here</a>.{% endblocktrans %}
+    {% blocktrans %}What is the Gig-o-Matic, anyway? Click <a href="/whatis.html">here</a>!{% endblocktrans %}
+</div>
+{% endblock pagecontent %}
