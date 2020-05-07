@@ -185,10 +185,12 @@ class InviteView(LoginRequiredMixin, FormView):
                 Invite.objects.create(band=band, email=email, language=self.request.user.preferences.language)
                 invited.append(email)
 
+        self.return_to_form = False
         if invalid:
             messages.error(self.request,
                            format_lazy(_('Invalid email addresses: {e}'),
                                        e=join_trans(_(', '), invalid)))
+            self.return_to_form = True
         if invited:
             messages.success(self.request,
                              format_lazy(_('Invitations sent to {e}'),
@@ -197,11 +199,14 @@ class InviteView(LoginRequiredMixin, FormView):
             messages.info(self.request,
                           format_lazy(_('These users are already in the band: {e}'),
                                       e=join_trans(_(', '), in_band)))
+            self.return_to_form = True
 
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('member-invite', args=[self.kwargs['bk']])
+        if self.return_to_form:
+            return reverse('member-invite', args=[self.kwargs['bk']])
+        return reverse('band-detail', args=[self.kwargs['bk']])
 
 
 def accept_invite(request, pk):

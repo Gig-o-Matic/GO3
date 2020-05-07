@@ -446,6 +446,18 @@ class InviteTest(TestCase):
         self.assertIsInstance(response, HttpResponseRedirect)
         self.assertIn('/accounts/login', response.url)
 
+    def test_invite_redirect_success(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'new@example.com'})
+        self.assertRedirects(response, reverse('band-detail', args=[self.band.id]))
+
+    def test_invite_redirect_error(self):
+        self.client.force_login(self.band_admin)
+        response = self.client.post(reverse('member-invite', args=[self.band.id]),
+            {'emails': 'notanemailaddress'})
+        self.assertRedirects(response, reverse('member-invite', args=[self.band.id]))
+
     def test_invite_delete(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
         self.client.force_login(self.band_admin)
