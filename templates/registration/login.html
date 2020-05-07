@@ -15,6 +15,14 @@
             <br>
         </div>
 
+        {% if messages %}
+            <div class="row">
+                <div class="col-md-11 col-12 ml-auto">
+                    {% include 'base/messages.html' %}
+                </div>
+            </div>
+        {% endif %}
+
         {% if form.errors %}
             <div class="row">
                 <div class="col-md-11 col-12 ml-auto">
@@ -51,7 +59,7 @@
                     <div class="row">
                         <div class="col-lg-9 ml-auto">
                             {% trans "Not a member?" %}
-                            <a href="/signup{% if locale %}?locale={{ locale }}{% endif %}">{% trans "Sign Up!" %}</a>
+                            <a href="{% url 'member-signup' %}">{% trans "Sign Up!" %}</a>
                         </div>
                     </div>
 

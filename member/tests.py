@@ -727,17 +727,16 @@ class InviteTest(TestCase):
     def test_signup(self):
         response = self.client.post(reverse('member-signup'), {'email': 'new@example.com'})
         self.assertOK(response)
-        self.assertEqual(response.json(), {'status': 'success'})
+        self.assertRenderedWith(response, 'member/signup_pending.html')
         self.assertEqual(Invite.objects.filter(email='new@example.com', band=None).count(), 1)
 
     def test_signup_duplicate(self):
-        response = self.client.post(reverse('member-signup'), {'email': 'joe@example.com'})
-        self.assertOK(response)
-        self.assertEqual(response.json(), {'status': 'failure', 'error': 'member exists'})
+        response = self.client.post(reverse('member-signup'), {'email': 'joe@example.com'}, follow=True)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('home')}")
         self.assertEqual(Invite.objects.filter(email='joe@example.com').count(), 0)
 
     def test_signup_invalid(self):
         response = self.client.post(reverse('member-signup'), {'email': 'invalid'})
         self.assertOK(response)
-        self.assertEqual(response.json(), {'status': 'failure', 'error': 'invalid email'})
+        self.assertRenderedWith(response, 'member/signup.html')
         self.assertEqual(Invite.objects.filter(email='invalid').count(), 0)
