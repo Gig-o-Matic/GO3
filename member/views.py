@@ -210,6 +210,17 @@ class InviteView(LoginRequiredMixin, FormView):
 
 def accept_invite(request, pk):
     invite = get_object_or_404(Invite, pk=pk)
+
+    if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
+        # We need the language active before we try to render anything.
+        translation.activate(invite.language)
+        def set_language(response):
+            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, invite.language)
+            return response
+    else:
+        def set_language(response):
+            return response
+
     if request.user.is_authenticated and request.GET.get('claim') == 'true':
         member = request.user
     else:
@@ -229,16 +240,16 @@ def accept_invite(request, pk):
         invite.delete()
         if request.user.is_authenticated:
             return redirect('member-detail', pk=member.id)
-        translation.activate(invite.language)
-        return render(request, 'member/accepted.html',
-                        {'band_name': invite.band.name if invite.band else None,
-                        'member_id': member.id})
+        return set_language(
+                   render(request, 'member/accepted.html',
+                          {'band_name': invite.band.name if invite.band else None,
+                          'member_id': member.id}))
 
     if request.user.is_authenticated:  # The user is signed in, but as a different user
         return render(request, 'member/claim_invite.html', {'invite': invite, 'member': member})
 
     # New user
-    return redirect('member-create', pk=invite.id)
+    return set_language(redirect('member-create', pk=invite.id))
 
 
 class MemberCreateView(CreateView):

@@ -25,11 +25,12 @@ from .views import AssocsView, OtherBandsView
 from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
 from lib.email import DEFAULT_SUBJECT, prepare_email
 from lib.template_test import MISSING, flag_missing_vars
+from django.conf import settings
 from django.contrib import auth
 from django.core import mail
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import resolve, reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 from datetime import timedelta
 import pytz
 import os
@@ -360,6 +361,34 @@ class InviteTest(TestCase):
         self.assertIn(template_name, (t.name for t in response.templates),
                       f'Response not rendered with {template_name}.')
 
+    def assertRenderLanguage(self, lang, render_cmd='django.shortcuts.render'):
+        test_case = self
+
+        class LanguageReport(Exception):
+            def __init__(self, lang):
+                self.lang = lang
+
+        def fake_render(*args, **kw):
+            raise LanguageReport(translation.get_language())
+
+        class RenderLanguageContextManager:
+
+            def __enter__(self):
+                self.patcher = patch(render_cmd, fake_render)
+                self.patcher.start()
+
+            def __exit__(self, exc_type, exc_value, tb):
+                self.patcher.stop()
+                if exc_type is None:
+                    test_case.fail("Render code was not called")
+                if isinstance(exc_value, LanguageReport):
+                    if exc_value.lang != lang:
+                        test_case.fail(f"Language when render was called was {exc_value.lang}; expected to be {lang}")
+                    return True
+                return False  # Other errors will be raised
+
+        return RenderLanguageContextManager()
+
     def test_invite_one(self):
         self.client.force_login(self.band_admin)
         response = self.client.post(reverse('member-invite', args=[self.band.id]),
@@ -640,6 +669,27 @@ class InviteTest(TestCase):
         self.assertRedirects(response, reverse('member-detail', args=[self.joeuser.id]))
         self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(), 1)
         self.assertEqual(Invite.objects.count(), 0)
+
+    def test_invite_sets_language(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band, language='de')
+        self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, 'de')
+
+    def test_invite_uses_language(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band, language='de')
+        with self.assertRenderLanguage('de', 'member.views.render'):
+            self.client.get(reverse('member-invite-accept', args=[invite.id]))
+
+    def test_invite_sets_language_on_redirect(self):
+        invite = Invite.objects.create(email='new@example.com', band=self.band, language='de')
+        self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, 'de')
+
+    def test_invite_does_not_override_language(self):
+        invite = Invite.objects.create(email='jane@example.com', band=self.band, language='de')
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = 'en-us'
+        self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, 'en-us')
 
     def test_create_member(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)
