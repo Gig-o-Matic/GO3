@@ -345,7 +345,7 @@
 $(document).ready(function () {
     $('#id_call_date_widget').datetimepicker({
         format: 'L',
-        timeZone: '{{ object.band.timezone }}',
+        timeZone: '{{ timezone }}',
         icons: {
                     date: "fa fa-calendar",
                     up: "fa fa-arrow-up",
@@ -358,7 +358,7 @@ $(document).ready(function () {
     });
     $('#id_end_date_widget').datetimepicker({
         format: 'L',
-        timeZone: '{{ object.band.timezone }}',
+        timeZone: '{{ timezone }}',
         icons: {
                     date: "fa fa-calendar",
                     up: "fa fa-arrow-up",
@@ -371,7 +371,7 @@ $(document).ready(function () {
     });
     $('#id_call_time_widget').datetimepicker({
         format: 'LT',
-        timeZone: '{{ object.band.timezone }}',
+        timeZone: '{{ timezone }}',
         icons: {
                     up: "fa fa-arrow-up",
                     down: "fa fa-arrow-down",
@@ -383,7 +383,7 @@ $(document).ready(function () {
     });
     $('#id_set_time_widget').datetimepicker({
         format: 'LT',
-        timeZone: '{{ object.band.timezone }}',
+        timeZone: '{{ timezone }}',
         icons: {
                     up: "fa fa-arrow-up",
                     down: "fa fa-arrow-down",
@@ -395,7 +395,7 @@ $(document).ready(function () {
     });
     $('#id_end_time_widget').datetimepicker({
         format: 'LT',
-        timeZone: '{{ object.band.timezone }}',
+        timeZone: '{{ timezone }}',
         icons: {
                     up: "fa fa-arrow-up",
                     down: "fa fa-arrow-down",

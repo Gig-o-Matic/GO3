@@ -35,6 +35,7 @@ class DetailView(generic.DetailView):
         context['user_can_edit'] = self.request.user.is_superuser
         # todo or band members, admins etc.
         context['user_can_create'] = self.request.user.is_superuser
+        context['timezone'] = self.object.band.timezone
 
         timezone.activate(self.object.band.timezone)
 
@@ -52,7 +53,7 @@ class CreateView(generic.CreateView):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
         context['band'] = Band.objects.get(id=self.kwargs['bk'])
-        timezone.activate(self.object.band.timezone)
+        context['timezone'] = context['band'].timezone
         return context
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -85,7 +86,7 @@ class UpdateView(generic.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        timezone.activate(self.object.band.timezone)
+        context['timezone'] = self.object.band.timezone
         return context
 
 

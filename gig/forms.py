@@ -49,6 +49,12 @@ class GigForm(forms.ModelForm):
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
         
+        if band:
+            self.fields['timezone'].initial = band.timezone
+        elif self.instance:
+            self.fields['timezone'].initial = self.instance.band.timezone
+        else:
+            raise(ValueError('issue with band'))
 
     def clean(self):
 
@@ -64,7 +70,7 @@ class GigForm(forms.ModelForm):
         def _mergetime(hour, minute):
             if minute:
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
-                return hour.replace(tzinfo=tzone(self.instance.band.timezone))
+                return hour.replace(tzinfo=tzone(self.fields['timezone'].initial))
             else:
                 return None
 
@@ -111,7 +117,8 @@ class GigForm(forms.ModelForm):
     set_time = forms.Field(required=False, label=_('Set Time'))
     end_time = forms.Field(required=False, label=_('End Time'))
     end_date = forms.Field(required=False, label=_('End Date'))
-
+    timezone = forms.Field(required=False, widget=forms.HiddenInput())
+    
     class Meta:
         model = Gig
         localized_fields = '__all__'
