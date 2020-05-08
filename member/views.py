@@ -199,7 +199,6 @@ class InviteView(LoginRequiredMixin, FormView):
             messages.info(self.request,
                           format_lazy(_('These users are already in the band: {e}'),
                                       e=join_trans(_(', '), in_band)))
-            self.return_to_form = True
 
         return super().form_valid(form)
 
