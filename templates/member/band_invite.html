@@ -1,0 +1,42 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Invite Members" %}{% endblock title %}
+
+{% block headcontent %}
+
+{% endblock headcontent %}
+
+{% block content %}
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="row">
+            <div class="mx-auto col-lg-8 col-md-10 col-12">
+                <div class="page-header">
+                    <h2>{{ band.name }}</h2>
+                </div>
+            </div>
+            <div class="mx-auto col-lg-8 col-md-10 col-12">
+                {% trans "Inviting new members to join your band is easy as pie. Just enter a list of email addresses separated by commas or newlines, and invitations will go out. Members will automatically be confirmed as members of your band." %}
+            </div>
+            {% if messages %}
+                <div class="mx-auto mt-4 col-lg-8 col-md-10 col-sm-12">
+                    {% include 'base/messages.html' %}
+                </div>
+            {% endif %}
+            <div class="mx-auto mt-4 col-lg-8 col-md-10 col-sm-12">
+                {{ form.non_field_errors }}
+                {{ form.emails.errors }}
+                {{ form.emails.label_tag }}
+                {% render_field form.emails class="form-control" %}
+            </div>
+            <div class="mx-auto mt-4 col-lg-8 col-md-10 col-sm-12 text-right">
+                <a class="btn btn-secondary" href="{% url 'band-detail' pk=band.id %}">{% trans "Cancel" %}</a>
+                <input type="submit" class="btn btn-primary" value="{% trans 'Send Invites' %}">
+            </div>
+        </form>
+    </div>
+
+{% endblock content %}

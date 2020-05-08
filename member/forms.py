@@ -1,4 +1,5 @@
 import logging
+from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
@@ -27,3 +28,7 @@ class MemberCreateForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class InviteForm(forms.Form):
+    emails = forms.CharField(widget=forms.Textarea)

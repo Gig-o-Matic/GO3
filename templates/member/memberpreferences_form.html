@@ -12,18 +12,16 @@
         <div class="page-header">
             {% trans "Preferences" %}
         </div>
-        <div>&nbsp;</div>
-        <form method="post" class="form">
+        <form method="post" class="form mt-4">
             {% csrf_token %}
             {{ form.as_p }}
-            <div>&nbsp;</div>
-            <div class="row">
+            <div class="row mt-4">
                 <div class="form-group col-12 col-md-6 ml-auto text-right">
                     <a class="btn btn-secondary" href="{% url 'member-detail' pk=1 %}">{% trans "Cancel" %}</a>
                     <button value="Update" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
                 </div>
-            </div>        
+            </div>
         </form>
     </div>
 </div>
-        {% endblock content %}
+{% endblock content %}

@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices
+from member.models import Invite
 
 def index(request):
     return HttpResponse("Hello, world. You're at the band index.")
@@ -21,14 +22,16 @@ class DetailView(generic.DetailView):
 
         context = super().get_context_data(**kwargs)
 
-        assoc = Assoc.objects.get(band=the_band, member=the_user)
-        if assoc is None:
+        try:
+            assoc = Assoc.objects.get(band=the_band, member=the_user)
+        except Assoc.DoesNotExist:
             context['the_user_is_associated'] = False
         else:
             context['the_user_is_associated'] = True
             context['the_user_is_band_admin'] = assoc.is_admin
 
             context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
+            context['the_invited_members'] = Invite.objects.filter(band=the_band)
         return context
 
     def get_success_url(self):

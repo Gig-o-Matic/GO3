@@ -15,7 +15,7 @@
         </div>
         {% with weighin_plans=user.future_noplans.all %}
         {% if weighin_plans %}
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header">
                     <div class="row titlerow">
                         <div class="col-12">
@@ -35,7 +35,6 @@
                     </div>
                 </div>
             </div>
-            <div>&nbsp;</div>
         {% endif %}
         {% endwith %}
         <div class="card">
@@ -91,5 +90,3 @@ $(document).ready(function() {
 });
 </script>
 {% endblock localscripts %}
-
-

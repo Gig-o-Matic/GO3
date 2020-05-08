@@ -38,7 +38,7 @@
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Gig" %}</div>
                     <div class="col-md-10 col-sm-10 col-8"><strong>{{ gig.title }}</strong></div>
-                </div>                    
+                </div>
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">
                     </div>
@@ -60,7 +60,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-10 col-sm-10 col-8" style="color:red">
-                            <strong>{% trans "THIS GIG IS IN THE TRASH!" %}</strong>  
+                            <strong>{% trans "THIS GIG IS IN THE TRASH!" %}</strong>
                             {% if request.user.is_superuser or the_user_is_band_admin %}
                                 <a class="btn btn-default" href="/gig_restore_trashed?gk={{ gig.id }}">{% trans "Restore Gig" %}</a>
                             {% endif %}
@@ -78,7 +78,7 @@
                             <a href="/member/{{ gig.contact.id }}">{{ gig.contact.display_name }}</a>
                         {% endif %}
                     </div>
-                </div>                    
+                </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-12"><i class="fas fa-calendar"></i></div>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}: 
+                    <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
                         {{ gig.date|time:"TIME_FORMAT" }}
                     </div>
                     {% if gig.setdate %}
@@ -122,7 +122,7 @@
                     <div class="row">
                         <div class="col-md-2 col-sm-2 col-4">{% trans "Leader" %}</div>
                         <div class="col-md-10 col-sm-10 col-8">{{ gig.leader }}</div>
-                    </div>                    
+                    </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
                 {% if gig.postgig %}
@@ -155,8 +155,7 @@
         </div> <!-- card -->
 
         {% if gig.setlist %}
-            <div>&nbsp;</div>
-            <div class="card">
+            <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
                         <div class="col-4">
@@ -169,7 +168,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row">                        
+                    <div class="row">
                         <div class="col-12">
                             {{ gig.setlist | urlize | linebreaks }}
                         </div>
@@ -178,8 +177,7 @@
             </div> <!-- card -->
         {% endif %}
 
-        <div>&nbsp;</div>
-        <div class="card">
+        <div class="card mt-4">
             <div class="card-header">
                 <div class="row titlerow">
                     <div class="col-4">
@@ -211,23 +209,22 @@
             </div>
             <div class="card-body">
                 {% if request.user.is_superuser or the_user_is_band_admin %}
-                    <div class="row">
+                    <div class="row mb-4">
                         {% for p in the_plan_counts %}
-{% comment %}                        
+{% comment %}
                             <div class="mx-auto">
                             {% if p > 0 %}
                                 <span class="">{{ plan_icon.icon(p) }}{{ the_plan_counts[p] }}</span>
                             {% endif %}
                             </div>
-{% endcomment %}                            
+{% endcomment %}
                         {% endfor %}
                         <div class="mx-auto">
-{% comment %}                        
+{% comment %}
                             <span class="">{{ plan_icon.icon(0) }}{{ the_plan_counts[0] }}</span>
-{% endcomment %}                            
+{% endcomment %}
                         </div>
                     </div>
-                    <div>&nbsp;</div>
                 {% endif %}
                 {% regroup gig.member_plans.all by section as plans_by_section %}
                 {% for section in band.sections.all %}
@@ -253,8 +250,7 @@
             </div> <!-- card body -->
         </div> <!-- card -->
 
-        <div>&nbsp;</div>
-        <div class="card">
+        <div class="card mt-4">
             <div class="card-header">
                 <div class="row titlerow"><div class="col-12">
                     {% trans "Comments" %}
@@ -266,15 +262,14 @@
                         <i class="fas fa-spinner fa-pulse fa-lg"></i>
                     </div>
                 </div>
-                <div>&nbsp;</div>
-                <div class="row">
+                <div class="row mt-4">
                     <div class="col-md-10 col-12">
                         <textarea class="form-control" id="commentinput" placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
                     </div>
                     <div class="mx-auto">
                         <button type="button" class="btn btn-primary btn-sm" onclick="add_comment('{{gig.id}}');">{% trans "Say it!" %}</button>
                     </div>
-                </div>                    
+                </div>
             </div> <!-- card body -->
         </div> <!-- card -->
     </div>
@@ -343,9 +338,8 @@ $(document).ready(function() {
 {% comment %}
     $('.trunc').truncate({max_length: 500, more:"...{% trans "more{% endtrans %}", less:"{% trans %}less" %}"});
     $('.popcomment').tooltip({ 'trigger':'hover click' });
-{% endcomment %}    
+{% endcomment %}
     update_comment('{{gig.id}}');
 });
 </script>
 {% endblock localscripts %}
-
