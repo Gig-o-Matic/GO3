@@ -51,9 +51,6 @@ class GigForm(forms.ModelForm):
         
 
     def clean(self):
-        # date = self.cleaned_data['call_date']
-        # setdate = date
-        # enddate = self.cleaned_data['enddate'] or setdate
 
         def _parse(val,format_type):
             x = None
@@ -86,23 +83,34 @@ class GigForm(forms.ModelForm):
 
         if date < timezone.now():
             self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
-        setdate = self.cleaned_data['setdate']
         if setdate and setdate < date:
-            self.add_error('setdate', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
+            self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
         if enddate:
             if enddate < date:
-                self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+                self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
             elif setdate and enddate < setdate:
-                self.add_error('enddate', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+                self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+
+        self.cleaned_data['date'] = date
+        self.cleaned_data['setdate'] = setdate
+        self.cleaned_data['enddate'] = enddate
 
         super().clean()
 
+    def save(self, commit=True):
+        """ save our date, setdate, and enddate into the instance """
+        self.instance.date = self.cleaned_data['date']
+        self.instance.setdate = self.cleaned_data['setdate']
+        self.instance.enddate = self.cleaned_data['enddate']
+        return super().save(commit)
+
+
     send_update = forms.BooleanField(required=False, label=_('Email members about change'))
-    call_date = forms.Field()
-    call_time = forms.Field()
-    set_time = forms.Field()
-    end_time = forms.Field()
-    end_date = forms.Field()
+    call_date = forms.Field(required=True, label=_('Date'))
+    call_time = forms.Field(required=True, label=_('Call Time'))
+    set_time = forms.Field(required=False, label=_('Set Time'))
+    end_time = forms.Field(required=False, label=_('End Time'))
+    end_date = forms.Field(required=False, label=_('End Date'))
 
     class Meta:
         model = Gig

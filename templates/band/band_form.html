@@ -110,7 +110,7 @@
             {% if request.user is None or is_new%}
                 <input type="hidden" name="bk" value="0">
             {% else %}
-                <input type="hidden" name="bk" value="{{the_band.id}}">
+                <input type="hidden" name="bk" value="{{form.instance.id}}">
             {% endif %}
 
 
@@ -121,7 +121,7 @@
                     </div>
                 {% endif %}
                 <div class="form-group col-12 col-md-6 ml-auto text-right">
-                    <a class="btn btn-secondary" href="{% url 'band-detail' pk=band.id %}">{% trans "Cancel" %}</a>
+                    <a class="btn btn-secondary" href="{% url 'band-detail' pk=form.instance.id %}">{% trans "Cancel" %}</a>
                     <button value="Update" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
                 </div>
             </div>

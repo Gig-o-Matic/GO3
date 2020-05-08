@@ -36,6 +36,8 @@ class DetailView(generic.DetailView):
         # todo or band members, admins etc.
         context['user_can_create'] = self.request.user.is_superuser
 
+        timezone.activate(self.object.band.timezone)
+
         return context
 
 
@@ -50,6 +52,7 @@ class CreateView(generic.CreateView):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
         context['band'] = Band.objects.get(id=self.kwargs['bk'])
+        timezone.activate(self.object.band.timezone)
         return context
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -79,6 +82,12 @@ class CreateView(generic.CreateView):
 class UpdateView(generic.UpdateView):
     model = Gig
     form_class = GigForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        timezone.activate(self.object.band.timezone)
+        return context
+
 
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
