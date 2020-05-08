@@ -327,6 +327,7 @@
 
 {% block localscripts %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.28/moment-timezone-with-data-10-year-range.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script>
 
 {% comment %}
@@ -344,6 +345,7 @@
 $(document).ready(function () {
     $('#id_call_date_widget').datetimepicker({
         format: 'L',
+        timeZone: '{{ object.band.timezone }}',
         icons: {
                     date: "fa fa-calendar",
                     up: "fa fa-arrow-up",
@@ -356,6 +358,7 @@ $(document).ready(function () {
     });
     $('#id_end_date_widget').datetimepicker({
         format: 'L',
+        timeZone: '{{ object.band.timezone }}',
         icons: {
                     date: "fa fa-calendar",
                     up: "fa fa-arrow-up",
@@ -368,6 +371,7 @@ $(document).ready(function () {
     });
     $('#id_call_time_widget').datetimepicker({
         format: 'LT',
+        timeZone: '{{ object.band.timezone }}',
         icons: {
                     up: "fa fa-arrow-up",
                     down: "fa fa-arrow-down",
@@ -379,6 +383,7 @@ $(document).ready(function () {
     });
     $('#id_set_time_widget').datetimepicker({
         format: 'LT',
+        timeZone: '{{ object.band.timezone }}',
         icons: {
                     up: "fa fa-arrow-up",
                     down: "fa fa-arrow-down",
@@ -390,6 +395,7 @@ $(document).ready(function () {
     });
     $('#id_end_time_widget').datetimepicker({
         format: 'LT',
+        timeZone: '{{ object.band.timezone }}',
         icons: {
                     up: "fa fa-arrow-up",
                     down: "fa fa-arrow-down",
