@@ -21,6 +21,9 @@ from band.models import Band
 from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from datetime import datetime
+from pytz import timezone as tzone
+from django.utils.formats import get_format
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -48,10 +51,39 @@ class GigForm(forms.ModelForm):
         
 
     def clean(self):
-        date = self.cleaned_data['date']
-        setdate = self.cleaned_data['setdate'] or date
-        enddate = self.cleaned_data['enddate'] or setdate
-            
+        # date = self.cleaned_data['call_date']
+        # setdate = date
+        # enddate = self.cleaned_data['enddate'] or setdate
+
+        def _parse(val,format_type):
+            x = None
+            for format in get_format(format_type):
+                try:
+                    x = datetime.strptime(val.replace(' ',''), format)
+                except (ValueError, TypeError):
+                    continue
+            return x
+
+        def _mergetime(hour, minute):
+            if minute:
+                hour = hour.replace(hour=minute.hour, minute=minute.minute)
+                return hour.replace(tzinfo=tzone(self.instance.band.timezone))
+            else:
+                return None
+
+        date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
+        end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
+        if end_date is None:
+            call_time = _parse(self.cleaned_data.get('call_time',''), 'TIME_INPUT_FORMATS')
+            set_time = _parse(self.cleaned_data.get('set_time',''), 'TIME_INPUT_FORMATS')
+            end_time = _parse(self.cleaned_data.get('end_time',''), 'TIME_INPUT_FORMATS')
+
+            date = _mergetime(date, call_time)
+            setdate = _mergetime(date, set_time)
+            enddate = _mergetime(date, end_time)
+        else:
+            setdate = None
+
         if date < timezone.now():
             self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
         setdate = self.cleaned_data['setdate']
