@@ -1,0 +1,49 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "What Is It?" %}{% endblock title %}
+
+{% block pageheader %}{% trans "What Is the Gig-o-matic?" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>
+    {% trans "It's like this: honk bands (and any band made up of people who have day jobs) have a hard time coordinating. Can you guys make this gig? What are we playing? What time do I have to be there? It's a pain." %}
+</p>
+<p>
+    {% trans "The Gig-O-Matic ameliorates the problem by letting everyone in your band register their availability for a gig in one place. Everyone gets their own calendar-of-events listing upcoming gigs, including gigs they haven't weighed-in on yet. See here:" %}
+</p>
+<p><img src="/static/images/whatis-agenda.png" style="border: 1px solid; width: 100%;"></p>
+<p>
+    {% trans "All the information about a gig can be collected in the Gig-o, too, giving every member a single place to go for info about where they're supposed to be, and when:" %}
+</p>
+<p><img src="/static/images/whatis-gig-info.png" style="border: 1px solid; width: 100%;"></p>
+<p>
+    {% trans "There are plenty of other features that make managing and belonging to bands easier. Here's a non-exhaustive list:" %}
+</p>
+<ul>
+    <li>{% trans "Three views of upcoming gigs: Agenda, Calendar, Grid" %}</li>
+    <li>{% trans "Organize your band by sections (or leave it disorganized)" %}</li>
+    <li>{% trans "Members can play in more than one section" %}</li>
+    <li>{% trans "Members can manage their membership in more than one band" %}</li>
+    <li>{% trans "Personal profile pages" %}</li>
+    <li>{% trans "Band profile pages (show off to members of other bands!)" %}</li>
+    <li>{% trans "Optional automatic email notification of new gigs" %}</li>
+    <li>{% trans "Printable setlist pages" %}</li>
+    <li>{% trans "Members can comment on their availability, and comment on a gig" %}</li>
+    <li>{% trans "Automatic archiving of plans once the gig has passed" %}</li>
+    <li>{% trans "Integration into Google Calendar, Apple Cal, Outlook, etc." %}</li>
+    <li>{% trans "Designed to work well on a computer, a phone, a tablet, a jumbotron, and a blimp" %}</li>
+    <li>{% trans "See it all in English, Italian, or German (Got a favorite language? Translators wanted...)" %}</li>
+</ul>
+<p>{% trans "More features show up all the time." %}</p>
+<p>{% trans "Questions you may have at this point:" %}</p>
+<ul>
+    <li>{% blocktrans %}<i>Who uses this thing?</i> The Gig-o has been used by the Second Line Brass Band for years, and is now open to any band.{% endblocktrans %}</li>
+    <li>{% blocktrans %}<i>What's it cost?</i> It's free, friends. The Gig-O-Matic was built as a labor of love, and we love everyone. We run on the Google application engine, which is exceedingly cheap, so we're passing the lack-of-spending on to you.{% endblocktrans %}</li>
+    <li>{% blocktrans %}<i>Who made it?</i> The Gig-O-Matic Overlord Committee did it in their spare time.{% endblocktrans %}</li>
+    {% url 'help-band-request' as band_request_url %}
+    <li>{% blocktrans %}<i>How can I get my band involved?</i> <a href="{{ band_request_url }}">Click here</a>.{% endblocktrans %}</li>
+    <li>{% blocktrans %}<i>What if I have some other question?</i> <a href="mailto:gigomatic.superuser@gmail.com">Email Here!</a>{% endblocktrans %}</li>
+</ul>
+<p><a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> {% trans "Back to the Gig-O-Matic" %}</a></p>
+{% endblock pagecontent %}
