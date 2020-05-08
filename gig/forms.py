@@ -128,9 +128,7 @@ class GigForm(forms.ModelForm):
             'postgig': forms.TextInput(attrs={'placeholder': _('Hit the streets!')}),
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
-            # 'date': forms.TextInput(),
-            # 'setdate': forms.TextInput(),
-            # 'enddate': forms.TextInput(),
+            'date': forms.TextInput(),
         }
 
         labels = {
