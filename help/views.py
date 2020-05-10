@@ -1,7 +1,12 @@
 from django.shortcuts import render
 from django.views.generic.edit import FormView
+from django.contrib.auth.decorators import login_required
 from .forms import BandRequestForm
 from lib import email
+
+@login_required
+def help(request):
+    return render(request, 'help/help.html')
 
 def whatis(request):
     return render(request, 'help/whatis.html')
