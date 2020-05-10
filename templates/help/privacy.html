@@ -1,0 +1,40 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Policies!" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="page-header mx-auto col-lg-8 col-md-10 col-sm-12">
+        {% trans "Gig-o-Matic Privacy Policy" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
+        <p><i>{% trans "Updated" %} 2018-05-25</i></p>
+        {% blocktrans %}
+            <p>Information on the Gig-o-Matic will not be sold or provided to anyone outside of the Gig-o-Matic for any use, except under legal compulsion.</p>
+            <p>Other members of your band will see your email address, phone number, and whatever other details you enter into the system. If you set your profile so that information may be shared outside your band, people outside your band may see it.</p>
+            <p>The Gig-o-Matic stores the information you have entered into the system, as well as the date your account was created and the date of your most recent activity. Gig details, including comments and plans registred by members, are stored indefinitely. System administrators and band administrators have the ability to adjust plans for individual members.</p>
+            <p>If you do not wish to receive automatic emails from the Gig-o-Matic, you can turn emails off in your profile page.</p>
+        {% endblocktrans %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="page-header mx-auto mt-4 col-lg-8 col-md-10 col-sm-12">
+        {% trans "Gig-o-Matic Security Policy" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
+        <p><i>{% trans "Updated" %} 2017-03-13</i></p>
+        {% blocktrans %}
+            <p>The Gig-o-Matic cannot promise super high-security for any of the data. The code is written to follow basic standards, but (as with every other web site) a determined actor will undoubtedly be able to break in and read the content. And because the Gig-o-Matic caters to self-proclaimed "activist" groups, there's a fair chance that somebody, sometime, might want to scrutinize the content. For that reason, without being alarmist, consider this when giving the Gig-o-Matic any information you don't want to see on the front page of the New York Times. Or in a dossier somewhere.</p>
+        {% endblocktrans %}
+    </div>
+</div>
+
+{% endblock content %}

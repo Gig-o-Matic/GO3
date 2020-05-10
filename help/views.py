@@ -8,6 +8,10 @@ from lib import email
 def help(request):
     return render(request, 'help/help.html')
 
+@login_required
+def privacy(request):
+    return render(request, 'help/privacy.html')
+
 def whatis(request):
     return render(request, 'help/whatis.html')
 
