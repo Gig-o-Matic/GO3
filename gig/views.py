@@ -46,6 +46,9 @@ class CreateView(generic.CreateView):
     model = Gig
     form_class = GigForm
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
@@ -71,7 +74,7 @@ class CreateView(generic.CreateView):
         # there's a new gig; link it to the band
         form.instance.band = band
 
-        result = super(CreateView, self).form_valid(form)
+        result = super().form_valid(form)
 
         # call the super before sending notifications, so the object is saved
         if form.cleaned_data['send_update']:

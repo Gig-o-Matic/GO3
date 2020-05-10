@@ -22,7 +22,7 @@ from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
-from pytz import timezone as tzone
+from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
 
 class GigForm(forms.ModelForm):
@@ -67,24 +67,27 @@ class GigForm(forms.ModelForm):
                     continue
             return x
 
-        def _mergetime(hour, minute):
+        def _mergetime(hour, minute, zone=None):
             if minute:
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
-                return hour.replace(tzinfo=tzone(self.fields['timezone'].initial))
+                return zone.localize(hour) if zone else hour
             else:
                 return None
 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
-        if end_date is None:
+        if end_date is None or end_date==date:
             call_time = _parse(self.cleaned_data.get('call_time',''), 'TIME_INPUT_FORMATS')
             set_time = _parse(self.cleaned_data.get('set_time',''), 'TIME_INPUT_FORMATS')
             end_time = _parse(self.cleaned_data.get('end_time',''), 'TIME_INPUT_FORMATS')
 
-            date = _mergetime(date, call_time)
+            zone = tzone(self.fields['timezone'].initial)
+            date = _mergetime(date, call_time, zone)
             setdate = _mergetime(date, set_time)
             enddate = _mergetime(date, end_time)
         else:
+            date=date.replace(tzinfo=tzone(self.fields['timezone'].initial))
+            enddate=end_date.replace(tzinfo=tzone(self.fields['timezone'].initial))
             setdate = None
 
         if date < timezone.now():
