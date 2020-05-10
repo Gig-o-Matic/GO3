@@ -278,17 +278,44 @@ class GigTest(TestCase):
         self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
 
     def test_gig_time_daylight_savings(self):
-        self.band.timezone = 'America/New_York'
+        """
+            check to see that gig times are rendered correctly when going from UTC in the
+            database to something else.
+        """
+        self.band.timezone = 'UTC'
         self.band.save()
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-
-        # DST information only out to 2037?
         date1 = timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
         date2 = timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
         self.create_gig_form(call_date=self._dateformat(date1), call_time=self._timeformat(date1))
         self.create_gig_form(call_date=self._dateformat(date2), call_time=self._timeformat(date2))
-        self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
-        self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
+
+        # get the gigs we just made
+        gigs = Gig.objects.order_by('id')
+        first, second = gigs
+
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{first.id}/')
+        self.assertIn("noon", response.content.decode('ascii'))
+ 
+        # now change the band's timezone and render again
+        self.band.timezone = 'America/New_York'
+        self.band.save()
+
+        response = c.get(f'/gig/{first.id}/')
+        self.assertIn("7 a.m.", response.content.decode('ascii'))
+        response = c.get(f'/gig/{second.id}/')
+        self.assertIn("8 a.m.", response.content.decode('ascii'))
+
+
+        # # DST information only out to 2037?
+        # date1 = timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
+        # date2 = timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
+        # self.create_gig_form(call_date=self._dateformat(date1), call_time=self._timeformat(date1))
+        # self.create_gig_form(call_date=self._dateformat(date2), call_time=self._timeformat(date2))
+        # self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
+        # self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
 
 
     @flag_missing_vars
@@ -419,7 +446,9 @@ class GigTest(TestCase):
         self.joeuser.save()
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
-        self.update_gig_form(g, call_date=self._dateformat(g.date + timedelta(hours=2)), end_date='', set_date='')
+        newdate = g.date + timedelta(hours=2)
+        self.update_gig_form(g, call_date=self._dateformat(newdate), call_time=self._timeformat(newdate),
+                                end_date='', end_time='', set_date='')
 
         message = mail.outbox[0]
         self.assertIn('Beginn', message.subject)
