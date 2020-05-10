@@ -6,11 +6,12 @@ from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Band, Assoc, Section
 from .forms import BandForm
-from .util import AssocStatusChoices
+from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the band index.")
+class BandList(generic.ListView):
+    queryset = Band.objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
+    context_object_name = 'bands'
 
 class DetailView(generic.DetailView):
     model = Band
