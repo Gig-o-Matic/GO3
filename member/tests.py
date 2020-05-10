@@ -19,7 +19,7 @@ from unittest.mock import patch, mock_open
 
 from django.test import TestCase, RequestFactory
 from .models import Member, MemberPreferences, Invite
-from band.models import Band, Assoc
+from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
@@ -343,8 +343,8 @@ class InviteTest(TestCase):
         self.joeuser = Member.objects.create_user(email='joe@example.com')
         self.janeuser = Member.objects.create_user(email='jane@example.com')
         self.band = Band.objects.create(name='test band')
-        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
-        Assoc.objects.create(member=self.joeuser, band=self.band)
+        Assoc.objects.create(member=self.band_admin, band=self.band, status=AssocStatusChoices.CONFIRMED, is_admin=True)
+        Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         self.password = 'sb8bBb5cGmE2uNn'  # Random value, but validates
 
     def tearDown(self):
