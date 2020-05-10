@@ -12,6 +12,14 @@ def help(request):
 def privacy(request):
     return render(request, 'help/privacy.html')
 
+@login_required
+def credits(request):
+    return render(request, 'help/credits.html')
+
+@login_required
+def changelog(request):
+    return render(request, 'help/changelog.html')
+
 def whatis(request):
     return render(request, 'help/whatis.html')
 
