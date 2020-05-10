@@ -9,9 +9,10 @@ from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
 
-class BandList(generic.ListView):
+class BandList(LoginRequiredMixin, generic.ListView):
     queryset = Band.objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
     context_object_name = 'bands'
+
 
 class DetailView(generic.DetailView):
     model = Band
