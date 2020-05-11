@@ -118,7 +118,7 @@ def join_assoc(request, bk, mk):
             'tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
     # OK, create the assoc
-    a = Assoc.objects.get_or_create(
+    Assoc.objects.get_or_create(
         band=b, member=m, status=AssocStatusChoices.PENDING)
 
     return HttpResponse()
