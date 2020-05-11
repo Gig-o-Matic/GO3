@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices
@@ -104,3 +104,13 @@ def member_spreadsheet(request, pk):
         writer.writerow([member.username, member.nickname, member.email, member.phone, assoc.section.name])
 
     return response
+
+
+@login_required
+def member_emails(request, pk):
+    band = get_object_or_404(Band, pk=pk)
+    if not (band.is_admin(request.user) or request.user.is_superuser):
+        raise PermissionDenied
+
+    emails = ', '.join(a.member.email for a in band.confirmed_assocs)
+    return render(request, 'band/member_emails.html', context={'band': band, 'emails': emails})

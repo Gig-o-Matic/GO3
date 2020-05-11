@@ -299,7 +299,7 @@
                             <div class="col-12">
                                 <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
                                 <a class="btn btn-primary btn-sm" href="{% url 'member-spreadsheet' pk=band.id %}">{% trans "Download Member List" %}</a>
-                                <a class="btn btn-primary btn-sm" href="member_emails?bk={{band.id}}">{% trans "Get Member Emails" %}</a>
+                                <a class="btn btn-primary btn-sm" href="{% url 'member-emails' pk=band.id %}">{% trans "Get Member Emails" %}</a>
 
                             </div>
                             <hr>
