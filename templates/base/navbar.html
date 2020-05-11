@@ -33,14 +33,14 @@
               {% endwith %}
             {% endfor %}
             <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/band_nav.html">{% trans "Band Navigator" %}</a>
+              <a class="dropdown-item" href="{% url 'band-nav' %}">{% trans "Band Navigator" %}</a>
           {% else %}
 	          <a class="dropdown-item" href="#">{% trans "No bands yet!" %}</a>
           {% endif %}
         {% endwith %}
         </div>
       </li>
-          
+
       {% with the_assocs=request.user.add_gig_assocs.all %}
         {% if the_assocs|length == 1 %}
           <li class="nav-item {% if newgig_is_active %} active{% endif %} mr-2">
@@ -61,7 +61,7 @@
           </li>
         {% endif %}
       {% endwith %}
-              
+
       {% if request.user.is_superuser %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarAdminMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
