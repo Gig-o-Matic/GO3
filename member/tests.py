@@ -24,13 +24,13 @@ from gig.models import Gig, Plan
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
 from lib.email import DEFAULT_SUBJECT, prepare_email
-from lib.template_test import MISSING, flag_missing_vars
+from lib.template_test import MISSING, flag_missing_vars, TemplateTestCase
 from django.conf import settings
 from django.contrib import auth
 from django.core import mail
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import resolve, reverse
-from django.utils import timezone, translation
+from django.utils import timezone
 from datetime import timedelta
 import pytz
 import os
@@ -336,7 +336,7 @@ class MemberCalfeedTest(FSTestCase):
         self.assertTrue(self.joeuser.cal_feed_dirty)
 
 
-class InviteTest(TestCase):
+class InviteTest(TemplateTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(email='super@example.com', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='admin@example.com')
@@ -353,41 +353,6 @@ class InviteTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
         Invite.objects.all().delete()
-
-    def assertOK(self, response):
-        self.assertEqual(response.status_code, 200)
-
-    def assertRenderedWith(self, response, template_name):
-        self.assertIn(template_name, (t.name for t in response.templates),
-                      f'Response not rendered with {template_name}.')
-
-    def assertRenderLanguage(self, lang, render_cmd='django.shortcuts.render'):
-        test_case = self
-
-        class LanguageReport(Exception):
-            def __init__(self, lang):
-                self.lang = lang
-
-        def fake_render(*args, **kw):
-            raise LanguageReport(translation.get_language())
-
-        class RenderLanguageContextManager:
-
-            def __enter__(self):
-                self.patcher = patch(render_cmd, fake_render)
-                self.patcher.start()
-
-            def __exit__(self, exc_type, exc_value, tb):
-                self.patcher.stop()
-                if exc_type is None:
-                    test_case.fail("Render code was not called")
-                if isinstance(exc_value, LanguageReport):
-                    if exc_value.lang != lang:
-                        test_case.fail(f"Language when render was called was {exc_value.lang}; expected to be {lang}")
-                    return True
-                return False  # Other errors will be raised
-
-        return RenderLanguageContextManager()
 
     def test_invite_one(self):
         self.client.force_login(self.band_admin)
@@ -580,7 +545,7 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/accepted.html')
+        self.assertTemplateUsed(response, 'member/accepted.html')
         self.assertEqual(Assoc.objects.filter(band=self.band, member=self.janeuser).count(), 1)
         self.assertEqual(Invite.objects.count(), 0)
 
@@ -588,7 +553,7 @@ class InviteTest(TestCase):
         invite = Invite.objects.create(email='jane@example.com', band=None)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/accepted.html')
+        self.assertTemplateUsed(response, 'member/accepted.html')
         self.assertEqual(Assoc.objects.filter(member=self.janeuser).count(), 0)
         self.assertEqual(Invite.objects.count(), 0)
 
@@ -598,7 +563,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'accept the invite as', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -611,7 +576,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'accept the invite as', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -622,7 +587,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'create an account for', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -633,7 +598,7 @@ class InviteTest(TestCase):
         self.client.force_login(self.joeuser)
         response = self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/claim_invite.html')
+        self.assertTemplateUsed(response, 'member/claim_invite.html')
         self.assertIn(b'create an account for', response.content)
         self.assertEqual(Invite.objects.count(), 1)  # Didn't delete the invite
         self.assertEqual(Assoc.objects.count(), n_assoc)  # Didn't create an Assoc
@@ -730,7 +695,7 @@ class InviteTest(TestCase):
                                      'password2': self.password},
                                     follow=True)
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/member_detail.html')
+        self.assertTemplateUsed(response, 'member/member_detail.html')
 
     def test_create_duplicate_member(self):
         invite = Invite.objects.create(email='jane@example.com', band=self.band)
@@ -764,7 +729,7 @@ class InviteTest(TestCase):
         self.assertTrue(auth.get_user(self.client).is_authenticated)
 
     def test_create_gets_invite_language(self):
-        invite = Invite.objects.create(email='new@example.com', band=self.band, language="de")
+        invite = Invite.objects.create(email='new@example.com', band=self.band, language='de')
         self.client.post(reverse('member-create', args=[invite.id]),
                          {'username': 'New',
                           'nickname': 'new',
