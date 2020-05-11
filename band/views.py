@@ -1,9 +1,13 @@
+import csv
 from django.http import HttpResponse
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.views.generic.base import TemplateView
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices
@@ -84,3 +88,19 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
         context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
         return context
 
+
+@login_required
+def member_spreadsheet(request, pk):
+    band = get_object_or_404(Band, pk=pk)
+    if not (band.is_admin(request.user) or request.user.is_superuser):
+        raise PermissionDenied
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{band.shortname or band.name}.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['name', 'nickname', 'email', 'phone', 'section'])
+    for assoc in band.confirmed_assocs:
+        member = assoc.member
+        writer.writerow([member.username, member.nickname, member.email, member.phone, assoc.section.name])
+
+    return response
