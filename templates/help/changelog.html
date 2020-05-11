@@ -1,0 +1,55 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Change Log!" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="page-header mx-auto col-lg-8 col-md-10 col-sm-12">
+        {% trans "Change Log" %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="mx-auto mt-4 col-lg-8 col-md-10 col-sm-12">
+        <ul>
+            <li>2018-08-18 - Updated calendar feeds to be faster & more robust & hit the database less</li>
+            <li>2018-07-23 - Transitioned to www.gig-o-matic.com</li>
+            <li>2018-05-10 - Moved to Bootstrap 4, with many tweaks to the UI</li>
+            <li>2018-01-15 - Added ability to create gigs with default "I will attend" plans</li>
+            <li>2017-04-22 - Added RSS feed for confirmed public gigs</li>
+        	<li>2017-03-12 - Added member list download and gig reminders snooze.</li>
+            <li>2016-10-06 - Added setlist to the calendar feed.</li>
+            <li>2016-06-06 - Added 'hide from agenda' option for bands, in case you're occasional and don't want to see gigs for the band.</li>
+            <li>2016-03-05 - Added 'click here if you can make it' links to gig announcement emails.</li>
+            <li>2015-06-28 - Added per-band email preferences.</li>
+            <li>2015-06-01 - Added color highlighting for bands on schedule and calendar pages, selectable from member's profile page.</li>
+            <li>2015-03-22 - Added ability to change section name; many internal stability improvements
+            <li>2015-01-23 - Added ability to only announce gigs to non-occasional members.
+            <li>2014-10-18 - Added archive page, accessible from every band's info page.
+            <li>2014-10-17 - Nicer "Band Navigator" page
+            <li>2014-10-11 - Added German translation
+            <li>2014-10-10 - Added ability to create a sequence of gigs
+            <li>2014-09-25 - Added 'reply-to' address to new gig emails, so replies go to the gig contact
+            <li>2014-07-22 - Added 'gig changed' emails, so everyone is notified of status or date changes
+            <li>2014-05-28 - Added simple yes/maybe/no menu option, and second feeback menu, for bands.
+            <li>2014-05-17 - Added toggle for 'brief' view of plans on gig info page
+            <li>2014-04-27 - Made the display of comments in the discussion system a little nicer.
+            <li>2014-04-27 - Added ability to set default main view, for people who prefer the calendar or grid views.
+            <li>2014-04-20 - Added button for duplicating a gig - this copies everything about the old gig and opens the 'edit' page so the date, etc can be tweaked.</li>
+            <li>2014-04-06 - Added ability to subscribe to personal calendar through Google Cal, Apple Cal, Outlook, etc.; Added calendar options to control
+            what is displayed on internal & subscription calendars</li>
+            <li>2014-04-04 - Rationalized the status for gigs to just three: Unconfirmed, Confirmed, Canceled</li>
+            <li>2014-03-28 - Added ability for admins to designate band members as "occasional" so they only show up on gigs if they've actually weighed in.</li>
+            <li>2014-03-12 - Only show confirmed gigs on public page; allow bands to hide individual gigs via checkbox.</li>
+            <li>2014-03-08 - Added ability to show images of the band right on the band's info page.</li>
+            <li>2014-03-05 - Added public access to band into at www.gig-o-matic.com/band/[band name without spaces].</li>
+            <li>2014-02-28 - Added ability for bands to declare that only admins can edit gigs.</li>
+            <li>2014-02-24 - Added call, set, and end times to new gig emails.</li>
+            <li>2014-02-23 - Added 'invite' feature so admins can bring members in without the whole signup-confirmation loop.</li>
+            <li>2014-02-23 - Added change log!</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,33 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "New Band!" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Sign up Your Band!" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>{% trans "Getting your band on the Gig-O-Matic is easy-peasy.  Fill out the from below and the Gig-O-Matic Overlords will get right back to you." %}</p>
+<form class="form form-horizontal" role="form" action="" method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        {{ form.email.errors }}
+        {{ form.email.label_tag }}
+        {% render_field form.email class="form-control" %}
+    </div>
+    <div class="form-group">
+        {{ form.name.errors }}
+        {{ form.name.label_tag }}
+        {% render_field form.name class="form-control" %}
+    </div>
+    <div class="form-group">
+        {{ form.message.errors }}
+        {{ form.message.label_tag }}
+        {% render_field form.message class="form-control" %}
+    </div>
+    <div class="form-group text-right">
+        <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
+        <input type="submit" class="btn btn-primary" value="{% trans 'Make It So!' %}" />
+    </div>
+</form>
+{% endblock pagecontent %}
