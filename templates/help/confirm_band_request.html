@@ -1,0 +1,10 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Request Received!" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Request Received!" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>{% trans "OK, we'll get back to you shortly." %}</p>
+{% endblock pagecontent %}

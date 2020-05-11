@@ -40,5 +40,6 @@ urlpatterns =[
     path('band/', include('band.urls')),
     path('member/', include('member.urls')),
     path('gig/', include('gig.urls')),
+    path('help/', include('help.urls')),
     path('admin/', admin.site.urls),
 ]
