@@ -21,7 +21,7 @@ from . import views
 from . import helpers
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.BandList.as_view(), name='band-nav'),
     path('<int:pk>/', views.DetailView.as_view(), name='band-detail'),
     path('<int:pk>/update', views.UpdateView.as_view(), name='band-update'),
     path('<int:pk>/members/', views.AllMembersView.as_view(), name='all-members'),

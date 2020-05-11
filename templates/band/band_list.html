@@ -1,0 +1,21 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Band Navigator" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto mb-4 col-lg-8 col-md-10 col-sm-12">
+        <div class="page-header">
+            {% trans "Band Navigator" %}
+        </div>
+    </div>
+    {% for b in bands %}
+        <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
+            <a href="{% url 'band-detail' pk=b.id %}">{{ b.name }}</a>
+            {% if b.hometown %}({{ b.hometown }}){% endif %}
+        </div>
+    {% endfor %}
+</div>
+{% endblock content %}
