@@ -288,29 +288,25 @@
             </div> <!-- panel -->
 
             {% if the_user_is_band_admin or request.user.is_superuser %}
-                <div class="accordion mt-4" id="accordion">
-                    <div class="card">
-                        <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            <a class="card-title titlerow">
-                                {% trans "Member Admin" %}
-                            </a>
-                        </div>
-                        <div id="collapseOne" class="collapse" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
-                                        <a class="btn btn-primary btn-sm" href="member_spreadsheet?bk={{band.id}}">{% trans "Download Member List" %}</a>
-                                        <a class="btn btn-primary btn-sm" href="member_emails?bk={{band.id}}">{% trans "Get Member Emails" %}</a>
+                <div class="mt-4 card">
+                    <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <a class="card-title titlerow">
+                            {% trans "Member Admin" %}
+                        </a>
+                    </div>
+                    <div id="collapseOne" class="collapse card-body" role="tabpanel" aria-labelledby="headingOne">
+                        <div class="row">
+                            <div class="col-12">
+                                <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
+                                <a class="btn btn-primary btn-sm" href="{% url 'member-spreadsheet' pk=band.id %}">{% trans "Download Member List" %}</a>
+                                <a class="btn btn-primary btn-sm" href="{% url 'member-emails' pk=band.id %}">{% trans "Get Member Emails" %}</a>
 
-                                    </div>
-                                    <hr>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12" id="memberlist">
-                                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                                    </div>
-                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                        <div class="row">
+                            <div class="col-12" id="memberlist">
+                                <i class="fas fa-spinner fa-pulse fa-lg"></i>
                             </div>
                         </div>
                     </div>

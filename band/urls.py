@@ -26,6 +26,8 @@ urlpatterns = [
     path('<int:pk>/update', views.UpdateView.as_view(), name='band-update'),
     path('<int:pk>/members/', views.AllMembersView.as_view(), name='all-members'),
     path('<int:pk>/section/<int:sk>', views.SectionMembersView.as_view(), name='section-members'),
+    path('<int:pk>/member_spreadsheet', views.member_spreadsheet, name='member-spreadsheet'),
+    path('<int:pk>/member_emails', views.member_emails, name='member-emails'),
 
     path('assoc/<int:ak>/tfparam/<str:param>/<str:truefalse>', helpers.set_assoc_tfparam, name='assoc-tfparam'),
     path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),

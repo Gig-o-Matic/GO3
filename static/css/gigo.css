@@ -183,16 +183,19 @@ a {
     border-color: #007bff;
 }
 
-.accordion .card-header:after {
-    font-family: 'Font Awesome 5 Pro';  
+.card-header[data-toggle="collapse"] {
+    cursor: pointer;
+}
+.card-header[data-toggle="collapse"]:after {
+    font-family: 'Font Awesome 5 Pro';
     font-weight: 900;
     content: "\f068";
     padding-right: .5rem;
-    float: left; 
+    float: left;
 }
-.accordion .card-header.collapsed:after {
+.card-header[data-toggle="collapse"].collapsed:after {
     /* symbol for "collapsed" panels */
-    content: "\f067"; 
+    content: "\f067";
 }
 
 

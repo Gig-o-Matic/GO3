@@ -165,10 +165,7 @@ class InviteView(LoginRequiredMixin, FormView):
         band = get_object_or_404(Band, pk=self.kwargs['bk'])
         emails = form.cleaned_data['emails'].replace(',', ' ').split()
 
-        user_is_band_admin = Assoc.objects.filter(
-            member=self.request.user, band=band, is_admin=True).count() == 1
-
-        if not (user_is_band_admin or self.request.user.is_superuser):
+        if not (band.is_admin(self.request.user) or self.request.user.is_superuser):
             raise PermissionDenied
 
         invited, in_band, invalid = [], [], []
@@ -285,10 +282,8 @@ class MemberCreateView(CreateView):
 @login_required
 def delete_invite(request, pk):
     invite = get_object_or_404(Invite, pk=pk)
-    user_is_band_admin = Assoc.objects.filter(
-        member=request.user, band=invite.band, is_admin=True).count() == 1
     user_is_invitee = (request.user.email == invite.email)
-    if not (user_is_band_admin or user_is_invitee or request.user.is_superuser):
+    if not (invite.band.is_admin(request.user) or user_is_invitee or request.user.is_superuser):
         raise PermissionDenied
 
     invite.delete()
