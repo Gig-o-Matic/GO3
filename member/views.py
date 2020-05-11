@@ -16,7 +16,7 @@
 """
 
 from django.http import HttpResponse, JsonResponse
-from .forms import MemberCreateForm, InviteForm
+from .forms import MemberCreateForm, InviteForm, SignupForm
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from lib.translation import join_trans
@@ -300,14 +300,15 @@ def delete_invite(request, pk):
     return redirect('band-detail', pk=invite.band.id)
 
 
-@require_POST
-def signup(request):
-    email = request.POST.get('email')
-    if Member.objects.filter(email=email).count() > 0:
-        return JsonResponse({'status': 'failure', 'error': 'member exists'})
-    try:
-        validate_email(email)
-    except ValidationError:
-        return JsonResponse({'status': 'failure', 'error': 'invalid email'})
-    Invite.objects.create(band=None, email=email)
-    return JsonResponse({'status': 'success'})
+class SignupView(FormView):
+    template_name = 'member/signup.html'
+    form_class = SignupForm
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        if Member.objects.filter(email=email).count() > 0:
+            messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
+            return redirect('home')
+
+        Invite.objects.create(band=None, email=email)
+        return render(self.request, 'member/signup_pending.html', {'email': email})

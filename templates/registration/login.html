@@ -1,33 +1,82 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
 
-  {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
-  {% endif %}
-  
-  {% if next %}
-    {% if user.is_authenticated %}
-      <p>Your account doesn't have access to this page. To proceed,
-      please login with an account that has access.</p>
-    {% else %}
-      <p>Please login to see this page.</p>
-    {% endif %}
-  {% endif %}
-  
-  <form method="post" action="{% url 'login' %}">
+{% block title %}{% trans "Login" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Welcome to Gig-o-Matic!" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+{% include 'base/messages.html' %}
+
+{% if form.errors %}
+<div class="mb-4">
+    <strong>{% trans "Login failed!" %}</strong> {% trans "Check your credentials and try again." %}
+</div>
+{% endif %}
+
+<form class="form" role="form" action= "{% url 'login' %}" method="POST">
     {% csrf_token %}
-    <table>
-      <tr>
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }}</td>
-      </tr>
-      <tr>
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }}</td>
-      </tr>
-    </table>
-    <input type="submit" value="login" />
-    <input type="hidden" name="next" value="{{ next }}" />
-  </form>
-  
-  {# Assumes you setup the password_reset view in your URLconf #}
-  <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
-  
+    <div class="form-group row">
+        <div class="col-form-label col-lg-3 text-lg-right">{{ form.username.label_tag}}</div>
+        <div class="col-lg-8 col-12">{% render_field form.username class="form-control" %}</div>
+    </div>
+    <div class="form-group row">
+        <div class="col-form-label col-lg-3 text-lg-right">{{ form.password.label_tag}}</div>
+        <div class="col-lg-8 col-12">{% render_field form.password class="form-control" %}</div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-lg-9 ml-auto">
+            <button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
+            <a href="{% url 'password_reset' %}">{% trans "Forgot password?" %}</a>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-lg-9 ml-auto">
+            {% trans "Not a member?" %}
+            <a href="{% url 'member-signup' %}">{% trans "Sign Up!" %}</a>
+        </div>
+    </div>
+</form>
+
+{% get_current_language as current_code %}
+{% get_available_languages as languages %}
+<style>
+    #langs {
+        display: flex;
+    }
+    #langs > form:not(:first-child)::before {
+        content: '|';
+        display: inline;
+    }
+    #langs [type=submit] {
+        border: none;
+        background: none;
+        color: #428bca;
+    }
+    #langs [type=submit]:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    #langs > form:first-child [type=submit] {
+        padding-left: 0;
+    }
+</style>
+<div id="langs">
+    {% for code, _ in LANGUAGES %}
+        {% if code != current_code %}
+            <form action="{% url 'set_language' %}" method="post" class="form-inline">
+                {% csrf_token %}
+                <input name="language" type="hidden" value="{{ code }}">
+                <input type="submit" value="{{ code | language_name_local }}{% if '-' in code %} ({{ code | slice:'3:' | upper }}){% endif %}">
+            </form>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<div>
+    {% blocktrans %}Want your band on the Gig-o? Click <a href="/help_band_request.html">here</a>.{% endblocktrans %}
+    {% blocktrans %}What is the Gig-o-Matic, anyway? Click <a href="/whatis.html">here</a>!{% endblocktrans %}
+</div>
+{% endblock pagecontent %}
