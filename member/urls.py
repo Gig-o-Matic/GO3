@@ -36,6 +36,6 @@ urlpatterns = [
     path('invite/<uuid:pk>', views.accept_invite, name='member-invite-accept'),
     path('invite/delete/<uuid:pk>', views.delete_invite, name='member-invite-delete'),
     path('create/<uuid:pk>', views.MemberCreateView.as_view(), name='member-create'),
-    path('signup', views.signup, name='member-signup'),
+    path('signup', views.SignupView.as_view(), name='member-signup'),
 
 ]

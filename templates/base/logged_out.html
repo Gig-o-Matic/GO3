@@ -12,13 +12,24 @@ class="landingwrap"
 {% endblock wrapclass %}
 
 {% block content %}
+<div id="landingpage_content">
+    <div class="row">
+        <div class="mx-auto col-md-8 col-12">
+            <div class="page-header mb-4">
+                <h3>{% block pageheader %}{% endblock pageheader %}</h3>
+            </div>
+
+            {% block pagecontent %}{% endblock pagecontent %}
+        </div>
+    </div>
+</div>
 {% endblock content %}
 
 {% block footer %}
 {% endblock footer %}
 
 {% block localscripts %}
-<script src="/js/randomback.js"></script>
+<script src="/static/js/randomback.js"></script>
 {% endblock localscripts %}
 
 {% block navbarscripts %}

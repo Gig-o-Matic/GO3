@@ -1,0 +1,23 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Register" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Register with the Gig-o-Matic" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>{% trans "Enter your email address, and we'll send you instructions on completing the registration process." %}</p>
+
+<form class="form form-horizontal" role="form" action= "" method="POST">
+    {% csrf_token %}
+    {{ form.email.errors }}
+    <div class="form-group">
+        {% render_field form.email class="form-control" %}
+    </div>
+    <div class="form-group text-right">
+        <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
+        <input type="submit" class="btn btn-primary" value="{% trans 'Sign me up!' %}"/>
+    </div>
+</form>
+{% endblock pagecontent %}

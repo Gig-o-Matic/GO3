@@ -1,0 +1,11 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Signed Up!" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Signed Up!" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>{% blocktrans %}Great job&mdash;you've signed up. A confirmation email has been sent to {{ email }}.  Follow those directions to complete the process.{% endblocktrans %}</p>
+{% endblock pagecontent %}

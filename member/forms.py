@@ -32,3 +32,7 @@ class MemberCreateForm(UserCreationForm):
 
 class InviteForm(forms.Form):
     emails = forms.CharField(widget=forms.Textarea)
+
+
+class SignupForm(forms.Form):
+    email = forms.EmailField()
