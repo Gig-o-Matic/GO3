@@ -742,7 +742,7 @@ class InviteTest(TemplateTestCase):
     def test_signup(self):
         response = self.client.post(reverse('member-signup'), {'email': 'new@example.com'})
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/signup_pending.html')
+        self.assertTemplateUsed(response, 'member/signup_pending.html')
         self.assertEqual(Invite.objects.filter(email='new@example.com', band=None).count(), 1)
 
     def test_signup_duplicate(self):
@@ -753,5 +753,5 @@ class InviteTest(TemplateTestCase):
     def test_signup_invalid(self):
         response = self.client.post(reverse('member-signup'), {'email': 'invalid'})
         self.assertOK(response)
-        self.assertRenderedWith(response, 'member/signup.html')
+        self.assertTemplateUsed(response, 'member/signup.html')
         self.assertEqual(Invite.objects.filter(email='invalid').count(), 0)
