@@ -88,18 +88,20 @@
                     {% endif %}
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
-                    <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
-                        {{ gig.date|time:"TIME_FORMAT" }}
+                {% if not gig.enddate %}
+                    <div class="row">
+                        <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
+                            {{ gig.date|time:"TIME_FORMAT" }}
+                        </div>
+                        {% if gig.setdate %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ gig.setdate|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
+                        {% if gig.enddate %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ gig.enddate|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
                     </div>
-                    {% if gig.setdate %}
-                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ gig.setdate|time:"TIME_FORMAT" }}</div>
-                    {% endif %}
-                    {% if gig.enddate %}
-                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ gig.enddate|time:"TIME_FORMAT" }}</div>
-                    {% endif %}
-                </div>
+                {% endif %}
                 <div class="row">&nbsp;</div>
                 {% if gig.address %}
                     <div class="row">
