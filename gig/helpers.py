@@ -116,8 +116,8 @@ def email_from_plan(plan, template):
         latest_record = gig.history.latest()
         changes = generate_changes(latest_record, latest_record.prev_record)
         member = plan.assoc.member
-        contact_name, contact_email = ((contact.display_name, contact.email)
-                                       if (contact := gig.contact) else ('??', None))
+        contact_name, contact_email = ((gig.contact.display_name, gig.contact.email)
+                                       if gig.contact else ('??', None))
         context = {
             'gig': gig,
             'changes': changes,

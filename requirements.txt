@@ -16,6 +16,7 @@ MarkupSafe==1.1.1
 mccabe==0.6.1
 pyfakefs==4.0.2
 pylint==2.4.4
+pylint-django==2.0.14
 pytz==2019.3
 six==1.13.0
 sqlparse==0.3.0
