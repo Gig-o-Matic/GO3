@@ -14,6 +14,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Install dependencies
+      id: pip
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
@@ -22,4 +23,5 @@ jobs:
         python manage.py collectstatic
         python manage.py test
     - name: Check with Pylint
+      if: ${{ always() && steps.pip.outcome == 'Success' }}
       run: modules=(*/__init__.py) && pylint -j0 ${modules[@]%/*}
