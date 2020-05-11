@@ -1,0 +1,15 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Band Emails" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+        <div class="page-header">
+            {{ band.name }} {% trans "email addresses" %}
+        </div>
+        {{ emails }}
+    </div>
+</div>
+{% endblock content %}
