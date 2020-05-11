@@ -332,7 +332,7 @@ class GigTest(TestCase):
         self.assertNotIn(MISSING, message.body)
 
     def test_no_reminder_to_decided(self):
-        g, a, p = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         p.status = Plan.StatusChoices.DEFINITELY
         p.save()
         mail.outbox = []
@@ -457,7 +457,7 @@ class GigTest(TestCase):
         self.assertIn('12:00', message.body)
 
     def test_gig_edit_definitely(self):
-        g, a, p = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         p.status = Plan.StatusChoices.DEFINITELY
         p.save()
         mail.outbox = []
@@ -469,7 +469,7 @@ class GigTest(TestCase):
         self.assertIn("**can't** make it", message.body)
 
     def test_gig_edit_cant(self):
-        g, a, p = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         p.status = Plan.StatusChoices.CANT_DO_IT
         p.save()
         mail.outbox = []
@@ -520,7 +520,6 @@ class GigTest(TestCase):
         self.assertLessEqual((p.snooze_until - now).days, 7)
 
     def test_answer_snooze_too_short(self):
-        now = datetime.now(tz=timezone.get_current_timezone())
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = timezone.now() + timedelta(days=1)
         g.save()
