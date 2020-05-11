@@ -38,7 +38,6 @@ class GigTest(TestCase):
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
-        # Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -82,7 +81,6 @@ class GigTest(TestCase):
                                     })
         
         self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
-        # self.assertEqual(Gig.objects.count(),1)
         obj = Gig.objects.last()
         return obj
 
@@ -307,16 +305,6 @@ class GigTest(TestCase):
         self.assertIn("7 a.m.", response.content.decode('ascii'))
         response = c.get(f'/gig/{second.id}/')
         self.assertIn("8 a.m.", response.content.decode('ascii'))
-
-
-        # # DST information only out to 2037?
-        # date1 = timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
-        # date2 = timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
-        # self.create_gig_form(call_date=self._dateformat(date1), call_time=self._timeformat(date1))
-        # self.create_gig_form(call_date=self._dateformat(date2), call_time=self._timeformat(date2))
-        # self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
-        # self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
-
 
     @flag_missing_vars
     def test_reminder_email(self):

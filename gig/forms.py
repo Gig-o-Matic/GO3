@@ -57,7 +57,10 @@ class GigForm(forms.ModelForm):
             raise(ValueError('issue with band'))
 
     def clean(self):
-
+        """
+        Checks to make sure the dates are valid. If there is an end-date set, it is assumed that the gig is "all day" events,
+        so the times are not used. Otherwise the times are used and the enddate is just the same as the start date.
+        """
         def _parse(val,format_type):
             x = None
             for format in get_format(format_type):
