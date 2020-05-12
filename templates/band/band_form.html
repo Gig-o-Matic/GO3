@@ -10,102 +10,142 @@
         <div class="page-header">
             {% trans "Edit Band" %}
         </div>
-
         <form method="post" class="form">
             {% csrf_token %}
             {{ form.non_field_errors }}
             {{ form.errors }}
-
-            <div class="form-group">
-                {{ form.name.errors }}
-                {{ form.name.label_tag }}
-                {% render_field form.name class+="form-control" %}
+            </div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.name.errors }}
+                        {{ form.name.label_tag }}
+                        {% render_field form.name class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.shortname.errors }}
+                        {{ form.shortname.label_tag }}
+                        {% render_field form.shortname class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.hometown.errors }}
+                        {{ form.hometown.label_tag }}
+                        {% render_field form.hometown class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.description.errors }}
+                        {{ form.description.label_tag }}
+                        {% render_field form.description class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.member_links.errors }}
+                        {{ form.member_links.label_tag }}
+                        {% render_field form.member_links class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.website.errors }}
+                        {{ form.website.label_tag }}
+                        {% render_field form.website class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.new_member_message.errors }}
+                        {{ form.new_member_message.label_tag }}
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="test_new_member_email();">test</button><span id="testedtext"></span>
+                        {% render_field form.new_member_message class+="form-control" %}
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.thumbnail_img.errors }}
+                        {{ form.thumbnail_img.label_tag }}
+                        {% render_field form.thumbnail_img class+="form-control" %}
+                        ({% trans "thumbnail_instructions" %})
+                    </div>
+                </div>
+            </div>
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.images.errors }}
+                        {{ form.images.label_tag }}
+                        {% render_field form.images class+="form-control" %}
+                        ({% trans "imagelink_instructions" %})
+                    </div> <!-- placeholder='put urls to images on their own lines...' -->
+                </div>
+            </div>
+            <div class='row'>
+                <div class="offset-lg-2 offset-md-1 col-lg-4 col-md-5 col-6">
+                    <div class="form-group">
+                        {{ form.timezone.errors }}
+                        {{ form.timezone.label_tag }}
+                        {% render_field form.timezone class+="form-control" %}
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                {{ form.shortname.errors }}
-                {{ form.shortname.label_tag }}
-                {% render_field form.shortname class+="form-control" %}
-            </div>
-
-            <div class="form-group">
-                {{ form.hometown.errors }}
-                {{ form.hometown.label_tag }}
-                {% render_field form.hometown class+="form-control" %}
-            </div>
-
-            <div class="form-group">
-                {{ form.description.errors }}
-                {{ form.description.label_tag }}
-                {% render_field form.description class+="form-control" %}
-            </div>
-            <div class="form-group">
-                {{ form.member_links.errors }}
-                {{ form.member_links.label_tag }}
-                {% render_field form.member_links class+="form-control" %}
-            </div>
-            <div class="form-group">
-                {{ form.website.errors }}
-                {{ form.website.label_tag }}
-                {% render_field form.website class+="form-control" %}
-            </div>
-            <div class="form-group">
-                {{ form.new_member_message.errors }}
-                {{ form.new_member_message.label_tag }}
-                <button type="button" class="btn btn-secondary btn-sm" onclick="test_new_member_email();">test</button><span id="testedtext"></span>
-                {% render_field form.new_member_message class+="form-control" %}
-            </div>
-            <div class="form-group">
-                {{ form.thumbnail_img.errors }}
-                {{ form.thumbnail_img.label_tag }}
-                {% render_field form.thumbnail_img class+="form-control" %}
-                ({% trans "thumbnail_instructions" %})
-            </div>
-            <div class="form-group">
-                {{ form.images.errors }}
-                {{ form.images.label_tag }}
-                {% render_field form.images class+="form-control" %}
-                ({% trans "imagelink_instructions" %})
-            </div> <!-- placeholder='put urls to images on their own lines...' -->
-            <div class="form-group">
-                {{ form.timezone.errors }}
-                {{ form.timezone.label_tag }}
-                {% render_field form.timezone class+="form-control" %}
-            </div>
-            <div class="form-group">
-                {{ form.anyone_can_create_gigs.errors }}
-                {% render_field form.anyone_can_create_gigs %}
-                {{ form.anyone_can_create_gigs.label_tag }}
-            </div>
-            <div class="form-group">
-                {{ form.anyone_can_manage_gigs.errors }}
-                {% render_field form.anyone_can_manage_gigs %}
-                {{ form.anyone_can_manage_gigs.label_tag }}
-            </div>
-            <div class="form-group">
-                {{ form.share_gigs.errors }}
-                {% render_field form.share_gigs %}
-                {{ form.share_gigs.label_tag }}
-            </div>
-            <div class="form-group">
-                {{ form.send_updates_by_default.errors }}
-                {% render_field form.send_updates_by_default %}
-                {{ form.send_updates_by_default.label_tag }}
-            </div>
-            <div class="form-group">
-                {{ form.rss_feed.errors }}
-                {% render_field form.rss_feed %}
-                {{ form.rss_feed.label_tag }}
-            </div>
-            <div class="form-group">
-                {{ form.simple_planning.errors }}
-                {% render_field form.simple_planning %}
-                {{ form.simple_planning.label_tag }}
-            </div>
-            <div class="form-group">
-                {{ form.plan_feedback.errors }}
-                {{ form.plan_feedback.label_tag }}
-                {% render_field form.plan_feedback class+="form-control" %}
+            <div class='row'>
+                <div class="mx-auto col-lg-8 col-md-10 col-12">
+                    <div class="form-group">
+                        {{ form.anyone_can_create_gigs.errors }}
+                        {% render_field form.anyone_can_create_gigs %}
+                        {{ form.anyone_can_create_gigs.label_tag }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.anyone_can_manage_gigs.errors }}
+                        {% render_field form.anyone_can_manage_gigs %}
+                        {{ form.anyone_can_manage_gigs.label_tag }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.share_gigs.errors }}
+                        {% render_field form.share_gigs %}
+                        {{ form.share_gigs.label_tag }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.send_updates_by_default.errors }}
+                        {% render_field form.send_updates_by_default %}
+                        {{ form.send_updates_by_default.label_tag }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.rss_feed.errors }}
+                        {% render_field form.rss_feed %}
+                        {{ form.rss_feed.label_tag }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.simple_planning.errors }}
+                        {% render_field form.simple_planning %}
+                        {{ form.simple_planning.label_tag }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.plan_feedback.errors }}
+                        {{ form.plan_feedback.label_tag }}
+                        {% render_field form.plan_feedback class+="form-control" %}
+                    </div>
+                </div>
             </div>
             {% if request.user is None or is_new%}
                 <input type="hidden" name="bk" value="0">
