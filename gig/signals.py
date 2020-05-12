@@ -17,6 +17,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
+from .util import PlanStatusChoices
 from gig.helpers import send_emails_from_plans
 from band.helpers import set_calfeeds_dirty
 from django_q.tasks import async_task
@@ -37,5 +38,5 @@ def set_calfeed_dirty(sender, instance, created, **kwargs):
 def update_plan_section(sender, instance, **kwargs):
     """ set the section to the plan_section, unless there isn't one - in that case use the member's default """
     instance.section = instance.plan_section or instance.assoc.section
-    if instance.status not in (Plan.StatusChoices.NO_PLAN, Plan.StatusChoices.DONT_KNOW):
+    if instance.status not in (PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW):
         instance.snooze_until = None

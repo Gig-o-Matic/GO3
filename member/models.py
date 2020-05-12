@@ -20,6 +20,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from motd.models import MOTD
 from gig.models import Plan
+from gig.util import PlanStatusChoices
 from django.utils.translation import gettext_lazy as _
 import datetime
 from django.utils import timezone
@@ -117,11 +118,11 @@ class Member(AbstractUser):
 
     @property
     def future_plans(self):
-        return Plan.member_plans.future_plans(self).exclude(status=Plan.StatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
 
     @property
     def future_noplans(self):
-        return Plan.member_plans.future_plans(self).filter(status=Plan.StatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
 
     @property
     def motd(self):
@@ -133,7 +134,7 @@ class Member(AbstractUser):
 
     def as_email_recipient(self):
         return EmailRecipient(name=self.username, email=self.email,
-                              language=self.preferences.language)
+                              language=getattr(self,'preferences').language)
 
     objects = MemberManager()
 

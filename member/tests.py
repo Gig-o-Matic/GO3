@@ -21,6 +21,7 @@ from django.test import TestCase, RequestFactory
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
+from gig.util import GigStatusChoices, PlanStatusChoices
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
 from lib.email import DEFAULT_SUBJECT, prepare_email
@@ -243,8 +244,8 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=False,
             calendar_show_only_confirmed=False,
             calendar_show_only_committed=False,
-            gig_status=Gig.StatusOptions.CONFIRMED,
-            plan_answer=Plan.StatusChoices.DEFINITELY
+            gig_status=GigStatusChoices.CONFIRMED,
+            plan_answer=PlanStatusChoices.DEFINITELY
         )
         self.assertTrue(cf.find(b'EVENT') > 0)
 
@@ -254,8 +255,8 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=True,
             calendar_show_only_confirmed=False,
             calendar_show_only_committed=False,
-            gig_status=Gig.StatusOptions.CONFIRMED,
-            plan_answer=Plan.StatusChoices.DEFINITELY
+            gig_status=GigStatusChoices.CONFIRMED,
+            plan_answer=PlanStatusChoices.DEFINITELY
         )
         self.assertTrue(cf.find(b'EVENT') > 0)
 
@@ -263,8 +264,8 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=True,
             calendar_show_only_confirmed=False,
             calendar_show_only_committed=False,
-            gig_status=Gig.StatusOptions.CANCELLED,
-            plan_answer=Plan.StatusChoices.DEFINITELY
+            gig_status=GigStatusChoices.CANCELLED,
+            plan_answer=PlanStatusChoices.DEFINITELY
         )
         self.assertEqual(cf.find(b'EVENT'), -1)
 
@@ -274,8 +275,8 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=False,
             calendar_show_only_confirmed=True,
             calendar_show_only_committed=False,
-            gig_status=Gig.StatusOptions.CANCELLED,
-            plan_answer=Plan.StatusChoices.DEFINITELY
+            gig_status=GigStatusChoices.CANCELLED,
+            plan_answer=PlanStatusChoices.DEFINITELY
         )
         self.assertEqual(cf.find(b'EVENT'), -1)
 
@@ -285,8 +286,8 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=False,
             calendar_show_only_confirmed=False,
             calendar_show_only_committed=True,
-            gig_status=Gig.StatusOptions.CONFIRMED,
-            plan_answer=Plan.StatusChoices.DONT_KNOW
+            gig_status=GigStatusChoices.CONFIRMED,
+            plan_answer=PlanStatusChoices.DONT_KNOW
         )
         self.assertEqual(cf.find(b'EVENT'), -1)
 
@@ -296,8 +297,8 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=False,
             calendar_show_only_confirmed=False,
             calendar_show_only_committed=False,
-            gig_status=Gig.StatusOptions.CONFIRMED,
-            plan_answer=Plan.StatusChoices.DEFINITELY,
+            gig_status=GigStatusChoices.CONFIRMED,
+            plan_answer=PlanStatusChoices.DEFINITELY,
             date=timezone.now() - timedelta(days=800)
         )
         self.assertEqual(cf.find(b'EVENT'), -1)

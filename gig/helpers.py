@@ -23,6 +23,7 @@ from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import template_localtime
 from .models import Gig, Plan
+from .util import PlanStatusChoices
 from band.models import Section, AssocStatusChoices
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
@@ -126,8 +127,8 @@ def email_from_plan(plan, template):
             'contact_name': contact_name,
             'plan': plan,
             'status': plan.status,
-            'status_label': Plan.StatusChoices(plan.status).label,
-            **Plan.StatusChoices.__members__,
+            'status_label': PlanStatusChoices(plan.status).label,
+            **PlanStatusChoices.__members__,
         }
         return prepare_email(member.as_email_recipient(), template, context, reply_to=[contact_email])
 
@@ -140,7 +141,7 @@ def send_email_from_gig(gig, template):
     send_emails_from_plans(gig.member_plans, template)
 
 def send_reminder_email(gig):
-    undecided = gig.member_plans.filter(status__in=(Plan.StatusChoices.NO_PLAN, Plan.StatusChoices.DONT_KNOW))
+    undecided = gig.member_plans.filter(status__in=(PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW))
     send_emails_from_plans(undecided, 'email/gig_reminder.md')
 
 def send_snooze_reminders():

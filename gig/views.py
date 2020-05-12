@@ -22,6 +22,7 @@ from django.utils import timezone
 from django import forms
 from .models import Gig, Plan
 from .forms import GigForm
+from .util import PlanStatusChoices
 from band.models import Band
 from gig.helpers import notify_new_gig
 
@@ -121,7 +122,7 @@ def has_edit_permission(user, band):
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
-    if val == Plan.StatusChoices.DONT_KNOW:
+    if val == PlanStatusChoices.DONT_KNOW:
         now = datetime.datetime.now(tz=timezone.get_current_timezone())
         if (future_days := (plan.gig.date - now).days) > 8:
             plan.snooze_until = now + datetime.timedelta(days=7)
