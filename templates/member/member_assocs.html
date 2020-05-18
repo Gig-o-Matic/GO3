@@ -8,7 +8,14 @@
                     ({% trans "pending" %})
                 </div>
                 <div class="col-9">
-                    <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Cancel" %}</button>
+                    <button class="btn btn-secondary btn-sm"
+                        id="leave-{{ assoc.id }}"
+                        hx-post="/band/assoc/{{ assoc.id }}/delete"
+                        hx-trigger="bootstrap-confirm"
+                        hx-target="#bandlist"
+                        onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
+                        {% trans "Cancel" %}
+                    </button>
                 </div>
 
             {% else %}
@@ -116,7 +123,14 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Leave Band" %}</button>
+                            <button class="btn btn-secondary btn-sm"
+                                id="leave-{{ assoc.id }}"
+                                hx-post="/band/assoc/{{ assoc.id }}/delete"
+                                hx-trigger="bootstrap-confirm"
+                                hx-target="#bandlist"
+                                onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
+                                {% trans "Leave Band" %}
+                            </button>
                         </div>
                     </div>
                 </div>

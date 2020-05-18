@@ -242,7 +242,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{% trans "Don't Leave" %}</button>
-                    <a class="btn btn-primary btn-sm" href="#" id="leave-ak" onclick="$('#deleteModal').modal('hide');" hx-post="/foo" hx-trigger="click" hx-target="#bandlist">{% trans "Yes, Leave" %}</a>
+                    <a class="btn btn-primary btn-sm" href="#" id="leave-ak" data-dismiss="modal">{% trans "Yes, Leave" %}</a>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -253,13 +253,12 @@
 <script>
 function leave_band(ak, bandname) {
     $('#band-name').html(bandname);
-    $('#leave-ak').attr('hx-post',"/band/assoc/"+ak+"/delete");
-    var elem = $('#leave-ak')[0];
-    var htmxData = elem['htmx-internal-data']
-    htmxData.processed = false;
-    elem.removeEventListener(htmxData.trigger, htmxData.eventListener)
-    htmx.process(elem);
+    $('#leave-ak').attr('onclick',"do_delete("+ak+")");
     $('#deleteModal').modal('show');
+}
+
+function do_delete(ak){
+    $(`#leave-${ak}`)[0].dispatchEvent(new Event('bootstrap-confirm'));
 }
 </script>
 {% endblock localscripts %}
