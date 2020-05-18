@@ -139,6 +139,7 @@ class AssocsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['assocs'] = Assoc.objects.select_related('band').filter(member__id = self.kwargs['pk'])
+        context['member_id'] = self.kwargs['pk']
         context['the_colors'] = the_colors
         return context
 
@@ -148,6 +149,7 @@ class OtherBandsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
+        context['member_id'] = self.kwargs['pk']
         return context
 
 

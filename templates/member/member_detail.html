@@ -142,10 +142,8 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="bandlist">
+                    <div id="bandlist" hx-get="/member/{{ member.id }}/assocs" hx-trigger="load">
                         <i class="fas fa-spinner fa-pulse"></i>
-                    </div>
-                    <div id="bandpopup">
                     </div>
                 </div>
             </div>
@@ -244,7 +242,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{% trans "Don't Leave" %}</button>
-                    <a class="btn btn-primary btn-sm" href="#" id="leave-ak">{% trans "Yes, Leave" %}</a>
+                    <a class="btn btn-primary btn-sm" href="#" id="leave-ak" onclick="$('#deleteModal').modal('hide');" hx-post="/foo" hx-trigger="click" hx-target="#bandlist">{% trans "Yes, Leave" %}</a>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -253,129 +251,15 @@
 
 {% block localscripts %}
 <script>
-function updateBands() {
-    $.ajax({
-        method: 'GET',
-        url: '/member/{{ member.id }}/assocs',
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        $('#bandlist').html(responseTxt);
-                        updateBandlist()
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                }
-    });
-}
-
-function updateBandlist() {
-    $.ajax({
-        method: 'GET',
-        url: '/member/{{ member.id }}/otherbands',
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        $('#bandpopup').html(responseTxt);
-                        setupClick();
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                }
-    });
-}
-
-function section_select(associd, value) {
-    $.ajax({
-        method: 'POST',
-        url: '/band/assoc/'+associd+'/section/'+value,
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        setTimeout(function(){updateBands()}, 1000);
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-
-function color_select(objectid, color) {
-    $.ajax({
-        method: 'POST',
-        url: '/band/assoc/'+objectid+'/color/'+color,
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        test=$('#color-'+color).html();
-                        $('#cbk-'+objectid).html(test + " <span class='caret'></span>");
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-function option_tf_select(option, objecttype, objectid, elementid) {
-    elem=document.getElementById(elementid)
-    if (elem)
-        val = elem.checked
-    else
-        val = elementid
-    $.ajax({
-        method: 'POST',
-        url: '/'+objecttype+'/'+objectid+'/tfparam/'+option+'/'+val,
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
 function leave_band(ak, bandname) {
     $('#band-name').html(bandname);
-    $('#leave-ak').attr('onclick',"do_delete("+ak+")");
+    $('#leave-ak').attr('hx-post',"/band/assoc/"+ak+"/delete");
+    var elem = $('#leave-ak')[0];
+    var htmxData = elem['htmx-internal-data']
+    htmxData.processed = false;
+    elem.removeEventListener(htmxData.trigger, htmxData.eventListener)
+    htmx.process(elem);
     $('#deleteModal').modal('show');
 }
-
-function do_delete(ak){
-    $('#deleteModal').modal('hide');
-    $.ajax({
-        method: 'POST',
-        url: '/band/assoc/'+ak+'/delete',
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        setTimeout(function(){updateBands()}, 1000);
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-function setupClick() {
-    $("a.band-click").click(function(){
-        var mk='{{ member.id}}';
-        var bk=$(this).attr("id");
-        $.ajax({
-            method: 'POST',
-            url: "/band/"+bk+"/join/"+mk,
-            headers: { "X-CSRFToken": "{{csrf_token}}" },
-            success: function(responseTxt,statusTxt,xhr){
-                        if(statusTxt=="success")
-                            $('#bandlist').html('<i class="fas fa-spinner fa-pulse"></i>');
-                            $('#bandpopup').html('');
-                            setTimeout(function() {
-                                updateBands()
-                            }, 500); // delay to let database catch up
-                        if(statusTxt=="error")
-                          alert("Error: "+xhr.status+": "+xhr.statusText);
-                    }
-        });
-    });
-}
-
-$(document).ready(function() {
-    updateBands();
-    setupClick();
-});
 </script>
 {% endblock localscripts %}

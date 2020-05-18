@@ -20,6 +20,7 @@ from .models import Band, Assoc, Section
 from gig.helpers import update_plan_default_section
 from member.models import Member
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 from band.util import AssocStatusChoices
 
 
@@ -43,7 +44,12 @@ def set_assoc_tfparam(request, ak, param, truefalse):
         else:
             raise ValueError(
                 'trying to set an assoc parameter that does not exist: {0}'.format(param))
-    return HttpResponse()
+
+    tf_other = 'false' if truefalse == 'true' else 'true'
+    checked = 'checked' if truefalse == 'true' else ''
+    return HttpResponse(f'''<input class="form-check-input" type="checkbox"
+                            hx-post="/band/assoc/{ak}/tfparam/{param}/{tf_other}"
+                            hx-trigger="click" hx-swap="outerHTML" {checked}>''')
 
 
 @login_required
@@ -75,7 +81,7 @@ def set_assoc_section(request, ak, sk):
         a.default_section = s
         a.save()
 
-    return HttpResponse()
+    return redirect('member-assocs', pk=a.member.id)
 
 
 @login_required
@@ -96,7 +102,7 @@ def set_assoc_color(request, ak, colorindex):
         a.color = colorindex
         a.save()
 
-    return HttpResponse()
+    return render(request, 'member/color.html', {'assoc': a})
 
 
 @login_required
@@ -121,7 +127,7 @@ def join_assoc(request, bk, mk):
     Assoc.objects.get_or_create(
         band=b, member=m, status=AssocStatusChoices.PENDING)
 
-    return HttpResponse()
+    return redirect('member-assocs', pk=m.id)
 
 
 @login_required
@@ -139,7 +145,7 @@ def delete_assoc(request, ak):
 
     a.delete()
 
-    return HttpResponse()
+    return redirect('member-assocs', pk=a.member.id)
 
 
 @login_required

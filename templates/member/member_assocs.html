@@ -25,16 +25,21 @@
                                     </button>
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
                                         {% for section in assoc.band.sections.all %}
-                                            <a class="dropdown-item" 
-                                            onclick="section_select('{{assoc.id}}','{{section.id}}')">{{ section.name }}</a>
+                                            <a class="dropdown-item"
+                                            hx-put="/band/assoc/{{ assoc.id }}/section/{{ section.id }}"
+                                            hx-trigger="click"
+                                            hx-target="#bandlist"
+                                            >{{ section.name }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}' 
-                                    onclick="option_tf_select('is_multisectional','band/assoc','{{ assoc.id }}','msbk-{{ assoc.id}}')"
+                                    <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}'
+                                    hx-post="/band/assoc/{{ assoc.id }}/tfparam/is_multisectional/{% if assoc.is_multisectional %}false{% else %}true{% endif %}"
+                                    hx-trigger="click"
+                                    hx-swap="outerHTML"
                                     {% if assoc.is_multisectional %}
                                         checked
                                     {% endif %}
@@ -47,8 +52,10 @@
                     <div class="row" style="padding-bottom: 5px;">
                         <div class="col-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}' 
-                                onclick="option_tf_select('is_occasional','band/assoc','{{ assoc.id }}','oak-{{ assoc.id}}')"
+                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
+                                hx-post="/band/assoc/{{ assoc.id }}/tfparam/is_occasional/{% if assoc.is_occasional %}false{% else %}true{% endif %}"
+                                hx-trigger="click"
+                                hx-swap="outerHTML"
                                 {% if assoc.is_occasional %}
                                     checked
                                 {% endif %}
@@ -59,7 +66,9 @@
                         <div class="col-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
-                                onclick="option_tf_select('hide_from_schedule','band/assoc','{{ assoc.id }}','hideak-{{ assoc.id}}')"
+                                hx-post="/band/assoc/{{ assoc.id }}/tfparam/hide_from_schedule/{% if assoc.hide_from_schedule %}false{% else %}true{% endif %}"
+                                hx-trigger="click"
+                                hx-swap="outerHTML"
                                 {% if assoc.hide_from_schedule %}
                                     checked
                                 {% endif %}
@@ -74,7 +83,9 @@
                                 <div class="col-6">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
-                                        onclick="option_tf_select('email_me','band/assoc','{{ assoc.id }}','mailbk-{{ assoc.id}}')"
+                                        hx-post="/band/assoc/{{ assoc.id }}/tfparam/email_me/{% if assoc.email_me %}false{% else %}true{% endif %}"
+                                        hx-trigger="click"
+                                        hx-swap="outerHTML"
                                         {% if assoc.email_me %}
                                             checked
                                         {% endif %}
@@ -85,17 +96,14 @@
                                 <div class="col-6">
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
-                                            {% if assoc.color == 0 %}
-                                                <i class="far fa-square"></i>
-                                            {% else %}
-                                                <i class="fas fa-square" style="color:{{ assoc.colorval }};"></i>
-                                            {% endif %}
-                                            <span class="caret"></span>
+                                            {% include "member/color.html" %}
                                         </button>
                                         <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
                                             {% for c in the_colors %}
                                                 <a class="dropdown-item" id="color-{{forloop.counter0}}"
-                                                    onclick="color_select('{{ assoc.id }}','{{forloop.counter0}}')"
+                                                    hx-post="/band/assoc/{{ assoc.id }}/color/{{ forloop.counter0 }}"
+                                                    hx-trigger="click"
+                                                    hx-target="#cbk-{{ assoc.id }}"
                                                 >{% if forloop.first %}
                                                     <i class="far fa-square"></i>
                                                 {% else %}
@@ -118,3 +126,5 @@
 {% else %}
     {% trans "You need to add a band!" %}
 {% endif %}
+<div hx-get="/member/{{ member_id }}/otherbands" hx-trigger="load">
+</div>

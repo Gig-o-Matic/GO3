@@ -2,14 +2,14 @@
 {% if bands %}
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-md-12">                        
+        <div class="col-md-12">
             <div class="dropdown">
                 <button type="button" class="btn btn-sm btn-secondary dropdown-toggle text-center" data-toggle="dropdown">
                     <i class="fas fa-plus-square"></i> {% trans "Add Band" %}
                 </button>
                 <div class="dropdown-menu">
                     {% for a_band in bands %}
-                        <a class="dropdown-item band-click" role="presentation" id="{{a_band.id}}"role="menuitem" tabindex="-1" href="#">{{a_band.name}}</a>
+                        <a class="dropdown-item" role="presentation" role="menuitem" tabindex="-1" href="#" hx-post="/band/{{ a_band.id }}/join/{{ member_id }}" hx-trigger="click" hx-target="#bandlist">{{a_band.name}}</a>
                     {% endfor %}
                 </div>
             </div> <!-- dropdown -->

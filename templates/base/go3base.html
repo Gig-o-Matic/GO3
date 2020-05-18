@@ -123,6 +123,13 @@
     <!-- <script src="/bootstrap3-editable/js/bootstrap-editable.js"></script>     -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
 
+    <script src="https://unpkg.com/htmx.org@0.0.3"></script>
+    <script>
+        document.body.addEventListener('configRequest.htmx', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+    </script>
+
 <script type="text/javascript">
 
 function stopRKey(evt) {
