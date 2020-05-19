@@ -41,7 +41,6 @@ class Plan(models.Model):
     gig = models.ForeignKey("Gig", related_name="plans", on_delete=models.CASCADE)
     assoc = models.ForeignKey("band.Assoc", verbose_name="assoc", related_name="plans", on_delete=models.CASCADE)
 
-
     status = models.IntegerField(choices=PlanStatusChoices.choices, default=PlanStatusChoices.NO_PLAN)
 
     @property
@@ -121,23 +120,6 @@ class AbstractGig(models.Model):
     def is_in_trash(self):
         return self.trashed_date is not None
 
-    @property
-    def member_plans(self):
-        """ find any members that don't have plans yet. This is called whenever a new gig is created
-            through the signaling system """
-        absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
-        # Plan.objects.bulk_create(
-        #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
-        # )
-        # can't use bulk_create because it doesn't send signals
-        # TODO is there a more efficient way?
-        s = self.band.sections.get(is_default=True)
-        for a in absent:
-            Plan.objects.create(gig=self, assoc=a, section=s)
-        # now that we have one for every member, return the list
-        return getattr(self, 'plans') # technically the gig object has no 'plans' attribute; it's defined by the ORM system
-
-
     def __str__(self):
         return self.title
 
@@ -171,4 +153,21 @@ class Gig(AbstractGig):
     # We need to exclude the band, lest the reverse query in Band conflict
     # We need to exclude the cal_feed_id, because we want it to be unique and the history table gets a copy of every change
     history = HistoricalRecords(excluded_fields=['band','cal_feed_id'])
+
+    @property
+    def member_plans(self):
+        """ find any members that don't have plans yet. This is called whenever a new gig is created
+            through the signaling system """
+        absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
+        # Plan.objects.bulk_create(
+        #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
+        # )
+        # can't use bulk_create because it doesn't send signals
+        # TODO is there a more efficient way?
+        s = self.band.sections.get(is_default=True)
+        for a in absent:
+            Plan.objects.create(gig=self, assoc=a, section=s)
+            
+        # now that we have one for every member, return the list
+        return self.plans # pylint: disable=no-member
 

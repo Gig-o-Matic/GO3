@@ -134,7 +134,7 @@ class Member(AbstractUser):
 
     def as_email_recipient(self):
         return EmailRecipient(name=self.username, email=self.email,
-                              language=getattr(self,'preferences').language)
+                              language=self.preferences.language) # pylint: disable=no-member
 
     objects = MemberManager()
 
