@@ -77,6 +77,11 @@ class GigForm(forms.ModelForm):
             return zone.localize(hour) if zone else hour
 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
+        if date is None:
+            self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
+            super().clean()
+            return
+
         end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
         if end_date is None or end_date==date:
             call_time = _parse(self.cleaned_data.get('call_time',None), 'TIME_INPUT_FORMATS')
@@ -92,7 +97,7 @@ class GigForm(forms.ModelForm):
             setdate = None
 
         if date < timezone.now():
-            self.add_error('date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
+            self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
         if setdate and setdate < date:
             self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
         if enddate:

@@ -130,7 +130,7 @@ class GigTest(TestCase):
     def assoc_joe_and_create_gig(self, **kwargs):
         a = self.assoc_joe()
         g = self.create_gig_form(contact=self.joeuser, **kwargs)
-        p = g.member_plans.filter(assoc=a).get()
+        p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
 
     def test_no_section(self):
@@ -530,3 +530,18 @@ class GigTest(TestCase):
         p.save()
         p.refresh_from_db()
         self.assertEqual(p.snooze_until, None)
+
+    ### tests of date/time setting using the form
+    
+    def assertDateEqual(self, d1, d2):
+        """ compare dates ignoring timezone """
+        for a in ['month', 'day', 'year', 'hour', 'minute']:
+            self.assertEqual(getattr(d1,a), getattr(d2,a))
+
+    def test_no_date_time(self):
+        # should fail - response code 200 means the edit page reloaded
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='', call_time='', expect_code=200)
+
+    def test_date_only(self):
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', call_time='')
+        self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
