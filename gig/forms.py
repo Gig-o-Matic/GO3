@@ -63,31 +63,29 @@ class GigForm(forms.ModelForm):
         """
         def _parse(val,format_type):
             x = None
-            for format in get_format(format_type):
-                try:
-                    x = datetime.strptime(val.replace(' ',''), format)
-                except (ValueError, TypeError):
-                    continue
+            if val:
+                for format in get_format(format_type):
+                    try:
+                        x = datetime.strptime(val.replace(' ',''), format)
+                    except (ValueError, TypeError):
+                        continue
             return x
 
-        def _mergetime(hour, minute, zone=None):
+        def _mergetime(hour, minute='', zone=None):
             if minute:
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
-                return zone.localize(hour) if zone else hour
-            else:
-                return None
+            return zone.localize(hour) if zone else hour
 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
         if end_date is None or end_date==date:
-            call_time = _parse(self.cleaned_data.get('call_time',''), 'TIME_INPUT_FORMATS')
-            set_time = _parse(self.cleaned_data.get('set_time',''), 'TIME_INPUT_FORMATS')
-            end_time = _parse(self.cleaned_data.get('end_time',''), 'TIME_INPUT_FORMATS')
+            call_time = _parse(self.cleaned_data.get('call_time',None), 'TIME_INPUT_FORMATS')
+            set_time = _parse(self.cleaned_data.get('set_time',None), 'TIME_INPUT_FORMATS')
+            end_time = _parse(self.cleaned_data.get('end_time',None), 'TIME_INPUT_FORMATS')
 
-            zone = tzone(self.fields['timezone'].initial)
-            date = _mergetime(date, call_time, zone)
-            setdate = _mergetime(date, set_time)
-            enddate = _mergetime(date, end_time)
+            date = _mergetime(date, call_time, tzone(self.fields['timezone'].initial))
+            setdate = _mergetime(date, set_time) if set_time else None
+            enddate = _mergetime(date, end_time) if end_time else None
         else:
             date=date.replace(tzinfo=tzone(self.fields['timezone'].initial))
             enddate=end_date.replace(tzinfo=tzone(self.fields['timezone'].initial))
@@ -119,7 +117,7 @@ class GigForm(forms.ModelForm):
 
     send_update = forms.BooleanField(required=False, label=_('Email members about change'))
     call_date = forms.Field(required=True, label=_('Date'))
-    call_time = forms.Field(required=True, label=_('Call Time'))
+    call_time = forms.Field(required=False, label=_('Call Time'))
     set_time = forms.Field(required=False, label=_('Set Time'))
     end_time = forms.Field(required=False, label=_('End Time'))
     end_date = forms.Field(required=False, label=_('End Date'))
