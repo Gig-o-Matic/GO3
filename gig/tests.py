@@ -540,7 +540,7 @@ class GigTest(TestCase):
 
     def test_no_date_time(self):
         # should fail - response code 200 means the edit page reloaded
-        g, _, _ = self.assoc_joe_and_create_gig(call_date='', call_time='', expect_code=200)
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='', call_time='', expect_code=200)
 
     def test_date_only(self):
         g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', call_time='')
