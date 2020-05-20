@@ -67,7 +67,7 @@ class Plan(models.Model):
         return '{0} for {1} ({2})'.format(self.assoc.member.display_name, self.gig.title, PlanStatusChoices(self.status).label)
 
 
-class AbstractGig(models.Model):
+class AbstractEvent(models.Model):
 
     class Meta:
         abstract = True
@@ -123,7 +123,7 @@ class AbstractGig(models.Model):
     def __str__(self):
         return self.title
 
-class Gig(AbstractGig):
+class Gig(AbstractEvent):
 
     # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
     contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
