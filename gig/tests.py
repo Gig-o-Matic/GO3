@@ -539,9 +539,40 @@ class GigTest(TestCase):
             self.assertEqual(getattr(d1,a), getattr(d2,a))
 
     def test_no_date_time(self):
-        # should fail - response code 200 means the edit page reloaded
+        # should fail and reload the edit page - response code 200
         _, _, _ = self.assoc_joe_and_create_gig(call_date='', call_time='', expect_code=200)
 
     def test_date_only(self):
         g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', call_time='')
         self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
+
+    def test_dates_only(self):
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='',
+                                                end_date='02/03/2023')
+        self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
+        self.assertIsNone(g.setdate)
+        self.assertDateEqual(g.enddate, datetime(month=2, day=3, year=2023, hour=0, minute=0))
+
+    def test_times(self):
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='12:00 pm',
+                                                set_time='1:00 pm',
+                                                end_time='2:00 pm')
+        self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=12, minute=0))
+        self.assertDateEqual(g.setdate, datetime(month=1, day=2, year=2023, hour=13, minute=0))
+        self.assertDateEqual(g.enddate, datetime(month=1, day=2, year=2023, hour=14, minute=0))
+
+    def test_settime_order(self):
+        # should fail and reload the edit page - response code 200
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='1:00 pm',
+                                                set_time='12:00 pm',
+                                                expect_code=200)
+
+    def test_endtime_order(self):
+        # should fail and reload the edit page - response code 200
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='1:00 pm',
+                                                end_time='12:00 pm',
+                                                expect_code=200)
