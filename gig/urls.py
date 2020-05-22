@@ -24,6 +24,7 @@ urlpatterns = [
     path('create/<int:bk>', views.CreateView.as_view(), name='gig-create'),
     path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
     path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
+    path('<int:pk>/duplicate', views.DuplicateView.as_view(), name='gig-duplicate'),
 
     path('plan/<uuid:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
     path('plan/<uuid:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),

@@ -576,3 +576,39 @@ class GigTest(TestCase):
                                                 call_time='1:00 pm',
                                                 end_time='12:00 pm',
                                                 expect_code=200)
+
+
+    def duplicate_gig_form(self, gig, number=1,
+                        user=None, 
+                        expect_code=302,
+                        call_date = '01/02/2100',
+                        end_date = '',
+                        call_time = '12:00 pm',
+                        set_time = '',
+                        end_time = '',
+                        **kwargs):
+
+        c=Client()
+        c.force_login(user if user else self.joeuser)
+        response = c.post(f'/gig/{gig.id}/duplicate/{number}', 
+                                    {'title':f'Copy of {gig.title}',
+                                    'call_date':call_date,
+                                    'end_date':end_date,
+                                    'call_time':call_time,
+                                    'set_time':set_time,
+                                    'end_time':end_time,
+                                    'contact':kwargs.get('contact', self.joeuser).id,
+                                    'status':GigStatusChoices.UNKNOWN,
+                                    'send_update': True
+                                    })
+        
+        self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
+        obj = Gig.objects.last()
+        return obj
+
+    def test_duplicate_gig(self):
+        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(Gig.objects.count(), 1)
+    
+        g2 = self.duplicate_gig_form(g1, 1)
+        self.assertEqual(Gig.objects.count(), 2)

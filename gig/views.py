@@ -20,6 +20,7 @@ from django.views import generic
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
+from django.http import Http404
 from .models import Gig, Plan
 from .forms import GigForm
 from .util import PlanStatusChoices
@@ -56,13 +57,16 @@ class CreateView(generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
-        context['band'] = Band.objects.get(id=self.kwargs['bk'])
+        context['band'] = self.get_band_from_kwargs(**kwargs)
         context['timezone'] = context['band'].timezone
         return context
 
+    def get_band_from_kwargs(self, **kwargs):
+         return Band.objects.get(id=self.kwargs['bk'])
+
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(CreateView, self).get_form_kwargs(*args, **kwargs)
-        kwargs['band'] = Band.objects.get(id=self.kwargs['bk'])
+        kwargs['band'] = self.get_band_from_kwargs(**kwargs)
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -93,7 +97,6 @@ class UpdateView(generic.UpdateView):
         context['timezone'] = self.object.band.timezone
         return context
 
-
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
@@ -101,7 +104,6 @@ class UpdateView(generic.UpdateView):
         pass
 
     def form_valid(self, form):
-
         if not has_edit_permission(self.request.user, self.object.band):
             raise PermissionError("Trying to update a gig without permission: {}".format(
                 self.request.user.email))
@@ -114,10 +116,32 @@ class UpdateView(generic.UpdateView):
 
         return result
 
+class DuplicateView(CreateView):
+  
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super().get_form_kwargs(*args, **kwargs)
+        gig_orig = Gig.objects.get(id=self.kwargs['pk'])
+        # we didn't originally get a band in the request, we got a gig pk - so get the band from that
+        # and stash it among the args from the request
+        self.kwargs['bk'] = gig_orig.band.id
+
+        # populate the initial data from the original gig
+        kwargs['initial'] = forms.models.model_to_dict(gig_orig, 
+                                                        exclude=['calldate', 'setdate', 'enddate'])
+        # ...but replace the title with a 'copy of'
+        kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
+        return kwargs
+
+    def get_band_from_kwargs(self, **kwargs):
+        # didn't have the band from the request args, so pull it from the gig
+        try:
+            return Gig.objects.get(id=self.kwargs['pk']).band
+        except Gig.DoesNotExist:
+            raise Http404('No gig found matching the query')
+
 
 def has_edit_permission(user, band):
         return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
-
 
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
