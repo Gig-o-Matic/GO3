@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import timedelta
 
 from gig.models import Gig, Plan
+from gig.util import PlanStatusChoices, GigStatusChoices
 from member.models import Member
 
 from lib.email import prepare_email, send_messages_async
@@ -61,16 +62,16 @@ def prepare_calfeed(member):
     }
 
     if member.preferences.calendar_show_only_confirmed:
-        filter_args["gig__status"] = Gig.StatusOptions.CONFIRMED
+        filter_args["gig__status"] = GigStatusChoices.CONFIRMED
 
     if member.preferences.calendar_show_only_committed:
         filter_args["status__in"] = [
-            Plan.StatusChoices.DEFINITELY, Plan.StatusChoices.PROBABLY]
+            PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
 
     the_plans = Plan.objects.filter(**filter_args)
 
     if member.preferences.hide_canceled_gigs:
-        the_plans = the_plans.exclude(gig__status=Gig.StatusOptions.CANCELLED)
+        the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELLED)
 
     the_gigs = [p.gig for p in the_plans]
     cf = make_calfeed(member, the_gigs,

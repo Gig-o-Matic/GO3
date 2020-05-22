@@ -5,7 +5,7 @@
 {% block title %}{% trans "Gig Edit" %}{% endblock title %}
 
 {% block headcontent %}
-<link href="/timepicker/jquery.timepicker.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
 {% endblock headcontent %}
 
 {% block content %}
@@ -13,7 +13,7 @@
     <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
         <div class="page-header">
             {% if is_new %}
-                {% trans "New Gig for " %}{{ the_band.name }}
+                {% trans "New Gig for " %} {{ band.name }}
             {% else %}
                 {% trans "Gig Edit" %}
             {% endif %}
@@ -49,14 +49,67 @@
              
             <div class="row">
                 <div class="form-group col-4">
-                    {{ form.date.errors }}
-                    {{ form.date.label_tag }}
-                    {% render_field form.date class="form-control" %}
+                    {{ form.call_date.errors }}
+                    {{ form.call_date.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
+                            <input type="text" name="call_date" class="form-control datetimepicker-input" id="id_call_date" data-target="#id_call_date_widget" required/>
+                            <div class="input-group-append" data-target="#id_call_date_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group col-4">
-                    {{ form.enddate.errors }}
-                    {{ form.enddate.label_tag }}
-                    {% render_field form.enddate class="form-control" %}
+                    {{ form.end_date.errors }}
+                    {{ form.end_date.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_end_date_widget" data-target-input="nearest">
+                            <input type="text" name="end_date" class="form-control datetimepicker-input" id="id_end_date" data-target="#id_end_date_widget"/>
+                            <div class="input-group-append" data-target="#id_end_date_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group col-4">
+                    {{ form.call_time.errors }}
+                    {{ form.call_time.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_call_time_widget" data-target-input="nearest">
+                            <input type="text" name="call_time" class="form-control datetimepicker-input" id="id_call_time" data-target="#id_call_time_widget"/>
+                            <div class="input-group-append" data-target="#id_call_time_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-4">
+                    {{ form.set_time.errors }}
+                    {{ form.set_time.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_set_time_widget" data-target-input="nearest">
+                            <input type="text" name="set_time" class="form-control datetimepicker-input" id="id_set_time" data-target="#id_set_time_widget"/>
+                            <div class="input-group-append" data-target="#id_set_time_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-4">
+                    {{ form.end_time.errors }}
+                    {{ form.end_time.label_tag }}
+                    <div class="form-group">
+                        <div class="input-group date" id="id_end_time_widget" data-target-input="nearest">
+                            <input type="text" name="end_time" class="form-control datetimepicker-input" id="id_end_time" data-target="#id_end_time_widget"/>
+                            <div class="input-group-append" data-target="#id_end_time_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 {% comment %}                    
@@ -89,21 +142,8 @@
                     </div>
                 </div>
             {% endif %}
-            <div class="row">
-                <div class="form-group col-4">
-                    <label for="gigcallinput" class="col-form-label">{% trans "Call Time" %}</label>
-                    <input type="text" class="form-control" id="gigcallinput" placeholder="4:20" value="{{gig.calltime}}" name="gig_call">
-                </div>
-                <div class="form-group col-4">
-                    <label for="gigsetinput" class="col-form-label">{% trans "Set Time" %}</label>
-                    <input type="text" class="form-control" id="gigsetinput" placeholder="" value="{{gig.settime}}" name="gig_set">
-                </div>
-                <div class="form-group col-4">
-                    <label for="gigendinput" class="col-form-label">{% trans "End Time" %}</label>
-                    <input type="text" class="form-control" id="gigendinput" placeholder="" value="{{gig.endtime}}" name="gig_end">
-                </div>
-            </div>
-{% endcomment %}            
+{% endcomment %}
+
             <div class="row">
                 <div class="form-group col-lg-4 col-md-4 col-12">
                     {{ form.address.errors }}
@@ -148,7 +188,7 @@
                 </div>
             </div>
 {% comment %}
-            {% if the_band.rss_feed %}
+            {% if band.rss_feed %}
                 <div class="form-group">
                     <label for="gigrssdescriptioninput" class="col-form-label">{% trans "Description for RSS feed" %}</label>
                     <textarea class="form-control" rows="10" id="gigrssdescriptioninput" placeholder="{% trans "description here" %}" name="gig_rssdescription">{{gig.rss_description}}</textarea>
@@ -157,7 +197,7 @@
             <div class="form-group">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="newgig_notifymembers" name="gig_notifymembers" 
-                    {% if the_band.send_updates_by_default %}checked{% endif %}>
+                    {% if band.send_updates_by_default %}checked{% endif %}>
                     <label class="form-check-label" for="newgig_notifymembers"> 
                         {% if is_new or is_dupe %}
                             {% trans "Email members about this new gig" %}
@@ -286,21 +326,12 @@
 {% endblock modal %}
 
 {% block localscripts %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.28/moment-timezone-with-data-10-year-range.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script>
+
 {% comment %}
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.7.1/css/bootstrap-datepicker.css"></script> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
-{% if the_user.preferences.locale == 'en_GB' %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.en-GB.min.js"></script>
-{% elif the_user.preferences.locale != 'en' %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.{{ the_user.preferences.locale }}.min.js"></script>
-{% endif %}
 <script src="/js/jquery.validate.js"></script>
-<script src="/timepicker/jquery.timepicker.min.js"></script>
-{% if the_user.preferences.locale == 'en' %}
-<script src='/js/moment.min.js'></script>
-{% else %}
-<script src='/js/moment-with-locales.min.js'></script>
-{% endif %}
 <script>
 
 {% if the_user.preferences.locale == 'en_GB' %}
@@ -308,25 +339,83 @@
 {% else %}
     {% set locale_fix = the_user.preferences.locale %}
 {% endif %}
+{% endcomment %}
 
+<script type="text/javascript">
 $(document).ready(function () {
-    $('#gigdateinput').datepicker({
-                language: '{{ locale_fix }}'
-            });
-    $('#gigdateinput')
-      .on('changeDate', function(ev){
-        $('#gigdateinput').datepicker('hide')
-      });
-      
-    $('#gigenddateinput').datepicker({
-                language: '{{ locale_fix }}'
-            });
-    $('#gigenddateinput')
-      .on('changeDate', function(ev){
-        $('#gigenddateinput').datepicker('hide')
-      });
+    $('#id_call_date_widget').datetimepicker({
+        format: 'L',
+        timeZone: '{{ timezone }}',
+        icons: {
+                    date: "fa fa-calendar",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.date %}
+            defaultDate: '{{ object.date.isoformat }}',
+        {% endif %}
+    });
+    $('#id_end_date_widget').datetimepicker({
+        format: 'L',
+        timeZone: '{{ timezone }}',
+        icons: {
+                    date: "fa fa-calendar",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.enddate %}
+            defaultDate: '{{ object.enddate.isoformat }}',
+        {% endif %}
+    });
+    $('#id_call_time_widget').datetimepicker({
+        format: 'LT',
+        timeZone: '{{ timezone }}',
+        icons: {
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.date %}
+            defaultDate: '{{ object.date.isoformat }}',
+        {% endif %}
+    });
+    $('#id_set_time_widget').datetimepicker({
+        format: 'LT',
+        timeZone: '{{ timezone }}',
+        icons: {
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.setdate %}
+            defaultDate: '{{ object.setdate.isoformat }}',
+        {% endif %}
+    });
+    $('#id_end_time_widget').datetimepicker({
+        format: 'LT',
+        timeZone: '{{ timezone }}',
+        icons: {
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if object.enddate %}
+            defaultDate: '{{ object.enddate.isoformat }}',
+        {% endif %}
+    });
+{% comment %}
+    $('#id_date_widget').on("change.datetimepicker", function (e) {
+        console.log("YES");
+        $('#id_setdate_widget').datetimepicker('minDate', e.date);
+    });
+    $('#id_setdate_widget').on("change.datetimepicker", function (e) {
+        $('#id_enddate_widget').datetimepicker('minDate', e.date);
+    });
+{% endcomment %}
 
-
+{% comment %}    
     $.validator.addMethod(
         "gigoDate",
         function(value, element) {
@@ -382,9 +471,11 @@ $(document).ready(function () {
     $('#gigcallinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
     $('#gigsetinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
     $('#gigendinput').timepicker({'timeFormat':'{% trans "time_format" %}'});
-      
-    updateContactList('{{the_band.id}}');
+
+        updateContactList('{{band.id}}');
+    {% endcomment %}      
 });
+{% comment %}
 
 jQuery.validator.addMethod("greaterThan", 
 function(value, element, params) {
@@ -412,42 +503,6 @@ function(value, element, params) {
     return d1 >= today;
 },'{% trans "Must be in the future!" %}');
 
-function updateContactList(bk) {
-    $.post("/band_get_member_list",
-                {
-                    bk: bk
-                },
-                function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        obj = JSON && JSON.parse(responseTxt) || $.parseJSON(responseTxt);
-                        inner=""
-                        {% if gig.contact == None %}
-                            inner = inner+"<option value=''>??</option>"
-                        {% endif %}
-                        for(i=0; i<obj.length; i++) {
-                            inner=inner+"<option value='"+obj[i][1]+"'"
-                            {% if is_new %}
-                                if (obj[i][1] == '{{the_user.id}}') {
-                                    inner=inner+" SELECTED"
-                                }
-                            {% elif gig.contact %}
-                                if (obj[i][1] == '{{gig.contact.id}}') {
-                                    inner=inner+" SELECTED"
-                                }
-                            {% endif %}
-                            inner=inner+">"+obj[i][0]+"</option>"
-                        }
-                        $('#gig-contacts').html(inner);
-                    if(statusTxt=="error")
-                      alert("{% trans "Error" %}: "+xhr.status+": "+xhr.statusText);
-                });
-}
-
-function handleBandChange(sel) {
-    var bk=sel.value;
-    updateContactList(bk);
-};
-
 function setSeries() {
     if($('#newgig-isseries').prop('checked'))
         $('#gignumberseriesinput').show();
@@ -455,7 +510,7 @@ function setSeries() {
         $('#gignumberseriesinput').hide();
 };
 
-</script>
 {% endcomment %}
+</script>
 {% endblock localscripts %}
 

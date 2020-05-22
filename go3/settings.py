@@ -107,6 +107,10 @@ TEMPLATES = [
     },
 ]
 
+FORMAT_MODULE_PATH = [
+    'go3.formats'
+]
+
 WSGI_APPLICATION = 'go3.wsgi.application'
 
 
