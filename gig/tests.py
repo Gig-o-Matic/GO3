@@ -590,7 +590,7 @@ class GigTest(TestCase):
 
         c=Client()
         c.force_login(user if user else self.joeuser)
-        response = c.post(f'/gig/{gig.id}/duplicate/{number}', 
+        response = c.post(f'/gig/{gig.id}/duplicate', 
                                     {'title':f'Copy of {gig.title}',
                                     'call_date':call_date,
                                     'end_date':end_date,
@@ -610,5 +610,5 @@ class GigTest(TestCase):
         g1, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(Gig.objects.count(), 1)
     
-        g2 = self.duplicate_gig_form(g1, 1)
+        _ = self.duplicate_gig_form(g1, 1)
         self.assertEqual(Gig.objects.count(), 2)
