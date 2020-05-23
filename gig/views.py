@@ -22,6 +22,7 @@ from django.utils import timezone
 from django import forms
 from .models import Gig, Plan
 from .forms import GigForm
+from .util import PlanStatusChoices
 from band.models import Band
 from gig.helpers import notify_new_gig
 
@@ -35,6 +36,9 @@ class DetailView(generic.DetailView):
         context['user_can_edit'] = self.request.user.is_superuser
         # todo or band members, admins etc.
         context['user_can_create'] = self.request.user.is_superuser
+        context['timezone'] = self.object.band.timezone
+
+        timezone.activate(self.object.band.timezone)
 
         return context
 
@@ -43,13 +47,17 @@ class CreateView(generic.CreateView):
     model = Gig
     form_class = GigForm
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
-        context['the_band'] = Band.objects.get(id=self.kwargs['bk'])
+        context['band'] = Band.objects.get(id=self.kwargs['bk'])
+        context['timezone'] = context['band'].timezone
         return context
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -59,28 +67,19 @@ class CreateView(generic.CreateView):
         return kwargs
 
     def form_valid(self, form):
-
         band = Band.objects.get(id=self.kwargs['bk'])
-
-        # make sure we're allowed to make a gig for this band
-        if self.request.user.is_superuser:
-            has_permission = True
-        else:
-            has_permission = band.anyone_can_create_gigs or band.is_admin(
-                self.request.user)
-
-        if has_permission is False:
+        if not has_edit_permission(self.request.user, band):
             raise PermissionError("Trying to create a gig without permission: {}".format(
                 self.request.user.email))
 
+        # there's a new gig; link it to the band
         form.instance.band = band
 
-        result = super(CreateView, self).form_valid(form)
+        result = super().form_valid(form)
 
         # call the super before sending notifications, so the object is saved
         if form.cleaned_data['send_update']:
             notify_new_gig(form.instance, created=True)
-            pass
 
         return result
 
@@ -89,10 +88,24 @@ class UpdateView(generic.UpdateView):
     model = Gig
     form_class = GigForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['timezone'] = self.object.band.timezone
+        return context
+
+
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
+    def clean_date(self):
+        pass
+
     def form_valid(self, form):
+
+        if not has_edit_permission(self.request.user, self.object.band):
+            raise PermissionError("Trying to update a gig without permission: {}".format(
+                self.request.user.email))
+
         result = super(UpdateView, self).form_valid(form)
 
         # call the super before sending notifications, so the object is saved
@@ -102,10 +115,14 @@ class UpdateView(generic.UpdateView):
         return result
 
 
+def has_edit_permission(user, band):
+        return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
+
+
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
-    if val == Plan.StatusChoices.DONT_KNOW:
+    if val == PlanStatusChoices.DONT_KNOW:
         now = datetime.datetime.now(tz=timezone.get_current_timezone())
         if (future_days := (plan.gig.date - now).days) > 8:
             plan.snooze_until = now + datetime.timedelta(days=7)

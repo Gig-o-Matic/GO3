@@ -16,10 +16,11 @@
 """
 import copy
 from django.core import mail
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
+from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan
 from .helpers import send_reminder_email, send_snooze_reminders
 from .forms import GigForm
@@ -38,7 +39,6 @@ class GigTest(TestCase):
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
-        # Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -55,50 +55,73 @@ class GigTest(TestCase):
             setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
             enddate=thedate + timedelta(hours=2) if end_date == 'auto' else end_date,
             contact=the_member,
-            status=Gig.StatusOptions.UNKNOWN
+            status=GigStatusChoices.UNKNOWN
         )
 
-    def create_gig_form(self, **kwargs):
+    def create_gig_form(self, user=None, 
+                        expect_code=302,
+                        call_date = '01/02/2100',
+                        end_date = '',
+                        call_time = '12:00 pm',
+                        set_time = '',
+                        end_time = '',
+                        **kwargs):
 
-        date = kwargs.get('date', timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC')))
-        setdate = kwargs.get('setdate', date + timedelta(minutes=30))
-        enddate = kwargs.get('enddate', date + timedelta(hours=2))
+        c=Client()
+        c.force_login(user if user else self.joeuser)
+        response = c.post(f'/gig/create/{self.band.id}', 
+                                    {'title':'New Gig',
+                                    'call_date':call_date,
+                                    'end_date':end_date,
+                                    'call_time':call_time,
+                                    'set_time':set_time,
+                                    'end_time':end_time,
+                                    'contact':kwargs.get('contact', self.joeuser).id,
+                                    'status':GigStatusChoices.UNKNOWN,
+                                    'send_update': True
+                                    })
+        
+        self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
+        obj = Gig.objects.last()
+        return obj
 
-        f = GigForm(data={'title':'New Gig',
-                          'date':date,
-                          'setdate':setdate,
-                          'enddate':enddate,
-                          'contact':kwargs.get('contact', self.joeuser),
-                          'status':Gig.StatusOptions.UNKNOWN,
-                          'send_update': True
-                          })
-        r = RequestFactory().get(f'/gig/create/{self.band.id}')
-        r.user = kwargs.get('contact', self.joeuser)
-        v = CreateView()
-        v.setup(r, bk=self.band.id)
-        v.form_valid(f)
-        return v.object
+    def _dateformat(self, x):
+        return x.strftime('%m/%d/%Y') if x else ''
 
-    def update_gig_form(self, the_gig, **kwargs):
+    def _timeformat(self, x):
+        return x.strftime('%I:%M %p') if x else ''
+
+    def update_gig_form(self, the_gig, 
+                        expect_code=302,
+                        **kwargs):
+
+        call_date = kwargs.pop('call_date', self._dateformat(the_gig.date))
+        end_date = kwargs.pop('end_date', self._dateformat(the_gig.enddate))
+        call_time = kwargs.pop('call_time', self._timeformat(the_gig.date))
+        set_time = kwargs.pop('set_time', self._timeformat(the_gig.setdate))
+        end_time = kwargs.pop('end_time', self._timeformat(the_gig.enddate))
+
         data={
             'title':the_gig.title,
-            'date':the_gig.date,
-            'setdate':the_gig.setdate,
-            'enddate':the_gig.enddate,
-            'contact':the_gig.contact,
+            'call_date':call_date,
+            'end_date':end_date,
+            'call_time':call_time,
+            'set_time':set_time,
+            'end_time':end_time,
+            'contact':the_gig.contact.id,
             'status':the_gig.status,
             'send_update':True
         }
         for x in kwargs.keys():
             data[x]=kwargs[x]
 
-        f = GigForm(instance=the_gig, data=data)
-
-        r = RequestFactory().get(f'/gig/{the_gig.id}/update/{self.band.id}')
-        v = UpdateView()
-        v.setup(r, bk=self.band.id)
-        v.form_valid(f)
-        return v.object
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.post(f'/gig/{the_gig.id}/update', data)
+        self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
+        self.assertEqual(Gig.objects.count(),1)
+        the_gig.refresh_from_db()
+        return the_gig
 
     def assoc_joe(self):
         a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
@@ -107,7 +130,7 @@ class GigTest(TestCase):
     def assoc_joe_and_create_gig(self, **kwargs):
         a = self.assoc_joe()
         g = self.create_gig_form(contact=self.joeuser, **kwargs)
-        p = g.member_plans.filter(assoc=a).get()
+        p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
 
     def test_no_section(self):
@@ -121,7 +144,8 @@ class GigTest(TestCase):
 
     def test_gig_plans(self):
         """ show that when a gig is created, every member has a plan """
-        g = self.create_gig_form(contact=self.joeuser)
+        self.assoc_joe()
+        g = self.create_gig_form()
         self.assertEqual(g.plans.count(), self.band.assocs.count())
 
     def test_plan_section(self):
@@ -168,12 +192,14 @@ class GigTest(TestCase):
         """ make sure that if I don't have permission to create a gig, I can't """
         self.band.anyone_can_create_gigs = False
         self.band.save()
+        self.assoc_joe() # need a member of the band so there's a valid contact to select from in the form
         with self.assertRaises(PermissionError):
-            self.create_gig_form(contact=self.janeuser)
+            self.create_gig_form(user=self.janeuser,title='permission gig')
+        pass
 
     @flag_missing_vars
     def test_new_gig_email(self):
-        g, _, p = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='02:00 pm')
         self.assertEqual(len(mail.outbox), 1)
 
         message = mail.outbox[0]
@@ -181,9 +207,9 @@ class GigTest(TestCase):
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
         self.assertIn('Unconfirmed', message.body)
-        self.assertIn(f'{p.id}/{Plan.StatusChoices.DEFINITELY}', message.body)
-        self.assertIn(f'{p.id}/{Plan.StatusChoices.CANT_DO_IT}', message.body)
-        self.assertIn(f'{p.id}/{Plan.StatusChoices.DONT_KNOW}', message.body)
+        self.assertIn(f'{p.id}/{PlanStatusChoices.DEFINITELY}', message.body)
+        self.assertIn(f'{p.id}/{PlanStatusChoices.CANT_DO_IT}', message.body)
+        self.assertIn(f'{p.id}/{PlanStatusChoices.DONT_KNOW}', message.body)
         self.assertNotIn(MISSING, message.subject)
         self.assertNotIn(MISSING, message.body)
 
@@ -200,31 +226,24 @@ class GigTest(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
     def test_gig_time_no_set(self):
-        self.assoc_joe_and_create_gig(setdate=None)
+        self.assoc_joe_and_create_gig(set_time='', end_time='02:00 pm')
         self.assertIn('Time: noon (Call Time), 2 p.m. (End Time)\nContact', mail.outbox[0].body)
 
     def test_gig_time_no_end(self):
-        self.assoc_joe_and_create_gig(enddate=None)
+        self.assoc_joe_and_create_gig(set_time='12:30 pm', end_date='', end_time='')
         self.assertIn('Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact', mail.outbox[0].body)
 
     def test_gig_time_no_set_no_end(self):
-        self.assoc_joe_and_create_gig(setdate=None, enddate=None)
+        self.assoc_joe_and_create_gig(set_time='', end_date='', end_time='')
         self.assertIn('Time: noon (Call Time)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_long_set(self):
-        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
-        self.assoc_joe_and_create_gig(date=date, setdate=date + timedelta(days=1), enddate=None)
-        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
 
     def test_gig_time_long_end(self):
         date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
-        self.assoc_joe_and_create_gig(date=date, setdate=None, enddate=date + timedelta(days=1))
-        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nEnd Time: 01/03/2100 noon (Sun)\nContact', mail.outbox[0].body)
-
-    def test_gig_time_long_set_end(self):
-        date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
-        self.assoc_joe_and_create_gig(date=date, setdate=date + timedelta(days=1), enddate=date+timedelta(days=1, hours=1))
-        self.assertIn('Call Time: 01/02/2100 noon (Sat)\nSet Time: 01/03/2100 noon (Sun)\nEnd Time: 01/03/2100 1 p.m. (Sun)\nContact', mail.outbox[0].body)
+        enddate = date + timedelta(days=1)
+        self.assoc_joe_and_create_gig(call_date=self._dateformat(date), call_time=self._timeformat(date),
+                                      set_time='', 
+                                      end_date=self._dateformat(enddate), end_time=self._timeformat(enddate))
+        self.assertIn('Call Time: 01/02/2100 midnight (Sat)\nEnd Time: 01/03/2100 midnight (Sun)\nContact', mail.outbox[0].body)
 
     def test_new_gig_contact(self):
         self.assoc_joe_and_create_gig()
@@ -236,7 +255,7 @@ class GigTest(TestCase):
     def test_new_gig_localization(self):
         self.joeuser.preferences.language = 'de'
         self.joeuser.save()
-        self.assoc_joe_and_create_gig()
+        self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='2:00 pm')
 
         message = mail.outbox[0]
         self.assertIn('02.01.2100 (Sa)', message.body)
@@ -246,27 +265,47 @@ class GigTest(TestCase):
     def test_new_gig_time_localization(self):
         self.joeuser.preferences.language='en-US'
         self.joeuser.save()
+        g, _, _ = self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='02:00 pm')
+        message = mail.outbox[0]
+        mail.outbox=[]
         self.band.timezone = 'America/New_York'
         self.band.save()
-        # Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
-        # g = self.create_gig()
-        self.assoc_joe_and_create_gig()
+        self.update_gig_form(g, title='new')
         self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
         self.assertIn("01/02/2100 (Sat)", message.body)
-        self.assertIn('7 a.m. (Call Time), 7:30 a.m. (Set Time), 9 a.m. (End Time)', message.body)
+        self.assertIn('noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)', message.body)
 
     def test_gig_time_daylight_savings(self):
-        self.band.timezone = 'America/New_York'
+        """
+            check to see that gig times are rendered correctly when going from UTC in the
+            database to something else.
+        """
+        self.band.timezone = 'UTC'
         self.band.save()
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        date1 = timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC'))
+        date2 = timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC'))
+        self.create_gig_form(call_date=self._dateformat(date1), call_time=self._timeformat(date1))
+        self.create_gig_form(call_date=self._dateformat(date2), call_time=self._timeformat(date2))
 
-        # DST information only out to 2037?
-        self.create_gig_form(date=timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone('UTC')))
-        self.create_gig_form(date=timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone('UTC')))
-        self.assertIn('7 a.m. (Call Time)', mail.outbox[0].body)
-        self.assertIn('8 a.m. (Call Time)', mail.outbox[1].body)
+        # get the gigs we just made
+        gigs = Gig.objects.order_by('id')
+        first, second = gigs
 
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{first.id}/')
+        self.assertIn("noon", response.content.decode('ascii'))
+ 
+        # now change the band's timezone and render again
+        self.band.timezone = 'America/New_York'
+        self.band.save()
+
+        response = c.get(f'/gig/{first.id}/')
+        self.assertIn("7 a.m.", response.content.decode('ascii'))
+        response = c.get(f'/gig/{second.id}/')
+        self.assertIn("8 a.m.", response.content.decode('ascii'))
 
     @flag_missing_vars
     def test_reminder_email(self):
@@ -283,7 +322,7 @@ class GigTest(TestCase):
 
     def test_no_reminder_to_decided(self):
         g, _, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.DEFINITELY
+        p.status = PlanStatusChoices.DEFINITELY
         p.save()
         mail.outbox = []
         send_reminder_email(g)
@@ -330,7 +369,7 @@ class GigTest(TestCase):
     def test_gig_edit_email(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
-        g.status = g.StatusOptions.CONFIRMED
+        g.status = GigStatusChoices.CONFIRMED
         g.save()
         self.update_gig_form(g)
 
@@ -346,7 +385,7 @@ class GigTest(TestCase):
     def test_gig_edit_status(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
-        self.update_gig_form(g, status=g.StatusOptions.CONFIRMED)
+        self.update_gig_form(g, status=GigStatusChoices.CONFIRMED)
 
         message = mail.outbox[0]
         self.assertIn('Status', message.subject)
@@ -356,8 +395,10 @@ class GigTest(TestCase):
     def test_gig_edit_call(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
-        self.update_gig_form(g, date=g.date + timedelta(hours=2), enddate=None, setdate=None)
-
+        newcalldate = g.date + timedelta(hours=2)
+        self.update_gig_form(g, call_date=self._dateformat(newcalldate), 
+                                call_time=self._timeformat(newcalldate),
+                                end_date='', end_time='', set_time='')
 
         message = mail.outbox[0]
         self.assertIn('Call Time', message.subject)
@@ -366,10 +407,13 @@ class GigTest(TestCase):
 
     def test_gig_edit_add_time(self):
         g, _, _ = self.assoc_joe_and_create_gig()
-        self.update_gig_form(g, setdate=None)
+        self.update_gig_form(g)
 
         mail.outbox = []
-        self.update_gig_form(g, setdate=g.date + timedelta(hours=2))
+        settime = g.date + timedelta(hours=2)
+        self.update_gig_form(g,
+                            set_date=self._dateformat(settime),
+                            set_time=self._timeformat(settime))
 
         message = mail.outbox[0]
         self.assertIn('Set Time', message.subject)
@@ -379,7 +423,7 @@ class GigTest(TestCase):
     def test_gig_edit_contact(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
-        self.update_gig_form(g, contact=self.janeuser)
+        self.update_gig_form(g, contact=self.janeuser.id)
 
         message = mail.outbox[0]
         self.assertIn('Contact', message.subject)
@@ -391,7 +435,9 @@ class GigTest(TestCase):
         self.joeuser.save()
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
-        self.update_gig_form(g, date=g.date + timedelta(hours=2), enddate=None, setdate=None)
+        newdate = g.date + timedelta(hours=2)
+        self.update_gig_form(g, call_date=self._dateformat(newdate), call_time=self._timeformat(newdate),
+                                end_date='', end_time='', set_date='')
 
         message = mail.outbox[0]
         self.assertIn('Beginn', message.subject)
@@ -401,86 +447,132 @@ class GigTest(TestCase):
 
     def test_gig_edit_definitely(self):
         g, _, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.DEFINITELY
+        p.status = PlanStatusChoices.DEFINITELY
         p.save()
         mail.outbox = []
-        self.update_gig_form(g, status=g.StatusOptions.CONFIRMED)
+        self.update_gig_form(g, status=GigStatusChoices.CONFIRMED)
 
         message = mail.outbox[0]
-        self.assertIn(f'Your current status is "{Plan.StatusChoices.DEFINITELY.label}"', message.body)
+        self.assertIn(f'Your current status is "{PlanStatusChoices.DEFINITELY.label}"', message.body) # pylint: disable=no-member
         self.assertNotIn('**can** make it', message.body)
         self.assertIn("**can't** make it", message.body)
 
     def test_gig_edit_cant(self):
         g, _, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.CANT_DO_IT
+        p.status = PlanStatusChoices.CANT_DO_IT
         p.save()
         mail.outbox = []
-        self.update_gig_form(g, status=g.StatusOptions.CONFIRMED)
+        self.update_gig_form(g, status=GigStatusChoices.CONFIRMED)
 
         message = mail.outbox[0]
-        self.assertIn(f'Your current status is "{Plan.StatusChoices.CANT_DO_IT.label}"', message.body)
+        self.assertIn(f'Your current status is "{PlanStatusChoices.CANT_DO_IT.label}"', message.body) # pylint: disable=no-member
         self.assertIn('**can** make it', message.body)
         self.assertNotIn("**can't** make it", message.body)
 
     def test_answer_yes(self):
         _, _, p = self.assoc_joe_and_create_gig()
-        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DEFINITELY]))
+        response = self.client.get(reverse('gig-answer', args=[p.id, PlanStatusChoices.DEFINITELY]))
         p.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(p.status, Plan.StatusChoices.DEFINITELY)
+        self.assertEqual(p.status, PlanStatusChoices.DEFINITELY)
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_no(self):
         _, _, p = self.assoc_joe_and_create_gig()
-        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.CANT_DO_IT]))
+        response = self.client.get(reverse('gig-answer', args=[p.id, PlanStatusChoices.CANT_DO_IT]))
         p.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(p.status, Plan.StatusChoices.CANT_DO_IT)
+        self.assertEqual(p.status, PlanStatusChoices.CANT_DO_IT)
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_snooze_long(self):
         now = datetime.now(tz=timezone.get_current_timezone())
         _, _, p = self.assoc_joe_and_create_gig()
-        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
+        response = self.client.get(reverse('gig-answer', args=[p.id, PlanStatusChoices.DONT_KNOW]))
         p.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
+        self.assertEqual(p.status, PlanStatusChoices.DONT_KNOW)
         self.assertGreaterEqual((p.snooze_until - now).days, 7)
 
     def test_answer_snooze_short(self):
         now = datetime.now(tz=timezone.get_current_timezone())
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = now.date() + timedelta(days=3)
-        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
+        response = self.client.get(reverse('gig-answer', args=[p.id, PlanStatusChoices.DONT_KNOW]))
         p.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
+        self.assertEqual(p.status, PlanStatusChoices.DONT_KNOW)
         self.assertLessEqual((p.snooze_until - now).days, 7)
 
     def test_answer_snooze_too_short(self):
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = timezone.now() + timedelta(days=1)
         g.save()
-        response = self.client.get(reverse('gig-answer', args=[p.id, Plan.StatusChoices.DONT_KNOW]))
+        response = self.client.get(reverse('gig-answer', args=[p.id, PlanStatusChoices.DONT_KNOW]))
         p.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(p.status, Plan.StatusChoices.DONT_KNOW)
+        self.assertEqual(p.status, PlanStatusChoices.DONT_KNOW)
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_unsets_snooze_until(self):
         now = datetime.now(tz=timezone.get_current_timezone())
         _, _, p = self.assoc_joe_and_create_gig()
-        p.status = Plan.StatusChoices.DONT_KNOW
+        p.status = PlanStatusChoices.DONT_KNOW
         p.snooze_until = now
         p.save()
 
-        p.status = Plan.StatusChoices.DEFINITELY
+        p.status = PlanStatusChoices.DEFINITELY
         p.save()
         p.refresh_from_db()
         self.assertEqual(p.snooze_until, None)
+
+    ### tests of date/time setting using the form
+    
+    def assertDateEqual(self, d1, d2):
+        """ compare dates ignoring timezone """
+        for a in ['month', 'day', 'year', 'hour', 'minute']:
+            self.assertEqual(getattr(d1,a), getattr(d2,a))
+
+    def test_no_date_time(self):
+        # should fail and reload the edit page - response code 200
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='', call_time='', expect_code=200)
+
+    def test_date_only(self):
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', call_time='')
+        self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
+
+    def test_dates_only(self):
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='',
+                                                end_date='02/03/2023')
+        self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
+        self.assertIsNone(g.setdate)
+        self.assertDateEqual(g.enddate, datetime(month=2, day=3, year=2023, hour=0, minute=0))
+
+    def test_times(self):
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='12:00 pm',
+                                                set_time='1:00 pm',
+                                                end_time='2:00 pm')
+        self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=12, minute=0))
+        self.assertDateEqual(g.setdate, datetime(month=1, day=2, year=2023, hour=13, minute=0))
+        self.assertDateEqual(g.enddate, datetime(month=1, day=2, year=2023, hour=14, minute=0))
+
+    def test_settime_order(self):
+        # should fail and reload the edit page - response code 200
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='1:00 pm',
+                                                set_time='12:00 pm',
+                                                expect_code=200)
+
+    def test_endtime_order(self):
+        # should fail and reload the edit page - response code 200
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+                                                call_time='1:00 pm',
+                                                end_time='12:00 pm',
+                                                expect_code=200)

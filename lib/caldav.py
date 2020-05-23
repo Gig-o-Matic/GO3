@@ -21,6 +21,7 @@ from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 import os
 from django.core.files.storage import DefaultStorage
+from gig.util import GigStatusChoices
 
 filesys = FileSystemStorage("calfeeds", "calfeeds")
 
@@ -46,7 +47,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
 
     def _make_summary(event):
         """ makes the summary: the title, plus band name and status """
-        return f'{event.band.name}:{event.title} ({event.StatusOptions(event.status).label})'
+        return f'{event.band.name}:{event.title} ({GigStatusChoices(event.status).label})'
 
     def _make_description(event):
         """ description is the details, plus the setlist """

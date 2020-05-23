@@ -50,32 +50,32 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         the_member = self.object
         the_user = self.request.user
 
-        ok_to_show = False
+        # ok_to_show = False
         same_band = False
         if the_member.id == the_user.id:
             is_me = True
-            ok_to_show = True
+            # ok_to_show = True
         else:
             is_me = False
 
         # # find the bands this member is associated with
         the_member_bands = [a.band for a in the_member.assocs.all()]
 
-        if is_me == False:
-            # are we at least in the same band, or superuser?
-            if the_user.is_superuser:
-                ok_to_show = True
-            # TODO What is all this?
-            # the_other_band_keys = assoc.get_band_keys_of_member_key(the_member_key=the_user.key, confirmed_only=True)
-            # for b in the_other_band_keys:
-            #     if b in the_band_keys:
-            #         ok_to_show = True
-            #         same_band = True
-            #         break
-            # if ok_to_show == False:
-            #     # check to see if we're sharing our profile - if not, bail!
-            #     if (the_member.preferences and the_member.preferences.share_profile == False) and the_user.is_superuser == False:
-            #         return self.redirect('/')
+        # if is_me == False:
+        #   are we at least in the same band, or superuser?
+        #   if the_user.is_superuser:
+        #         ok_to_show = True
+        #   TODO this is to make sure only people who are in the same band can see a member or if we're sharing profile
+        #   the_other_band_keys = assoc.get_band_keys_of_member_key(the_member_key=the_user.key, confirmed_only=True)
+        #   for b in the_other_band_keys:
+        #         if b in the_band_keys:
+        #          ok_to_show = True
+        #            same_band = True
+        #            break
+        #   if ok_to_show == False:
+        #         # check to see if we're sharing our profile - if not, bail!
+        #       if (the_member.preferences and the_member.preferences.share_profile == False) and the_user.is_superuser == False:
+        #             return self.redirect('/')
 
         # email_change = self.request.get('emailAddressChanged',False)
         # if email_change:

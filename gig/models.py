@@ -19,6 +19,7 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
+from .util import GigStatusChoices, PlanStatusChoices
 from django.utils import timezone
 import datetime
 import uuid
@@ -26,7 +27,7 @@ import uuid
 class MemberPlanManager(models.Manager):
     def all(self):
         """ override the default all to order by section """
-        return super.order_by(section)
+        return super.order_by('section')
 
     def future_plans(self, member):
         return super().get_queryset().filter(assoc__member=member, 
@@ -40,20 +41,11 @@ class Plan(models.Model):
     gig = models.ForeignKey("Gig", related_name="plans", on_delete=models.CASCADE)
     assoc = models.ForeignKey("band.Assoc", verbose_name="assoc", related_name="plans", on_delete=models.CASCADE)
 
-    class StatusChoices(models.IntegerChoices):
-        NO_PLAN = 0, _("No Plan")
-        DEFINITELY = 1, _("Definite")
-        PROBABLY = 2, _("Probable")
-        DONT_KNOW = 3, _("Don't Know")
-        PROBABLY_NOT = 4, _("Probably Not")
-        CANT_DO_IT = 5, _("Can't Do It")
-        NOT_INTERESTED = 6, _("Not Interested")
-
-    status = models.IntegerField(choices=StatusChoices.choices, default=StatusChoices.NO_PLAN)
+    status = models.IntegerField(choices=PlanStatusChoices.choices, default=PlanStatusChoices.NO_PLAN)
 
     @property
     def attending(self):
-        return self.status in [Plan.StatusChoices.DEFINITELY, Plan.StatusChoices.PROBABLY]
+        return self.status in [PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
 
     feedback_value = models.IntegerField(null=True, blank=True)
     comment = models.CharField(max_length=200, blank=True, null=True)
@@ -72,10 +64,10 @@ class Plan(models.Model):
     member_plans = MemberPlanManager()
 
     def __str__(self):
-        return '{0} for {1} ({2})'.format(self.assoc.member.display_name, self.gig.title, Plan.StatusChoices(self.status).label)
+        return '{0} for {1} ({2})'.format(self.assoc.member.display_name, self.gig.title, PlanStatusChoices(self.status).label)
 
 
-class AbstractGig(models.Model):
+class AbstractEvent(models.Model):
 
     class Meta:
         abstract = True
@@ -93,20 +85,15 @@ class AbstractGig(models.Model):
     date = models.DateTimeField()
 
     address = models.TextField(null=True, blank=True)
-    class StatusOptions(models.IntegerChoices):
-            UNKNOWN = 0, _("Unknown")
-            CONFIRMED = 1, _("Confirmed")
-            CANCELLED = 2, _("Cancelled")
-            ASKING = 3, _("Asking")
-    status = models.IntegerField(choices=StatusOptions.choices, default=StatusOptions.UNKNOWN)
+    status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNKNOWN)
 
     @property
     def is_canceled(self):
-        self.status=StatusOptions.CANCELLED
+        self.status=GigStatusChoices.CANCELLED
 
     @property
     def is_confirmed(self):
-        self.status=StatusOptions.CONFIRMED
+        self.status=GigStatusChoices.CONFIRMED
 
     def status_string(self):
         return [_('Unconfirmed'), _('Confirmed!'), _('Cancelled!'), _('Asking')][self.status]
@@ -133,27 +120,10 @@ class AbstractGig(models.Model):
     def is_in_trash(self):
         return self.trashed_date is not None
 
-    @property
-    def member_plans(self):
-        """ find any members that don't have plans yet. This is called whenever a new gig is created
-            through the signaling system """
-        absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
-        # Plan.objects.bulk_create(
-        #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
-        # )
-        # can't use bulk_create because it doesn't send signals
-        # TODO is there a more efficient way?
-        s = self.band.sections.get(is_default=True)
-        for a in absent:
-            Plan.objects.create(gig=self, assoc=a, section=s)
-        # now that we have one for every member, return the list
-        return self.plans
-
-
     def __str__(self):
         return self.title
 
-class Gig(AbstractGig):
+class Gig(AbstractEvent):
 
     # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
     contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
@@ -183,4 +153,21 @@ class Gig(AbstractGig):
     # We need to exclude the band, lest the reverse query in Band conflict
     # We need to exclude the cal_feed_id, because we want it to be unique and the history table gets a copy of every change
     history = HistoricalRecords(excluded_fields=['band','cal_feed_id'])
+
+    @property
+    def member_plans(self):
+        """ find any members that don't have plans yet. This is called whenever a new gig is created
+            through the signaling system """
+        absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True))
+        # Plan.objects.bulk_create(
+        #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
+        # )
+        # can't use bulk_create because it doesn't send signals
+        # TODO is there a more efficient way?
+        s = self.band.sections.get(is_default=True)
+        for a in absent:
+            Plan.objects.create(gig=self, assoc=a, section=s)
+            
+        # now that we have one for every member, return the list
+        return self.plans # pylint: disable=no-member
 
