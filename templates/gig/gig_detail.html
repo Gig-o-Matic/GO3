@@ -106,7 +106,7 @@
                 {% if gig.address %}
                     <div class="row">
                         <div class="col-md-2 col-sm-2 col-4">{% trans "Address" %}</div>
-                        <div class="col-md-10 col-sm-10 col-8"><a href="http://maps.google.com?q={{gig.address }}" target="new">{{ gig.address }}</a></div>
+                        <div class="col-md-10 col-sm-10 col-8"><a href="{{ address_string }}" target="new">{{ gig.address }}</a></div>
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
