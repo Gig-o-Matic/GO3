@@ -21,7 +21,7 @@ from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
-from .models import Gig, Plan
+from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, send_snooze_reminders
 from .forms import GigForm
 from .views import CreateView, UpdateView
@@ -532,7 +532,6 @@ class GigTest(TestCase):
         self.assertEqual(p.snooze_until, None)
 
     ### tests of date/time setting using the form
-    
     def assertDateEqual(self, d1, d2):
         """ compare dates ignoring timezone """
         for a in ['month', 'day', 'year', 'hour', 'minute']:
@@ -576,3 +575,13 @@ class GigTest(TestCase):
                                                 call_time='1:00 pm',
                                                 end_time='12:00 pm',
                                                 expect_code=200)
+
+    # testing gig comments
+    def send_comment(self, gig, text):
+        pass # todo: fill this in once htx is merged into master
+
+    def test_gig_comment(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(g,"test")
+
