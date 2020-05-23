@@ -118,11 +118,11 @@ class Member(AbstractUser):
 
     @property
     def future_plans(self):
-        return Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN).order_by('gig__date')
 
     @property
     def future_noplans(self):
-        return Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN).order_by('gig__date')
 
     @property
     def motd(self):
