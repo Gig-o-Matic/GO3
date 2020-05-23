@@ -65,6 +65,7 @@ class GigTest(TestCase):
                         call_time = '12:00 pm',
                         set_time = '',
                         end_time = '',
+                        address = '',
                         **kwargs):
 
         c=Client()
@@ -78,6 +79,7 @@ class GigTest(TestCase):
                                     'end_time':end_time,
                                     'contact':kwargs.get('contact', self.joeuser).id,
                                     'status':GigStatusChoices.UNKNOWN,
+                                    'address':address,
                                     'send_update': True
                                     })
         
@@ -576,3 +578,17 @@ class GigTest(TestCase):
                                                 call_time='1:00 pm',
                                                 end_time='12:00 pm',
                                                 expect_code=200)
+
+    def test_address_url(self):
+        g, _, _ = self.assoc_joe_and_create_gig(address='http://pbs.org')
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/')
+        self.assertIn('"http://pbs.org"',response.content.decode('ascii'))
+
+    def test_address_address(self):
+        g, _, _ = self.assoc_joe_and_create_gig(address='1600 Pennsylvania Avenue')
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/')
+        self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
