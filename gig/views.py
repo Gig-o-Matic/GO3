@@ -38,6 +38,18 @@ class DetailView(generic.DetailView):
         context['user_can_create'] = self.request.user.is_superuser
         context['timezone'] = self.object.band.timezone
 
+        # unpack the dates
+        d1 = self.object.date
+        d2 = self.object.enddate
+        context['calldate'] = d1
+        if d1.year == d2.year and d1.month == d2.month and d1.day == d2.day:
+           context['enddate'] = None
+           context['calltime'] = d1
+           context['settime'] = self.object.setdate
+           context['endtime'] = self.object.enddate
+        else:
+           context['enddate'] = d2    
+
         timezone.activate(self.object.band.timezone)
 
         return context
