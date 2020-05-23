@@ -20,7 +20,7 @@ from django.test import TestCase, RequestFactory
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
-from .models import Gig, Plan
+from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, send_snooze_reminders
 from .forms import GigForm
 from .views import CreateView, UpdateView
@@ -484,3 +484,12 @@ class GigTest(TestCase):
         p.save()
         p.refresh_from_db()
         self.assertEqual(p.snooze_until, None)
+
+    def send_comment(self, gig, text):
+        pass # todo: fill this in once htx is merged into master
+
+    def test_gig_comment(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(g,"test")
+
