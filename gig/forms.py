@@ -175,7 +175,9 @@ class GigForm(forms.ModelForm):
         newgig = super().save(commit)
 
         if self.cleaned_data['add_series']==True:
+            save_id = self.instance.id
             self.create_gig_series(newgig, self.cleaned_data['total_gigs'], self.cleaned_data['repeat'])
+            self.instance.id = save_id
         return newgig
 
     send_update = forms.BooleanField(required=False, label=_('Email members about change'))
