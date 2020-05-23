@@ -38,6 +38,12 @@ class DetailView(generic.DetailView):
         context['user_can_create'] = self.request.user.is_superuser
         context['timezone'] = self.object.band.timezone
 
+        if self.object.address:
+            if self.object.address.startswith('http'):
+                context['address_string'] = self.object.address
+            else:
+                context['address_string'] = f'http://maps.google.com?q={self.object.address}'
+
         timezone.activate(self.object.band.timezone)
 
         return context
