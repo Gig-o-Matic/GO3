@@ -256,7 +256,7 @@
                     {% trans "Comments" %}
                 </div></div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="gig_commentcard" hx-get="/gig/{{ gig.id }}/comments" hx-trigger="load">
                 <div class="row">
                     <div class="col-12" id="gig_comment">
                         <i class="fas fa-spinner fa-pulse fa-lg"></i>
@@ -264,10 +264,12 @@
                 </div>
                 <div class="row mt-4">
                     <div class="col-md-10 col-12">
-                        <textarea class="form-control" id="commentinput" placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
+                        <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
                     </div>
                     <div class="mx-auto">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="add_comment('{{gig.id}}');">{% trans "Say it!" %}</button>
+                        <button class="btn btn-primary btn-sm" 
+                        hx-post="/gig/{{ gig.id }}/comments" hx-target="#gig_comment"
+                        hx-include="[name='commenttext']">{% trans "Say it!" %}</button>
                     </div>
                 </div>
             </div> <!-- card body -->
@@ -279,7 +281,6 @@
 
 {% block localscripts %}
 <script src="{% static "js/plan_buttons.js" %}"></script>
-<script src="{% static "js/comments.js" %}"></script>
 <script src="{% static "js/jquery.truncator.js" %}"></script>
 <script>
 var simple=false;
@@ -324,7 +325,7 @@ function sendreminder(gk) {
 {% endif %}
 
 $(document).ready(function() {
-    init_plan_buttons("{{csrf_token}}")
+    // init_plan_buttons("{{csrf_token}}")
     setsimple();
     {% if user_can_edit %}
         {% if not gig.was_reminded %}
@@ -339,7 +340,7 @@ $(document).ready(function() {
     $('.trunc').truncate({max_length: 500, more:"...{% trans "more{% endtrans %}", less:"{% trans %}less" %}"});
     $('.popcomment').tooltip({ 'trigger':'hover click' });
 {% endcomment %}
-    update_comment('{{gig.id}}');
+    // update_comment('{{gig.id}}');
 });
 </script>
 {% endblock localscripts %}

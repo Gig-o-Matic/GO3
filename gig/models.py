@@ -184,3 +184,9 @@ class Gig(AbstractGig):
     # We need to exclude the cal_feed_id, because we want it to be unique and the history table gets a copy of every change
     history = HistoricalRecords(excluded_fields=['band','cal_feed_id'])
 
+
+class GigComment(models.Model):
+    gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)
+    member = models.ForeignKey("member.Member", verbose_name="member", related_name="comments", on_delete=models.CASCADE)
+    text = models.TextField(null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)

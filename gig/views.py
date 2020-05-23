@@ -17,15 +17,16 @@
 import datetime
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
+from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
-from .models import Gig, Plan
+from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from band.models import Band
 from gig.helpers import notify_new_gig
-
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+import urllib.parse
 class DetailView(generic.DetailView):
     model = Gig
 
@@ -39,7 +40,7 @@ class DetailView(generic.DetailView):
         return context
 
 
-class CreateView(generic.CreateView):
+class CreateView(LoginRequiredMixin, generic.CreateView):
     model = Gig
     form_class = GigForm
 
@@ -85,7 +86,7 @@ class CreateView(generic.CreateView):
         return result
 
 
-class UpdateView(generic.UpdateView):
+class UpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Gig
     form_class = GigForm
 
@@ -100,6 +101,29 @@ class UpdateView(generic.UpdateView):
             notify_new_gig(form.instance, created=False)
 
         return result
+
+class CommentsView(LoginRequiredMixin, TemplateView):
+    template_name='gig/gig_comments.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        gig = Gig.objects.get(id=self.kwargs['pk'])
+        context['gig'] = gig
+        try:
+            context['comments'] = GigComment.objects.filter(gig__id=self.kwargs['pk']).order_by('created_date')
+        except GigComment.DoesNotExist:
+            context['comments'] = None
+        return context
+
+    def post(self, request, **kwargs):
+        text = request.body.decode('ascii')
+        if text:
+            comment = text.split('=',1)
+            if len(comment)==2 and comment[1]:
+                text = urllib.parse.unquote(comment[1])
+                GigComment.objects.create(text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
 def answer(request, pk, val):
