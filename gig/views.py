@@ -42,7 +42,7 @@ class DetailView(generic.DetailView):
         d1 = self.object.date
         d2 = self.object.enddate
         context['calldate'] = d1
-        if d1.year == d2.year and d1.month == d2.month and d1.day == d2.day:
+        if not d2 or (d1.year == d2.year and d1.month == d2.month and d1.day == d2.day):
            context['enddate'] = None
            context['calltime'] = d1
            context['settime'] = self.object.setdate
