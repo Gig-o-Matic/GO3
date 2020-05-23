@@ -21,9 +21,10 @@ from band.models import Band
 from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
+import uuid
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -112,13 +113,70 @@ class GigForm(forms.ModelForm):
 
         super().clean()
 
+    def create_gig_series(self, the_gig, number_to_copy, period):
+        """ create a series of copies of a gig spaced out over time """
+
+        last_date = the_gig.date
+        if period == 'day':
+            delta = timedelta(days=1)
+        elif period == 'week':
+            delta = timedelta(weeks=1)
+        else:
+            day_of_month = last_date.day
+            
+        if the_gig.setdate:
+            set_delta = the_gig.setdate - the_gig.date
+        else:
+            set_delta = None
+
+        if the_gig.enddate:
+            end_delta = the_gig.enddate - the_gig.date
+        else:
+            end_delta = None
+
+        for i in range(1, number_to_copy):
+            if period == 'day' or period == 'week':
+                last_date = last_date + delta
+            else:
+                # figure out what the next month is
+                if last_date.month< 12:
+                    mo = last_date.month+1
+                    yr = last_date.year
+                else:
+                    mo = 1
+                    yr = last_date.year+1
+                # figure out last day of next month
+                nextmonth = last_date.replace(month=mo, day=1, year=yr)
+                nextnextmonth = (nextmonth + timedelta(days=35)).replace(day=1)
+                lastday=(nextnextmonth - timedelta(days=1)).day
+                if lastday < day_of_month:
+                    day_of_gig = lastday
+                else:
+                    day_of_gig = day_of_month
+                last_date = last_date.replace(month=mo, day=day_of_gig, year=yr)
+            the_gig.date = last_date
+            
+            if set_delta is not None:
+                the_gig.setdate = the_gig.setdate + set_delta
+
+            if end_delta is not None:
+                the_gig.enddate = the_gig.date + end_delta
+
+            the_gig.id = None
+            the_gig.pk = None
+            the_gig.cal_feed_id = uuid.uuid4()
+            the_gig.save()
+
     def save(self, commit=True):
         """ save our date, setdate, and enddate into the instance """
         self.instance.date = self.cleaned_data['date']
         self.instance.setdate = self.cleaned_data['setdate']
         self.instance.enddate = self.cleaned_data['enddate']
-        return super().save(commit)
+        newgig = super().save(commit)
 
+        if self.cleaned_data['add_series']==True:
+            self.create_gig_series(newgig, self.cleaned_data['total_gigs'], self.cleaned_data['repeat'])
+        return newgig
 
     send_update = forms.BooleanField(required=False, label=_('Email members about change'))
     call_date = forms.Field(required=True, label=_('Date'))
@@ -127,14 +185,24 @@ class GigForm(forms.ModelForm):
     end_time = forms.Field(required=False, label=_('End Time'))
     end_date = forms.Field(required=False, label=_('End Date'))
     timezone = forms.Field(required=False, widget=forms.HiddenInput())
-    
+
+    add_series = forms.BooleanField(required=False, label=_('Add A Series Of Copies'))
+    total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=2, max_value=10)
+    repeat = forms.ChoiceField(required=False, label=_('Repeat Every'), 
+                                choices=[
+                                            ('day', _('day')),
+                                            ('week', _('week')),
+                                            ('month', _('month (on same day of the month)')),
+                                        ])
+
+
     class Meta:
         model = Gig
         localized_fields = '__all__'
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
                 'address','dress','paid','leader', 'postgig', 'details','setlist','rss_description','invite_occasionals',
-                'hide_from_calendar','send_update']
+                'hide_from_calendar','send_update','add_series','total_gigs']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
