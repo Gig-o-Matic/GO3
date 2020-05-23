@@ -31,4 +31,7 @@ urlpatterns = [
     path('plan/<uuid:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
 
     path('answer/<uuid:pk>/<int:val>', views.answer, name='gig-answer'),
+
+    path('<int:pk>/comments', views.CommentsView.as_view(), name='gig-comments'),
+
 ]
