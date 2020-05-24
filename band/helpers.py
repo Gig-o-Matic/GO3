@@ -81,7 +81,7 @@ def set_assoc_section(request, ak, sk):
         a.default_section = s
         a.save()
 
-    return redirect('member-assocs', pk=a.member.id)
+    return HttpResponse(status=204)
 
 
 @login_required
@@ -127,7 +127,7 @@ def join_assoc(request, bk, mk):
     Assoc.objects.get_or_create(
         band=b, member=m, status=AssocStatusChoices.PENDING)
 
-    return redirect('member-assocs', pk=m.id)
+    return HttpResponse(status=204)
 
 
 @login_required
@@ -145,7 +145,7 @@ def delete_assoc(request, ak):
 
     a.delete()
 
-    return redirect('member-assocs', pk=a.member.id)
+    return HttpResponse(status=204)
 
 
 @login_required

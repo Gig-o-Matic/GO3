@@ -10,6 +10,7 @@
                 <div class="col-9">
                     <button class="btn btn-secondary btn-sm"
                         id="leave-{{ assoc.id }}"
+                        hx-ext="reload"
                         hx-post="/band/assoc/{{ assoc.id }}/delete"
                         hx-trigger="bootstrap-confirm"
                         hx-target="#bandlist"
@@ -33,6 +34,7 @@
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
                                         {% for section in assoc.band.sections.all %}
                                             <a class="dropdown-item"
+                                            hx-ext="reload"
                                             hx-put="/band/assoc/{{ assoc.id }}/section/{{ section.id }}"
                                             hx-trigger="click"
                                             hx-target="#bandlist"
@@ -125,6 +127,7 @@
                         <div class="col-6">
                             <button class="btn btn-secondary btn-sm"
                                 id="leave-{{ assoc.id }}"
+                                hx-ext="reload"
                                 hx-post="/band/assoc/{{ assoc.id }}/delete"
                                 hx-trigger="bootstrap-confirm"
                                 hx-target="#bandlist"
