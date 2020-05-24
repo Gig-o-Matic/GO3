@@ -24,7 +24,7 @@ from django import forms
 from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from .util import PlanStatusChoices
-from band.models import Band
+from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
 from django.contrib.auth.mixins import LoginRequiredMixin
 import urllib.parse
@@ -129,7 +129,15 @@ class CommentsView(LoginRequiredMixin, TemplateView):
             context['comments'] = None
         return context
 
+    def get(self, request, *args, **kwargs):
+        if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
+            raise PermissionError('Illegal access to comments')
+        return super().get(request, **kwargs)
+
     def post(self, request, **kwargs):
+        if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
+            raise PermissionError('Illegal access to comments')
+
         text = request.POST.get('commenttext','').strip()
         if text:
             GigComment.objects.create(text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
@@ -137,8 +145,11 @@ class CommentsView(LoginRequiredMixin, TemplateView):
         return self.render_to_response(context)
 
 
+def has_comment_permission(user, gig):
+    return Assoc.objects.filter(member = user, band=gig.band).count() == 1
+
 def has_edit_permission(user, band):
-        return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
+    return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
 
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)

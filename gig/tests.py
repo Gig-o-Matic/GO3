@@ -577,11 +577,40 @@ class GigTest(TestCase):
                                                 expect_code=200)
 
     # testing gig comments
-    def send_comment(self, gig, text):
-        pass # todo: fill this in once htx is merged into master
+    def send_comment(self, user, gig, text):
+        c=Client()
+        c.force_login(user)
+        response = c.post(f'/gig/{gig.id}/comments', {'commenttext':text})
+        return response
 
     def test_gig_comment(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(GigComment.objects.count(), 0)
-        self.send_comment(g,"test")
+        self.send_comment(self.joeuser, g,"test")
+        self.assertEqual(GigComment.objects.count(), 1)
 
+    def test_blank_gig_comment(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(self.joeuser, g,"")
+        self.assertEqual(GigComment.objects.count(), 0)
+
+    def test_gig_make_comment_permissions(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        with self.assertRaises(PermissionError):
+            self.send_comment(self.janeuser, g,"illegal!")
+        self.assertEqual(GigComment.objects.count(), 0)
+
+    def test_gig_get_comments(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/comments')
+        self.assertEqual(response.status_code, 200)
+
+    def test_gig_get_comments_permissions(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c=Client()
+        c.force_login(self.janeuser)
+        with self.assertRaises(PermissionError):
+            c.get(f'/gig/{g.id}/comments')
