@@ -154,7 +154,7 @@ class GigForm(forms.ModelForm):
             'call_date': _('Date'),
             'end_date': _('End Date'),
 
-            'address': _('Address'),
+            'address': _('Address or URL'),
             'dress': _('What to Wear'),
             'paid': _('Pay Deal'),
 
