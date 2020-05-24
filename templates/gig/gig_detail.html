@@ -262,22 +262,7 @@
                     {% trans "Comments" %}
                 </div></div>
             </div>
-            <div class="card-body" id="gig_commentcard" hx-get="/gig/{{ gig.id }}/comments" hx-trigger="load">
-                <div class="row">
-                    <div class="col-12" id="gig_comment">
-                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                    </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-10 col-12">
-                        <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
-                    </div>
-                    <div class="mx-auto">
-                        <button class="btn btn-primary btn-sm" 
-                        hx-post="/gig/{{ gig.id }}/comments" hx-target="#gig_comment"
-                        hx-include="[name='commenttext']">{% trans "Say it!" %}</button>
-                    </div>
-                </div>
+            <div class="card-body" id="gig_commentcard" hx-get="{% url 'gig-comments' gig.id %}" hx-trigger="load">
             </div> <!-- card body -->
         </div> <!-- card -->
     </div>
@@ -332,7 +317,6 @@ function sendreminder(gk) {
 {% endif %}
 
 $(document).ready(function() {
-    // init_plan_buttons("{{csrf_token}}")
     setsimple();
     {% if user_can_edit %}
         {% if not gig.was_reminded %}
@@ -347,7 +331,6 @@ $(document).ready(function() {
     $('.trunc').truncate({max_length: 500, more:"...{% trans "more{% endtrans %}", less:"{% trans %}less" %}"});
     $('.popcomment').tooltip({ 'trigger':'hover click' });
 {% endcomment %}
-    // update_comment('{{gig.id}}');
 });
 </script>
 {% endblock localscripts %}

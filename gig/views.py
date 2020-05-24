@@ -28,6 +28,7 @@ from band.models import Band
 from gig.helpers import notify_new_gig
 from django.contrib.auth.mixins import LoginRequiredMixin
 import urllib.parse
+
 class DetailView(generic.DetailView):
     model = Gig
 
@@ -129,12 +130,9 @@ class CommentsView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, **kwargs):
-        text = request.body.decode('ascii')
+        text = request.POST.get('commenttext','').strip()
         if text:
-            comment = text.split('=',1)
-            if len(comment)==2 and comment[1]:
-                text = urllib.parse.unquote(comment[1])
-                GigComment.objects.create(text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
+            GigComment.objects.create(text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 

@@ -7,7 +7,7 @@
             {% for the_comment in comments %}
                 <div class='comment-intro'>
                     {% if the_comment.member %}
-                        <a href="/member/{{the_comment.member.id}}">{{ the_comment.member.display_name }}</a>
+                        <a href="{% url 'member-detail' the_comment.member.id %}">{{ the_comment.member.display_name }}</a>
                     {% else %}
                         {% trans "Somebody" %}
                     {% endif %}
@@ -20,13 +20,14 @@
         {% endif %}
     </div>
 </div>
-<div class="row mt-4">
-    <div class="col-md-10 col-12">
-        <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
+<form>
+    <div class="row mt-4">
+        <div class="col-md-10 col-12">
+            <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
+        </div>
+        <div class="mx-auto">
+            <button class="btn btn-primary btn-sm" 
+            hx-post="/gig/{{ gig.id }}/comments" hx-target="#gig_commentcard">{% trans "Say it!" %}</button>
+        </div>
     </div>
-    <div class="mx-auto">
-        <button class="btn btn-primary btn-sm" 
-        hx-post="/gig/{{ gig.id }}/comments" hx-target="#gig_commentcard"
-        hx-include="[name='commenttext']">{% trans "Say it!" %}</button>
-    </div>
-</div>
+</form>
