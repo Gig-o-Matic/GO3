@@ -140,7 +140,6 @@ class CommentsView(LoginRequiredMixin, TemplateView):
 def has_edit_permission(user, band):
         return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
 
-
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
