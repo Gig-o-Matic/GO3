@@ -46,14 +46,13 @@
                             <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}'
-                                    hx-post="/band/assoc/{{ assoc.id }}/tfparam/is_multisectional/{% if assoc.is_multisectional %}false{% else %}true{% endif %}"
-                                    hx-trigger="click"
-                                    hx-swap="outerHTML"
+                                    name="is_multisectional" hx-ext="checkbox"
+                                    hx-post="/band/assoc/{{ assoc.id }}/tfparam"
                                     {% if assoc.is_multisectional %}
                                         checked
                                     {% endif %}
                                     >
-                                    <label class="form-check-label" for="msbk-{{assoc.band.id}}">{% trans "other sections, too" %}</label>
+                                    <label class="form-check-label" for="msbk-{{assoc.id}}">{% trans "other sections, too" %}</label>
                                 </div>
                             </div>
                         </div>
@@ -62,9 +61,8 @@
                         <div class="col-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
-                                hx-post="/band/assoc/{{ assoc.id }}/tfparam/is_occasional/{% if assoc.is_occasional %}false{% else %}true{% endif %}"
-                                hx-trigger="click"
-                                hx-swap="outerHTML"
+                                name="is_occasional" hx-ext="checkbox"
+                                hx-post="/band/assoc/{{ assoc.id }}/tfparam"
                                 {% if assoc.is_occasional %}
                                     checked
                                 {% endif %}
@@ -75,9 +73,8 @@
                         <div class="col-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
-                                hx-post="/band/assoc/{{ assoc.id }}/tfparam/hide_from_schedule/{% if assoc.hide_from_schedule %}false{% else %}true{% endif %}"
-                                hx-trigger="click"
-                                hx-swap="outerHTML"
+                                name="hide_from_schedule" hx-ext="checkbox"
+                                hx-post="/band/assoc/{{ assoc.id }}/tfparam"
                                 {% if assoc.hide_from_schedule %}
                                     checked
                                 {% endif %}
@@ -92,9 +89,8 @@
                                 <div class="col-6">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
-                                        hx-post="/band/assoc/{{ assoc.id }}/tfparam/email_me/{% if assoc.email_me %}false{% else %}true{% endif %}"
-                                        hx-trigger="click"
-                                        hx-swap="outerHTML"
+                                        name="email_me" hx-ext="checkbox"
+                                        hx-post="/band/assoc/{{ assoc.id }}/tfparam"
                                         {% if assoc.email_me %}
                                             checked
                                         {% endif %}

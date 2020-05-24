@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import logging
 from django.http import HttpResponse
 from .models import Band, Assoc, Section
 from gig.helpers import update_plan_default_section
@@ -25,7 +26,7 @@ from band.util import AssocStatusChoices
 
 
 @login_required
-def set_assoc_tfparam(request, ak, param, truefalse):
+def set_assoc_tfparam(request, ak):
     """ set a true/false parameter on an assoc """
     a = Assoc.objects.filter(id=ak)
 
@@ -38,18 +39,14 @@ def set_assoc_tfparam(request, ak, param, truefalse):
             raise PermissionError(
                 'tying to alter an assoc which is not owned by user {0}'.format(request.user.username))
 
-        if hasattr(a, param):
-            setattr(a, param, True if truefalse == 'true' else False)
-            a.save()
-        else:
-            raise ValueError(
-                'trying to set an assoc parameter that does not exist: {0}'.format(param))
+        for param, value in request.POST.items():
+            if hasattr(a, param):
+                setattr(a, param, True if value == 'true' else False)
+            else:
+                logging.error(f"Trying to set an assoc property that does not exist: {param}")
+        a.save()
 
-    tf_other = 'false' if truefalse == 'true' else 'true'
-    checked = 'checked' if truefalse == 'true' else ''
-    return HttpResponse(f'''<input class="form-check-input" type="checkbox"
-                            hx-post="/band/assoc/{ak}/tfparam/{param}/{tf_other}"
-                            hx-trigger="click" hx-swap="outerHTML" {checked}>''')
+    return HttpResponse(status=204)
 
 
 @login_required

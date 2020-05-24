@@ -29,7 +29,7 @@ urlpatterns = [
     path('<int:pk>/member_spreadsheet', views.member_spreadsheet, name='member-spreadsheet'),
     path('<int:pk>/member_emails', views.member_emails, name='member-emails'),
 
-    path('assoc/<int:ak>/tfparam/<str:param>/<str:truefalse>', helpers.set_assoc_tfparam, name='assoc-tfparam'),
+    path('assoc/<int:ak>/tfparam', helpers.set_assoc_tfparam, name='assoc-tfparam'),
     path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),
     path('assoc/<int:ak>/section/<int:sk>', helpers.set_assoc_section, name='assoc-section'),
     path('<int:bk>/join/<int:mk>', helpers.join_assoc, name='assoc-join'),

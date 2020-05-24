@@ -131,6 +131,16 @@
                 }
             }
         })
+
+        htmx.defineExtension('checkbox', {
+            onEvent: function(name, event) {
+                if (name === 'configRequest.htmx') {
+                    let element = event.detail.elt;
+                    if (element.matches('input[type=checkbox]') && element.name)
+                        event.detail.parameters[element.name] = element.checked;
+                }
+            }
+        })
     </script>
 
 <script type="text/javascript">
