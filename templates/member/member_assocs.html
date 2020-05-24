@@ -11,7 +11,7 @@
                     <button class="btn btn-secondary btn-sm"
                         id="leave-{{ assoc.id }}"
                         hx-ext="reload"
-                        hx-post="/band/assoc/{{ assoc.id }}/delete"
+                        hx-post="{% url 'assoc-delete' ak=assoc.id %}"
                         hx-trigger="bootstrap-confirm"
                         hx-target="#bandlist"
                         onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
@@ -47,7 +47,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}'
                                     name="is_multisectional" hx-ext="checkbox"
-                                    hx-post="/band/assoc/{{ assoc.id }}/tfparam"
+                                    hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                     {% if assoc.is_multisectional %}
                                         checked
                                     {% endif %}
@@ -62,7 +62,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
                                 name="is_occasional" hx-ext="checkbox"
-                                hx-post="/band/assoc/{{ assoc.id }}/tfparam"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                 {% if assoc.is_occasional %}
                                     checked
                                 {% endif %}
@@ -74,7 +74,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
                                 name="hide_from_schedule" hx-ext="checkbox"
-                                hx-post="/band/assoc/{{ assoc.id }}/tfparam"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                 {% if assoc.hide_from_schedule %}
                                     checked
                                 {% endif %}
@@ -90,7 +90,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
                                         name="email_me" hx-ext="checkbox"
-                                        hx-post="/band/assoc/{{ assoc.id }}/tfparam"
+                                        hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                         {% if assoc.email_me %}
                                             checked
                                         {% endif %}
@@ -106,7 +106,7 @@
                                         <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
                                             {% for c in the_colors %}
                                                 <a class="dropdown-item" id="color-{{forloop.counter0}}"
-                                                    hx-post="/band/assoc/{{ assoc.id }}/color/{{ forloop.counter0 }}"
+                                                    hx-post="{% url 'assoc-color' ak=assoc.id colorindex=forloop.counter0 %}"
                                                     hx-trigger="click"
                                                     hx-target="#cbk-{{ assoc.id }}"
                                                 >{% if forloop.first %}
@@ -124,7 +124,7 @@
                             <button class="btn btn-secondary btn-sm"
                                 id="leave-{{ assoc.id }}"
                                 hx-ext="reload"
-                                hx-post="/band/assoc/{{ assoc.id }}/delete"
+                                hx-post="{% url 'assoc-delete' ak=assoc.id %}"
                                 hx-trigger="bootstrap-confirm"
                                 hx-target="#bandlist"
                                 onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
@@ -139,5 +139,5 @@
 {% else %}
     {% trans "You need to add a band!" %}
 {% endif %}
-<div hx-get="/member/{{ member_id }}/otherbands" hx-trigger="load">
+<div hx-get="{% url 'member-otherbands' pk=member_id %}" hx-trigger="load">
 </div>

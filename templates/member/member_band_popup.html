@@ -9,7 +9,7 @@
                 </button>
                 <div class="dropdown-menu">
                     {% for a_band in bands %}
-                        <a class="dropdown-item" role="presentation" role="menuitem" tabindex="-1" href="#" hx-ext="reload" hx-post="/band/{{ a_band.id }}/join/{{ member_id }}" hx-trigger="click" hx-target="#bandlist">{{a_band.name}}</a>
+                        <a class="dropdown-item" role="presentation" role="menuitem" tabindex="-1" href="#" hx-ext="reload" hx-post="{% url 'assoc-join' bk=a_band.id mk=member_id %}" hx-trigger="click" hx-target="#bandlist">{{a_band.name}}</a>
                     {% endfor %}
                 </div>
             </div> <!-- dropdown -->
