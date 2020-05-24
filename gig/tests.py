@@ -586,6 +586,13 @@ class GigTest(TestCase):
         response = c.get(f'/gig/{g.id}/')
         self.assertIn('"http://pbs.org"',response.content.decode('ascii'))
 
+    def test_address_url_noscheme(self):
+        g, _, _ = self.assoc_joe_and_create_gig(address='pbs.org')
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/')
+        self.assertIn('"http://pbs.org"',response.content.decode('ascii'))
+
     def test_address_address(self):
         g, _, _ = self.assoc_joe_and_create_gig(address='1600 Pennsylvania Avenue')
         c=Client()
