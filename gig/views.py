@@ -26,7 +26,7 @@ from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band
 from gig.helpers import notify_new_gig
-
+from validators import url as url_validate
 
 class DetailView(generic.DetailView):
     model = Gig
@@ -40,8 +40,11 @@ class DetailView(generic.DetailView):
         context['timezone'] = self.object.band.timezone
 
         if self.object.address:
-            if self.object.address.startswith('http'):
+            if url_validate(self.object.address):
                 context['address_string'] = self.object.address
+            elif url_validate(f'http://{self.object.address}'):
+                # if there's no scheme, see if it works with http
+                context['address_string'] = f'http://{self.object.address}'
             else:
                 context['address_string'] = f'http://maps.google.com?q={self.object.address}'
 
