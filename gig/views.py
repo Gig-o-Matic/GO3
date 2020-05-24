@@ -134,10 +134,7 @@ class DuplicateView(CreateView):
 
     def get_band_from_kwargs(self, **kwargs):
         # didn't have the band from the request args, so pull it from the gig
-        try:
-            return Gig.objects.get(id=self.kwargs['pk']).band
-        except Gig.DoesNotExist:
-            raise Http404('No gig found matching the query')
+        return get_object_or_404(Gig, id=self.kwargs['pk']).band
 
 
 def has_edit_permission(user, band):
