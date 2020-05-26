@@ -134,11 +134,7 @@ class GigForm(forms.ModelForm):
         else:
             end_delta = None
 
-<<<<<<< HEAD
         for _ in range(1, number_to_copy):
-=======
-        for i in range(1, number_to_copy):
->>>>>>> 4f27fe1b1719484ea9a91fdff52de9d786f3bcd6
             if period == 'day' or period == 'week':
                 last_date = last_date + delta
             else:
