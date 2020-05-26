@@ -60,27 +60,24 @@ class GigTest(TestCase):
 
     def create_gig_form(self, user=None, 
                         expect_code=302,
-                        call_date = '01/02/2100',
-                        end_date = '',
-                        call_time = '12:00 pm',
-                        set_time = '',
-                        end_time = '',
-                        address = '',
                         **kwargs):
+
+        status = kwargs.pop('status', GigStatusChoices.UNKNOWN)
+        contact = kwargs.pop('contact', self.joeuser).id
+        call_date = kwargs.pop('call_date', '01/02/2100')
+        call_time = kwargs.pop('call_time', '12:00 pm')
+        send_update = kwargs.pop('send_update', True)
 
         c=Client()
         c.force_login(user if user else self.joeuser)
         response = c.post(f'/gig/create/{self.band.id}', 
                                     {'title':'New Gig',
                                     'call_date':call_date,
-                                    'end_date':end_date,
                                     'call_time':call_time,
-                                    'set_time':set_time,
-                                    'end_time':end_time,
-                                    'contact':kwargs.get('contact', self.joeuser).id,
-                                    'status':GigStatusChoices.UNKNOWN,
-                                    'address':address,
-                                    'send_update': True
+                                    'contact':contact,
+                                    'status':status,
+                                    'send_update': send_update,
+                                    **kwargs
                                     })
         
         self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
@@ -634,3 +631,39 @@ class GigTest(TestCase):
         c.force_login(self.joeuser)
         response = c.get(f'/gig/{g.id}/')
         self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
+
+    def test_series_of_gigs(self):
+        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
+                                                total_gigs=10,
+                                                repeat='day')
+        self.assertEqual(Gig.objects.count(), 10)
+        gigs = Gig.objects.all()
+        self.assertEqual(gigs[9].date.day - gigs[0].date.day, 9)
+        self.assertEqual(gigs[9].date.month, gigs[0].date.month)
+
+    def test_series_of_gigs_weekly(self):
+        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
+                                                total_gigs=2,
+                                                repeat='week')
+        self.assertEqual(Gig.objects.count(), 2)
+        gigs = Gig.objects.all()
+        self.assertEqual(gigs[1].date.day - gigs[0].date.day, 7)
+        self.assertEqual(gigs[1].date.month, gigs[0].date.month)
+
+    def test_series_of_gigs_monthly(self):
+        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
+                                                total_gigs=2,
+                                                repeat='month')
+        self.assertEqual(Gig.objects.count(), 2)
+        gigs = Gig.objects.all()
+        self.assertEqual(gigs[1].date.day, gigs[0].date.day)
+        self.assertEqual(gigs[1].date.month - gigs[0].date.month, 1)
+
+    def test_series_of_gigs_short_month(self):
+        _, _, _ = self.assoc_joe_and_create_gig(call_date = '01/31/21',
+                                                add_series=True,
+                                                total_gigs=2,
+                                                repeat='month')
+        self.assertEqual(Gig.objects.count(), 2)
+        gigs = Gig.objects.all()
+        self.assertEqual(gigs[1].date.day, 28)
