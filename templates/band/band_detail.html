@@ -29,7 +29,7 @@
                     </div>
                     {% if the_user_is_band_admin or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="/band/{{ band.id }}/update">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="{% url 'band-update' pk=band.id %}">{% trans "Edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -200,7 +200,7 @@
                         {% for assoc in the_pending_members %}
                         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                             <div class="col-md-2 col-sm-2 col-12">
-                                <a href="/member/{{assoc.member.id}}">{{ assoc.member.username|escape }}</a>
+                                <a href="{% url 'member-detail' pk=assoc.member.id %}">{{ assoc.member.username|escape }}</a>
                             </div>
                             <div class="col-md-4 col-sm-4 col-12">
                                 {{ m.email_address|escape }}
