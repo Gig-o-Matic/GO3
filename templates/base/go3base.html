@@ -132,6 +132,24 @@
             }
         })
 
+        htmx.defineExtension('reload-page', {
+            onEvent: function(name, event) {
+                if (name === 'afterOnLoad.htmx') {
+                    if (event.detail.xhr.status < 400)
+                        location.reload();
+                }
+            }
+        })
+
+        htmx.defineExtension('update-dropdown', {
+            onEvent: function(name, event) {
+                if (name === 'afterOnLoad.htmx') {
+                    if (event.detail.xhr.status < 400)
+                        event.detail.target.innerHTML = event.detail.elt.innerHTML;
+                }
+            }
+        })
+
         htmx.defineExtension('checkbox', {
             onEvent: function(name, event) {
                 if (name === 'configRequest.htmx') {
