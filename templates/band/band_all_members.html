@@ -58,7 +58,7 @@
             </div>
         {% endif %}
 
-        {% if the_assoc.member.id != request.user.key %}
+        {% if the_assoc.member != request.user %}
             <div class="col-md-2">
                 <div class="form-check">
                     <input class="form-check-input"
@@ -81,6 +81,26 @@
                    hx-post="{% url 'assoc-delete' ak=the_assoc.id %}">
                     {% trans "remove from band" %}
                 </a>
+            </div>
+        {% else %}
+            <div class="col-md-2">
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id='aak-{{ the_assoc.id }}'
+                           name="is_admin"
+                           disabled
+                    {% if the_assoc.is_admin %}
+                           checked
+                    {% endif %}
+                    >
+                    <label class="form-check-label" for='aak-{{ the_assoc.id }}'>{% trans "admin" %}</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-secondary btn-sm" disabled>
+                    {% trans "remove from band" %}
+                </button>
             </div>
         {% endif %}
     </div>
