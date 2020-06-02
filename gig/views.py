@@ -17,15 +17,18 @@
 import datetime
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
+from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
-from .models import Gig, Plan
+from django.http import HttpResponseForbidden
+from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from .util import PlanStatusChoices
-from band.models import Band
+from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+import urllib.parse
 
 class DetailView(generic.DetailView):
     model = Gig
@@ -43,7 +46,7 @@ class DetailView(generic.DetailView):
         return context
 
 
-class CreateView(generic.CreateView):
+class CreateView(LoginRequiredMixin, generic.CreateView):
     model = Gig
     form_class = GigForm
 
@@ -69,8 +72,7 @@ class CreateView(generic.CreateView):
     def form_valid(self, form):
         band = Band.objects.get(id=self.kwargs['bk'])
         if not has_edit_permission(self.request.user, band):
-            raise PermissionError("Trying to create a gig without permission: {}".format(
-                self.request.user.email))
+            return HttpResponseForbidden()
 
         # there's a new gig; link it to the band
         form.instance.band = band
@@ -84,7 +86,7 @@ class CreateView(generic.CreateView):
         return result
 
 
-class UpdateView(generic.UpdateView):
+class UpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Gig
     form_class = GigForm
 
@@ -103,8 +105,7 @@ class UpdateView(generic.UpdateView):
     def form_valid(self, form):
 
         if not has_edit_permission(self.request.user, self.object.band):
-            raise PermissionError("Trying to update a gig without permission: {}".format(
-                self.request.user.email))
+            return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
 
@@ -114,10 +115,40 @@ class UpdateView(generic.UpdateView):
 
         return result
 
+class CommentsView(LoginRequiredMixin, TemplateView):
+    template_name='gig/gig_comments.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        gig = Gig.objects.get(id=self.kwargs['pk'])
+        context['gig'] = gig
+        try:
+            context['comments'] = GigComment.objects.filter(gig__id=self.kwargs['pk']).order_by('created_date')
+        except GigComment.DoesNotExist:
+            context['comments'] = None
+        return context
+
+    def get(self, request, *args, **kwargs):
+        if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
+            return HttpResponseForbidden()
+        return super().get(request, **kwargs)
+
+    def post(self, request, **kwargs):
+        if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
+            return HttpResponseForbidden()
+
+        text = request.POST.get('commenttext','').strip()
+        if text:
+            GigComment.objects.create(text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+
+def has_comment_permission(user, gig):
+    return Assoc.objects.filter(member = user, band=gig.band).count() == 1
 
 def has_edit_permission(user, band):
-        return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
-
+    return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
 
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)

@@ -21,7 +21,7 @@ from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
-from .models import Gig, Plan
+from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, send_snooze_reminders
 from .forms import GigForm
 from .views import CreateView, UpdateView
@@ -193,9 +193,14 @@ class GigTest(TestCase):
         self.band.anyone_can_create_gigs = False
         self.band.save()
         self.assoc_joe() # need a member of the band so there's a valid contact to select from in the form
-        with self.assertRaises(PermissionError):
-            self.create_gig_form(user=self.janeuser,title='permission gig')
-        pass
+        self.create_gig_form(user=self.janeuser,title='permission gig', expect_code=403)
+
+    def test_gig_edit_permissions(self):
+        """ make sure that if I don't have permission to edit a gig, I can't """
+        g, _, _ = self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='02:00 pm')
+        self.band.anyone_can_create_gigs = False
+        self.band.save()
+        self.update_gig_form(g, user=self.janeuser, title='not legal!', expect_code=403)
 
     @flag_missing_vars
     def test_new_gig_email(self):
@@ -532,7 +537,6 @@ class GigTest(TestCase):
         self.assertEqual(p.snooze_until, None)
 
     ### tests of date/time setting using the form
-    
     def assertDateEqual(self, d1, d2):
         """ compare dates ignoring timezone """
         for a in ['month', 'day', 'year', 'hour', 'minute']:
@@ -576,3 +580,42 @@ class GigTest(TestCase):
                                                 call_time='1:00 pm',
                                                 end_time='12:00 pm',
                                                 expect_code=200)
+
+    # testing gig comments
+    def send_comment(self, user, gig, text):
+        c=Client()
+        c.force_login(user)
+        response = c.post(f'/gig/{gig.id}/comments', {'commenttext':text})
+        return response
+
+    def test_gig_comment(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(self.joeuser, g,"test")
+        self.assertEqual(GigComment.objects.count(), 1)
+
+    def test_blank_gig_comment(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(self.joeuser, g,"")
+        self.assertEqual(GigComment.objects.count(), 0)
+
+    def test_gig_make_comment_permissions(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        response = self.send_comment(self.janeuser, g,"illegal!")
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.assertEqual(response.status_code, 403)
+
+    def test_gig_get_comments(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/comments')
+        self.assertEqual(response.status_code, 200)
+
+    def test_gig_get_comments_permissions(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c=Client()
+        c.force_login(self.janeuser)
+        response = c.get(f'/gig/{g.id}/comments')
+        self.assertEqual(response.status_code, 403)

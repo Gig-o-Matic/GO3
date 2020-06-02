@@ -1,0 +1,33 @@
+{% load i18n %}
+{% load humanize %}
+
+<div class="row">
+    <div class="col-12" id="gig_comment">
+        {% if comments %}
+            {% for the_comment in comments %}
+                <div class='comment-intro'>
+                    {% if the_comment.member %}
+                        <a href="{% url 'member-detail' the_comment.member.id %}">{{ the_comment.member.display_name }}</a>
+                    {% else %}
+                        {% trans "Somebody" %}
+                    {% endif %}
+                    {% trans "said" %} {{ the_comment.created_date|naturaltime|capfirst}}:
+                </div>
+                <div class='comment-comment'>
+                    {{ the_comment.text|linebreaks }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+<form>
+    <div class="row mt-4">
+        <div class="col-md-10 col-12">
+            <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
+        </div>
+        <div class="mx-auto">
+            <button class="btn btn-primary btn-sm" 
+            hx-post="/gig/{{ gig.id }}/comments" hx-target="#gig_commentcard">{% trans "Say it!" %}</button>
+        </div>
+    </div>
+</form>
