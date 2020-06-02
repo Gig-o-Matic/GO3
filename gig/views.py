@@ -126,11 +126,7 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
 
         return result
 
-      
-class CommentsView(LoginRequiredMixin, TemplateView):
-    template_name='gig/gig_comments.html'
-
-    
+          
 class DuplicateView(CreateView):
   
     def get_form_kwargs(self, *args, **kwargs):
@@ -151,9 +147,10 @@ class DuplicateView(CreateView):
         # didn't have the band from the request args, so pull it from the gig
         return get_object_or_404(Gig, id=self.kwargs['pk']).band
 
+
 class CommentsView(LoginRequiredMixin, TemplateView):
     template_name='gig/gig_comments.html'
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
