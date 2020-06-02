@@ -21,14 +21,15 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
-from django.http import HttpResponseForbidden
-from .models import Gig, Plan, GigComment
+from django.http import Http404, HttpResponseForbidden
+from .models import Gig, Plan, GigCommen
 from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
 from django.contrib.auth.mixins import LoginRequiredMixin
 import urllib.parse
+from validators import url as url_validate
 
 class DetailView(generic.DetailView):
     model = Gig
@@ -40,6 +41,15 @@ class DetailView(generic.DetailView):
         # todo or band members, admins etc.
         context['user_can_create'] = self.request.user.is_superuser
         context['timezone'] = self.object.band.timezone
+
+        if self.object.address:
+            if url_validate(self.object.address):
+                context['address_string'] = self.object.address
+            elif url_validate(f'http://{self.object.address}'):
+                # if there's no scheme, see if it works with http
+                context['address_string'] = f'http://{self.object.address}'
+            else:
+                context['address_string'] = f'http://maps.google.com?q={self.object.address}'
 
         timezone.activate(self.object.band.timezone)
 
@@ -59,13 +69,16 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
-        context['band'] = Band.objects.get(id=self.kwargs['bk'])
+        context['band'] = self.get_band_from_kwargs(**kwargs)
         context['timezone'] = context['band'].timezone
         return context
 
+    def get_band_from_kwargs(self, **kwargs):
+         return Band.objects.get(id=self.kwargs['bk'])
+
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(CreateView, self).get_form_kwargs(*args, **kwargs)
-        kwargs['band'] = Band.objects.get(id=self.kwargs['bk'])
+        kwargs['band'] = self.get_band_from_kwargs(**kwargs)
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -95,7 +108,6 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         context['timezone'] = self.object.band.timezone
         return context
 
-
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
@@ -103,7 +115,6 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         pass
 
     def form_valid(self, form):
-
         if not has_edit_permission(self.request.user, self.object.band):
             return HttpResponseForbidden()
 
@@ -115,8 +126,31 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
 
         return result
 
+      
 class CommentsView(LoginRequiredMixin, TemplateView):
     template_name='gig/gig_comments.html'
+
+    
+class DuplicateView(CreateView):
+  
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super().get_form_kwargs(*args, **kwargs)
+        gig_orig = Gig.objects.get(id=self.kwargs['pk'])
+        # we didn't originally get a band in the request, we got a gig pk - so get the band from that
+        # and stash it among the args from the request
+        self.kwargs['bk'] = gig_orig.band.id
+
+        # populate the initial data from the original gig
+        kwargs['initial'] = forms.models.model_to_dict(gig_orig, 
+                                                        exclude=['calldate', 'setdate', 'enddate'])
+        # ...but replace the title with a 'copy of'
+        kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
+        return kwargs
+
+    def get_band_from_kwargs(self, **kwargs):
+        # didn't have the band from the request args, so pull it from the gig
+        return get_object_or_404(Gig, id=self.kwargs['pk']).band
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -132,6 +166,7 @@ class CommentsView(LoginRequiredMixin, TemplateView):
         if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
             return HttpResponseForbidden()
         return super().get(request, **kwargs)
+
 
     def post(self, request, **kwargs):
         if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
@@ -149,6 +184,7 @@ def has_comment_permission(user, gig):
 
 def has_edit_permission(user, band):
     return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
+
 
 def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)

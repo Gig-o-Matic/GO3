@@ -25,10 +25,10 @@
                     {% if user_can_edit %}
                         <div class="ml-auto">
                             {% if user_can_edit %}
-                                <a class="btn btn-primary btn-sm" href="/gig/{{ gig.id }}/update">{% trans "Edit" %}</a>
+                                <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
                             {% endif %}
                             {% if user_can_create %}
-                                <a class="btn btn-primary btn-sm" href="gig_edit.html?gk={{ gig.id }}&dupe=1">{% trans "Duplicate" %}</a>
+                                <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
                             {% endif %}
                         </div>
                 {% endif %}
@@ -69,13 +69,13 @@
                 {% endif %}
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Band" %}</div>
-                    <div class="col-md-10 col-sm-10 col-8"><a href="/band/{{ gig.band.id }}">{{ gig.band.name }}</a></div>
+                    <div class="col-md-10 col-sm-10 col-8"><a href="{% url 'band-detail' gig.band.id %}">{{ gig.band.name }}</a></div>
                 </div>
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Contact" %}</div>
                     <div class="col-md-10 col-sm-10 col-8">
                         {% if gig.contact %}
-                            <a href="/member/{{ gig.contact.id }}">{{ gig.contact.display_name }}</a>
+                            <a href="{% url 'member-detail' gig.contact.id %}">{{ gig.contact.display_name }}</a>
                         {% endif %}
                     </div>
                 </div>
@@ -106,7 +106,7 @@
                 {% if gig.address %}
                     <div class="row">
                         <div class="col-md-2 col-sm-2 col-4">{% trans "Address" %}</div>
-                        <div class="col-md-10 col-sm-10 col-8"><a href="http://maps.google.com?q={{gig.address }}" target="new">{{ gig.address }}</a></div>
+                        <div class="col-md-10 col-sm-10 col-8"><a href="{{ address_string }}" target="new">{{ gig.address }}</a></div>
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}

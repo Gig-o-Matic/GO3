@@ -65,6 +65,7 @@ class GigTest(TestCase):
                         call_time = '12:00 pm',
                         set_time = '',
                         end_time = '',
+                        address = '',
                         **kwargs):
 
         c=Client()
@@ -78,6 +79,7 @@ class GigTest(TestCase):
                                     'end_time':end_time,
                                     'contact':kwargs.get('contact', self.joeuser).id,
                                     'status':GigStatusChoices.UNKNOWN,
+                                    'address':address,
                                     'send_update': True
                                     })
         
@@ -619,3 +621,58 @@ class GigTest(TestCase):
         c.force_login(self.janeuser)
         response = c.get(f'/gig/{g.id}/comments')
         self.assertEqual(response.status_code, 403)
+
+    def duplicate_gig_form(self, gig, number=1,
+                        user=None, 
+                        expect_code=302,
+                        call_date = '01/02/2100',
+                        end_date = '',
+                        call_time = '12:00 pm',
+                        set_time = '',
+                        end_time = '',
+                        **kwargs):
+
+        c=Client()
+        c.force_login(user if user else self.joeuser)
+        response = c.post(f'/gig/{gig.id}/duplicate', 
+                                    {'title':f'Copy of {gig.title}',
+                                    'call_date':call_date,
+                                    'end_date':end_date,
+                                    'call_time':call_time,
+                                    'set_time':set_time,
+                                    'end_time':end_time,
+                                    'contact':kwargs.get('contact', self.joeuser).id,
+                                    'status':GigStatusChoices.UNKNOWN,
+                                    'send_update': True
+                                    })
+        
+        self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
+        obj = Gig.objects.last()
+        return obj
+
+    def test_duplicate_gig(self):
+        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(Gig.objects.count(), 1)
+    
+        _ = self.duplicate_gig_form(g1, 1)
+        self.assertEqual(Gig.objects.count(), 2)
+    def test_address_url(self):
+        g, _, _ = self.assoc_joe_and_create_gig(address='http://pbs.org')
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/')
+        self.assertIn('"http://pbs.org"',response.content.decode('ascii'))
+
+    def test_address_url_noscheme(self):
+        g, _, _ = self.assoc_joe_and_create_gig(address='pbs.org')
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/')
+        self.assertIn('"http://pbs.org"',response.content.decode('ascii'))
+
+    def test_address_address(self):
+        g, _, _ = self.assoc_joe_and_create_gig(address='1600 Pennsylvania Avenue')
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/gig/{g.id}/')
+        self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
