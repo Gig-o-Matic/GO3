@@ -22,7 +22,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django import forms
 from django.http import Http404, HttpResponseForbidden
-from .models import Gig, Plan, GigCommen
+from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band, Assoc
@@ -151,7 +151,9 @@ class DuplicateView(CreateView):
         # didn't have the band from the request args, so pull it from the gig
         return get_object_or_404(Gig, id=self.kwargs['pk']).band
 
-
+class CommentsView(LoginRequiredMixin, TemplateView):
+    template_name='gig/gig_comments.html'
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
