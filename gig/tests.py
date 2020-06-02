@@ -39,6 +39,9 @@ class GigTest(TestCase):
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
+        self.band.anyone_can_create_gigs = True
+        self.band.anyone_can_manage_gigs = True
+        self.band.save()
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -198,7 +201,7 @@ class GigTest(TestCase):
     def test_gig_edit_permissions(self):
         """ make sure that if I don't have permission to edit a gig, I can't """
         g, _, _ = self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='02:00 pm')
-        self.band.anyone_can_create_gigs = False
+        self.band.anyone_can_manage_gigs = False
         self.band.save()
         self.update_gig_form(g, user=self.janeuser, title='not legal!', expect_code=403)
 
@@ -619,3 +622,27 @@ class GigTest(TestCase):
         c.force_login(self.janeuser)
         response = c.get(f'/gig/{g.id}/comments')
         self.assertEqual(response.status_code, 403)
+
+    def test_gig_view_permissions(self):
+        g, a, _ = self.assoc_joe_and_create_gig(address='pbs.org')
+
+        def test_perms(create, manage, expect_create, expect_manage):
+            self.band.anyone_can_create_gigs = create
+            self.band.anyone_can_manage_gigs = manage
+            self.band.save()
+            c=Client()
+            c.force_login(self.joeuser)
+            response = c.get(f'/gig/{g.id}/')
+            self.assertEqual(response.context_data.get('user_can_create',''), expect_create)
+            self.assertEqual(response.context_data.get('user_can_edit',''), expect_manage)
+
+        test_perms(False, True, False, True)
+        test_perms(True, False, True, False)
+        a.is_admin = True
+        a.save()
+        test_perms(False, False, True, True)
+        a.is_admin = False
+        a.save()
+        self.joeuser.is_superuser=True
+        self.joeuser.save()
+        test_perms(False, False, True, True)
