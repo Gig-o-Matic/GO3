@@ -29,7 +29,7 @@
                     </div>
                     {% if the_user_is_band_admin or request.user.is_superuser %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="/band/{{ band.id }}/update">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="{% url 'band-update' pk=band.id %}">{% trans "Edit" %}</a>
                         </div>
                     {% endif %}
                 </div>
@@ -200,14 +200,24 @@
                         {% for assoc in the_pending_members %}
                         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                             <div class="col-md-2 col-sm-2 col-12">
-                                <a href="/member/{{assoc.member.id}}">{{ assoc.member.username|escape }}</a>
+                                <a href="{% url 'member-detail' pk=assoc.member.id %}">{{ assoc.member.username|escape }}</a>
                             </div>
                             <div class="col-md-4 col-sm-4 col-12">
                                 {{ m.email_address|escape }}
                             </div>
                             <div class="col-md-6 col-sm-6 col-12">
-                                <a class="btn btn-primary btn-sm" href="#" onclick="do_confirm({{assoc.id}});">{% trans "yes, confirm member!" %}</a>
-                                <a class="btn btn-secondary btn-sm" href="#" onclick="do_delete({{assoc.id}});">{% trans "no, reject!" %}</a>
+                                <a class="btn btn-primary btn-sm"
+                                   href="#"
+                                   hx-ext="reload-page"
+                                   hx-post="{% url 'assoc-confirm' ak=assoc.id %}">
+                                    {% trans "yes, confirm member!" %}
+                                </a>
+                                <a class="btn btn-secondary btn-sm"
+                                   href="#"
+                                   hx-ext="reload-page"
+                                   hx-post="{% url 'assoc-delete' ak=assoc.id %}">
+                                    {% trans "no, reject!" %}
+                                </a>
                             </div>
                         </div>
                         {% endfor %}
@@ -267,8 +277,12 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12" id="sectionlist">
-                        	{% for s in band.sections.all %}
-                        	    <div class="row" id="section{{forloop.counter0}}" data-section="{{s.id}}" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                            {% for s in band.sections.all %}
+                                <div class="row"
+                                     id="section{{forloop.counter0}}"
+                                     hx-get="{% url 'section-members' pk=band.id sk=s.id %}"
+                                     hx-trigger="load"
+                                     style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                             		<div class="col-12">
                             			<i class="fas fa-spinner fa-pulse fa-lg"></i>
                             		</div>
@@ -305,7 +319,7 @@
                             <hr>
                         </div>
                         <div class="row">
-                            <div class="col-12" id="memberlist">
+                            <div class="col-12" id="memberlist" hx-get="{% url 'all-members' pk=band.id %}" hx-trigger="load">
                                 <i class="fas fa-spinner fa-pulse fa-lg"></i>
                             </div>
                         </div>
@@ -360,95 +374,6 @@ function updatePublic() {
     }
 }
 
-function updateMembers() {
-    if (document.getElementById('memberlist')) {
-        $.ajax({
-            method: 'GET',
-            url: '/band/{{band.id}}/members',
-            headers: { "X-CSRFToken": "{{csrf_token}}" },
-            success: function(responseTxt,statusTxt,xhr){
-                        if(statusTxt=="success")
-                            document.getElementById('memberlist').innerHTML=responseTxt;
-                        if(statusTxt=="error")
-                            alert("Error: "+xhr.status+": "+xhr.statusText);
-            },
-        });
-    }
-}
-
-
-function updateSections() {
-	updateSection(0);
-}
-
-var num_sections = Number({{ band.sections.all|length }});
-function updateSection(i) {
-    updateOneSection(i)
-}
-
-function updateOneSection(i) {
-    sectionid = $('#section'+i).attr('data-section');
-    $.ajax({
-        method: 'GET',
-        url: '/band/{{ band.id }}/section/'+sectionid,
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success") {
-                        document.getElementById('section'+i).innerHTML=responseTxt;
-                        if (document.getElementById('section'+(i+1))) {
-                            updateSection(i+1);
-                        }
-                    }
-                    if(statusTxt=="error") {
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                    }
-                },
-    });
-}
-
-function option_tf_select(option, objecttype, objectid, elementid) {
-    elem=document.getElementById(elementid)
-    $.ajax({
-        method: 'POST',
-        url: '/'+objecttype+'/'+objectid+'/tfparam/'+option+'/'+elem.checked,
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-function do_delete(ak){
-    $.ajax({
-        method: 'POST',
-        url: '/band/assoc/'+ak+'/delete',
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        // setTimeout(function(){updateBands()}, 1000);
-                        location.reload();
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-function do_confirm(ak){
-    $.ajax({
-        method: 'POST',
-        url: '/band/assoc/'+ak+'/confirm',
-        headers: { "X-CSRFToken": "{{csrf_token}}" },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        // setTimeout(function(){updateBands()}, 1000);
-                        location.reload();
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
 var nicknames=true;
 function toggle_names() {
     nicknames = !nicknames;
@@ -462,8 +387,6 @@ function toggle_names() {
 }
 
 $(document).ready(function() {
-    updateMembers();
-    updateSections();
     updateUpcoming();
     updatePublic();
 });

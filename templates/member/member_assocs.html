@@ -8,7 +8,15 @@
                     ({% trans "pending" %})
                 </div>
                 <div class="col-9">
-                    <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Cancel" %}</button>
+                    <button class="btn btn-secondary btn-sm"
+                        id="leave-{{ assoc.id }}"
+                        hx-ext="reload"
+                        hx-post="{% url 'assoc-delete' ak=assoc.id %}"
+                        hx-trigger="bootstrap-confirm"
+                        hx-target="#bandlist"
+                        onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
+                        {% trans "Cancel" %}
+                    </button>
                 </div>
 
             {% else %}
@@ -21,25 +29,29 @@
                             <div class="col-6">
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='sbk-{{assoc.band.id}}'>
-                                        {{assoc.default_section.name}} <span class="caret"></span>
+                                        {{assoc.default_section.name}}
                                     </button>
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
                                         {% for section in assoc.band.sections.all %}
-                                            <a class="dropdown-item" 
-                                            onclick="section_select('{{assoc.id}}','{{section.id}}')">{{ section.name }}</a>
+                                            <a class="dropdown-item"
+                                            hx-ext="update-dropdown"
+                                            hx-put="{% url 'assoc-section' ak=assoc.id sk=section.id %}"
+                                            hx-target="#sbk-{{assoc.band.id}}"
+                                            >{{ section.name }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}' 
-                                    onclick="option_tf_select('is_multisectional','band/assoc','{{ assoc.id }}','msbk-{{ assoc.id}}')"
+                                    <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}'
+                                    name="is_multisectional" hx-ext="checkbox"
+                                    hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                     {% if assoc.is_multisectional %}
                                         checked
                                     {% endif %}
                                     >
-                                    <label class="form-check-label" for="msbk-{{assoc.band.id}}">{% trans "other sections, too" %}</label>
+                                    <label class="form-check-label" for="msbk-{{assoc.id}}">{% trans "other sections, too" %}</label>
                                 </div>
                             </div>
                         </div>
@@ -47,8 +59,9 @@
                     <div class="row" style="padding-bottom: 5px;">
                         <div class="col-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}' 
-                                onclick="option_tf_select('is_occasional','band/assoc','{{ assoc.id }}','oak-{{ assoc.id}}')"
+                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
+                                name="is_occasional" hx-ext="checkbox"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                 {% if assoc.is_occasional %}
                                     checked
                                 {% endif %}
@@ -59,7 +72,8 @@
                         <div class="col-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
-                                onclick="option_tf_select('hide_from_schedule','band/assoc','{{ assoc.id }}','hideak-{{ assoc.id}}')"
+                                name="hide_from_schedule" hx-ext="checkbox"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                 {% if assoc.hide_from_schedule %}
                                     checked
                                 {% endif %}
@@ -74,7 +88,8 @@
                                 <div class="col-6">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
-                                        onclick="option_tf_select('email_me','band/assoc','{{ assoc.id }}','mailbk-{{ assoc.id}}')"
+                                        name="email_me" hx-ext="checkbox"
+                                        hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                         {% if assoc.email_me %}
                                             checked
                                         {% endif %}
@@ -85,17 +100,14 @@
                                 <div class="col-6">
                                     <div class="dropdown">
                                         <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
-                                            {% if assoc.color == 0 %}
-                                                <i class="far fa-square"></i>
-                                            {% else %}
-                                                <i class="fas fa-square" style="color:{{ assoc.colorval }};"></i>
-                                            {% endif %}
-                                            <span class="caret"></span>
+                                            {% include "member/color.html" %}
                                         </button>
                                         <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
                                             {% for c in the_colors %}
                                                 <a class="dropdown-item" id="color-{{forloop.counter0}}"
-                                                    onclick="color_select('{{ assoc.id }}','{{forloop.counter0}}')"
+                                                    hx-post="{% url 'assoc-color' ak=assoc.id colorindex=forloop.counter0 %}"
+                                                    hx-trigger="click"
+                                                    hx-target="#cbk-{{ assoc.id }}"
                                                 >{% if forloop.first %}
                                                     <i class="far fa-square"></i>
                                                 {% else %}
@@ -108,7 +120,15 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <button class="btn btn-secondary btn-sm" onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">{% trans "Leave Band" %}</button>
+                            <button class="btn btn-secondary btn-sm"
+                                id="leave-{{ assoc.id }}"
+                                hx-ext="reload"
+                                hx-post="{% url 'assoc-delete' ak=assoc.id %}"
+                                hx-trigger="bootstrap-confirm"
+                                hx-target="#bandlist"
+                                onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
+                                {% trans "Leave Band" %}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -118,3 +138,5 @@
 {% else %}
     {% trans "You need to add a band!" %}
 {% endif %}
+<div hx-get="{% url 'member-otherbands' pk=member_id %}" hx-trigger="load">
+</div>

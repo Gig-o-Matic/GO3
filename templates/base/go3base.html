@@ -62,11 +62,11 @@
 
     <body
         {% block bodyclass %}
-        {% endblock bodyclass %}        
+        {% endblock bodyclass %}
     >
         <div id="wrap"
             {% block wrapclass %}
-            {% endblock wrapclass %}        
+            {% endblock wrapclass %}
         >
             {% block navbar %}
                 {% include 'base/navbar.html' %}
@@ -109,13 +109,57 @@
     </body>
 
 
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>   
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
     <!-- <script src="/bootstrap3-editable/js/bootstrap-editable.js"></script>     -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
+
+    <script src="https://unpkg.com/htmx.org@0.0.4"></script>
+    <script>
+        document.body.addEventListener('configRequest.htmx', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+
+        htmx.defineExtension('reload', {
+            onEvent: function(name, event) {
+                if (name === 'afterOnLoad.htmx') {
+                    if (event.detail.xhr.status < 400)
+                        htmx.trigger(event.detail.target, 'reload', {});
+                }
+            }
+        })
+
+        htmx.defineExtension('reload-page', {
+            onEvent: function(name, event) {
+                if (name === 'afterOnLoad.htmx') {
+                    if (event.detail.xhr.status < 400)
+                        location.reload();
+                }
+            }
+        })
+
+        htmx.defineExtension('update-dropdown', {
+            onEvent: function(name, event) {
+                if (name === 'afterOnLoad.htmx') {
+                    if (event.detail.xhr.status < 400)
+                        event.detail.target.innerHTML = event.detail.elt.innerHTML;
+                }
+            }
+        })
+
+        htmx.defineExtension('checkbox', {
+            onEvent: function(name, event) {
+                if (name === 'configRequest.htmx') {
+                    let element = event.detail.elt;
+                    if (element.matches('input[type=checkbox]') && element.name)
+                        event.detail.parameters[element.name] = element.checked;
+                }
+            }
+        })
+    </script>
 
 <script type="text/javascript">
 
@@ -127,7 +171,7 @@ function stopRKey(evt) {
 
 document.onkeypress = stopRKey;
 
-</script> 
+</script>
 
     {% block localscripts %}
     {% endblock localscripts %}
@@ -164,7 +208,7 @@ document.onkeypress = stopRKey;
                 //             alert("Error: "+xhr.status+": "+xhr.statusText);
                 //     });
                 // }
-        
+
                 $(document).ready(function() {
                     $('#motd-alert').bind('closed.bs.alert', function () {
                         $.ajax({method:"POST", url:"/member/{{user.id}}/motd_seen",headers: {"X-CSRFToken": "{{csrf_token}}"}})

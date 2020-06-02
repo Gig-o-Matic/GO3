@@ -2,20 +2,25 @@
 {% for the_assoc in member_assocs %}
     <div class="row" style="padding-top: 5px; {% cycle '' 'background:#f5f5f5;' %}">
         <div class="col-12">
-            <a href='/member/{{the_assoc.member.id}}'>{{ the_assoc.member.username }}</a>
+            <a href="{% url 'member-detail' pk=the_assoc.member.id %}">{{ the_assoc.member.username }}</a>
         </div>
     </div>
     <div class="row" style="padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
         <div class="col-md-3 col-6">
             <div class="form-group">
-                <label class="form-check">  
-                    <input class="form-check-input" type="checkbox" id='oak-{{ the_assoc.id}}' onclick="option_tf_select('is_occasional','band/assoc','{{ the_assoc.id }}','oak-{{ the_assoc.id}}')"
+                <label class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id='oak-{{ the_assoc.id}}'
+                           name="is_occasional"
+                           hx-ext="checkbox"
+                           hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
                     {% if the_assoc.is_occasional %}
-                        checked
+                           checked
                     {% endif %}
                     >
                     <label class="form-check-label" for="oak-{{ the_assoc.id}}">{% trans "occasional" %}</label>
-                </label>  
+                </label>
             </div>
         </div>
         {% if the_assoc.band.sections.all|length > 1 %}
@@ -26,37 +31,76 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenu{{forloop.counter}}">
                         {% for a_section in the_assoc.band.sections.all %}
-                             <a class="dropdown-item" onclick="section_select('band/assoc','{{ the_assoc.id }}','{{ a_section.id }}')">{{ a_section.name }}</a>
+                            <a class="dropdown-item"
+                               hx-ext="update-dropdown"
+                               hx-target="#dropdownMenu{{forloop.parentloop.counter}}"
+                               hx-put="{% url 'assoc-section' ak=the_assoc.id sk=a_section.id %}">
+                                {{ a_section.name }}
+                            </a>
                          {% endfor %}
                     </div>
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id='msbk-{{ the_assoc.id }}' onclick="option_tf_select('is_multisectional','band/assoc','{{ the_assoc.id }}','msbk-{{ the_assoc.id}}')"
-
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id='msbk-{{ the_assoc.id }}'
+                           name="is_multisectional"
+                           hx-ext="checkbox"
+                           hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
                     {% if the_assoc.is_multisectional %}
-                        checked
+                           checked
                     {% endif %}
                     >
-                    <label class="form-check-label" for='msbk-{{ the_assoc.member.id}}'>+{% trans "others" %}</label>
+                    <label class="form-check-label" for='msbk-{{ the_assoc.id}}'>+{% trans "others" %}</label>
                 </div>
             </div>
         {% endif %}
 
-        {% if the_assoc.member.id != request.user.key %}
+        {% if the_assoc.member != request.user %}
             <div class="col-md-2">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id='aak-{{ the_assoc.id }}' onclick="option_tf_select('is_band_admin','band/assoc','{{ the_assoc.id }}','aak-{{ the_assoc.id}}')"
-                    {% if the_assoc.is_band_admin %}
-                        checked
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id='aak-{{ the_assoc.id }}'
+                           name="is_admin"
+                           hx-ext="checkbox"
+                           hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
+                    {% if the_assoc.is_admin %}
+                           checked
                     {% endif %}
                     >
                     <label class="form-check-label" for='aak-{{ the_assoc.id }}'>{% trans "admin" %}</label>
                 </div>
             </div>
             <div class="col-md-3">
-                <a class="btn btn-primary btn-sm" href="#" onclick="do_delete({{ the_assoc.id }})">{% trans "remove from band" %}</a>
+                <a class="btn btn-primary btn-sm"
+                   href="#"
+                   hx-ext="reload-page"
+                   hx-post="{% url 'assoc-delete' ak=the_assoc.id %}">
+                    {% trans "remove from band" %}
+                </a>
+            </div>
+        {% else %}
+            <div class="col-md-2">
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id='aak-{{ the_assoc.id }}'
+                           name="is_admin"
+                           disabled
+                    {% if the_assoc.is_admin %}
+                           checked
+                    {% endif %}
+                    >
+                    <label class="form-check-label" for='aak-{{ the_assoc.id }}'>{% trans "admin" %}</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-secondary btn-sm" disabled>
+                    {% trans "remove from band" %}
+                </button>
             </div>
         {% endif %}
     </div>

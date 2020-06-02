@@ -16,6 +16,7 @@
 """
 
 from django.test import TestCase, RequestFactory
+from django.urls import reverse
 from .models import Band, Assoc, Section
 from member.models import Member
 from band import helpers
@@ -37,6 +38,10 @@ class MemberTests(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
+    def assoc_joe(self, status=AssocStatusChoices.CONFIRMED):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=status)
+        return a
+
 
     def test_addband(self):
 
@@ -56,7 +61,7 @@ class MemberTests(TestCase):
 
         # make sure a band admin can create an assoc for another user for their band
         request.user = self.band_admin
-        
+
         self.assertEqual(Assoc.objects.count(), 1)
         a = Assoc.objects.get(band=self.band, member=self.band_admin)
         self.assertEqual(a.is_admin, True)
@@ -75,66 +80,6 @@ class MemberTests(TestCase):
         helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
         helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
         self.assertEqual(len(Assoc.objects.filter(band=self.band, member=self.joeuser)), 1)
-
-
-    def test_leaveband(self):
-        request = RequestFactory().get('/band/assoc/{}/delete'.format(self.joeuser.id))
-
-        # make sure a user can delete their own assoc
-        request.user = self.joeuser
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),0)
-        a = Assoc.objects.create(band=self.band, member=self.joeuser)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),1)
-        helpers.delete_assoc(request, ak=a.id)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),0)
-
-        # make sure a superuser can delete an assoc
-        request.user = self.super
-        a = Assoc.objects.create(band=self.band, member=self.joeuser)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),1)
-        helpers.delete_assoc(request, ak=a.id)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),0)
-
-        # make sure a band_admin can delete an assoc
-        request.user = self.band_admin
-        a = Assoc.objects.create(band=self.band, member=self.joeuser)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),1)
-        helpers.delete_assoc(request, ak=a.id)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),0)
-
-        # make sure nobody else can delete an assoc
-        request.user = self.janeuser
-        a = Assoc.objects.create(band=self.band, member=self.joeuser)
-        self.assertEqual(Assoc.objects.filter(band=self.band, member=self.joeuser).count(),1)
-        with self.assertRaises(PermissionError):
-            helpers.delete_assoc(request, ak=a.id)
-
-
-    def test_confirmband(self):
-        request = RequestFactory().get('/band/assoc/{}/confirm'.format(self.joeuser.id))
-        a = Assoc.objects.create(member=self.joeuser, band=self.band)
-        self.assertFalse(a.status==AssocStatusChoices.CONFIRMED)
-
-        # make sure a superuser can confirm an assoc for another user
-        request.user = self.super
-        helpers.confirm_assoc(request, a.id)
-        a = Assoc.objects.get(band=self.band, member=self.joeuser)
-        self.assertTrue(a.status==AssocStatusChoices.CONFIRMED)
-        a.status=AssocStatusChoices.CONFIRMED
-        a.save()
-
-        # make sure a band admin can create an assoc for another user for their band
-        request.user = self.band_admin
-        helpers.confirm_assoc(request, a.id)
-        a = Assoc.objects.get(band=self.band, member=self.joeuser)
-        self.assertTrue(a.status==AssocStatusChoices.CONFIRMED)
-        a.status = AssocStatusChoices.NOT_CONFIRMED
-        a.save()
-
-        # make sure nobody else can
-        request.user = self.janeuser
-        with self.assertRaises(PermissionError):
-            helpers.confirm_assoc(request, ak=a.id)
 
     def test_deleting_section(self):
 
@@ -158,6 +103,165 @@ class MemberTests(TestCase):
         assoc = Assoc.objects.get(band=self.band, member=self.band_admin)
         self.assertTrue(assoc.default_section.is_default)
         self.assertEqual(assoc.default_section,self.band.sections.get(is_default=True))
+
+    def test_tf_param_user(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+        self.assertEqual(resp.status_code, 204)
+        a.refresh_from_db()
+        self.assertEqual(a.is_occasional, True)
+
+    def test_tf_param_admin(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+        self.assertEqual(resp.status_code, 204)
+        a.refresh_from_db()
+        self.assertEqual(a.is_occasional, True)
+
+    def test_tf_param_other(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+        self.assertEqual(resp.status_code, 403)
+        a.refresh_from_db()
+        self.assertEqual(a.is_occasional, False)
+
+    def test_tf_param_is_admin_user(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+        self.assertEqual(resp.status_code, 204)
+        a.refresh_from_db()
+        self.assertEqual(a.is_admin, False)
+
+    def test_tf_param_is_admin_admin(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+        self.assertEqual(resp.status_code, 204)
+        a.refresh_from_db()
+        self.assertEqual(a.is_admin, True)
+
+    def test_tf_param_is_admin_other(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+        self.assertEqual(resp.status_code, 403)
+        a.refresh_from_db()
+        self.assertEqual(a.is_admin, False)
+
+    def test_section_user(self):
+        a = self.assoc_joe()
+        s = Section.objects.create(band=a.band)
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-section', args=[a.id, s.id]))
+        self.assertEqual(resp.status_code, 204)
+        a.refresh_from_db()
+        self.assertEqual(a.section, s)
+
+    def test_section_admin(self):
+        a = self.assoc_joe()
+        s = Section.objects.create(band=a.band)
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('assoc-section', args=[a.id, s.id]))
+        self.assertEqual(resp.status_code, 204)
+        a.refresh_from_db()
+        self.assertEqual(a.section, s)
+
+    def test_section_other(self):
+        a = self.assoc_joe()
+        s0 = a.section
+        s = Section.objects.create(band=a.band)
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('assoc-section', args=[a.id, s.id]))
+        self.assertEqual(resp.status_code, 403)
+        a.refresh_from_db()
+        self.assertEqual(a.section, s0)
+
+    def test_section_other_band(self):
+        a = self.assoc_joe()
+        s0 = a.section
+        b = Band.objects.create(name='Other Band')
+        s = Section.objects.create(band=b)
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-section', args=[a.id, s.id]))
+        self.assertEqual(resp.status_code, 404)
+        a.refresh_from_db()
+        self.assertEqual(a.section, s0)
+
+    def test_color_user(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-color', args=[a.id, 2]))
+        self.assertEqual(resp.status_code, 200)
+        a.refresh_from_db()
+        self.assertEqual(a.color, 2)
+
+    def test_color_admin(self):
+        # This is a bit odd, and there's no UI set up to allow this, but it makes
+        # the implementation easy.
+        a = self.assoc_joe()
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('assoc-color', args=[a.id, 2]))
+        self.assertEqual(resp.status_code, 200)
+        a.refresh_from_db()
+        self.assertEqual(a.color, 2)
+
+    def test_color_other(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('assoc-color', args=[a.id, 2]))
+        self.assertEqual(resp.status_code, 403)
+        a.refresh_from_db()
+        self.assertEqual(a.color, 0)
+
+    def test_delete_user(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-delete', args=[a.id]))
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 0)
+
+    def test_delete_admin(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('assoc-delete', args=[a.id]))
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 0)
+
+    def test_delete_other(self):
+        a = self.assoc_joe()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('assoc-delete', args=[a.id]))
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
+
+    def test_confirm_user(self):
+        a = self.assoc_joe(AssocStatusChoices.PENDING)
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-confirm', args=[a.id]))
+        self.assertEqual(resp.status_code, 403)
+        a.refresh_from_db()
+        self.assertEqual(a.status, AssocStatusChoices.PENDING)
+
+    def test_confirm_admin(self):
+        a = self.assoc_joe(AssocStatusChoices.PENDING)
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('assoc-confirm', args=[a.id]))
+        self.assertEqual(resp.status_code, 200)
+        a.refresh_from_db()
+        self.assertEqual(a.status, AssocStatusChoices.CONFIRMED)
+
+    def test_confirm_other(self):
+        a = self.assoc_joe(AssocStatusChoices.PENDING)
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('assoc-confirm', args=[a.id]))
+        self.assertEqual(resp.status_code, 403)
+        a.refresh_from_db()
+        self.assertEqual(a.status, AssocStatusChoices.PENDING)
+
 
 class BandTests(TestCase):
     def setUp(self):

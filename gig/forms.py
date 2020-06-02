@@ -35,7 +35,7 @@ class GigForm(forms.ModelForm):
             **kwargs
         )
 
-        if kwargs['instance'] is None:
+        if kwargs.get('instance',None) is None:
             self.fields['send_update'].label = _('Email members about this new gig')
             self.fields['invite_occasionals'].label = _('Invite occasional members')
         else:

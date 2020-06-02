@@ -171,3 +171,9 @@ class Gig(AbstractEvent):
         # now that we have one for every member, return the list
         return self.plans # pylint: disable=no-member
 
+
+class GigComment(models.Model):
+    gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)
+    member = models.ForeignKey("member.Member", verbose_name="member", related_name="comments", on_delete=models.CASCADE)
+    text = models.TextField(null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
