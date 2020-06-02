@@ -21,6 +21,7 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
+from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from .util import PlanStatusChoices
@@ -71,8 +72,7 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
     def form_valid(self, form):
         band = Band.objects.get(id=self.kwargs['bk'])
         if not has_edit_permission(self.request.user, band):
-            raise PermissionError("Trying to create a gig without permission: {}".format(
-                self.request.user.email))
+            return HttpResponseForbidden()
 
         # there's a new gig; link it to the band
         form.instance.band = band
@@ -105,8 +105,7 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
     def form_valid(self, form):
 
         if not has_edit_permission(self.request.user, self.object.band):
-            raise PermissionError("Trying to update a gig without permission: {}".format(
-                self.request.user.email))
+            return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
 
@@ -131,12 +130,12 @@ class CommentsView(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
-            raise PermissionError('Illegal access to comments')
+            return HttpResponseForbidden()
         return super().get(request, **kwargs)
 
     def post(self, request, **kwargs):
         if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
-            raise PermissionError('Illegal access to comments')
+            return HttpResponseForbidden()
 
         text = request.POST.get('commenttext','').strip()
         if text:

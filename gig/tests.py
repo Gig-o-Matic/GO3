@@ -193,9 +193,14 @@ class GigTest(TestCase):
         self.band.anyone_can_create_gigs = False
         self.band.save()
         self.assoc_joe() # need a member of the band so there's a valid contact to select from in the form
-        with self.assertRaises(PermissionError):
-            self.create_gig_form(user=self.janeuser,title='permission gig')
-        pass
+        self.create_gig_form(user=self.janeuser,title='permission gig', expect_code=403)
+
+    def test_gig_edit_permissions(self):
+        """ make sure that if I don't have permission to edit a gig, I can't """
+        g, _, _ = self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='02:00 pm')
+        self.band.anyone_can_create_gigs = False
+        self.band.save()
+        self.update_gig_form(g, user=self.janeuser, title='not legal!', expect_code=403)
 
     @flag_missing_vars
     def test_new_gig_email(self):
@@ -597,9 +602,9 @@ class GigTest(TestCase):
 
     def test_gig_make_comment_permissions(self):
         g, _, _ = self.assoc_joe_and_create_gig()
-        with self.assertRaises(PermissionError):
-            self.send_comment(self.janeuser, g,"illegal!")
+        response = self.send_comment(self.janeuser, g,"illegal!")
         self.assertEqual(GigComment.objects.count(), 0)
+        self.assertEqual(response.status_code, 403)
 
     def test_gig_get_comments(self):
         g, _, _ = self.assoc_joe_and_create_gig()
@@ -612,5 +617,5 @@ class GigTest(TestCase):
         g, _, _ = self.assoc_joe_and_create_gig()
         c=Client()
         c.force_login(self.janeuser)
-        with self.assertRaises(PermissionError):
-            c.get(f'/gig/{g.id}/comments')
+        response = c.get(f'/gig/{g.id}/comments')
+        self.assertEqual(response.status_code, 403)
