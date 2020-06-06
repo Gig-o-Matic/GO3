@@ -39,6 +39,7 @@ class GigTest(TestCase):
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -158,8 +159,7 @@ class GigTest(TestCase):
         self.assertEqual(self.band.sections.count(), 4)
 
         """ make the band's first assoc default to s1 section """
-        self.assoc_joe()
-        a = self.band.assocs.first()
+        a = self.assoc_joe()
         a.default_section = s1
         a.save()
         self.assertEqual(self.joeuser.assocs.first().default_section, s1)
@@ -676,3 +676,54 @@ class GigTest(TestCase):
         c.force_login(self.joeuser)
         response = c.get(f'/gig/{g.id}/')
         self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
+
+
+    # Use plan-update to test permissions
+    def test_plan_update_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update', args=[p.id, PlanStatusChoices.DEFINITELY]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.status, PlanStatusChoices.DEFINITELY)
+
+    def test_plan_update_admin(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('plan-update', args=[p.id, PlanStatusChoices.DEFINITELY]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.status, PlanStatusChoices.DEFINITELY)
+
+    def test_plan_update_other(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('plan-update', args=[p.id, PlanStatusChoices.DEFINITELY]))
+        self.assertEqual(resp.status_code, 403)
+        p.refresh_from_db()
+        self.assertEqual(p.status, PlanStatusChoices.NO_PLAN)
+
+    def test_plan_feedbaco_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update-feedback', args=[p.id, 42]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.feedback_value, 42)
+
+    def test_plan_comment_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update-comment', args=[p.id]), {'value': 'Plan comment'})
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.comment, 'Plan comment')
+
+    def test_plan_section_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        s = Section.objects.create(name='s1', band=self.band)
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update-section', args=[p.id, s.id]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.plan_section, s)
