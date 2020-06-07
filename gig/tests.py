@@ -679,6 +679,7 @@ class GigTest(TestCase):
         c.force_login(self.joeuser)
         response = c.get(f'/gig/{g.id}/')
         self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
+
     def test_gig_view_permissions(self):
         g, a, _ = self.assoc_joe_and_create_gig(address='pbs.org')
 
