@@ -26,7 +26,6 @@ class BandForm(forms.ModelForm):
             **kwargs
         )
 
-    timezone = forms.ChoiceField(choices=[(x,x) for x in pytz.common_timezones])
     class Meta:
         model = Band
         fields = ['name', 'shortname', 'hometown', 'description', 'member_links', 'website',
@@ -36,5 +35,4 @@ class BandForm(forms.ModelForm):
 
         widgets = {
             'images': forms.Textarea(attrs={'placeholder': 'put urls to images on their own lines...'}),
-            'timezone': forms.Select(attrs={'class': 'select'}),
         }
