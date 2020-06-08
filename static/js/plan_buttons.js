@@ -1,21 +1,3 @@
-// CODE FOR SELECTING SECTIONS
-function section_select(objecttype, objectid, item, sectionid, sectionname, csrf_token) {
-    $.ajax({
-        method: 'POST',
-        url: '/'+objecttype+'/'+objectid+'/section/'+sectionid,
-        headers: { "X-CSRFToken": csrf_token },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        setTimeout(function(){document.getElementById(item).innerHTML=sectionname}, 1000);
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-
-
-
 // CODE FOR COMMENTS ON AGENDA PAGE
 function show_comment(the_plan) {
     $('#comment-init-'+the_plan).hide();

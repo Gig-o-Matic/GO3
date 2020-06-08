@@ -70,7 +70,7 @@ def update_plan_comment(request, plan):
 def update_plan_section(request, plan, val):
     plan.plan_section = get_object_or_404(Section, pk=val)
     plan.save()
-    return HttpResponse()
+    return HttpResponse(status=204)
 
 
 # @login_required
