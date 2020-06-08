@@ -206,3 +206,17 @@ a {
     font-size: smaller;
     content: '\f001';
 }
+
+/* HTMX indicators
+-------------------------------------------------- */
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request.htmx-indicator, .htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+.htmx-request.htmx-indicator-replace, .htmx-request .htmx-indicator-replace {
+    display: none;
+}

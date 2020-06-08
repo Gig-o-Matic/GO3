@@ -18,7 +18,7 @@
 import datetime
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
@@ -49,7 +49,7 @@ def plan_editor_required(func):
 def update_plan(request, plan, val):
     plan.status = val
     plan.save()
-    return HttpResponse()
+    return render(request, 'gig/plan_icon.html', {'plan_value': val})
 
 @login_required
 @plan_editor_required
