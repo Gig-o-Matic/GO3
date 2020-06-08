@@ -56,7 +56,7 @@ def update_plan(request, plan, val):
 def update_plan_feedback(request, plan, val):
     plan.feedback_value = val
     plan.save()
-    return HttpResponse()
+    return HttpResponse(status=204)
 
 @login_required
 @plan_editor_required

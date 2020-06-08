@@ -1,16 +1,19 @@
 {% load gig_extras %}
 <div class="dropdown mr-2">
     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle text-center feedback-button" data-toggle="dropdown" id="ef-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
-        {% if plan.feedback_value %}            
-            {% if plan.feedback_value %}{{feedback_strings|lookup:plan.feedback_value}}{%endif%}
-        {% else %}
-            <i class="fas fa-minus fa-sm" style="color:black"></i>
-        {% endif %}
+        <span class="htmx-indicator-replace">
+            {% if plan.feedback_value %}
+                {% if plan.feedback_value %}{{feedback_strings|lookup:plan.feedback_value}}{%endif%}
+            {% else %}
+                <i class="fas fa-minus fa-sm" style="color:black"></i>
+            {% endif %}
+        </span>
+        <i class="fa fa-spinner fa-spin fa-lg htmx-indicator"></i>
     </button>
     <div class="dropdown-menu" aria-labelledby="ef-{{plan.id}}">
-        <a class="dropdown-item" onclick="update_feedback('{{plan.id}}','0', '-', '{{csrf_token}}')">-</a>
+        <a class="dropdown-item" hx-get="{% url 'plan-update-feedback' pk=plan.id val=0 %}" hx-ext="update-dropdown" hx-target="#ef-{{ plan.id }} span" hx-indicator="#ef-{{ plan.ied }}"><i class="fas fa-minus fa-sm" style="color:black"></i></a>
         {% for string in feedback_strings %}
-            <a class="dropdown-item" onclick="update_feedback('{{plan.id}}','{{ forloop.counter }}','{{feedback_strings|lookup:forloop.counter}}','{{csrf_token}}')">{{string}}</a>
+            <a class="dropdown-item" hx-get="{% url 'plan-update-feedback' pk=plan.id val=forloop.counter %}" hx-ext="update-dropdown" hx-target="#ef-{{ plan.id }} span" hx-indicator="#ef-{{ plan.ied }}">{{string}}</a>
         {% endfor %}
     </div>
 </div>

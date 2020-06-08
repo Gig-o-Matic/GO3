@@ -1,31 +1,3 @@
-// CODE FOR FEEDBACK BUTTONS
-
-function set_feedback_button(the_id, the_value) {
-    if (the_value=='-') {
-        val = '<i class="fas fa-minus fa-sm" style="color:black"></i>'
-    } else {
-        val = the_value
-    }
-    document.getElementById('ef-'+the_id).innerHTML=val;
-}
-
-function update_feedback(pk, val, text, token) {
-    document.getElementById('ef-'+pk).innerHTML='<i class="fa fa-spinner fa-spin fa-lg"></i>';
-    $.ajax({
-        method: 'POST',
-        url: '/gig/plan/'+pk+'/feedback/'+val,
-        headers: { "X-CSRFToken": token },
-        success: function(responseTxt,statusTxt,xhr){
-                    if(statusTxt=="success")
-                        set_feedback_button(pk, text)
-                    if(statusTxt=="error")
-                        alert("Error: "+xhr.status+": "+xhr.statusText);
-                },
-    });
-}
-
-
-
 // CODE FOR SELECTING SECTIONS
 function section_select(objecttype, objectid, item, sectionid, sectionname, csrf_token) {
     $.ajax({
