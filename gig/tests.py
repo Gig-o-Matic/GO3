@@ -703,11 +703,11 @@ class GigTest(TestCase):
         p.refresh_from_db()
         self.assertEqual(p.status, PlanStatusChoices.NO_PLAN)
 
-    def test_plan_feedbaco_user(self):
+    def test_plan_feedback_user(self):
         _, _, p = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
         resp = self.client.post(reverse('plan-update-feedback', args=[p.id, 42]))
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 204)
         p.refresh_from_db()
         self.assertEqual(p.feedback_value, 42)
 
@@ -724,6 +724,6 @@ class GigTest(TestCase):
         s = Section.objects.create(name='s1', band=self.band)
         self.client.force_login(self.joeuser)
         resp = self.client.post(reverse('plan-update-section', args=[p.id, s.id]))
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 204)
         p.refresh_from_db()
         self.assertEqual(p.plan_section, s)
