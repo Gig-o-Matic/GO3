@@ -1,0 +1,13 @@
+{% load i18n %}
+{% load static %}
+{% if the_plans %}
+    {% for plan in the_plans %}
+        <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
+            <div class="col-12">
+                {% include "agenda/agenda_plan_edit.html" with plan=plan %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+        No gigs!
+{% endif %}
