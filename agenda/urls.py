@@ -23,6 +23,4 @@ urlpatterns = [
     path('agenda', views.AgendaView.as_view(), name='agenda'),
     path('noplans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-noplans'),
     path('plans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-plans'),
-
-    path('toggleview', helpers.toggle_view, name='agenda-toggle-view'),
 ]

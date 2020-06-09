@@ -46,8 +46,3 @@ def agenda_gigs(request, type=None, page=1):
 
     return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'the_plans': the_plans, 'list_url': f'agenda-gigs-{the_type}', 'nextpage':next_page})
 
-@login_required
-def toggle_view(request):
-    request.user.preferences.show_long_agenda = not request.user.preferences.show_long_agenda
-    request.user.preferences.save()
-    return agenda_gigs(request, type='plans')
