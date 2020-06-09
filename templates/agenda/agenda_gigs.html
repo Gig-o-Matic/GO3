@@ -8,6 +8,9 @@
             </div>
         </div>
     {% endfor %}
+    {% if nextpage %}
+    <button class="btn btn-secondary btn-sm" hx-trigger="click" hx-get="{% url list_url nextpage %}" hx-swap="outerHTML">more...</button>
+    {% endif %}
 {% else %}
         No gigs!
 {% endif %}

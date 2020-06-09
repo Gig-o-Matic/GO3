@@ -20,17 +20,34 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 
+PAGE_LENGTH = 10
+
 @login_required
-def agenda_gigs(request, type=None, max=None):
+def agenda_gigs(request, type=None, page=1):
+
+    the_type=request.path.split('/')[1]
 
     the_plans=[]
 
-    if type == 'noplans':
+    first = (page - 1) * PAGE_LENGTH
+    last = first + PAGE_LENGTH
+
+    if the_type == 'noplans':
         the_plans = request.user.future_noplans.all()
     else:
-        if max:
-            the_plans = request.user.future_plans.all()[:max]
-        else:
-            the_plans = request.user.future_plans.all()
+        the_plans = request.user.future_plans.all()
 
-    return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'the_plans': the_plans})
+    if (page * PAGE_LENGTH) < the_plans.count():
+        next_page = page + 1
+    else:
+        next_page = 0
+
+    the_plans = the_plans[first:last]
+
+    return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'the_plans': the_plans, 'list_url': f'agenda-gigs-{the_type}', 'nextpage':next_page})
+
+@login_required
+def toggle_view(request):
+    request.user.preferences.show_long_agenda = not request.user.preferences.show_long_agenda
+    request.user.preferences.save()
+    return agenda_gigs(request, type='plans')

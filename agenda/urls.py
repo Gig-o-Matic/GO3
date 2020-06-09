@@ -21,6 +21,8 @@ from . import views, helpers
 urlpatterns = [
     path('', views.AgendaSelector, name='home'),
     path('agenda', views.AgendaView.as_view(), name='agenda'),
-    path('gigs', helpers.agenda_gigs, {'type':'noplans'}, name='agenda-gigs-noplans'),
-    path('gigs/<int:max>', helpers.agenda_gigs, {'type':'plans'}, name='agenda-gigs-plans'),
+    path('noplans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-noplans'),
+    path('plans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-plans'),
+
+    path('toggleview', helpers.toggle_view, name='agenda-toggle-view'),
 ]

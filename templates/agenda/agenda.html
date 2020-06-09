@@ -21,7 +21,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs-noplans' %}" hx-trigger="load">
+            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs-noplans' page=1 %}" hx-trigger="load">
                 <i class="fas fa-spinner fa-pulse fa-lg"></i>
             </div>
         </div>
@@ -29,24 +29,14 @@
             <div class="card-header">
                 <div class="row titlerow">
                     <div class="col-8">
-                        {% if user.preferences.show_long_agenda %}
-                            {% trans "All Upcoming Gigs" %}
-                        {% else %}
-                            {% trans "My Next Few Gigs" %}
-                        {% endif %}
-                    </div>
-                    <div class="ml-auto">
-                        <a class="btn btn-primary btn-sm" href="/agenda_switch"><i class="fas fa-sync fs-lg"></i>
-                            {% if user.preferences.show_long_agenda %}
-                                {% trans "show brief" %}
-                            {% else %}
-                                {% trans "show all" %}
-                            {% endif %}</a>
+                        {% trans "Upcoming Gigs" %}
                     </div>
                 </div>
             </div>
-            <div class="card-body" id="upcoming-gigs" hx-get="{% url 'agenda-gigs-plans' 0 %}" hx-trigger="load">
-                <i class="fas fa-spinner fa-pulse fa-lg"></i>
+            <div class="card-body">
+                <div hx-get="{% url 'agenda-gigs-plans' page=1 %}" hx-trigger="load">
+                    <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                </div>
             </div>
             </div>
     </div>
