@@ -13,30 +13,18 @@
                 <small>(<a href="/?default=0">{% trans "Make this my default view!" %}</a>)</small>
             {% endif %}
         </div>
-        {% with weighin_plans=user.future_noplans.all %}
-        {% if weighin_plans %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <div class="row titlerow">
-                        <div class="col-12">
-                            {% trans "Future Gigs: Weigh In!" %}
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="weighinevents">
-                        {% for plan in weighin_plans %}
-                            <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
-                                <div class="col-12">
-                                    {% include "agenda/agenda_plan_edit.html" with plan=plan %}
-                                </div>
-                            </div>
-                        {% endfor %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-12">
+                        {% trans "Future Gigs: Weigh In!" %}
                     </div>
                 </div>
             </div>
-        {% endif %}
-        {% endwith %}
+            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs-noplans' %}" hx-trigger="load">
+                <i class="fas fa-spinner fa-pulse fa-lg"></i>
+            </div>
+        </div>
         <div class="card">
             <div class="card-header">
                 <div class="row titlerow">
@@ -57,24 +45,10 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div id="upcomingevents">
-                    {% with upcoming_plans=user.future_plans.all %}
-                    {% if upcoming_plans %}
-                        {% for plan in upcoming_plans %}
-                            <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
-                                <div class="col-md-12">
-                                    {% include "agenda/agenda_plan_edit.html" with plan=plan %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        {% trans "Nothing coming up!" %}
-                    {% endif %}
-                    {% endwith %}
-                </div>
+            <div class="card-body" id="upcoming-gigs" hx-get="{% url 'agenda-gigs-plans' 0 %}" hx-trigger="load">
+                <i class="fas fa-spinner fa-pulse fa-lg"></i>
             </div>
-        </div>
+            </div>
     </div>
 </div>
 

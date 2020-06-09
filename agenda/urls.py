@@ -16,9 +16,11 @@
 """
 
 from django.urls import path
-from . import views
+from . import views, helpers
 
 urlpatterns = [
     path('', views.AgendaSelector, name='home'),
     path('agenda', views.AgendaView.as_view(), name='agenda'),
+    path('gigs', helpers.agenda_gigs, {'type':'noplans'}, name='agenda-gigs-noplans'),
+    path('gigs/<int:max>', helpers.agenda_gigs, {'type':'plans'}, name='agenda-gigs-plans'),
 ]
