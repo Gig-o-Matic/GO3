@@ -1,15 +1,15 @@
 {% load i18n %}
 {% load static %}
-{% if the_plans %}
-    {% for plan in the_plans %}
+{% if page_obj|length %}
+    {% for plan in page_obj %}
         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
             <div class="col-12">
                 {% include "agenda/agenda_plan_edit.html" with plan=plan %}
             </div>
         </div>
     {% endfor %}
-    {% if nextpage %}
-    <button class="btn btn-secondary btn-sm" hx-trigger="click" hx-get="{% url list_url nextpage %}" hx-swap="outerHTML">more...</button>
+    {% if page_obj.has_next %}
+    <button class="btn btn-secondary btn-sm" hx-trigger="click" hx-get="{% url 'agenda-gigs' the_type=the_type page=page_obj.next_page_number %}" hx-swap="outerHTML">more...</button>
     {% endif %}
 {% else %}
         No gigs!

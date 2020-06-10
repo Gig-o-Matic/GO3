@@ -21,7 +21,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs-noplans' page=1 %}" hx-trigger="load">
+            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs' the_type='noplans' page=1 %}" hx-trigger="load">
                 <i class="fas fa-spinner fa-pulse fa-lg"></i>
             </div>
         </div>
@@ -34,7 +34,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <div hx-get="{% url 'agenda-gigs-plans' page=1 %}" hx-trigger="load">
+                <div hx-get="{% url 'agenda-gigs' the_type='plans' page=1 %}" hx-trigger="load">
                     <i class="fas fa-spinner fa-pulse fa-lg"></i>
                 </div>
             </div>
