@@ -112,6 +112,27 @@
                     </div>
                 </div>
             </div>
+            {% if is_new %}
+                <div class="row">
+                    <div class="form-group col-6">
+                        {{ form.add_series.errors }}
+                        {{ form.add_series }}
+                        {{ form.add_series.label_tag }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-6">
+                        {{ form.total_gigs.errors }}
+                        {{ form.total_gigs.label_tag }}
+                        {% render_field form.total_gigs class="form-control" %}
+                    </div>
+                    <div class="form-group col-6">
+                        {{ form.repeat.errors }}
+                        {{ form.repeat.label_tag }}
+                        {% render_field form.repeat class="form-control" %}
+                    </div>
+                </div>
+            {% endif %}
 {% comment %}                    
             {% if is_new %}
                 <div class="form-group">
