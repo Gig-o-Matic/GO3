@@ -25,6 +25,7 @@ from datetime import datetime, timedelta
 from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
 import uuid
+import calendar
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -131,18 +132,14 @@ class GigForm(forms.ModelForm):
             if period == 'day' or period == 'week':
                 last_date = last_date + delta
             else:
-                # figure out what the next month is
-                if last_date.month < 12:
-                    mo = last_date.month+1
-                    yr = last_date.year
-                else:
+                yr = last_date.year
+                mo = last_date.month+1
+                if mo > 12:
                     mo = 1
-                    yr = last_date.year+1
+                    yr += 1
                 # figure out last day of next month
-                nextmonth = last_date.replace(month=mo, day=1, year=yr)
-                nextnextmonth = (nextmonth + timedelta(days=35)).replace(day=1)
-                lastday=(nextnextmonth - timedelta(days=1)).day
-                last_date = last_date.replace(month=mo, day=min(lastday, day_of_month), year=yr)
+                last_date = last_date.replace(month=mo, day=min(calendar.monthrange(yr,mo)[1], day_of_month), year=yr)
+
             the_gig.date = last_date
             
             if set_delta is not None:
