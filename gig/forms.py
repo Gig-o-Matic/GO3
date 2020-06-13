@@ -117,6 +117,9 @@ class GigForm(forms.ModelForm):
     def create_gig_series(self, the_gig, number_to_copy, period):
         """ create a series of copies of a gig spaced out over time """
 
+        if not number_to_copy:
+            return
+
         last_date = the_gig.date
         if period == 'day':
             delta = timedelta(days=1)

@@ -751,4 +751,10 @@ class GigTest(TestCase):
         self.assertEqual(gigs[3].date.day, 31) # january
         self.assertEqual(gigs[4].date.day, 28) # february
         
+    def test_series_without_number(self):
+        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
+                                                call_date = '10/31/2100',
+                                                call_time = '12:00am',
+                                                repeat='month')
+        self.assertEqual(Gig.objects.count(), 1)
 
