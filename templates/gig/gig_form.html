@@ -120,7 +120,7 @@
                         {{ form.add_series.label_tag }}
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" id="add_series_options" style="display:none">
                     <div class="form-group col-6">
                         {{ form.total_gigs.errors }}
                         {{ form.total_gigs.label_tag }}
@@ -133,37 +133,6 @@
                     </div>
                 </div>
             {% endif %}
-{% comment %}                    
-            {% if is_new %}
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="newgig-isseries" name="newgig_isseries" onClick="setSeries();">
-                        <label class="form-check-label" for="newgig-isseries">{% trans "Add A Series Of Copies" %}</label>
-                    </div>
-                    <div id="gignumberseriesinput" style="display:none;">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label for="newgig_seriescount" class="col-form-label">{% trans "Total Number Of Gigs" %}</label>
-                                <select class="form-control" id="newgigseriescount" name="newgig_seriescount">
-                                    <option value="2" selected>2</option>
-                                    {% for num in range(3,11) %}
-                                        <option value="{{ num }}">{{ num }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="newgig_seriesperiod" class="col-form-label">{% trans "Repeat Every" %}</label>
-                                <select class="form-control" id="newgigseriesperiod" name="newgig_seriesperiod">
-                                    <option value="day">{% trans "day" %}</option>
-                                    <option value="week" selected>{% trans "week" %}</option>
-                                    <option value="month">{% trans "month (on same day of month)" %}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-{% endcomment %}
 
             <div class="row">
                 <div class="form-group col-lg-4 col-md-4 col-12">
@@ -363,6 +332,13 @@
 {% endcomment %}
 
 <script type="text/javascript">
+
+{% if is_new %}
+$('#id_add_series').click(function() {
+    $("#add_series_options").toggle();
+});
+{% endif %}
+
 $(document).ready(function () {
     $('#id_call_date_widget').datetimepicker({
         format: 'L',
@@ -426,15 +402,6 @@ $(document).ready(function () {
             defaultDate: '{{ object.enddate.isoformat }}',
         {% endif %}
     });
-{% comment %}
-    $('#id_date_widget').on("change.datetimepicker", function (e) {
-        console.log("YES");
-        $('#id_setdate_widget').datetimepicker('minDate', e.date);
-    });
-    $('#id_setdate_widget').on("change.datetimepicker", function (e) {
-        $('#id_enddate_widget').datetimepicker('minDate', e.date);
-    });
-{% endcomment %}
 
 {% comment %}    
     $.validator.addMethod(
