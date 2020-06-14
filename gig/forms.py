@@ -178,7 +178,7 @@ class GigForm(forms.ModelForm):
     timezone = forms.Field(required=False, widget=forms.HiddenInput())
 
     add_series = forms.BooleanField(required=False, label=_('Add A Series Of Copies'))
-    total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=2, max_value=10)
+    total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=1, max_value=10)
     repeat = forms.ChoiceField(required=False, label=_('Repeat Every'), 
                                 choices=[
                                             ('day', _('day')),
