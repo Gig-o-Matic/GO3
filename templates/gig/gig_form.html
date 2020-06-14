@@ -24,10 +24,18 @@
             {{ form.non_field_errors }}
             {{ form.errors }}
 
-            <div class="form-group">
-                {{ form.title.errors }}
-                {{ form.title.label_tag }}
-                {% render_field form.title class="form-control" %}
+            <div class="row">
+                <div class="col-12">
+                    {{ form.title.label_tag }}
+                    {{ form.title.errors }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-12">
+                    <div class="form-group">
+                        {% render_field form.title class="form-control" %}
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="form-group col-6">
@@ -48,9 +56,17 @@
             </div>
              
             <div class="row">
-                <div class="form-group col-4">
-                    {{ form.call_date.errors }}
+                <div class="col-4">
                     {{ form.call_date.label_tag }}
+                    {{ form.call_date.errors }}
+                </div>
+                <div class="col-4">
+                    {{ form.end_date.label_tag }}
+                    {{ form.end_date.errors }}                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-4">
                     <div class="form-group">
                         <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
                             <input type="text" name="call_date" class="form-control datetimepicker-input" id="id_call_date" data-target="#id_call_date_widget" required/>
@@ -61,8 +77,6 @@
                     </div>
                 </div>
                 <div class="form-group col-4">
-                    {{ form.end_date.errors }}
-                    {{ form.end_date.label_tag }}
                     <div class="form-group">
                         <div class="input-group date" id="id_end_date_widget" data-target-input="nearest">
                             <input type="text" name="end_date" class="form-control datetimepicker-input" id="id_end_date" data-target="#id_end_date_widget"/>
@@ -75,9 +89,21 @@
             </div>
 
             <div class="row">
-                <div class="form-group col-4">
-                    {{ form.call_time.errors }}
+                <div class="col-4">
                     {{ form.call_time.label_tag }}
+                    {{ form.call_time.errors }}
+                </div>
+                <div class="col-4">
+                    {{ form.set_time.label_tag }}
+                    {{ form.set_time.errors }}
+                </div>
+                <div class="col-4">
+                    {{ form.end_time.label_tag }}
+                    {{ form.end_time.errors }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-4">
                     <div class="form-group">
                         <div class="input-group date" id="id_call_time_widget" data-target-input="nearest">
                             <input type="text" name="call_time" class="form-control datetimepicker-input" id="id_call_time" data-target="#id_call_time_widget"/>
@@ -88,8 +114,6 @@
                     </div>
                 </div>
                 <div class="form-group col-4">
-                    {{ form.set_time.errors }}
-                    {{ form.set_time.label_tag }}
                     <div class="form-group">
                         <div class="input-group date" id="id_set_time_widget" data-target-input="nearest">
                             <input type="text" name="set_time" class="form-control datetimepicker-input" id="id_set_time" data-target="#id_set_time_widget"/>
@@ -100,8 +124,6 @@
                     </div>
                 </div>
                 <div class="form-group col-4">
-                    {{ form.end_time.errors }}
-                    {{ form.end_time.label_tag }}
                     <div class="form-group">
                         <div class="input-group date" id="id_end_time_widget" data-target-input="nearest">
                             <input type="text" name="end_time" class="form-control datetimepicker-input" id="id_end_time" data-target="#id_end_time_widget"/>
@@ -112,21 +134,20 @@
                     </div>
                 </div>
             </div>
+
             {% if is_new %}
                 <div class="row">
-                    <div class="form-group col-6">
+                    <div class="form-group col-4">
                         {{ form.add_series.errors }}
                         {{ form.add_series }}
                         {{ form.add_series.label_tag }}
                     </div>
-                </div>
-                <div class="row" id="add_series_options" style="display:none">
-                    <div class="form-group col-6">
+                    <div class="form-group col-4 add_series_options" style="display:none">
                         {{ form.total_gigs.errors }}
                         {{ form.total_gigs.label_tag }}
                         {% render_field form.total_gigs class="form-control" %}
                     </div>
-                    <div class="form-group col-6">
+                    <div class="form-group col-4 add_series_options" style="display:none">
                         {{ form.repeat.errors }}
                         {{ form.repeat.label_tag }}
                         {% render_field form.repeat class="form-control" %}
@@ -335,7 +356,7 @@
 
 {% if is_new %}
 $('#id_add_series').click(function() {
-    $("#add_series_options").toggle();
+    $(".add_series_options").toggle();
 });
 {% endif %}
 

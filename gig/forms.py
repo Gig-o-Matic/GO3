@@ -104,7 +104,10 @@ class GigForm(forms.ModelForm):
             self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
         if enddate:
             if enddate < date:
-                self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+                if end_date:
+                    self.add_error('end_date', ValidationError(_('Gig end must not be earlier than the start'), code='invalid end time'))
+                else:
+                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
             elif setdate and enddate < setdate:
                 self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
 
