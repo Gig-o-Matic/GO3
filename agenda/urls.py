@@ -21,4 +21,5 @@ from . import views
 urlpatterns = [
     path('', views.AgendaSelector, name='home'),
     path('agenda', views.AgendaView.as_view(), name='agenda'),
+    path('calendar', views.CalendarView.as_view(), name='calendar'),
 ]
