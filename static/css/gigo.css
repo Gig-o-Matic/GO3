@@ -206,3 +206,7 @@ a {
     font-size: smaller;
     content: '\f001';
 }
+
+ul.errorlist {
+  color: #ff0000
+}
