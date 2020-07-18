@@ -32,7 +32,7 @@ from django.utils import timezone
 from pytz import timezone as pytz_timezone
 from lib.template_test import MISSING, flag_missing_vars
 
-class GigTest(TestCase):
+class GigTestBase(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='d@e.f')
@@ -47,10 +47,10 @@ class GigTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
-    def create_gig(self, the_member, start_date='auto', set_date='auto', end_date='auto'):
+    def create_gig(self, the_member, title="New Gig", start_date='auto', set_date='auto', end_date='auto'):
         thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC')) if start_date == 'auto' else start_date
         return Gig.objects.create(
-            title="New Gig",
+            title=title,
             band_id=self.band.id,
             date=thedate,
             setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
@@ -67,12 +67,13 @@ class GigTest(TestCase):
                         set_time = '',
                         end_time = '',
                         address = '',
+                        title = 'New Gig',
                         **kwargs):
 
         c=Client()
         c.force_login(user if user else self.joeuser)
         response = c.post(f'/gig/create/{self.band.id}',
-                                    {'title':'New Gig',
+                                    {'title':title,
                                     'call_date':call_date,
                                     'end_date':end_date,
                                     'call_time':call_time,
@@ -135,6 +136,9 @@ class GigTest(TestCase):
         g = self.create_gig_form(contact=self.joeuser, **kwargs)
         p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
+
+
+class GigTest(GigTestBase):
 
     def test_no_section(self):
         """ show that the band has a default section called 'No Section' """

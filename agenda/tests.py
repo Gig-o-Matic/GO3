@@ -14,6 +14,24 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.test import TestCase
+from gig.tests import GigTestBase
+from django.test import Client
 
-# Create your tests here.
+class AgendaTest(GigTestBase):
+    def test_agenda(self):
+        self.assoc_joe()
+        for i in range(0,19):
+            self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
+        c=Client()
+        c.force_login(self.joeuser)
+
+        # first 'page' of gigs should have 10
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"),10)
+
+        # second 'page' of gigs should have 9
+        response = c.get(f'/plans/noplans/2')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"),9)
+
+
+
