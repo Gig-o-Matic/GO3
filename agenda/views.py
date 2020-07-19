@@ -42,4 +42,14 @@ class CalendarView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['the_colors'] = the_colors
+
+        m = self.request.GET.get('m',None)
+        y = self.request.GET.get('y',None)
+
+        if m and y:
+            m = int(m)+1
+            y = int(y)+1900
+            context['initialDate'] = f'{y}-{m:02d}-01'
+            print(f'\n\n{context["initialDate"]}\n\n')
+
         return context
