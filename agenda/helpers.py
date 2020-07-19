@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 import datetime
 from dateutil.parser import parse
@@ -23,6 +23,7 @@ from django.db.models import Q
 
 from gig.models import Gig
 from band.models import Assoc
+from member.util import AgendaChoices
 
 import json
 
@@ -63,3 +64,10 @@ def calendar_events(request, pk):
         events.append(gig)
 
     return HttpResponse(json.dumps(events))
+
+
+@login_required
+def set_default_view(request, val):
+    request.user.preferences.default_view=AgendaChoices(val)
+    request.user.preferences.save()
+    return HttpResponseRedirect('/')
