@@ -34,17 +34,19 @@
     {% endif %}
     <script>
 
-    function calCallback(view) {
-        mo = $('#calendar').fullCalendar('getDate')
+    var calendar=null;
+
+    function calCallback(rawEvents, xhr) {
+        mo = calendar.getDate();
         var stateObj = { foo: "bar" };
-        window.history.replaceState(stateObj, "", window.location.origin+window.location.pathname+"?y="+mo.year()+"&m="+mo.month());
+        window.history.replaceState(stateObj, "", window.location.origin+window.location.pathname+"?y="+mo.getYear()+"&m="+mo.getMonth());
     }
 
     $(document).ready(function() {
         // page is now ready, initialize the calendar...
         var calendarEl = document.getElementById('calendar');
 
-        var calendar = new FullCalendar.Calendar(calendarEl, {
+        calendar = new FullCalendar.Calendar(calendarEl, {
             // put your options and callbacks here
             themeSystem: 'bootstrap',
             locale: '{{ user.preferences.language }}',
@@ -52,14 +54,14 @@
                 url: '/calendar/events/{{ user.id }}',
                 method: 'GET',
             }],
-            //     data: {
-            //         mk: '{{ user.id }}'
-            //     },
+            {% if initialDate %}
+                initialDate: '{{ initialDate }}',
+            {% endif %}
             //     error: function() {
             //         alert('there was an error while fetching events!');
             //     },
             // },
-            // eventAfterAllRender: calCallback,
+            eventSourceSuccess: calCallback,
         });
         calendar.render();
     });
