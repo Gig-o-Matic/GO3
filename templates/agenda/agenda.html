@@ -10,7 +10,7 @@
         <div class="page-header">
             {% trans "Schedule" %}: {% if user.nickname %}{{user.nickname}}{%else%}{{user.name}}{% endif %}
             {% if user.preferences.default_view != 0 %}
-                <small>(<a href="/?default=0">{% trans "Make this my default view!" %}</a>)</small>
+                <small>(<a href="/defaultview/0">{% trans "Make this my default view!" %}</a>)</small>
             {% endif %}
         </div>
         <div class="card mb-4">

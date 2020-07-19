@@ -25,7 +25,8 @@ from member.util import AgendaChoices
 def AgendaSelector(request):
 
     view_selector = {
-        AgendaChoices.AGENDA: AgendaView
+        AgendaChoices.AGENDA: AgendaView,
+        AgendaChoices.CALENDAR: CalendarView,
     }
 
     return view_selector[request.user.preferences.default_view].as_view()(request)

@@ -15,8 +15,8 @@
     <div class="row">
         <div class="page-header page-header mx-auto col-md-10 col-12">
             {% trans "Calendar" %}
-            {% if the_user.preferences.default_view != 1 %}
-            <small>(<a href="/?default=1">{% trans "Make this my default view!" %}</a>)</small>
+            {% if user.preferences.default_view != 2 %}
+            <small>(<a href="/defaultview/2">{% trans "Make this my default view!" %}</a>)</small>
             {% endif %}
         </div>
     </div>
