@@ -26,6 +26,7 @@ from band.models import Assoc
 from member.util import AgendaChoices
 
 import json
+import logging
 
 
 @login_required
@@ -68,6 +69,9 @@ def calendar_events(request, pk):
 
 @login_required
 def set_default_view(request, val):
-    request.user.preferences.default_view=AgendaChoices(val)
+    try:
+        request.user.preferences.default_view=AgendaChoices(val)
+    except ValueError:
+        logging.error('user tried to set default view to something strange')
     request.user.preferences.save()
     return HttpResponseRedirect('/')
