@@ -17,9 +17,12 @@
 
 from django.urls import path
 from . import views
+from . import helpers
 
 urlpatterns = [
     path('', views.AgendaSelector, name='home'),
     path('agenda', views.AgendaView.as_view(), name='agenda'),
     path('calendar', views.CalendarView.as_view(), name='calendar'),
+    path('calendar/events/<int:pk>', helpers.calendar_events, name='calendar-events'),
+
 ]

@@ -47,10 +47,11 @@
         var calendar = new FullCalendar.Calendar(calendarEl, {
             // put your options and callbacks here
             themeSystem: 'bootstrap',
-            locale: '{{ user.preferences.language }}'
-            // events: {
-            //     url: '/calevents',
-            //     type: 'POST',
+            locale: '{{ user.preferences.language }}',
+            eventSources : [{
+                url: '/calendar/events/{{ user.id }}',
+                method: 'GET',
+            }],
             //     data: {
             //         mk: '{{ user.id }}'
             //     },
