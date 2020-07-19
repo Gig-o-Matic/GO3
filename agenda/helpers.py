@@ -15,8 +15,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from go3.colors import the_colors
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+import datetime
+from dateutil.parser import parse
+from django.db.models import Q
+
+from gig.models import Gig
+from band.models import Assoc
+
+import json
+
+from go3.colors import the_colors
 from django.shortcuts import render
 from django.core.paginator import Paginator
 
@@ -36,3 +46,39 @@ def agenda_gigs(request, the_type=None, page=1):
 
     return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'page_obj': page_obj, 'the_type':the_type})
 
+@login_required
+def calendar_events(request, pk):
+    startstr = request.GET['start']
+    endstr = request.GET['end']
+
+    start = parse(startstr)
+    end = parse(endstr)
+
+    user = request.user
+    user_assocs = request.user.confirmed_assocs
+
+    band_colors = { a.band.id:a.colorval for a in user_assocs }
+
+    the_gigs = Gig.objects.filter(
+        (Q(enddate__lte=end) | Q(enddate=None)),
+        date__gte=start,
+        band__in=[a.band for a in user_assocs],
+    )
+
+    events = []
+    for g in the_gigs:
+        gig = {}
+        gig['title'] = g.title
+        gig['start'] = str(g.date)
+        if g.enddate:
+            gig['end'] = str(g.enddate)
+        gig['url'] = f'/gig/{g.id}'
+        gig['backgroundColor'] = band_colors[g.band.id]
+        if band_colors[g.band.id] == 'white':
+            gig['borderColor'] = 'blue'
+            gig['textColor'] = 'blue'
+        else:
+            gig['borderColor'] = band_colors[g.band.id]
+        events.append(gig)
+
+    return HttpResponse(json.dumps(events))
