@@ -68,9 +68,10 @@ def calendar_events(request, pk):
     )
 
     events = []
+    multiband = len(user_assocs) > 1
     for g in the_gigs:
         gig = {}
-        gig['title'] = g.title
+        gig['title'] = f'{g.band.name} - {g.title}' if multiband else g.title
         gig['start'] = str(g.date)
         if g.enddate:
             gig['end'] = str(g.enddate)
