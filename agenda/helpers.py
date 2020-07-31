@@ -56,7 +56,6 @@ def calendar_events(request, pk):
     start = parse(startstr)
     end = parse(endstr)
 
-    user = request.user
     user_assocs = request.user.confirmed_assocs
 
     band_colors = { a.band.id:a.colorval for a in user_assocs }
