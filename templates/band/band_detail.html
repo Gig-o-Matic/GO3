@@ -200,10 +200,10 @@
                         {% for assoc in the_pending_members %}
                         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                             <div class="col-md-2 col-sm-2 col-12">
-                                <a href="{% url 'member-detail' pk=assoc.member.id %}">{{ assoc.member.username|escape }}</a>
+                                <a href="{% url 'member-detail' pk=assoc.member.id %}">{{ assoc.member.display_name|escape }}</a>
                             </div>
                             <div class="col-md-4 col-sm-4 col-12">
-                                {{ m.email_address|escape }}
+                                {{ assoc.member.email|escape }}
                             </div>
                             <div class="col-md-6 col-sm-6 col-12">
                                 <a class="btn btn-primary btn-sm"
