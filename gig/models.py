@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from band.models import Band, Assoc
@@ -30,9 +31,10 @@ class MemberPlanManager(models.Manager):
         return super.order_by('section')
 
     def future_plans(self, member):
-        return super().get_queryset().filter(assoc__member=member, 
-                                             assoc__status=AssocStatusChoices.CONFIRMED,
-                                             gig__date__gt=timezone.now())
+        return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=timezone.now())) | Q(gig__enddate__gt=timezone.now()),
+                                             assoc__member=member, 
+                                             assoc__status=AssocStatusChoices.CONFIRMED
+                                            ).order_by('gig__date')
 
 
 class Plan(models.Model):
@@ -170,7 +172,6 @@ class Gig(AbstractEvent):
             
         # now that we have one for every member, return the list
         return self.plans # pylint: disable=no-member
-
 
 class GigComment(models.Model):
     gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)

@@ -163,7 +163,6 @@ class MemberPreferences(models.Model):
     calendar_show_only_confirmed = models.BooleanField(default=True)
     calendar_show_only_committed = models.BooleanField(default=True)
     agenda_show_time = models.BooleanField(default=False)
-    show_long_agenda = models.BooleanField(default=True)
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 

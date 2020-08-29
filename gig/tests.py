@@ -32,16 +32,14 @@ from django.utils import timezone
 from pytz import timezone as pytz_timezone
 from lib.template_test import MISSING, flag_missing_vars
 
-class GigTest(TestCase):
+class GigTestBase(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='d@e.f')
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
-        self.band.anyone_can_create_gigs = True
-        self.band.anyone_can_manage_gigs = True
-        self.band.save()
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -49,10 +47,10 @@ class GigTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
-    def create_gig(self, the_member, start_date='auto', set_date='auto', end_date='auto'):
+    def create_gig(self, the_member, title="New Gig", start_date='auto', set_date='auto', end_date='auto'):
         thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC')) if start_date == 'auto' else start_date
         return Gig.objects.create(
-            title="New Gig",
+            title=title,
             band_id=self.band.id,
             date=thedate,
             setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
@@ -61,28 +59,37 @@ class GigTest(TestCase):
             status=GigStatusChoices.UNKNOWN
         )
 
-    def create_gig_form(self, user=None, 
+    def create_gig_form(self, user=None,
                         expect_code=302,
+                        call_date = '01/02/2100',
+                        set_date = '',
+                        end_date = '',
+                        call_time = '12:00 pm',
+                        set_time = '',
+                        end_time = '',
+                        title = 'New Gig',
                         **kwargs):
 
         status = kwargs.pop('status', GigStatusChoices.UNKNOWN)
         contact = kwargs.pop('contact', self.joeuser).id
-        call_date = kwargs.pop('call_date', '01/02/2100')
-        call_time = kwargs.pop('call_time', '12:00 pm')
         send_update = kwargs.pop('send_update', True)
 
         c=Client()
         c.force_login(user if user else self.joeuser)
-        response = c.post(f'/gig/create/{self.band.id}', 
-                                    {'title':'New Gig',
+        response = c.post(f'/gig/create/{self.band.id}',
+                                    {'title':title,
                                     'call_date':call_date,
                                     'call_time':call_time,
+                                    'set_date':set_date,
+                                    'set_time':set_time,
+                                    'end_date':end_date,
+                                    'end_time':end_time,
                                     'contact':contact,
                                     'status':status,
                                     'send_update': send_update,
                                     **kwargs
                                     })
-        
+
         self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
         obj = Gig.objects.last()
         return obj
@@ -93,7 +100,7 @@ class GigTest(TestCase):
     def _timeformat(self, x):
         return x.strftime('%I:%M %p') if x else ''
 
-    def update_gig_form(self, the_gig, 
+    def update_gig_form(self, the_gig,
                         expect_code=302,
                         **kwargs):
 
@@ -135,6 +142,9 @@ class GigTest(TestCase):
         p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
 
+
+class GigTest(GigTestBase):
+
     def test_no_section(self):
         """ show that the band has a default section called 'No Section' """
         self.assoc_joe()
@@ -158,8 +168,7 @@ class GigTest(TestCase):
         self.assertEqual(self.band.sections.count(), 4)
 
         """ make the band's first assoc default to s1 section """
-        self.assoc_joe()
-        a = self.band.assocs.first()
+        a = self.assoc_joe()
         a.default_section = s1
         a.save()
         self.assertEqual(self.joeuser.assocs.first().default_section, s1)
@@ -248,7 +257,7 @@ class GigTest(TestCase):
         date = timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone))
         enddate = date + timedelta(days=1)
         self.assoc_joe_and_create_gig(call_date=self._dateformat(date), call_time=self._timeformat(date),
-                                      set_time='', 
+                                      set_time='',
                                       end_date=self._dateformat(enddate), end_time=self._timeformat(enddate))
         self.assertIn('Call Time: 01/02/2100 midnight (Sat)\nEnd Time: 01/03/2100 midnight (Sun)\nContact', mail.outbox[0].body)
 
@@ -304,7 +313,7 @@ class GigTest(TestCase):
         c.force_login(self.joeuser)
         response = c.get(f'/gig/{first.id}/')
         self.assertIn("noon", response.content.decode('ascii'))
- 
+
         # now change the band's timezone and render again
         self.band.timezone = 'America/New_York'
         self.band.save()
@@ -403,7 +412,7 @@ class GigTest(TestCase):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
         newcalldate = g.date + timedelta(hours=2)
-        self.update_gig_form(g, call_date=self._dateformat(newcalldate), 
+        self.update_gig_form(g, call_date=self._dateformat(newcalldate),
                                 call_time=self._timeformat(newcalldate),
                                 end_date='', end_time='', set_time='')
 
@@ -553,7 +562,7 @@ class GigTest(TestCase):
         self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
 
     def test_dates_only(self):
-        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023',
                                                 call_time='',
                                                 end_date='02/03/2023')
         self.assertDateEqual(g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0))
@@ -561,7 +570,7 @@ class GigTest(TestCase):
         self.assertDateEqual(g.enddate, datetime(month=2, day=3, year=2023, hour=0, minute=0))
 
     def test_times(self):
-        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+        g, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023',
                                                 call_time='12:00 pm',
                                                 set_time='1:00 pm',
                                                 end_time='2:00 pm')
@@ -571,14 +580,14 @@ class GigTest(TestCase):
 
     def test_settime_order(self):
         # should fail and reload the edit page - response code 200
-        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023',
                                                 call_time='1:00 pm',
                                                 set_time='12:00 pm',
                                                 expect_code=200)
 
     def test_endtime_order(self):
         # should fail and reload the edit page - response code 200
-        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023', 
+        _, _, _ = self.assoc_joe_and_create_gig(call_date='01/02/2023',
                                                 call_time='1:00 pm',
                                                 end_time='12:00 pm',
                                                 expect_code=200)
@@ -623,7 +632,7 @@ class GigTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def duplicate_gig_form(self, gig, number=1,
-                        user=None, 
+                        user=None,
                         expect_code=302,
                         call_date = '01/02/2100',
                         end_date = '',
@@ -634,7 +643,7 @@ class GigTest(TestCase):
 
         c=Client()
         c.force_login(user if user else self.joeuser)
-        response = c.post(f'/gig/{gig.id}/duplicate', 
+        response = c.post(f'/gig/{gig.id}/duplicate',
                                     {'title':f'Copy of {gig.title}',
                                     'call_date':call_date,
                                     'end_date':end_date,
@@ -645,7 +654,7 @@ class GigTest(TestCase):
                                     'status':GigStatusChoices.UNKNOWN,
                                     'send_update': True
                                     })
-        
+
         self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
         obj = Gig.objects.last()
         return obj
@@ -653,7 +662,7 @@ class GigTest(TestCase):
     def test_duplicate_gig(self):
         g1, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(Gig.objects.count(), 1)
-    
+
         _ = self.duplicate_gig_form(g1, 1)
         self.assertEqual(Gig.objects.count(), 2)
     def test_address_url(self):
@@ -677,84 +686,53 @@ class GigTest(TestCase):
         response = c.get(f'/gig/{g.id}/')
         self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
 
-    def test_gig_view_permissions(self):
-        g, a, _ = self.assoc_joe_and_create_gig(address='pbs.org')
+    # Use plan-update to test permissions
+    def test_plan_update_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update', args=[p.id, PlanStatusChoices.DEFINITELY]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.status, PlanStatusChoices.DEFINITELY)
 
-        def test_perms(create, manage, expect_create, expect_manage):
-            self.band.anyone_can_create_gigs = create
-            self.band.anyone_can_manage_gigs = manage
-            self.band.save()
-            c=Client()
-            c.force_login(self.joeuser)
-            response = c.get(f'/gig/{g.id}/')
-            self.assertEqual(response.context_data.get('user_can_create',''), expect_create)
-            self.assertEqual(response.context_data.get('user_can_edit',''), expect_manage)
+    def test_plan_update_admin(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('plan-update', args=[p.id, PlanStatusChoices.DEFINITELY]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.status, PlanStatusChoices.DEFINITELY)
 
-        test_perms(False, True, False, True)
-        test_perms(True, False, True, False)
-        a.is_admin = True
-        a.save()
-        test_perms(False, False, True, True)
-        a.is_admin = False
-        a.save()
-        self.joeuser.is_superuser=True
-        self.joeuser.save()
-        test_perms(False, False, True, True)
+    def test_plan_update_other(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('plan-update', args=[p.id, PlanStatusChoices.DEFINITELY]))
+        self.assertEqual(resp.status_code, 403)
+        p.refresh_from_db()
+        self.assertEqual(p.status, PlanStatusChoices.NO_PLAN)
 
-    def test_series_of_gigs(self):
-        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
-                                                total_gigs=10,
-                                                repeat='day')
-        self.assertEqual(Gig.objects.count(), 10)
-        gigs = Gig.objects.all()
-        self.assertEqual(gigs[9].date.day - gigs[0].date.day, 9)
-        self.assertEqual(gigs[9].date.month, gigs[0].date.month)
+    def test_plan_feedback_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update-feedback', args=[p.id, 42]))
+        self.assertEqual(resp.status_code, 204)
+        p.refresh_from_db()
+        self.assertEqual(p.feedback_value, 42)
 
-    def test_series_of_gigs_weekly(self):
-        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
-                                                total_gigs=2,
-                                                repeat='week')
-        self.assertEqual(Gig.objects.count(), 2)
-        gigs = Gig.objects.all()
-        self.assertEqual(gigs[1].date.day - gigs[0].date.day, 7)
-        self.assertEqual(gigs[1].date.month, gigs[0].date.month)
+    def test_plan_comment_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update-comment', args=[p.id]), {'value': 'Plan comment'})
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(p.comment, 'Plan comment')
 
-    def test_series_of_gigs_monthly(self):
-        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
-                                                total_gigs=2,
-                                                repeat='month')
-        self.assertEqual(Gig.objects.count(), 2)
-        gigs = Gig.objects.all()
-        self.assertEqual(gigs[1].date.day, gigs[0].date.day)
-        self.assertEqual(gigs[1].date.month - gigs[0].date.month, 1)
-
-    def test_series_of_gigs_short_month(self):
-        _, _, _ = self.assoc_joe_and_create_gig(call_date = '01/31/21',
-                                                add_series=True,
-                                                total_gigs=2,
-                                                repeat='month')
-        self.assertEqual(Gig.objects.count(), 2)
-        gigs = Gig.objects.all()
-        self.assertEqual(gigs[1].date.day, 28)
-
-    def test_series_of_gigs_day_of_month(self):
-        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
-                                                total_gigs=10,
-                                                call_date = '10/31/2100',
-                                                call_time = '12:00am',
-                                                repeat='month')
-        self.assertEqual(Gig.objects.count(), 10)
-        gigs = Gig.objects.all()
-        self.assertEqual(gigs[0].date.day, 31) # october
-        self.assertEqual(gigs[1].date.day, 30) # november
-        self.assertEqual(gigs[2].date.day, 31) # december
-        self.assertEqual(gigs[3].date.day, 31) # january
-        self.assertEqual(gigs[4].date.day, 28) # february
-        
-    def test_series_without_number(self):
-        _, _, _ = self.assoc_joe_and_create_gig(add_series=True,
-                                                call_date = '10/31/2100',
-                                                call_time = '12:00am',
-                                                repeat='month')
-        self.assertEqual(Gig.objects.count(), 1)
+    def test_plan_section_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        s = Section.objects.create(name='s1', band=self.band)
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('plan-update-section', args=[p.id, s.id]))
+        self.assertEqual(resp.status_code, 204)
+        p.refresh_from_db()
+        self.assertEqual(p.plan_section, s)
 

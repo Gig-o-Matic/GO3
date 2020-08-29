@@ -65,17 +65,21 @@
                                 {{section.name }} <span class="caret"></span>
                     {% comment %}
                     TODO the section name had a 'shorten' filter
-                    {% endcomment %}                                
+                    {% endcomment %}
                             {% endif %}
                         </button>
                         <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
                             {% for section in band.sections.all %}
-                                <a class="dropdown-item" onclick="section_select('gig/plan','{{ plan.id }}','sel-{{plan.id}}','{{ section.id }}', 
-                                                                                '{{ section.name }}','{{ csrf_token}}')">{{ section.name }}</a>
+                                <a class="dropdown-item"
+                                   hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
+                                   hx-ext="update-dropdown"
+                                   hx-target="#sel-{{ plan.id }}">
+                                    {{ section.name }}
+                                </a>
                     {% comment %}
                     TODO the section name had a 'shorten' filter
-                    {% endcomment %}                                
-                                
+                    {% endcomment %}
+
                             {% endfor %}
                         </div>
                     </div>
@@ -84,7 +88,7 @@
 <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
         </div>
     {% else %}
-	    <div class="col-8" style="display:flex; align-items:center;" >
+        <div class="col-8" style="display:flex; align-items:center;" >
 {% comment %}
             {{ plan_icon.icon_display(plan.value) }}
             {% if the_band.plan_feedback and plan.feedback_value %}
@@ -93,7 +97,7 @@
             {% if plan.comment %}
                 {{ plan.comment }}
             {% endif %}
-{% endcomment %}            
+{% endcomment %}
 	    </div>
     {% endif %}
 </div>

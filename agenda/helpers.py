@@ -14,24 +14,25 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from gig.tests import GigTestBase
-from django.test import Client
 
-class AgendaTest(GigTestBase):
-    def test_agenda(self):
-        self.assoc_joe()
-        for i in range(0,19):
-            self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
-        c=Client()
-        c.force_login(self.joeuser)
-
-        # first 'page' of gigs should have 10
-        response = c.get(f'/plans/noplans/1')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"),10)
-
-        # second 'page' of gigs should have 9
-        response = c.get(f'/plans/noplans/2')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"),9)
+from go3.colors import the_colors
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.core.paginator import Paginator
 
 
+PAGE_LENGTH = 10
+
+@login_required
+def agenda_gigs(request, the_type=None, page=1):
+
+    if the_type == 'noplans':
+        the_plans = request.user.future_noplans.all()
+    else:
+        the_plans = request.user.future_plans.all()
+
+    paginator = Paginator(the_plans, PAGE_LENGTH)
+    page_obj = paginator.get_page(page)
+
+    return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'page_obj': page_obj, 'the_type':the_type})
 

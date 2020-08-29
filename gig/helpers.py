@@ -16,51 +16,61 @@
 """
 
 import datetime
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import template_localtime
 from .models import Gig, Plan
 from .util import PlanStatusChoices
-from band.models import Section, AssocStatusChoices
+from band.models import Section, Assoc, AssocStatusChoices
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
 
 
+def plan_editor_required(func):
+    def decorated(request, pk, *args, **kw):
+        p = get_object_or_404(Plan, pk=pk)
+        is_self = (request.user == p.assoc.member)
+        is_band_admin = Assoc.objects.filter(
+            member=request.user, band=p.assoc.band, is_admin=True).count() == 1
+        if not (is_self or is_band_admin or request.user.is_superuser):
+            return HttpResponseForbidden()
+
+        return func(request, p, *args, **kw)
+    return decorated
+
+
 @login_required
-def update_plan(request, pk, val):
-    """ set value of plan """
-    plan = Plan.objects.get(id=pk)
+@plan_editor_required
+def update_plan(request, plan, val):
     plan.status = val
     plan.save()
-    return HttpResponse()
+    return render(request, 'gig/plan_icon.html', {'plan_value': val})
 
 @login_required
-def update_plan_feedback(request, pk, val):
-    """ set value of plan """
-    plan = Plan.objects.get(id=pk)
+@plan_editor_required
+def update_plan_feedback(request, plan, val):
     plan.feedback_value = val
     plan.save()
-    return HttpResponse()
+    return HttpResponse(status=204)
 
 @login_required
-def update_plan_comment(request, pk):
-    """ set value of plan """
-    plan = Plan.objects.get(id=pk)
+@plan_editor_required
+def update_plan_comment(request, plan):
     plan.comment = request.POST['value']
     plan.save()
     return HttpResponse()
 
 @login_required
-def update_plan_section(request, pk, val):
-    """ set section for this plan """
-    plan = Plan.objects.get(id=pk)
-    plan.plan_section = Section.objects.get(id=val)
+@plan_editor_required
+def update_plan_section(request, plan, val):
+    plan.plan_section = get_object_or_404(Section, pk=val)
     plan.save()
-    return HttpResponse()
+    return HttpResponse(status=204)
 
 
 # @login_required
