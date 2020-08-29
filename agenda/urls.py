@@ -23,4 +23,8 @@ urlpatterns = [
     path('agenda', views.AgendaView.as_view(), name='agenda'),
     # path('noplans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-noplans'),
     path('plans/<path:the_type>/<int:page>', helpers.agenda_gigs, name='agenda-gigs'),
+    path('calendar', views.CalendarView.as_view(), name='calendar'),
+    path('calendar/events/<int:pk>', helpers.calendar_events, name='calendar-events'),
+
+    path('defaultview/<int:val>', helpers.set_default_view, name='set-default-view'),
 ]

@@ -1,0 +1,70 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block headcontent %}
+        <!-- Custom styles for calendar -->
+        <link href='/static/fullcalendar/lib/main.css' rel='stylesheet' />
+        <link href='/fullcalendar/fullcalendar.print.css' rel='stylesheet' media='print' />
+{% endblock headcontent %}
+
+
+{% block title %}{% trans "Calendar"%}{% endblock title %}
+
+{% block content %}
+    <div class="row">
+        <div class="page-header page-header mx-auto col-md-10 col-12">
+            {% trans "Calendar" %}
+            {% if user.preferences.default_view != 2 %}
+            <small>(<a href="/defaultview/2">{% trans "Make this my default view!" %}</a>)</small>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="mx-auto col-md-10 col-12">
+            <div id='calendar'></div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block localscripts %}
+    <script src='{% static "fullcalendar/lib/main.js" %}'></script>
+    {% if user.preferences.language != "en" %}
+        <script src='{% static "fullcalendar/lib/locales/"|add:user.preferences.language|add:".js" %}'></script>
+    {% endif %}
+    <script>
+
+    var calendar=null;
+
+    function calCallback(rawEvents, xhr) {
+        mo = calendar.getDate();
+        var stateObj = { foo: "bar" };
+        window.history.replaceState(stateObj, "", window.location.origin+window.location.pathname+"?y="+mo.getYear()+"&m="+mo.getMonth());
+    }
+
+    $(document).ready(function() {
+        // page is now ready, initialize the calendar...
+        var calendarEl = document.getElementById('calendar');
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            // put your options and callbacks here
+            themeSystem: 'bootstrap',
+            locale: '{{ user.preferences.language }}',
+            eventSources : [{
+                url: '/calendar/events/{{ user.id }}',
+                method: 'GET',
+            }],
+            {% if initialDate %}
+                initialDate: '{{ initialDate }}',
+            {% endif %}
+            //     error: function() {
+            //         alert('there was an error while fetching events!');
+            //     },
+            // },
+            eventSourceSuccess: calCallback,
+        });
+        calendar.render();
+    });
+    </script>
+{% endblock localscripts %}
+
