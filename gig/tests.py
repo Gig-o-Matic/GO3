@@ -62,18 +62,16 @@ class GigTestBase(TestCase):
     def create_gig_form(self, user=None,
                         expect_code=302,
                         call_date = '01/02/2100',
+                        set_date = '',
                         end_date = '',
                         call_time = '12:00 pm',
                         set_time = '',
                         end_time = '',
-                        address = '',
                         title = 'New Gig',
                         **kwargs):
 
         status = kwargs.pop('status', GigStatusChoices.UNKNOWN)
         contact = kwargs.pop('contact', self.joeuser).id
-        call_date = kwargs.pop('call_date', '01/02/2100')
-        call_time = kwargs.pop('call_time', '12:00 pm')
         send_update = kwargs.pop('send_update', True)
 
         c=Client()
@@ -82,6 +80,10 @@ class GigTestBase(TestCase):
                                     {'title':title,
                                     'call_date':call_date,
                                     'call_time':call_time,
+                                    'set_date':set_date,
+                                    'set_time':set_time,
+                                    'end_date':end_date,
+                                    'end_time':end_time,
                                     'contact':contact,
                                     'status':status,
                                     'send_update': send_update,
