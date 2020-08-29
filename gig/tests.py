@@ -70,19 +70,22 @@ class GigTestBase(TestCase):
                         title = 'New Gig',
                         **kwargs):
 
+        status = kwargs.pop('status', GigStatusChoices.UNKNOWN)
+        contact = kwargs.pop('contact', self.joeuser).id
+        call_date = kwargs.pop('call_date', '01/02/2100')
+        call_time = kwargs.pop('call_time', '12:00 pm')
+        send_update = kwargs.pop('send_update', True)
+
         c=Client()
         c.force_login(user if user else self.joeuser)
         response = c.post(f'/gig/create/{self.band.id}',
                                     {'title':title,
                                     'call_date':call_date,
-                                    'end_date':end_date,
                                     'call_time':call_time,
-                                    'set_time':set_time,
-                                    'end_time':end_time,
-                                    'contact':kwargs.get('contact', self.joeuser).id,
-                                    'status':GigStatusChoices.UNKNOWN,
-                                    'address':address,
-                                    'send_update': True
+                                    'contact':contact,
+                                    'status':status,
+                                    'send_update': send_update,
+                                    **kwargs
                                     })
 
         self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
@@ -204,7 +207,7 @@ class GigTest(GigTestBase):
     def test_gig_edit_permissions(self):
         """ make sure that if I don't have permission to edit a gig, I can't """
         g, _, _ = self.assoc_joe_and_create_gig(set_time='12:30 pm', end_time='02:00 pm')
-        self.band.anyone_can_create_gigs = False
+        self.band.anyone_can_manage_gigs = False
         self.band.save()
         self.update_gig_form(g, user=self.janeuser, title='not legal!', expect_code=403)
 
@@ -681,7 +684,6 @@ class GigTest(GigTestBase):
         response = c.get(f'/gig/{g.id}/')
         self.assertIn('"http://maps.google.com?q=1600 Pennsylvania Avenue"',response.content.decode('ascii'))
 
-
     # Use plan-update to test permissions
     def test_plan_update_user(self):
         _, _, p = self.assoc_joe_and_create_gig()
@@ -731,3 +733,4 @@ class GigTest(GigTestBase):
         self.assertEqual(resp.status_code, 204)
         p.refresh_from_db()
         self.assertEqual(p.plan_section, s)
+

@@ -21,6 +21,7 @@ from go3.colors import the_colors
 from .util import BandStatusChoices, AssocStatusChoices
 from member.util import MemberStatusChoices, AgendaChoices
 from django.apps import apps
+import pytz
 
 class Band(models.Model):
     name = models.CharField(max_length=200)
@@ -35,7 +36,7 @@ class Band(models.Model):
     member_links = models.TextField(max_length=500, null=True, blank=True)
     thumbnail_img = models.CharField(max_length=200, null=True, blank=True)
 
-    timezone = models.CharField(max_length=200, default='UTC')
+    timezone = models.CharField(max_length=200, default='UTC', choices=[(x, x) for x in pytz.common_timezones])
 
     # # sent to new members when they join
     new_member_message = models.TextField(max_length=500, null=True, blank=True)

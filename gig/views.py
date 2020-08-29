@@ -36,10 +36,9 @@ class DetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # todo or band members, admins etc.
-        context['user_can_edit'] = self.request.user.is_superuser
-        # todo or band members, admins etc.
-        context['user_can_create'] = self.request.user.is_superuser
+        context['user_can_edit'] = has_manage_permission(self.request.user, self.object.band)
+        context['user_can_create'] = has_create_permission(self.request.user, self.object.band)
+                                   
         context['timezone'] = self.object.band.timezone
 
         if self.object.address:
@@ -84,7 +83,7 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         band = Band.objects.get(id=self.kwargs['bk'])
-        if not has_edit_permission(self.request.user, band):
+        if not has_create_permission(self.request.user, band):
             return HttpResponseForbidden()
 
         # there's a new gig; link it to the band
@@ -115,7 +114,8 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         pass
 
     def form_valid(self, form):
-        if not has_edit_permission(self.request.user, self.object.band):
+
+        if not has_manage_permission(self.request.user, self.object.band):
             return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
@@ -181,7 +181,10 @@ class CommentsView(LoginRequiredMixin, TemplateView):
 def has_comment_permission(user, gig):
     return Assoc.objects.filter(member = user, band=gig.band).count() == 1
 
-def has_edit_permission(user, band):
+def has_manage_permission(user, band):
+    return user.is_superuser or band.anyone_can_manage_gigs or band.is_admin(user)
+
+def has_create_permission(user, band):
     return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
 
 
