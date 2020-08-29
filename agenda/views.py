@@ -51,3 +51,18 @@ class CalendarView(LoginRequiredMixin, TemplateView):
             context['initialDate'] = f'{y}-{m:02d}-01'
 
         return context
+
+class CalendarView(LoginRequiredMixin, TemplateView):
+    template_name='agenda/calendar.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        m = self.request.GET.get('m',None)
+        y = self.request.GET.get('y',None)
+
+        if m and y:
+            m = int(m)+1
+            y = int(y)+1900
+            context['initialDate'] = f'{y}-{m:02d}-01'
+
+        return context
