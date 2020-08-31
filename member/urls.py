@@ -30,7 +30,7 @@ urlpatterns = [
 
     path('<int:pk>/motd_seen',helpers.motd_seen),
 
-    path('calfeed/<uuid:pk>', helpers.calfeed),
+    path('calfeed/<uuid:pk>', helpers.calfeed, name='member-calfeed'),
 
     path('invite/<int:bk>', views.InviteView.as_view(), name='member-invite'),
     path('invite/<uuid:pk>', views.accept_invite, name='member-invite-accept'),
