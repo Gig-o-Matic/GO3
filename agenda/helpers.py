@@ -93,4 +93,4 @@ def set_default_view(request, val):
     except ValueError:
         logging.error('user tried to set default view to something strange')
     request.user.preferences.save()
-    return HttpResponseRedirect('/')
+    return HttpResponse()
