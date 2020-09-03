@@ -325,10 +325,8 @@ function updatecounts() {
             counts[x] = 1
         }
     {% endfor %}
-    console.log(counts)
     keys = Object.keys(counts).forEach(
         function(value, index) {
-            console.log(value," ",counts[value])
             $("#count"+value).html(counts[value]);
         }
     )
