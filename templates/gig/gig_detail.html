@@ -193,12 +193,12 @@
                         <span id="printall"><a href="print_planlist?gk={{gig.id}}&printall=1" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
                         {% trans "Print" %}
                         </a></span>
-                        <span id="printcomm">
+                    <span id="printcomm" style="display:none">
                         <a href="print_planlist?gk={{gig.id}}&printall=0" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
                         {% trans "Print" %}
                         </a></span>
                         <a href="#" onclick="simpleswitch(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-sync fs-lg"></i>
-                        <span id="simpleoff">{% trans "Show All" %}</span>
+                        <span id="simpleoff" style="display:none">{% trans "Show All" %}</span>
                         <span id="simpleon">{% trans "Show Committed" %}</span>
                         </a>
 
@@ -206,7 +206,7 @@
                             <span id="showremind"><a href="#" onclick="sendreminder('{{gig.id}}'); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-envelope"></i>
                             	{% trans "Remind" %}
                             </a></span>
-                        	<span id="hideremind">
+                        	<span id="hideremind" style="display:none">
                             	<small>{% trans "Reminder Sent" %}</small>
                         	</span>
                         {% endif %}
@@ -216,19 +216,17 @@
             <div class="card-body">
                 {% if request.user.is_superuser or the_user_is_band_admin %}
                     <div class="row mb-4">
-                        {% for p in the_plan_counts %}
-{% comment %}
-                            <div class="mx-auto">
+                        {% for p in plan_list %}
                             {% if p > 0 %}
-                                <span class="">{{ plan_icon.icon(p) }}{{ the_plan_counts[p] }}</span>
+                                <div class="mx-auto">
+                                    {% include "gig/plan_icon.html" with plan_value=p %}
+                                    <span id="count{{p}}">0</span>
+                                </div>
                             {% endif %}
-                            </div>
-{% endcomment %}
                         {% endfor %}
                         <div class="mx-auto">
-{% comment %}
-                            <span class="">{{ plan_icon.icon(0) }}{{ the_plan_counts[0] }}</span>
-{% endcomment %}
+                            {% include "gig/plan_icon.html" with plan_value=0 %}
+                            <span id="count0">0</span>
                         </div>
                     </div>
                 {% endif %}
@@ -317,7 +315,27 @@ function sendreminder(gk) {
 }
 {% endif %}
 
+function updatecounts() {
+    counts = {}
+    {% for p in gig.member_plans.all %}
+        x=parseInt("{{p.status}}")
+        if (counts[x]) {
+            counts[x]++;
+        } else {
+            counts[x] = 1
+        }
+    {% endfor %}
+    console.log(counts)
+    keys = Object.keys(counts).forEach(
+        function(value, index) {
+            console.log(value," ",counts[value])
+            $("#count"+value).html(counts[value]);
+        }
+    )
+}
+
 $(document).ready(function() {
+    updatecounts();
     setsimple();
     {% if user_can_edit %}
         {% if not gig.was_reminded %}

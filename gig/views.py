@@ -41,6 +41,8 @@ class DetailView(generic.DetailView):
                                    
         context['timezone'] = self.object.band.timezone
 
+        context['plan_list'] = [x.value for x in PlanStatusChoices]
+
         if self.object.address:
             if url_validate(self.object.address):
                 context['address_string'] = self.object.address
