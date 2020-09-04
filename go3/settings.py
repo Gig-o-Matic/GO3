@@ -32,6 +32,7 @@ import os
 import sys
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
+from multiprocessing import set_start_method # for task q
 
 _testing = False
 if len(sys.argv) > 1 and sys.argv[1] == 'test':
@@ -188,6 +189,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login'
 
 # Configure Django-q message broker
+set_start_method("fork")
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
