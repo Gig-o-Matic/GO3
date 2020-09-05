@@ -28,6 +28,7 @@ urlpatterns = [
     path('<int:pk>/section/<int:sk>', views.SectionMembersView.as_view(), name='section-members'),
     path('<int:pk>/member_spreadsheet', views.member_spreadsheet, name='member-spreadsheet'),
     path('<int:pk>/member_emails', views.member_emails, name='member-emails'),
+    path('<int:pk>/trashcan', views.TrashcanView.as_view(), name='gig-trashcan'),
 
     path('assoc/<int:ak>/tfparam', helpers.set_assoc_tfparam, name='assoc-tfparam'),
     path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),

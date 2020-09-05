@@ -85,6 +85,10 @@ class Band(models.Model):
     def confirmed_members(self):
         return apps.get_model('member','Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
 
+    @property
+    def trash_gigs(self):
+        return self.gigs.filter(trashed_date__isnull=False)
+
     def __str__(self):
         return self.name
 

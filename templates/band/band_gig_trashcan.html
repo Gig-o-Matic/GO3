@@ -1,0 +1,39 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Gig Trashcan" %}{% endblock title %}
+
+{% block content %}
+    <div class="row">
+        <div class="page-header col-md-8 col-md-offset-2">
+            {% trans "Trashed Gigs for" %} <a href="{% url 'band-detail' pk=band.id %}"> {{ band.name}}</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            {% with trashgigs=band.trash_gigs %}
+                {% if trashgigs %}
+                    <div class="row">
+                        <div class="col-12">
+                            {% trans "Gigs in the trash will be deleted after 30 days." %}
+                            <br><br>
+                        </div>
+                    </div>
+                    {% for gig in trashgigs %}
+                        <div class="row">
+                            <div class="col-md-2 col-md-offset-2">
+                                {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'gig-detail' pk=gig.id %}">{{ gig.title }}</a><br>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    {% trans "There are no gigs in the trashcan!" %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+{% endblock content %}
