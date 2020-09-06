@@ -25,12 +25,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from band.util import AssocStatusChoices
 
 
+def member_can_edit_band(member, band):
+    return member.is_superuser or (Assoc.objects.filter(member=member, band=band, is_admin=True).count() == 1)
+
 def assoc_editor_required(func):
     def decorated(request, ak, *args, **kw):
         a = get_object_or_404(Assoc, pk=ak)
         is_self = (request.user == a.member)
-        is_band_admin = Assoc.objects.filter(
-            member=request.user, band=a.band, is_admin=True).count() == 1
+        is_band_admin = member_can_edit_band(request.user, a.band)
         if not (is_self or is_band_admin or request.user.is_superuser):
             return HttpResponseForbidden()
 

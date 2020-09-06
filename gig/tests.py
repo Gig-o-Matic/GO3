@@ -663,8 +663,9 @@ class GigTest(GigTestBase):
         g1, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(Gig.objects.count(), 1)
 
-        _ = self.duplicate_gig_form(g1, 1)
+        _ = self.duplicate_gig_form(g1, 1, user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 2)
+
     def test_address_url(self):
         g, _, _ = self.assoc_joe_and_create_gig(address='http://pbs.org')
         c=Client()

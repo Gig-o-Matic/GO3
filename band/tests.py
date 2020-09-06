@@ -22,6 +22,9 @@ from member.models import Member
 from band import helpers
 from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
+from gig.tests import GigTestBase
+from .helpers import member_can_edit_band
+from django.utils import timezone
 
 class MemberTests(TestCase):
     def setUp(self):
@@ -263,28 +266,31 @@ class MemberTests(TestCase):
         self.assertEqual(a.status, AssocStatusChoices.PENDING)
 
 
-class BandTests(TestCase):
-    def setUp(self):
-        pass
+class BandTests(GigTestBase):
 
-    def tearDown(self):
-        """ make sure we get rid of anything we made """
-        Member.objects.all().delete()
-        Band.objects.all().delete()
-        Assoc.objects.all().delete()
+    def test_edit_permissions(self):
+        self.assertTrue(member_can_edit_band(self.band_admin, self.band))
+        self.assertFalse(member_can_edit_band(self.joeuser, self.band))
 
     def test_band_member_queries(self):
-        band = Band.objects.create(name='test band')
-        self.assertEqual(band.all_assocs.count(), 0)
-        self.assertEqual(band.confirmed_assocs.count(), 0)
-        joeuser = Member.objects.create_user(email='g@h.i')
-        a=Assoc.objects.create(member=joeuser, band=band, is_admin=True)
-        self.assertEqual(band.all_assocs.count(), 1)
-        self.assertEqual(band.confirmed_assocs.count(), 0)
+        self.assertEqual(self.band.all_assocs.count(), 1)
+        self.assertEqual(self.band.confirmed_assocs.count(), 0)
+        a=Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=False)
+        self.assertEqual(self.band.all_assocs.count(), 2)
+        self.assertEqual(self.band.confirmed_assocs.count(), 0)
         a.status = AssocStatusChoices.CONFIRMED
         a.save()
-        self.assertEqual(band.confirmed_assocs.count(), 1)
-        joeuser.status = MemberStatusChoices.DORMANT
-        joeuser.save()
-        self.assertEqual(band.all_assocs.count(), 0)
-        self.assertEqual(band.confirmed_assocs.count(), 0)
+        self.assertEqual(self.band.confirmed_assocs.count(), 1)
+        self.joeuser.status = MemberStatusChoices.DORMANT
+        self.joeuser.save()
+        self.assertEqual(self.band.all_assocs.count(), 1)
+        self.assertEqual(self.band.confirmed_assocs.count(), 0)
+
+    def test_trashed_gigs(self):
+        g = self.create_gig(self.joeuser)
+        self.assertEqual(self.band.gigs.count(),1)
+        self.assertEqual(self.band.trash_gigs.count(),0)
+        g.trashed_date = timezone.now()
+        g.save()
+        self.assertEqual(self.band.gigs.all().count(),0)
+        self.assertEqual(self.band.gigs.trashed().count(),1)

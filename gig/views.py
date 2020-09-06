@@ -27,9 +27,10 @@ from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 import urllib.parse
 from validators import url as url_validate
+from band.helpers import member_can_edit_band
 
 class DetailView(generic.DetailView):
     model = Gig
@@ -129,8 +130,12 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         return result
 
           
-class DuplicateView(CreateView):
+class DuplicateView(UserPassesTestMixin, CreateView):
   
+    def test_func(self):
+        gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+        return member_can_edit_band(self.request.user, gig.band)
+
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super().get_form_kwargs(*args, **kwargs)
         gig_orig = Gig.objects.get(id=self.kwargs['pk'])
