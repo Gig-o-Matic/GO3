@@ -90,6 +90,13 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
         context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
         return context
 
+class TrashcanView(LoginRequiredMixin, TemplateView):
+    template_name='band/band_gig_trashcan.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['band'] = Band.objects.get(id=self.kwargs['pk'])
+        return context
+
 
 @login_required
 def member_spreadsheet(request, pk):

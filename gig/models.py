@@ -25,6 +25,15 @@ from django.utils import timezone
 import datetime
 import uuid
 
+
+class GigsManager(models.Manager):
+    def active(self):
+        return super().filter(trashed_date__isnull = True)
+
+    def trashed(self):
+        return super().filter(trashed_date__isnull = False)
+
+
 class MemberPlanManager(models.Manager):
     def all(self):
         """ override the default all to order by section """
@@ -33,7 +42,8 @@ class MemberPlanManager(models.Manager):
     def future_plans(self, member):
         return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=timezone.now())) | Q(gig__enddate__gt=timezone.now()),
                                              assoc__member=member, 
-                                             assoc__status=AssocStatusChoices.CONFIRMED
+                                             assoc__status=AssocStatusChoices.CONFIRMED,
+                                             gig__trashed_date__isnull=True,
                                             ).order_by('gig__date')
 
 
@@ -121,6 +131,8 @@ class AbstractEvent(models.Model):
     @property
     def is_in_trash(self):
         return self.trashed_date is not None
+
+    objects = GigsManager()
 
     def __str__(self):
         return self.title

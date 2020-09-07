@@ -29,9 +29,8 @@ def assoc_editor_required(func):
     def decorated(request, ak, *args, **kw):
         a = get_object_or_404(Assoc, pk=ak)
         is_self = (request.user == a.member)
-        is_band_admin = Assoc.objects.filter(
-            member=request.user, band=a.band, is_admin=True).count() == 1
-        if not (is_self or is_band_admin or request.user.is_superuser):
+        is_editor = a.band.is_editor(request.user)
+        if not (is_self or is_editor):
             return HttpResponseForbidden()
 
         return func(request, a, *args, **kw)

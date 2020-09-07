@@ -56,14 +56,15 @@
                     </div>
                 </div>
                 {% if gig.is_in_trash %}
-                    <div class="col-md-2 col-sm-2 col-4">
-                    </div>
-                    <div class="row">
+                    <div class="row" id="intrash">
                         <div class="col-md-10 col-sm-10 col-8" style="color:red">
+                            <br>
                             <strong>{% trans "THIS GIG IS IN THE TRASH!" %}</strong>
                             {% if request.user.is_superuser or the_user_is_band_admin %}
-                                <a class="btn btn-default" href="/gig_restore_trashed?gk={{ gig.id }}">{% trans "Restore Gig" %}</a>
+                                <a class="btn btn-primary btn-sm" 
+                                   href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
                             {% endif %}
+                            <br><br>
                         </div>
                     </div>
                 {% endif %}

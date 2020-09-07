@@ -14,16 +14,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.db import models
+from gig.models import Gig
+from django.utils import timezone
+from datetime import timedelta
 
-class BandStatusChoices(models.IntegerChoices):
-    ACTIVE = 0, "Active"
-    DORMANT = 1, "Dormant"
-    DELETED = 2, "Deleted"
+def delete_old_trashed_gigs():
+    """
+    Deletes gigs that were tashed more than 30 days ago
+    """
 
-class AssocStatusChoices(models.IntegerChoices):
-    NOT_CONFIRMED = 0, "Not Confirmed"
-    CONFIRMED = 1, "Confirmed"
-    INVITED = 2, "Invited"
-    ALUMNI = 3, "Alumni"
-    PENDING = 4, "Pending"
+    cutoff = timezone.now() - timedelta(days=30)
+    old_trash = Gig.objects.filter(trashed_date__lt=cutoff)
+    num = old_trash.count()
+    old_trash.delete()
+    return f'deleted {num} old trashed gigs'
+    
+    

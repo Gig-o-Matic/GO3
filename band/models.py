@@ -73,6 +73,9 @@ class Band(models.Model):
     def is_admin(self, member):
         return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count()==1
 
+    def is_editor(self, member):
+        return self.is_admin(member) or member.is_superuser
+
     @property
     def all_assocs(self):
         return self.assocs.filter(member__status=MemberStatusChoices.ACTIVE)
@@ -84,6 +87,10 @@ class Band(models.Model):
     @property
     def confirmed_members(self):
         return apps.get_model('member','Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
+
+    @property
+    def trash_gigs(self):
+        return self.gigs.filter(trashed_date__isnull=False)
 
     def __str__(self):
         return self.name

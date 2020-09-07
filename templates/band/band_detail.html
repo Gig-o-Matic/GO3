@@ -71,7 +71,7 @@
                                 {% endif %}
                                 <a href="/band_gig_archive?bk={{ band.id }}">{% trans "Gig Archive" %}</a><br>
                                 {% if request.user.is_superuser or the_user_is_band_admin %}
-                                    <a href="/band_gig_trashcan?bk={{ band.id }}">{% trans "Gig Trashcan" %}</a><br>
+                                    <a href="{% url 'gig-trashcan' pk=band.id %}">{% trans "Gig Trashcan" %}</a><br>
                                 {% endif %}
                         </div>
                     </div>
