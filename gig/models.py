@@ -27,8 +27,8 @@ import uuid
 
 
 class GigsManager(models.Manager):
-    def all(self):
-        return super().filter(trashed_date__isnull = True)
+    # def all(self):
+    #     return super().filter(trashed_date__isnull = True)
 
     def trashed(self):
         return super().filter(trashed_date__isnull = False)

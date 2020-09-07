@@ -18,18 +18,26 @@
 import datetime
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
-from django.utils.timezone import template_localtime
+from django.utils.timezone import template_localtime, now
 from .models import Gig, Plan
 from .util import PlanStatusChoices
 from band.models import Section, Assoc, AssocStatusChoices
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
+from band.util import member_can_edit_band
 
+def band_editor_required(func):
+    def decorated(request, pk, *args, **kw):
+        g = get_object_or_404(Gig, pk=pk)
+        if not member_can_edit_band(request.user, g.band):
+            return HttpResponseForbidden()
+        return func(request, g, *args, **kw)
+    return decorated
 
 def plan_editor_required(func):
     def decorated(request, pk, *args, **kw):
@@ -171,3 +179,17 @@ def send_snooze_reminders():
 def notify_new_gig(gig, created):
     async_task('gig.helpers.send_email_from_gig', gig,
                'email/new_gig.md' if created else 'email/edited_gig.md')
+
+@login_required
+@band_editor_required
+def gig_untrash(request, gig):
+    gig.trashed_date = None
+    gig.save()
+    return redirect('gig-detail', pk=gig.id)
+
+@login_required
+@band_editor_required
+def gig_trash(request, gig):
+    gig.trashed_date = now()
+    gig.save()
+    return redirect('gig-detail', pk=gig.id)

@@ -264,9 +264,11 @@
                 <div class="form-group col-md-6 col-12 ml-auto text-left">
                     {% if gig and not is_dupe%}
                         {% if not gig.is_in_trash %}
-                            <a data-toggle="modal" href="#deleteModal" class="btn btn-secondary">{% trans "Move To Trash" %}</a>
+                            <a class="btn btn-secondary" 
+                            href="{% url 'gig-trash' gig.id %}">{% trans "Move to Trash" %}</a>
                         {% else %}
-                            <a class="btn btn-secondary" href="/gig_restore_trashed?gk={{ gig.id }}">{% trans "Restore Gig" %}</a>
+                            <a class="btn btn-secondary" 
+                            href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
                         {% endif %}
                         <a data-toggle="modal" href="#archiveModal" class="btn btn-secondary">{% trans "Archive" %}</a>
                     {% endif %}   

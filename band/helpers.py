@@ -22,11 +22,8 @@ from gig.helpers import update_plan_default_section
 from member.models import Member
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from band.util import AssocStatusChoices
+from band.util import AssocStatusChoices, member_can_edit_band
 
-
-def member_can_edit_band(member, band):
-    return member.is_superuser or (Assoc.objects.filter(member=member, band=band, is_admin=True).count() == 1)
 
 def assoc_editor_required(func):
     def decorated(request, ak, *args, **kw):
