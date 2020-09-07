@@ -73,6 +73,9 @@ class Band(models.Model):
     def is_admin(self, member):
         return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count()==1
 
+    def is_editor(self, member):
+        return self.is_admin(member) or member.is_superuser
+
     @property
     def all_assocs(self):
         return self.assocs.filter(member__status=MemberStatusChoices.ACTIVE)

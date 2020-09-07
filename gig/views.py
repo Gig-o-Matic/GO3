@@ -30,7 +30,6 @@ from gig.helpers import notify_new_gig
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 import urllib.parse
 from validators import url as url_validate
-from band.helpers import member_can_edit_band
 
 class DetailView(generic.DetailView):
     model = Gig
@@ -134,7 +133,7 @@ class DuplicateView(UserPassesTestMixin, CreateView):
   
     def test_func(self):
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return member_can_edit_band(self.request.user, gig.band)
+        return gig.band.is_editor(self.request.user)
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super().get_form_kwargs(*args, **kwargs)

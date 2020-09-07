@@ -34,12 +34,12 @@ from lib.template_test import MISSING, flag_missing_vars
 
 class GigTestBase(TestCase):
     def setUp(self):
-        self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
-        self.band_admin = Member.objects.create_user(email='d@e.f')
-        self.joeuser = Member.objects.create_user(email='g@h.i')
-        self.janeuser = Member.objects.create_user(email='j@k.l')
+        self.super = Member.objects.create_user(email='super@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@e.f')
+        self.joeuser = Member.objects.create_user(email='joeuser@h.i')
+        self.janeuser = Member.objects.create_user(email='janeuser@k.l')
         self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
-        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED, email_me=False)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -663,6 +663,9 @@ class GigTest(GigTestBase):
         g1, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(Gig.objects.count(), 1)
 
+        _ = self.duplicate_gig_form(g1, 1, user=self.joeuser, expect_code=403) # should fail
+        self.assertEqual(Gig.objects.count(), 1)
+
         _ = self.duplicate_gig_form(g1, 1, user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 2)
 
@@ -736,4 +739,14 @@ class GigTest(GigTestBase):
         self.assertEqual(resp.status_code, 204)
         p.refresh_from_db()
         self.assertEqual(p.plan_section, s)
+
+    def test_gig_trash(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('gig-trash', args=[g.id]))
+        self.assertEqual(resp.status_code, 403) # should fail - joeuser is not an admin
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse('gig-trash', args=[g.id]))
+        self.assertEqual(resp.status_code, 302) # should redirect
+        
 

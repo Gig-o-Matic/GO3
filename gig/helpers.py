@@ -29,12 +29,11 @@ from band.models import Section, Assoc, AssocStatusChoices
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
-from band.util import member_can_edit_band
 
 def band_editor_required(func):
     def decorated(request, pk, *args, **kw):
         g = get_object_or_404(Gig, pk=pk)
-        if not member_can_edit_band(request.user, g.band):
+        if not g.band.is_editor(request.user):
             return HttpResponseForbidden()
         return func(request, g, *args, **kw)
     return decorated

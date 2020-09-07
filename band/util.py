@@ -27,6 +27,3 @@ class AssocStatusChoices(models.IntegerChoices):
     INVITED = 2, "Invited"
     ALUMNI = 3, "Alumni"
     PENDING = 4, "Pending"
-
-def member_can_edit_band(member, band):
-    return member.is_superuser or (Assoc.objects.filter(member=member, band=band, is_admin=True).count() == 1)

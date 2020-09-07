@@ -22,15 +22,15 @@ from gig.helpers import update_plan_default_section
 from member.models import Member
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from band.util import AssocStatusChoices, member_can_edit_band
+from band.util import AssocStatusChoices
 
 
 def assoc_editor_required(func):
     def decorated(request, ak, *args, **kw):
         a = get_object_or_404(Assoc, pk=ak)
         is_self = (request.user == a.member)
-        is_band_admin = member_can_edit_band(request.user, a.band)
-        if not (is_self or is_band_admin or request.user.is_superuser):
+        is_editor = a.band.is_editor(request.user)
+        if not (is_self or is_editor):
             return HttpResponseForbidden()
 
         return func(request, a, *args, **kw)
