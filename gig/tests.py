@@ -741,7 +741,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.plan_section, s)
 
     def test_gig_trash(self):
-        g, _, p = self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
         resp = self.client.post(reverse('gig-trash', args=[g.id]))
         self.assertEqual(resp.status_code, 403) # should fail - joeuser is not an admin
