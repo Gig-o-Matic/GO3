@@ -334,6 +334,10 @@ function updatecounts() {
 }
 
 $(document).ready(function() {
+    htmx.on("htmx:afterSettle", function(evt) {
+        init_plan_comments("{{csrf_token}}");
+    });
+
     updatecounts();
     setsimple();
     {% if user_can_edit %}
