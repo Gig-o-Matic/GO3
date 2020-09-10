@@ -51,7 +51,9 @@
 <script>
 
 $(document).ready(function() {
-    init_plan_comments("{{csrf_token}}");
+    htmx.on("htmx:afterSettle", function(evt) {
+        init_plan_comments("{{csrf_token}}");
+    });
     $('.popcomment').tooltip({ 'trigger':'hover click' });
 });
 </script>
