@@ -45,7 +45,7 @@
 {% endcomment %}
 <div class="row {% if not plan.attending %}plannotattending{% endif %}">
     <div class="col-4" style="display:flex; align-items:center;" >
-        {% if member.is_active %}
+        {% if plan_member.is_active %}
             <a href='/member/{{plan_member.id}}'>{{ plan_member.display_name }}</a>
         {% else %}
             {{ plan_member.display_name }}

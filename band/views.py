@@ -12,6 +12,7 @@ from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
+from member.util import MemberStatusChoices
 
 
 class BandMemberRequiredMixin(AccessMixin):
@@ -99,7 +100,8 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
-        context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
+        context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, 
+                                                member__status=MemberStatusChoices.ACTIVE).all()
         return context
 
 class TrashcanView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):

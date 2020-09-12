@@ -69,9 +69,9 @@
                                         <a href="{{l.1}}" target="_new">{{ l.0 }}</a><br>
                                     {% endfor %}
                                 {% endif %}
-                                <a href="{% url 'gig-archive' pk=band.id %}">{% trans "Gig Archive" %}</a><br>
+                                <a href="{% url 'band-archive' pk=band.id %}">{% trans "Gig Archive" %}</a><br>
                                 {% if request.user.is_superuser or the_user_is_band_admin %}
-                                    <a href="{% url 'gig-trashcan' pk=band.id %}">{% trans "Gig Trashcan" %}</a><br>
+                                    <a href="{% url 'band-trashcan' pk=band.id %}">{% trans "Gig Trashcan" %}</a><br>
                                 {% endif %}
                         </div>
                     </div>

@@ -18,20 +18,22 @@
                 <br><br>
             </div>
         </div>
-        {% if the_gigs  %}
-            {% for gig in the_gigs %}
-                <div class="row">
-                    <div class="col-2 offset-2">
-                        {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+        {% with archivegigs=band.archive_gigs %}
+            {% if archivegigs %}
+                {% for gig in archivegigs %}
+                    <div class="row">
+                        <div class="col-md-2 col-md-offset-2">
+                            {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'gig-detail' pk=gig.id %}">{{ gig.title }}</a><br>
+                        </div>
                     </div>
-                    <div class="col-8">
-                        <a href="/gig_info.html?gk={{ gig.id }}">{{ gig.title }}</a><br>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            {% trans "There are no gigs in the archive!" %}
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                {% trans "There are no gigs in the archive!" %}
+            {% endif %}
+        {% endwith %}
     </div>
 </div>
 {% endblock content %}
