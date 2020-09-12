@@ -478,7 +478,9 @@ function setSeries() {
 function do_trash() {
     bootbox.confirm("{% trans 'Are you sure you want to trash this gig?' %}", function (result) {
         if(result) {
-            window.location.replace("{% url 'gig-trash' gig.id %}");
+            {% if gig %}
+                window.location.replace("{% url 'gig-trash' gig.id %}");
+            {% endif %}
         }
     });
     return false;
@@ -487,7 +489,9 @@ function do_trash() {
 function do_archive() {
     bootbox.confirm("{% trans 'Are you sure you want to archive this gig?' %}", function (result) {
         if(result) {
-            window.location.replace("{% url 'gig-archive' gig.id %}");
+            {% if gig %}
+                window.location.replace("{% url 'gig-archive' gig.id %}");
+            {% endif %}
         }
     });
     return false;
