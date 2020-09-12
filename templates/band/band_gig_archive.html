@@ -1,42 +1,36 @@
-{% extends 'go3base.html' %}
+{% extends 'base/go3base.html' %}
 {% load i18n %}
 {% load humanize %}
 
 {% block title %}{% trans "Band Archive" %}{% endblock title %}
 
-{% block headcontent %}
-{% endblock headcontent %}
-
 {% block content %}
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
+
         <div class="page-header">
             {% trans "Gig Archive for" %} <a href="{% url 'band-detail' pk=band.id %}"> {{ band.name}}</a>
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="mx-auto col-lg-8 col-md-10 col-12">
-        <br>
-        <a class="btn btn-primary btn-sm" href="archive_spreadsheet?bk={{the_band.key.urlsafe()}}"><i class="fas fa-download"></i> Download Archive</a>
-        <br><br>
-    </div>
-</div>
-<div class="row">
-    <div class="mx-auto col-lg-8 col-md-10 col-12">
-        {% if the_gigs | length > 0 %}
+        <div class="row">
+            <div class="col-12">
+                <br>
+                <a class="btn btn-primary btn-sm" href="archive_spreadsheet?bk={{the_band.id}}"><i class="fas fa-download"></i> Download Archive</a>
+                <br><br>
+            </div>
+        </div>
+        {% if the_gigs  %}
             {% for gig in the_gigs %}
                 <div class="row">
-                    <div class="col-4">
-                        {{ the_date_formatter(the_user, gig.date, 'short') }}
+                    <div class="col-2 offset-2">
+                        {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
                     </div>
                     <div class="col-8">
-                        <a href="/gig_info.html?gk={{ gig.key.urlsafe() }}">{{ gig.title }}</a><br>
+                        <a href="/gig_info.html?gk={{ gig.id }}">{{ gig.title }}</a><br>
                     </div>
                 </div>
             {% endfor %}
         {% else %}
-            {% trans %}There are no gigs in the archive!{% endtrans %}
+            {% trans "There are no gigs in the archive!" %}
         {% endif %}
     </div>
 </div>

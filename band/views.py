@@ -108,7 +108,6 @@ class TrashcanView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['band'] = get_object_or_404(Band, pk=kwargs['pk'])
-        # context['band'] = Band.objects.get(id=self.kwargs['pk'])
         return context
 
 class ArchiveView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
