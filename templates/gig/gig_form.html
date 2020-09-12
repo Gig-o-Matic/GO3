@@ -270,7 +270,10 @@
                             <a class="btn btn-secondary" 
                             href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
                         {% endif %}
-                        <a data-toggle="modal" href="#archiveModal" class="btn btn-secondary">{% trans "Archive" %}</a>
+                        {% if not gig.is_archived %}
+                            <a class="btn btn-secondary" 
+                            href="{% url 'gig-archive' gig.id %}">{% trans "Archive" %}</a>
+                        {% endif %}
                     {% endif %}   
                 </div>
                 <div class="form-group col-12 col-md-6 ml-auto text-right">
