@@ -89,15 +89,14 @@
         </div>
     {% else %}
         <div class="col-8" style="display:flex; align-items:center;" >
-{% comment %}
-            {{ plan_icon.icon_display(plan.value) }}
+
+            {% include "gig/plan_icon.html" with plan_value=plan.value %}
             {% if the_band.plan_feedback and plan.feedback_value %}
-                {{ the_band.plan_feedback.split('\n')[plan.feedback_value-1] }}
+                {{ plan.feedback_string }}
             {% endif %}
             {% if plan.comment %}
                 {{ plan.comment }}
             {% endif %}
-{% endcomment %}
 	    </div>
     {% endif %}
 </div>

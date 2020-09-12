@@ -60,6 +60,13 @@ class Plan(models.Model):
         return self.status in [PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
 
     feedback_value = models.IntegerField(null=True, blank=True)
+    @property
+    def feedback_string(self):
+        if self.feedback_value and self.gig.band.plan_feedback:
+            return self.gig.band.plan_feedback[self.feedback_value-1]
+        else:
+            return ''
+
     comment = models.CharField(max_length=200, blank=True, null=True)
 
     # plan_section holds the section override for this particular plan. it may be set by the pre_delete signal on section

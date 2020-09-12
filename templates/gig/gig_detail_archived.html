@@ -1,0 +1,200 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+{% load gig_extras %}
+{% load humanize %}
+
+{% block title %}{% trans "Gig Info" %}{% endblock title %}
+
+
+{% block content %}
+{% with band=gig.band %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+
+        <div class="page-header">
+            {% trans "Gig Info (Archived)" %}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-4">
+                        {% trans "Info" %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2 col-sm-2 col-4">{% trans "Gig" %}</div>
+                    <div class="col-md-10 col-sm-10 col-8"><strong>{{ gig.title }}</strong></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-sm-2 col-4">
+                    </div>
+                    <div class="col-md-10 col-sm-10 col-8">
+                        {% if gig.status == 1 %}
+                            <i class="fas fa-check-circle" style="color:green"></i> {% trans "Confirmed!" %}
+                        {% elif gig.status == 2 %}
+                            <i class="fas fa-times-circle" style="color:red"></i> <strong>{% trans "Cancelled!" %}</strong>
+                        {% else %}
+                            <i class="fas fa-question-circle" style="color:orange"></i> <strong>{% trans "Unconfirmed" %}</strong>
+                        {% endif %}
+                        {% if gig.is_private %}
+                            ({% trans "Hidden From Public Page" %})
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-sm-2 col-4">{% trans "Band" %}</div>
+                    <div class="col-md-10 col-sm-10 col-8"><a href="{% url 'band-detail' gig.band.id %}">{{ gig.band.name }}</a></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 col-sm-2 col-4">{% trans "Contact" %}</div>
+                    <div class="col-md-10 col-sm-10 col-8">
+                        {% if gig.contact %}
+                            {{ gig.contact.display_name }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <div class="col-2"><i class="fas fa-calendar"></i></div>
+                    <div class="col-10">{{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                    {% if gig.enddate %}
+                    - {{ gig.enddate|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                    {% endif %}
+                    </div>
+                </div>
+                {% if not gig.enddate %}
+                    <div class="row">
+                        <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
+                            {{ gig.date|time:"TIME_FORMAT" }}
+                        </div>
+                        {% if gig.setdate %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ gig.setdate|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
+                        {% if gig.enddate %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ gig.enddate|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <div class="row">&nbsp;</div>
+                {% if gig.address %}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-2 col-4">{% trans "Address" %}</div>
+                        <div class="col-md-10 col-sm-10 col-8"><a href="{{ address_string }}" target="new">{{ gig.address }}</a></div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if gig.dress %}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-2 col-4">{% trans "What to Wear" %}</div>
+                        <div class="col-md-10 col-sm-10 col-8">{{ gig.dress }}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if gig.paid %}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-2 col-4">{% trans "Pay Deal" %}</div>
+                        <div class="col-md-10 col-sm-10 col-8">{{ gig.paid }}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if gig.leader %}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-2 col-4">{% trans "Leader" %}</div>
+                        <div class="col-md-10 col-sm-10 col-8">{{ gig.leader }}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if gig.postgig %}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-2 col-4">{% trans "Post-gig Plans" %}</div>
+                        <div class="col-md-10 col-sm-10 col-8 trunc">{{ gig.postgig }}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if gig.details %}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-2 col-4">{% trans "More Details" %}</div>
+                        <div class="col-md-10 col-sm-10 col-8 trunc">{{ gig.details|urlize | linebreaks }}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if not gig.invite_occasionals %}
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-12">{% trans "Occasional members were not invited." %}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+            </div>  <!-- card body -->
+        </div> <!-- card -->
+
+        {% if gig.setlist %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-4">
+                            {% trans "Setlist" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            {{ gig.setlist | urlize | linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- card -->
+        {% endif %}
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-4">
+                        {% trans "Member Plans" %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% regroup gig.member_plans.all by section as plans_by_section %}
+                {% for section in band.sections.all %}
+                    <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                        {% if band.sections.all|length > 1 %}
+                            <div class="col-lg-2 col-md-2 col-sm-12 col-12 gomlabel">
+                                {% if section.name is None %}
+                                    {% trans "No Section" %}
+                                {% else %}
+                                    {{ section.name }}
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-10 col-md-10 col-sm-12 col-12">
+                        {% else %}
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                        {% endif %}
+                            {% for plan in plans_by_section|lookup_plans:section %}
+                                {% include "gig/gig_plan_edit.html" with plan=plan %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div> <!-- card body -->
+        </div> <!-- card -->
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <div class="row titlerow"><div class="col-12">
+                    {% trans "Comments" %}
+                </div></div>
+            </div>
+            <div class="card-body" id="gig_commentcard" hx-get="{% url 'gig-comments' gig.id %}" hx-trigger="load">
+            </div> <!-- card body -->
+        </div> <!-- card -->
+    </div>
+</div> <!-- row -->
+{% endwith %}
+{% endblock content %}
+
