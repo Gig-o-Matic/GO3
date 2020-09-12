@@ -299,19 +299,19 @@ class BandTests(GigTestBase):
     def test_trashcan_permission(self):
         _, a, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.janeuser)
-        resp = self.client.get(reverse('gig-trashcan', args=[a.band.id]))
+        resp = self.client.get(reverse('band-trashcan', args=[a.band.id]))
         self.assertEqual(resp.status_code, 403)
 
         self.client.force_login(self.joeuser)
-        resp = self.client.get(reverse('gig-trashcan', args=[a.band.id]))
+        resp = self.client.get(reverse('band-trashcan', args=[a.band.id]))
         self.assertEqual(resp.status_code, 200)
 
     def test_archive_permission(self):
         _, a, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.janeuser)
-        resp = self.client.get(reverse('gig-archive', args=[a.band.id]))
+        resp = self.client.get(reverse('band-archive', args=[a.band.id]))
         self.assertEqual(resp.status_code, 403)
 
         self.client.force_login(self.joeuser)
-        resp = self.client.get(reverse('gig-archive', args=[a.band.id]))
+        resp = self.client.get(reverse('band-archive', args=[a.band.id]))
         self.assertEqual(resp.status_code, 200)
