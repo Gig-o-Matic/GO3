@@ -263,14 +263,8 @@
             <div class="row">
                 <div class="form-group col-md-6 col-12 ml-auto text-left">
                     {% if gig and not is_dupe%}
-                        {% if not gig.is_in_trash %}
-                            <a class="btn btn-secondary" 
-                            href="{% url 'gig-trash' gig.id %}">{% trans "Move to Trash" %}</a>
-                        {% else %}
-                            <a class="btn btn-secondary" 
-                            href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
-                        {% endif %}
-                        <a data-toggle="modal" href="#archiveModal" class="btn btn-secondary">{% trans "Archive" %}</a>
+                        <button type="button" class="btn btn-secondary" onclick="do_trash()">{% trans "Move to Trash" %}</button>
+                        <button type="button" class="btn btn-secondary" onclick="do_archive()">{% trans "Archive" %}</button>
                     {% endif %}   
                 </div>
                 <div class="form-group col-12 col-md-6 ml-auto text-right">
@@ -294,54 +288,12 @@
 </div>
 {% endblock content %}        
 
-{% block modal %}
-{% comment %}
-    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">{% trans "Confirm Trash" %}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                </div>
-                <div class="modal-body">
-                    {% trans "Do you really want to move this gig to the trash?" %}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Cancel" %}</button>
-                    {% if gig %}
-                        <a class="btn btn-primary" id="opener" href="gig_delete?&gk={{ gig.id }}">{% trans "Trash it!" %}</a>
-                    {% endif %}
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
-    <div class="modal fade" id="archiveModal" tabindex="-1" role="dialog" aria-labelledby="archiveModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">{% trans "Confirm archive" %}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                </div>
-                <div class="modal-body">
-                    {% trans "Do you really want to archive this gig?" %}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Don't Archive" %}</button>
-                    {% if gig %}
-                        <a class="btn btn-primary" id="opener" href="gig_archive?&gk={{ gig.id }}">{% trans "Archive" %}</a>
-                    {% endif %}
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-{% endcomment %}    
-{% endblock modal %}
 
 {% block localscripts %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.28/moment-timezone-with-data-10-year-range.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 
 {% comment %}
 <script src="/js/jquery.validate.js"></script>
@@ -522,6 +474,29 @@ function setSeries() {
 };
 
 {% endcomment %}
+
+function do_trash() {
+    bootbox.confirm("{% trans 'Are you sure you want to trash this gig?' %}", function (result) {
+        if(result) {
+            {% if gig %}
+                window.location.replace("{% url 'gig-trash' gig.id %}");
+            {% endif %}
+        }
+    });
+    return false;
+}
+
+function do_archive() {
+    bootbox.confirm("{% trans 'Are you sure you want to archive this gig?' %}", function (result) {
+        if(result) {
+            {% if gig %}
+                window.location.replace("{% url 'gig-archive' gig.id %}");
+            {% endif %}
+        }
+    });
+    return false;
+}
+
 </script>
 {% endblock localscripts %}
 

@@ -13,7 +13,7 @@
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
         <div class="page-header">
-            {% trans "Gig Info" %}
+            {% trans "Gig Info (Archived)" %}
         </div>
 
         <div class="card">
@@ -22,16 +22,6 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if user_can_edit and gig.is_in_trash == False and gig.is_archived == False %}
-                        <div class="ml-auto">
-                            {% if user_can_edit %}
-                                <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
-                            {% endif %}
-                            {% if user_can_create %}
-                                <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
-                            {% endif %}
-                        </div>
-                {% endif %}
                 </div>
             </div>
             <div class="card-body">
@@ -55,19 +45,6 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if gig.is_in_trash %}
-                    <div class="row" id="intrash">
-                        <div class="col-md-10 col-sm-10 col-8" style="color:red">
-                            <br>
-                            <strong>{% trans "THIS GIG IS IN THE TRASH!" %}</strong>
-                            {% if request.user.is_superuser or the_user_is_band_admin %}
-                                <a class="btn btn-primary btn-sm" 
-                                   href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
-                            {% endif %}
-                            <br><br>
-                        </div>
-                    </div>
-                {% endif %}
                 <div class="row">
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Band" %}</div>
                     <div class="col-md-10 col-sm-10 col-8"><a href="{% url 'band-detail' gig.band.id %}">{{ gig.band.name }}</a></div>
@@ -76,7 +53,7 @@
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Contact" %}</div>
                     <div class="col-md-10 col-sm-10 col-8">
                         {% if gig.contact %}
-                            <a href="{% url 'member-detail' gig.contact.id %}">{{ gig.contact.display_name }}</a>
+                            {{ gig.contact.display_name }}
                         {% endif %}
                     </div>
                 </div>
@@ -152,12 +129,6 @@
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
-                {% if gig.hide_from_calendar %}
-                    <div class="row">
-                        <div class="col-md-12 col-sm-12 col-12">{% trans "Gig is hidden from calendar." %}</div>
-                    </div>
-                    <div class="row">&nbsp;</div>
-                {% endif %}
             </div>  <!-- card body -->
         </div> <!-- card -->
 
@@ -167,10 +138,6 @@
                     <div class="row titlerow">
                         <div class="col-4">
                             {% trans "Setlist" %}
-                        </div>
-                        <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="print_setlist?gk={{gig.id}}" target="new"><i class="fas fa-print"></i>
-                            {% trans "Print" %}</a>
                         </div>
                     </div>
                 </div>
@@ -190,47 +157,9 @@
                     <div class="col-4">
                         {% trans "Member Plans" %}
                     </div>
-                    <div class="ml-auto"">
-                        <span id="printall"><a href="print_planlist?gk={{gig.id}}&printall=1" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
-                        {% trans "Print" %}
-                        </a></span>
-                    <span id="printcomm" style="display:none">
-                        <a href="print_planlist?gk={{gig.id}}&printall=0" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
-                        {% trans "Print" %}
-                        </a></span>
-                        <a href="#" onclick="simpleswitch(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-sync fs-lg"></i>
-                        <span id="simpleoff" style="display:none">{% trans "Show All" %}</span>
-                        <span id="simpleon">{% trans "Show Committed" %}</span>
-                        </a>
-
-                        {% if user_can_edit %}
-                            <span id="showremind"><a href="#" onclick="sendreminder('{{gig.id}}'); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-envelope"></i>
-                            	{% trans "Remind" %}
-                            </a></span>
-                        	<span id="hideremind" style="display:none">
-                            	<small>{% trans "Reminder Sent" %}</small>
-                        	</span>
-                        {% endif %}
-                    </div>
                 </div>
             </div>
             <div class="card-body">
-                {% if request.user.is_superuser or the_user_is_band_admin %}
-                    <div class="row mb-4">
-                        {% for p in plan_list %}
-                            {% if p > 0 %}
-                                <div class="mx-auto">
-                                    {% include "gig/plan_icon.html" with plan_value=p %}
-                                    <span id="count{{p}}">0</span>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                        <div class="mx-auto">
-                            {% include "gig/plan_icon.html" with plan_value=0 %}
-                            <span id="count0">0</span>
-                        </div>
-                    </div>
-                {% endif %}
                 {% regroup gig.member_plans.all by section as plans_by_section %}
                 {% for section in band.sections.all %}
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
@@ -269,90 +198,3 @@
 {% endwith %}
 {% endblock content %}
 
-{% block localscripts %}
-<script src="{% static "js/plan_buttons.js" %}"></script>
-{% comment %}
-<script src="{% static "js/jquery.truncator.js" %}"></script>
-{% endcomment %}
-<script>
-var simple=false;
-
-function setsimple() {
-    if (simple) {
-        $('#simpleon').hide();
-        $('#simpleoff').show();
-        $('#printcomm').show();
-        $('#printall').hide();
-        $('.plannotattending').hide();
-        $('.plancomment').hide();
-    } else {
-        $('#simpleon').show();
-        $('#simpleoff').hide();
-        $('#printall').show();
-        $('#printcomm').hide();
-        $('.plannotattending').show();
-        $('.plancomment').show();
-    }
-}
-
-function simpleswitch() {
-    if (simple) {
-        simple = false;
-    } else {
-        simple = true;
-    }
-    setsimple()
-}
-
-{% if user_can_edit %}
-function sendreminder(gk) {
-	$('#showremind').hide();
-	$('#hideremind').show();
-
-	$.post("/sendreminder",
-        {
-            gk: gk
-        });
-}
-{% endif %}
-
-function updatecounts() {
-    counts = {}
-    {% for p in gig.member_plans.all %}
-        x=parseInt("{{p.status}}")
-        if (counts[x]) {
-            counts[x]++;
-        } else {
-            counts[x] = 1
-        }
-    {% endfor %}
-    keys = Object.keys(counts).forEach(
-        function(value, index) {
-            $("#count"+value).html(counts[value]);
-        }
-    )
-}
-
-$(document).ready(function() {
-    htmx.on("htmx:afterSettle", function(evt) {
-        init_plan_comments("{{csrf_token}}");
-    });
-
-    updatecounts();
-    setsimple();
-    {% if user_can_edit %}
-        {% if not gig.was_reminded %}
-        	$('#showremind').show();
-        	$('#hideremind').hide();
-        {% else %}
-        	$('#showremind').hide();
-        	$('#hideremind').show();
-        {% endif %}
-    {% endif %}
-{% comment %}
-    $('.trunc').truncate({max_length: 500, more:"...{% trans "more{% endtrans %}", less:"{% trans %}less" %}"});
-    $('.popcomment').tooltip({ 'trigger':'hover click' });
-{% endcomment %}
-});
-</script>
-{% endblock localscripts %}

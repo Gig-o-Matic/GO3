@@ -7,7 +7,11 @@
             {% for the_comment in comments %}
                 <div class='comment-intro'>
                     {% if the_comment.member %}
-                        <a href="{% url 'member-detail' the_comment.member.id %}">{{ the_comment.member.display_name }}</a>
+                        {% if the_comment.member.is_active %}
+                            <a href="{% url 'member-detail' the_comment.member.id %}">{{ the_comment.member.display_name }}</a>
+                        {% else %}
+                            {{ the_comment.member.display_name }}
+                        {% endif %}
                     {% else %}
                         {% trans "Somebody" %}
                     {% endif %}
@@ -20,6 +24,7 @@
         {% endif %}
     </div>
 </div>
+{% if gig.is_archived is False %}
 <form>
     <div class="row mt-4">
         <div class="col-md-10 col-12">
@@ -31,3 +36,4 @@
         </div>
     </div>
 </form>
+{% endif %}

@@ -92,6 +92,10 @@ class Band(models.Model):
     def trash_gigs(self):
         return self.gigs.filter(trashed_date__isnull=False)
 
+    @property
+    def archive_gigs(self):
+        return self.gigs.filter(is_archived=True)
+
     def __str__(self):
         return self.name
 

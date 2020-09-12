@@ -1,17 +1,30 @@
 import csv
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.views import generic
 from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
+from member.util import MemberStatusChoices
+
+
+class BandMemberRequiredMixin(AccessMixin):
+    """Verify that the current user is authenticated."""
+    def dispatch(self, request, *args, **kwargs):
+        band = get_object_or_404(Band, pk=kwargs['pk'])
+        is_band_member = Assoc.objects.filter(
+            member=request.user, band=band, status=AssocStatusChoices.CONFIRMED).count() == 1
+        if not (is_band_member or request.user.is_superuser):
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
 
 class BandList(LoginRequiredMixin, generic.ListView):
     queryset = Band.objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
@@ -87,16 +100,25 @@ class SectionMembersView(LoginRequiredMixin, TemplateView):
 
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
-        context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, member__is_active=True).all()
+        context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s, 
+                                                member__status=MemberStatusChoices.ACTIVE).all()
         return context
 
-class TrashcanView(LoginRequiredMixin, TemplateView):
+class TrashcanView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
     template_name='band/band_gig_trashcan.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['band'] = Band.objects.get(id=self.kwargs['pk'])
+        context['band'] = get_object_or_404(Band, pk=kwargs['pk'])
         return context
 
+class ArchiveView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
+    template_name='band/band_gig_archive.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['band'] = get_object_or_404(Band, pk=kwargs['pk'])
+        return context
 
 @login_required
 def member_spreadsheet(request, pk):

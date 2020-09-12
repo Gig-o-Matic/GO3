@@ -34,6 +34,13 @@ from validators import url as url_validate
 class DetailView(generic.DetailView):
     model = Gig
 
+    def get_template_names(self):
+        if self.object.is_archived:
+            self.template_name_suffix = '_detail_archived'
+
+        t = super().get_template_names()
+        return t
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user_can_edit'] = has_manage_permission(self.request.user, self.object.band)

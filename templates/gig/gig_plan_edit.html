@@ -45,60 +45,64 @@
 {% endcomment %}
 <div class="row {% if not plan.attending %}plannotattending{% endif %}">
     <div class="col-4" style="display:flex; align-items:center;" >
-        <a href='/member/{{plan_member.id}}'>{{ plan_member.display_name }}</a>
+        {% if plan_member.is_active %}
+            <a href='/member/{{plan_member.id}}'>{{ plan_member.display_name }}</a>
+        {% else %}
+            {{ plan_member.display_name }}
+        {% endif %}
     </div>
-    {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
-        <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
-            {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
-            {% if band.plan_feedback %}
-                {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
-            {% endif %}
+    {% if plan.gig.is_archived == False %}
+        {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
+            <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
+                {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+                {% if band.plan_feedback %}
+                    {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
+                {% endif %}
 
 
-            {% if assoc.is_multisectional and band.sections.all|length > 1 %}
-                {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
-                    <div class="dropdown mr-2">
-                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
-                            {% if section == None %}
-                                {% trans "section" %}...  <span class="caret"></span>
-                            {% else %}
-                                {{section.name }} <span class="caret"></span>
-                    {% comment %}
-                    TODO the section name had a 'shorten' filter
-                    {% endcomment %}
-                            {% endif %}
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
-                            {% for section in band.sections.all %}
-                                <a class="dropdown-item"
-                                   hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
-                                   hx-ext="update-dropdown"
-                                   hx-target="#sel-{{ plan.id }}">
-                                    {{ section.name }}
-                                </a>
-                    {% comment %}
-                    TODO the section name had a 'shorten' filter
-                    {% endcomment %}
+                {% if assoc.is_multisectional and band.sections.all|length > 1 %}
+                    {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
+                        <div class="dropdown mr-2">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
+                                {% if section == None %}
+                                    {% trans "section" %}...  <span class="caret"></span>
+                                {% else %}
+                                    {{section.name }} <span class="caret"></span>
+                        {% comment %}
+                        TODO the section name had a 'shorten' filter
+                        {% endcomment %}
+                                {% endif %}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
+                                {% for section in band.sections.all %}
+                                    <a class="dropdown-item"
+                                    hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
+                                    hx-ext="update-dropdown"
+                                    hx-target="#sel-{{ plan.id }}">
+                                        {{ section.name }}
+                                    </a>
+                        {% comment %}
+                        TODO the section name had a 'shorten' filter
+                        {% endcomment %}
 
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
-{% endif %}
-            {% endif %}
-<a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
-        </div>
+                    {% endif %}
+                {% endif %}
+                <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
+            </div>
+        {% else %}
+            <div class="col-8" style="display:flex; align-items:center;" >
+                <span style="padding-right:10px">{{% include "gig/plan_icon.html" with plan_value=plan.value %}</span>
+                {{ plan.feedback_string }}
+                {{ plan.comment }}
+            </div>
+        {% endif %}
     {% else %}
         <div class="col-8" style="display:flex; align-items:center;" >
-{% comment %}
-            {{ plan_icon.icon_display(plan.value) }}
-            {% if the_band.plan_feedback and plan.feedback_value %}
-                {{ the_band.plan_feedback.split('\n')[plan.feedback_value-1] }}
-            {% endif %}
-            {% if plan.comment %}
-                {{ plan.comment }}
-            {% endif %}
-{% endcomment %}
-	    </div>
+            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.value %}</span> {{ plan.feedback_string }} {{ plan.comment }}
+        </div>
     {% endif %}
 </div>
 {% endwith %}

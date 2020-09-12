@@ -192,3 +192,10 @@ def gig_trash(request, gig):
     gig.trashed_date = now()
     gig.save()
     return redirect('gig-detail', pk=gig.id)
+
+@login_required
+@band_editor_required
+def gig_archive(request, gig):
+    gig.is_archived = True
+    gig.save()
+    return redirect('gig-detail', pk=gig.id)
