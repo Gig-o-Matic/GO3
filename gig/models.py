@@ -44,6 +44,7 @@ class MemberPlanManager(models.Manager):
                                              assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__trashed_date__isnull=True,
+                                             gig__is_archived=False,
                                             ).order_by('gig__date')
 
 
