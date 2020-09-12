@@ -110,11 +110,9 @@ class AbstractEvent(models.Model):
     def status_string(self):
         return [_('Unconfirmed'), _('Confirmed!'), _('Cancelled!'), _('Asking')][self.status]
 
-    # todo archive
-    # archive_id = ndb.TextProperty( default=None )
-    # is_archived = ndb.ComputedProperty(lambda self: self.archive_id is not None)
+    is_archived = models.BooleanField( default=False )
 
-    is_private = models.BooleanField(default=False )    
+    is_private = models.BooleanField( default=False )    
 
     # todo what's this?
     # comment_id = ndb.TextProperty( default = None)

@@ -295,3 +295,13 @@ class BandTests(GigTestBase):
         self.assertEqual(self.band.gigs.all().count(),1)
         self.assertEqual(self.band.gigs.active().count(),0)
         self.assertEqual(self.band.gigs.trashed().count(),1)
+
+    def test_trashcan_permission(self):
+        _, a, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.janeuser)
+        resp = self.client.get(reverse('gig-trashcan', args=[a.band.id]))
+        self.assertEqual(resp.status_code, 403)
+
+        self.client.force_login(self.joeuser)
+        resp = self.client.get(reverse('gig-trashcan', args=[a.band.id]))
+        self.assertEqual(resp.status_code, 200)
