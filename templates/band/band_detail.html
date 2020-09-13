@@ -294,7 +294,7 @@
                         {% if request.user.is_superuser or the_user_is_band_admin %}
                             <div class="col-md-4">
                                 <br>
-                                <a href='/band_setup_sections?bk={{band.id}}' class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
+                                <a href="{% url 'band-section-setup' pk=band.id %}" class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
                             </div>
                         {% endif %}
                     </div>
