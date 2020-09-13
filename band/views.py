@@ -136,7 +136,8 @@ class SectionSetupView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView
         thelist = []
         for s in sections.all():
             if not s.is_default:
-                thelist.append([s.name, s.id, s.name])
+                name = s.name.replace('\"','&quot;').replace("\'","&apos;")
+                thelist.append([name, s.id, name])
         context['the_sections'] = SafeString(json.dumps(thelist))
 
         return context

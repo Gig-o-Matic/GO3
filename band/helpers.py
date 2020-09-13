@@ -156,7 +156,7 @@ def set_sections(request, *args, **kw):
     for i,s in enumerate(list):
         if s[1]:
             the_section = get_object_or_404(Section, pk=s[1])
-            the_section.name = s[0]
+            the_section.name = s[0].replace('&quot;','\"').replace('&apos;',"'")
             the_section.order = i
             the_section.save()
         else:
