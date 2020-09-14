@@ -77,7 +77,7 @@ function updateSectionList() {
             theHTML += "'>";
 
             theHTML += "<div class='col-auto'>";
-            theHTML += "<input type='text' value='" + theSectionArray[i][0] + "' placeholder='{% trans "name of section" %}' onchange=sectionChange("+i+",this.value);>";
+            theHTML += "<input type='text' value='" + theSectionArray[i][0] + "' onchange=sectionChange("+i+",this.value);>";
             theHTML += "</div>"
 
             theHTML += "<div class='col-1'>";
