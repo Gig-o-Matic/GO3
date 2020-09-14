@@ -41,7 +41,6 @@ def set_plan_sections(sender, instance, **kwargs):
 
 @receiver(pre_delete, sender=Section)
 def set_sections_of_assocs(sender, instance, **kwargs):
-    # TODO should not be able to delete a 'default' section
     # when a section gets deleted, set any assocs in the section to the band's default section before proceeding
     band_default_section = instance.band.sections.get(is_default=True)
     instance.default_assocs.update(default_section=band_default_section)

@@ -404,3 +404,19 @@ class BandTests(GigTestBase):
         sec1 = secs.first()
         self.assertEqual(sec1.name, 'foo')
         self.assertEqual(sec1.order, 0)
+
+        # make sure we can't delete the default section
+        defsecs = self.band.sections.filter(is_default=True)
+        self.assertEqual(defsecs.count(), 1)
+        defsec = defsecs.first()
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([['foo',sec2.id,'foo'],['hey',sec1.id,'hey']]),
+                'deletedSections': json.dumps([defsec.id])
+            }
+        )
+        self.assertEqual(self.band.sections.count(), 3)
+        defsecs = self.band.sections.filter(is_default=True)
+        self.assertEqual(defsecs.count(), 1)
+        self.assertEqual(defsec.id, defsecs.first().id)
+

@@ -169,7 +169,8 @@ def set_sections(request, *args, **kw):
     for s in list:
         if s:
             the_section = get_object_or_404(Section, pk=s)
-            the_section.delete()
+            if not the_section.is_default:
+                the_section.delete()
 
     return HttpResponse()
 
