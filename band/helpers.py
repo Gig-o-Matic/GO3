@@ -23,6 +23,7 @@ from member.models import Member
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from band.util import AssocStatusChoices
+import json
 
 
 def assoc_editor_required(func):
@@ -34,6 +35,16 @@ def assoc_editor_required(func):
             return HttpResponseForbidden()
 
         return func(request, a, *args, **kw)
+    return decorated
+
+def band_admin_required(func):
+    def decorated(request, *args, **kw):
+        band = get_object_or_404(Band, pk=kw['pk'])
+        is_editor = band.is_editor(request.user)
+        if not is_editor:
+            return HttpResponseForbidden()
+
+        return func(request, *args, **kw)
     return decorated
 
 
@@ -132,6 +143,34 @@ def confirm_assoc(request, ak):
     # OK, confirm the assoc
     a.status = AssocStatusChoices.CONFIRMED
     a.save()
+
+    return HttpResponse()
+
+@login_required
+@band_admin_required
+def set_sections(request, *args, **kw):
+    band = get_object_or_404(Band, pk=kw['pk'])
+
+    # handle the sections as we have them now
+    list = json.loads(request.POST['sectionInfo'])
+    for i,s in enumerate(list):
+        if s[1]:
+            the_section = get_object_or_404(Section, pk=s[1])
+            the_section.name = s[0].replace('&quot;','\"').replace('&apos;',"'")
+            the_section.order = i
+            the_section.save()
+        else:
+            # this is a new section
+            the_section = Section.objects.create(name=s[0], order=i, band=band, is_default=False)
+            the_section.save()
+    
+    # handle the deleted sections
+    list = json.loads(request.POST['deletedSections'])
+    for s in list:
+        if s:
+            the_section = get_object_or_404(Section, pk=s)
+            if not the_section.is_default:
+                the_section.delete()
 
     return HttpResponse()
 

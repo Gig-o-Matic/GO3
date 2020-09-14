@@ -13,6 +13,9 @@ from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
 from member.util import MemberStatusChoices
+import json
+from django.utils.safestring import SafeString
+
 
 
 class BandMemberRequiredMixin(AccessMixin):
@@ -118,6 +121,25 @@ class ArchiveView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['band'] = get_object_or_404(Band, pk=kwargs['pk'])
+        return context
+
+class SectionSetupView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
+    template_name='band/band_section_setup.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        band = get_object_or_404(Band, pk=kwargs['pk'])
+        context['band'] = band
+
+        # set up the list of current sections
+        sections = band.sections
+        thelist = []
+        for s in sections.all():
+            if not s.is_default:
+                name = s.name.replace('\"','&quot;').replace("\'","&apos;")
+                thelist.append([name, s.id, name])
+        context['the_sections'] = SafeString(json.dumps(thelist))
+
         return context
 
 @login_required

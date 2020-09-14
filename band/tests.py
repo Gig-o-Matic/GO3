@@ -24,6 +24,7 @@ from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
 from gig.tests import GigTestBase
 from django.utils import timezone
+import json
 
 class MemberTests(TestCase):
     def setUp(self):
@@ -315,3 +316,107 @@ class BandTests(GigTestBase):
         self.client.force_login(self.joeuser)
         resp = self.client.get(reverse('band-archive', args=[a.band.id]))
         self.assertEqual(resp.status_code, 200)
+
+    def test_section_setup_permission(self):
+        _, a, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.janeuser)
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': [['hey','','hey']],
+                'deletedSections': []
+            }
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_section_setup(self):
+        _, a, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(self.band.sections.count(), 1) # starts with default section
+        self.client.force_login(self.band_admin)
+
+        # test creation
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([['hey','','hey']]),
+                'deletedSections': json.dumps([])
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.band.sections.count(), 2)
+        secs = self.band.sections.filter(is_default=False)
+        self.assertEqual(secs.count(), 1)
+        sec = secs.first()
+        self.assertEqual(sec.name, 'hey')
+
+        # test rename
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([['whoa',sec.id,'hey']]),
+                'deletedSections': json.dumps([])
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.band.sections.count(), 2)
+        secs = self.band.sections.filter(is_default=False)
+        self.assertEqual(secs.count(), 1)
+        sec = secs.first()
+        self.assertEqual(sec.name, 'whoa')
+
+        # test delete
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([]),
+                'deletedSections': json.dumps([sec.id])
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.band.sections.count(), 1)
+        self.assertTrue(self.band.sections.first().is_default)
+
+        # test reorder
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([['hey','','hey'],['foo','','foo']]),
+                'deletedSections': json.dumps([])
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.band.sections.count(), 3)
+        secs = self.band.sections.filter(is_default=False)
+        self.assertEqual(secs.count(), 2)
+        sec1 = secs.first()
+        self.assertEqual(sec1.name, 'hey')
+        self.assertEqual(sec1.order, 0)
+
+        sec2 = secs.last()
+        self.assertEqual(sec2.name, 'foo')
+        self.assertEqual(sec2.order, 1)
+
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([['foo',sec2.id,'foo'],['hey',sec1.id,'hey']]),
+                'deletedSections': json.dumps([])
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.band.sections.count(), 3)
+        secs = self.band.sections.filter(is_default=False)
+        self.assertEqual(secs.count(), 2)
+        sec1 = secs.first()
+        self.assertEqual(sec1.name, 'foo')
+        self.assertEqual(sec1.order, 0)
+
+        # make sure we can't delete the default section
+        defsecs = self.band.sections.filter(is_default=True)
+        self.assertEqual(defsecs.count(), 1)
+        defsec = defsecs.first()
+        resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
+            data={
+                'sectionInfo': json.dumps([['foo',sec2.id,'foo'],['hey',sec1.id,'hey']]),
+                'deletedSections': json.dumps([defsec.id])
+            }
+        )
+        self.assertEqual(self.band.sections.count(), 3)
+        defsecs = self.band.sections.filter(is_default=True)
+        self.assertEqual(defsecs.count(), 1)
+        self.assertEqual(defsec.id, defsecs.first().id)
+

@@ -1,0 +1,164 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% csrf_token %}
+
+{% block title %}{% trans "Band Sections" %}{% endblock title %}
+
+{% block headcontent %}
+{% endblock headcontent %}
+
+{% block content %}
+<div class="row">
+    <div class="page-header mx-auto col-lg-8 col-md-10 col-sm-12">
+        {{ band.name }}
+        {% if the_user_is_associated and band.shortname %}
+            <br>
+            ({% trans "a.k.a." %}&nbsp;{{ band.shortname }})
+        {% endif %}
+    </div> 
+</div>
+
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
+            <div class="row">
+                <div class="col-md-12 col-md-offset-0">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-10 col-sm-10 col-xs-10">
+                                    <div class="panel-title">{% trans "Sections" %}</div>
+                                </div>
+                            </div>
+                        </div>        
+                        <div class="card-body">
+                            <div id="theList">
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <br>
+                                    <button class="btn btn-primary btn-sm" onclick="addSection(); return false;">{% trans "Add a Section" %}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- panel -->                        
+                </div>
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="col-md-12 col-md-offset-0 text-right">
+                    <a class="btn btn-secondary" href="{% url 'band-detail' pk=band.id %}">{% trans "Cancel" %}</a>
+                    <a class="btn btn-primary" href="#" onclick="saveButton(); return false;">{% trans "Save" %}</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block localscripts %}
+<script>
+
+var theSectionArray = new Array();
+var theDeletedSections = new Array();
+
+function updateSectionList() {
+    var theHTML = "";
+
+    bg = false;
+    if (theSectionArray.length > 0) {
+        for (i=0; i< theSectionArray.length; i++){
+
+            theHTML += "<div class='row' style='padding-top: 5px; padding-bottom: 5px;"
+            if (bg) {
+                theHTML += "background:#f5f5f5;";
+            }
+            theHTML += "'>";
+
+            theHTML += "<div class='col-auto'>";
+            theHTML += "<input type='text' value='" + theSectionArray[i][0] + "' onchange=sectionChange("+i+",this.value);>";
+            theHTML += "</div>"
+
+            theHTML += "<div class='col-1'>";
+            theHTML += "<a class='btn btn-secondary btn-sm' onclick='deleteSection("+i+"); return false;' href='#'><i class='fas fa-times fa-1x fa-inverse'></i></a>";
+            theHTML += "</div>";
+
+
+            theHTML += "<div class='col-1'>";
+            theHTML += "<a class='btn btn-secondary btn-sm' onclick='moveSection("+i+",-1); return false' id='up"+i+"'><i class='fas fa-arrow-circle-up fa-1x fa-inverse'></i></i></a>";
+            theHTML += "</div>";
+
+            theHTML += "<div class='col-1'>";
+            theHTML += "<a class='btn btn-secondary btn-sm' onclick='moveSection("+i+",1); return false' id='dn"+i+"'><i class='fas fa-arrow-circle-down fa-1x fa-inverse'></i></a>";
+            theHTML += "</div>";
+
+
+            theHTML += "</div>";
+            bg = !bg;
+        }
+
+        $("#theList").html(theHTML);
+        $("#up0").hide();
+        $("#dn"+(theSectionArray.length-1)).hide();
+
+    } else {
+        theHTML = "{% trans "No Sections!" %}";
+        $("#theList").html(theHTML);
+    }
+
+}
+
+function moveSection(which,where) {
+    var tmp = theSectionArray[which];
+    theSectionArray[which] = theSectionArray[which+where];
+    theSectionArray[which+where] = tmp;
+    updateSectionList();
+}
+
+function deleteSection(which) {
+    if( theSectionArray[which][1] ) {
+        theDeletedSections.push(theSectionArray[which][1]);
+    }
+    theSectionArray.splice(which,1);
+    updateSectionList();
+}
+
+function addSection() {
+    theSectionArray.push(["{% trans 'New Section' %}","","{% trans 'New Section' %}"]);
+    updateSectionList();
+}
+
+function sectionChange(which,what) {
+    if (what == "") {
+        updateSectionList();
+    } else {
+        theSectionArray[which][0] = what;
+    }
+
+}
+
+function saveButton() {
+    $.ajax({
+        url: "{% url 'band-set-sections' pk=band.id %}",
+        type: 'post',
+        data: {
+            sectionInfo: JSON.stringify(theSectionArray),
+            deletedSections: JSON.stringify(theDeletedSections)
+        },
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function() {
+            window.location.replace("{% url 'band-detail' pk=band.id %}");
+        }
+    });
+}
+
+
+$(document).ready(function() {
+    theSectionArray = JSON.parse('{{the_sections}}')
+    updateSectionList();
+});
+</script>
+{% endblock localscripts %}
