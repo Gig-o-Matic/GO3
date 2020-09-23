@@ -65,6 +65,9 @@ class MemberManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
+    def active(self):
+        return self.all().filter(status=MemberStatusChoices.ACTIVE)
+
 
 # a 1-1 link to user model
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html#onetoone
@@ -140,6 +143,9 @@ class Member(AbstractUser):
         return EmailRecipient(name=self.username, email=self.email,
                               language=self.preferences.language) # pylint: disable=no-member
 
+    def delete(self, *args, **kwargs):
+        self.status = MemberStatusChoices.DELETED
+
     objects = MemberManager()
 
     USERNAME_FIELD = 'email'
@@ -153,7 +159,7 @@ class Member(AbstractUser):
         verbose_name_plural = _('members')
 
     def __str__(self):
-        return '{0}'.format(self.display_name)
+        return '{0}{1}'.format(self.display_name, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
 
 
 class MemberPreferences(models.Model):
