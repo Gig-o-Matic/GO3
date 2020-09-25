@@ -199,7 +199,7 @@
                         <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                     </div>
-                    {% if the_user_is_superuser %}
+                    {% if request.user.is_superuser %}
                         <br>
                         <div class="row">
                             <div class="col-sm-3 col-12">Verified:</div>
@@ -214,8 +214,8 @@
                         <div class="row">
                             <div class="col-sm-3 col-12">{% trans "Last Activity:" %}</div>
                             <div class="col-sm-9 col-12">
-                                {% if  member.last_activity %}
-                                    {{  member.last_activity }}
+                                {% if  member.last_login %}
+                                    {{  member.last_login }}
                                 {% else %}
                                     None since 2014-10-18
                                 {% endif %}
