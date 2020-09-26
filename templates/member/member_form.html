@@ -62,11 +62,12 @@
             <div class="row mt-4">
                 {% if request.user.is_superuser %}
                     <div class="form-group col-12 col-md-6">
-                        <a data-toggle="modal" href="#deleteModal" class="btn btn-secondary">{% trans "Delete" %}</a>
+                        <a hx-confirm="{% trans 'Are you sure you want to delete this account?' %}"
+                           href="{% url 'member-delete' pk=member.id %}" class="btn btn-secondary">{% trans "Delete" %}</a>
                     </div>
                 {% endif %}
                 <div class="form-group col-12 col-md-6 ml-auto text-right">
-                    <a class="btn btn-secondary" href="{% url 'member-detail' pk=1 %}">{% trans "Cancel" %}</a>
+                    <a class="btn btn-secondary" href="{% url 'member-detail' pk=member.id %}">{% trans "Cancel" %}</a>
                     <button value="Update" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
                 </div>
             </div>

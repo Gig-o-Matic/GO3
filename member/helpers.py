@@ -29,6 +29,14 @@ from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
+def superuser_required(func):
+    def decorated(request, pk, *args, **kw):
+        if not request.user.is_superuser:
+            return HttpResponseForbidden()
+
+        return func(request, pk, *args, **kw)
+    return decorated
+
 
 @login_required
 def motd_seen(request, pk):
@@ -41,6 +49,10 @@ def motd_seen(request, pk):
 
     return HttpResponse()
 
+@login_required
+@superuser_required
+def delete_member(request, pk):
+    return HttpResponse()
 
 def send_invite(invite):
     context = {
