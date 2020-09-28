@@ -60,7 +60,7 @@
  -->
             </div>
             <div class="row mt-4">
-                {% if request.user.is_superuser %}
+                {% if request.user.is_superuser or request.user == member %}
                     <div class="form-group col-12 col-md-6">
                         <a hx-confirm="{% trans 'Are you sure you want to delete this account?' %}"
                            href="{% url 'member-delete' pk=member.id %}" class="btn btn-secondary">{% trans "Delete" %}</a>

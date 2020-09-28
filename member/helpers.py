@@ -18,6 +18,8 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404, redirect
 from datetime import timedelta
 
 from gig.models import Gig, Plan
@@ -50,9 +52,14 @@ def motd_seen(request, pk):
     return HttpResponse()
 
 @login_required
-@superuser_required
 def delete_member(request, pk):
-    return HttpResponse()
+    member = get_object_or_404(Member, pk=pk)
+    if request.user != member and request.user.is_superuser is False:
+        return HttpResponseForbidden()
+    member.delete()
+    if request.user.is_superuser is False:
+        logout(request)
+    return redirect('home')
 
 def send_invite(invite):
     context = {
