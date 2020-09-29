@@ -17,7 +17,7 @@
 
 from unittest.mock import patch, mock_open
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
@@ -33,6 +33,7 @@ from django.core import mail
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import resolve, reverse
 from django.utils import timezone
+from pytz import timezone as pytz_timezone
 from datetime import timedelta
 import pytz
 import os
