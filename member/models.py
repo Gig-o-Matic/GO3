@@ -147,6 +147,7 @@ class Member(AbstractUser):
         """ when we get deleted, remove plans for future gigs and set us to deleted """
         Plan.member_plans.future_plans(self).delete()
         self.status = MemberStatusChoices.DELETED
+        self.email = "user_{0}@gig-o-matic.com".format(self.id)
         self.save()
 
     objects = MemberManager()
