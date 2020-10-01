@@ -877,9 +877,29 @@ class MemberDeleteTest(TestCase):
         self.assertEqual(self.joeuser.status, MemberStatusChoices.DELETED)
         self.assertFalse(self.joeuser.is_active)
 
-    # test logging in not allowed for deleted user
+    # test deleting user sets email address to something anonymous
+    def test_delete_member_email(self):
+        self.assertEqual(self.joeuser.email, 'joeuser@h.i')
+        self.joeuser.delete()
+        self.assertEqual(self.joeuser.email, 'user_{0}@gig-o-matic.com'.format(self.joeuser.id))
+
     # test creating a gig does not create a plan for a deleted user
+    def test_delete_member_noplans(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        self.assertEqual(Plan.objects.filter(gig=g).count(), 2)
+        Plan.objects.all().delete()
+        self.joeuser.delete()
+        g2 = self.create_gig_form(contact=self.band_admin, user=self.band_admin)
+        self.assertEqual(Plan.objects.filter(gig=g2).count(), 1)
+
     # test deleting a user also deletes gig plans for future gigs
-    # test deleted uses don't show up on gig detail page
+    def test_delete_future_plans(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        self.assertEqual(Plan.objects.filter(gig=g).count(), 2)
+        self.joeuser.delete()
+        self.assertEqual(Plan.objects.filter(gig=g).count(), 1)
+
+    # test deleted users don't show up on gig detail page
     # test deleted user shows up on archived gig page
+    # test logging in not allowed for deleted user
 
