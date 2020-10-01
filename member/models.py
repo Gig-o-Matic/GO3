@@ -145,9 +145,9 @@ class Member(AbstractUser):
 
     def delete(self, *args, **kwargs):
         """ when we get deleted, remove plans for future gigs and set us to deleted """
-        # Plan.member_plans.future_plans(self).delete()
+        Plan.member_plans.future_plans(self).delete()
         self.status = MemberStatusChoices.DELETED
-        # self.save()
+        self.save()
 
     objects = MemberManager()
 
