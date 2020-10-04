@@ -150,6 +150,7 @@ class Member(AbstractUser):
         self.email = "user_{0}@gig-o-matic.com".format(self.id)
         self.phone = ''
         self.statement = ''
+        self.set_unusable_password()
         self.save()
 
     objects = MemberManager()
