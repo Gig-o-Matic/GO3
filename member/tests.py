@@ -900,6 +900,30 @@ class MemberDeleteTest(TestCase):
         self.assertEqual(Plan.objects.filter(gig=g).count(), 1)
 
     # test deleted users don't show up on gig detail page
-    # test deleted user shows up on archived gig page
-    # test logging in not allowed for deleted user
+    def test_deleted_member_plans(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        p = g.member_plans
+        self.assertEqual(p.count(), 2)
+        self.joeuser.delete()
+        p2 = g.member_plans
+        self.assertEqual(p2.count(), 1)
 
+    # test deleted users show up on gig archive page
+    def test_deleted_member_plans(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        p = g.member_plans
+        self.assertEqual(p.count(), 2)
+        g.is_archived = True
+        g.save()
+        self.joeuser.delete()
+        p2 = g.member_plans
+        self.assertEqual(p2.count(), 2)
+
+    # test logging in not allowed for deleted user
+    def test_login_delete(self):
+        self.client.logout()
+        self.joeuser.set_password('ThisIsPass716')
+        self.joeuser.save()
+        self.assertTrue(self.client.login(email=self.joeuser.email, password='ThisIsPass716'))
+        self.joeuser.delete()
+        self.assertFalse(self.client.login(email=self.joeuser.email, password='ThisIsPass716'))
