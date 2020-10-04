@@ -177,24 +177,25 @@ class Gig(AbstractEvent):
 
     @property
     def member_plans(self):
-        """ find any members that don't have plans yet. This is called whenever a new gig is created
+        """ if this gig is not archived, find any members that don't have plans yet. This is called whenever a new gig is created
             through the signaling system """
-        absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True)).filter(member__status = MemberStatusChoices.ACTIVE)
-        # Plan.objects.bulk_create(
-        #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
-        # )
-        # can't use bulk_create because it doesn't send signals
-        # TODO is there a more efficient way?
-        s = self.band.sections.get(is_default=True)
-        for a in absent:
-            Plan.objects.create(gig=self, assoc=a, section=s)
+        if self.is_archived is False:
+            absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True)).filter(member__status = MemberStatusChoices.ACTIVE)
+            # Plan.objects.bulk_create(
+            #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
+            # )
+            # can't use bulk_create because it doesn't send signals
+            # TODO is there a more efficient way?
+            s = self.band.sections.get(is_default=True)
+            for a in absent:
+                Plan.objects.create(gig=self, assoc=a, section=s)
             
-        # now that we have one for every member, return the list
-        return self.plans # pylint: disable=no-member
-
-    @property
-    def member_plans_active(self):
-        return self.member_plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE)
+        # if this is an archived gig, return all the plans, otherwise just those for active members
+        plans = self.plans # pylint: disable=no-member
+        if self.is_archived:
+            return plans
+        else:
+            return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE)
 
 class GigComment(models.Model):
     gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)

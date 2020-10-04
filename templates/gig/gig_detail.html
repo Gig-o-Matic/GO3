@@ -231,7 +231,7 @@
                         </div>
                     </div>
                 {% endif %}
-                {% regroup gig.member_plans_active.all by section as plans_by_section %}
+                {% regroup gig.member_plans.all by section as plans_by_section %}
                 {% for section in band.sections.all %}
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                         {% if band.sections.all|length > 1 %}
