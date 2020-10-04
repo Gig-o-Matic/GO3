@@ -900,7 +900,7 @@ class MemberDeleteTest(TestCase):
         self.assertEqual(Plan.objects.filter(gig=g).count(), 1)
 
     # test deleted users don't show up on gig detail page
-    def test_deleted_member_plans(self):
+    def test_deleted_member_plans_detail(self):
         g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
         p = g.member_plans
         self.assertEqual(p.count(), 2)
@@ -909,7 +909,7 @@ class MemberDeleteTest(TestCase):
         self.assertEqual(p2.count(), 1)
 
     # test deleted users show up on gig archive page
-    def test_deleted_member_plans(self):
+    def test_deleted_member_plans_archive(self):
         g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
         p = g.member_plans
         self.assertEqual(p.count(), 2)
