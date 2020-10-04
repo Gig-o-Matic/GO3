@@ -37,7 +37,7 @@ class MemberAdmin(BaseUserAdmin):
     # that reference specific fields on auth.User.
 
     list_display = ('email', 'username', 'nickname')
-    list_filter = ()
+    list_filter = ('status',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username','nickname','phone')}),
@@ -47,7 +47,7 @@ class MemberAdmin(BaseUserAdmin):
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Other stuff', {'classes': ('collapse',),
                          'fields': ('statement', 'motd_dirty', 'seen_welcome', 
-                                    'images', 'cal_feed_dirty',
+                                    'images', 'cal_feed_dirty','status'
                                     )}),
     )
 

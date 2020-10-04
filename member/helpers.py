@@ -15,9 +15,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404, redirect
 from datetime import timedelta
 
 from gig.models import Gig, Plan
@@ -28,6 +30,14 @@ from lib.email import prepare_email, send_messages_async
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
+
+def superuser_required(func):
+    def decorated(request, pk, *args, **kw):
+        if not request.user.is_superuser:
+            return HttpResponseForbidden()
+
+        return func(request, pk, *args, **kw)
+    return decorated
 
 
 @login_required
@@ -41,6 +51,15 @@ def motd_seen(request, pk):
 
     return HttpResponse()
 
+@login_required
+def delete_member(request, pk):
+    member = get_object_or_404(Member, pk=pk)
+    if request.user != member and request.user.is_superuser is False:
+        return HttpResponseForbidden()
+    member.delete()
+    if request.user.is_superuser is False:
+        logout(request)
+    return redirect('home')
 
 def send_invite(invite):
     context = {

@@ -17,13 +17,14 @@
 
 from unittest.mock import patch, mock_open
 
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .views import AssocsView, OtherBandsView
 from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
+from .util import MemberStatusChoices
 from lib.email import DEFAULT_SUBJECT, prepare_email
 from lib.template_test import MISSING, flag_missing_vars, TemplateTestCase
 from django.conf import settings
@@ -32,6 +33,7 @@ from django.core import mail
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import resolve, reverse
 from django.utils import timezone
+from pytz import timezone as pytz_timezone
 from datetime import timedelta
 import pytz
 import os
@@ -756,3 +758,181 @@ class InviteTest(TemplateTestCase):
         self.assertOK(response)
         self.assertTemplateUsed(response, 'member/signup.html')
         self.assertEqual(Invite.objects.filter(email='invalid').count(), 0)
+
+
+class MemberDeleteTest(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(email='super@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@e.f')
+        self.joeuser = Member.objects.create_user(email='joeuser@h.i')
+        self.janeuser = Member.objects.create_user(email='janeuser@k.l')
+        self.band = Band.objects.create(name='test band', timezone='UTC', anyone_can_create_gigs=True)
+        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED, email_me=False)
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+
+    def create_gig(self, the_member, title="New Gig", start_date='auto', set_date='auto', end_date='auto'):
+        thedate = timezone.datetime(2100,1,2, 12, tzinfo=pytz_timezone('UTC')) if start_date == 'auto' else start_date
+        return Gig.objects.create(
+            title=title,
+            band_id=self.band.id,
+            date=thedate,
+            setdate=thedate + timedelta(minutes=30) if set_date == 'auto' else set_date,
+            enddate=thedate + timedelta(hours=2) if end_date == 'auto' else end_date,
+            contact=the_member,
+            status=GigStatusChoices.UNKNOWN
+        )
+
+    def create_gig_form(self, user=None,
+                        expect_code=302,
+                        call_date = '01/02/2100',
+                        set_date = '',
+                        end_date = '',
+                        call_time = '12:00 pm',
+                        set_time = '',
+                        end_time = '',
+                        title = 'New Gig',
+                        **kwargs):
+
+        status = kwargs.pop('status', GigStatusChoices.UNKNOWN)
+        contact = kwargs.pop('contact', self.joeuser).id
+        send_update = kwargs.pop('send_update', True)
+
+        c=Client()
+        c.force_login(user if user else self.joeuser)
+        response = c.post(f'/gig/create/{self.band.id}',
+                                    {'title':title,
+                                    'call_date':call_date,
+                                    'call_time':call_time,
+                                    'set_date':set_date,
+                                    'set_time':set_time,
+                                    'end_date':end_date,
+                                    'end_time':end_time,
+                                    'contact':contact,
+                                    'status':status,
+                                    'send_update': send_update,
+                                    **kwargs
+                                    })
+
+        self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
+        obj = Gig.objects.last()
+        return obj
+
+    def _dateformat(self, x):
+        return x.strftime('%m/%d/%Y') if x else ''
+
+    def _timeformat(self, x):
+        return x.strftime('%I:%M %p') if x else ''
+
+    def update_gig_form(self, the_gig,
+                        expect_code=302,
+                        **kwargs):
+
+        call_date = kwargs.pop('call_date', self._dateformat(the_gig.date))
+        end_date = kwargs.pop('end_date', self._dateformat(the_gig.enddate))
+        call_time = kwargs.pop('call_time', self._timeformat(the_gig.date))
+        set_time = kwargs.pop('set_time', self._timeformat(the_gig.setdate))
+        end_time = kwargs.pop('end_time', self._timeformat(the_gig.enddate))
+
+        data={
+            'title':the_gig.title,
+            'call_date':call_date,
+            'end_date':end_date,
+            'call_time':call_time,
+            'set_time':set_time,
+            'end_time':end_time,
+            'contact':the_gig.contact.id,
+            'status':the_gig.status,
+            'send_update':True
+        }
+        for x in kwargs.keys():
+            data[x]=kwargs[x]
+
+        c=Client()
+        c.force_login(self.joeuser)
+        response = c.post(f'/gig/{the_gig.id}/update', data)
+        self.assertEqual(response.status_code, expect_code) # should get a redirect to the gig info page
+        self.assertEqual(Gig.objects.count(),1)
+        the_gig.refresh_from_db()
+        return the_gig
+
+    def assoc_joe(self):
+        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        return a
+
+    def assoc_joe_and_create_gig(self, **kwargs):
+        a = self.assoc_joe()
+        g = self.create_gig_form(contact=self.joeuser, **kwargs)
+        p = g.member_plans.filter(assoc=a).get() if g else None
+        return g, a, p
+
+    def test_delete_member(self):
+        self.assertEqual(self.joeuser.status, MemberStatusChoices.ACTIVE)
+        self.assertTrue(self.joeuser.is_active)
+        self.joeuser.delete()
+        self.assertEqual(self.joeuser.status, MemberStatusChoices.DELETED)
+        self.assertFalse(self.joeuser.is_active)
+
+    # test deleting user sets email address to something anonymous
+    def test_delete_member_email(self):
+        self.assertEqual(self.joeuser.email, 'joeuser@h.i')
+        self.joeuser.delete()
+        self.assertEqual(self.joeuser.email, 'user_{0}@gig-o-matic.com'.format(self.joeuser.id))
+
+    # test creating a gig does not create a plan for a deleted user
+    def test_delete_member_noplans(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        self.assertEqual(Plan.objects.filter(gig=g).count(), 2)
+        Plan.objects.all().delete()
+        self.joeuser.delete()
+        g2 = self.create_gig_form(contact=self.band_admin, user=self.band_admin)
+        self.assertEqual(Plan.objects.filter(gig=g2).count(), 1)
+
+    # test deleting a user also deletes gig plans for future gigs
+    def test_delete_future_plans(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        self.assertEqual(Plan.objects.filter(gig=g).count(), 2)
+        self.joeuser.delete()
+        self.assertEqual(Plan.objects.filter(gig=g).count(), 1)
+
+    # test deleted users don't show up on gig detail page
+    def test_deleted_member_plans_detail(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        p = g.member_plans
+        self.assertEqual(p.count(), 2)
+        self.joeuser.delete()
+        p2 = g.member_plans
+        self.assertEqual(p2.count(), 1)
+
+    # test deleted users show up on gig archive page
+    def test_deleted_member_plans_archive(self):
+        g, _, _ = self.assoc_joe_and_create_gig( user=self.band_admin)
+        p = g.member_plans
+        self.assertEqual(p.count(), 2)
+        g.is_archived = True
+        g.save()
+        self.joeuser.delete()
+        p2 = g.member_plans
+        self.assertEqual(p2.count(), 2)
+
+    # test logging in not allowed for deleted user
+    def test_login_delete(self):
+        self.client.logout()
+        self.joeuser.set_password('ThisIsPass716')
+        self.joeuser.save()
+        self.assertTrue(self.client.login(email=self.joeuser.email, password='ThisIsPass716'))
+        self.joeuser.delete()
+        self.assertFalse(self.client.login(email=self.joeuser.email, password='ThisIsPass716'))
+
+    # test deleting user erases phone and statement
+    def test_delete_personal_info(self):
+        self.joeuser.phone = '123-4567'
+        self.joeuser.statement = 'Cogito Ergo Sum'
+        self.joeuser.save()
+        self.joeuser.delete()
+        self.assertEqual(self.joeuser.phone, '')
+        self.assertEqual(self.joeuser.statement, '')

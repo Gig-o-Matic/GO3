@@ -65,6 +65,9 @@ class MemberManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
+    def active(self):
+        return self.all().filter(status=MemberStatusChoices.ACTIVE)
+
 
 # a 1-1 link to user model
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html#onetoone
@@ -140,6 +143,16 @@ class Member(AbstractUser):
         return EmailRecipient(name=self.username, email=self.email,
                               language=self.preferences.language) # pylint: disable=no-member
 
+    def delete(self, *args, **kwargs):
+        """ when we get deleted, remove plans for future gigs and set us to deleted """
+        Plan.member_plans.future_plans(self).filter(gig__is_archived=False).delete()
+        self.status = MemberStatusChoices.DELETED
+        self.email = "user_{0}@gig-o-matic.com".format(self.id)
+        self.phone = ''
+        self.statement = ''
+        self.set_unusable_password()
+        self.save()
+
     objects = MemberManager()
 
     USERNAME_FIELD = 'email'
@@ -153,7 +166,7 @@ class Member(AbstractUser):
         verbose_name_plural = _('members')
 
     def __str__(self):
-        return '{0}'.format(self.display_name)
+        return '{0}{1}'.format(self.display_name, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
 
 
 class MemberPreferences(models.Model):

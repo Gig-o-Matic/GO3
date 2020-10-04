@@ -122,7 +122,7 @@ class MemberAssocManager(models.Manager):
 
     def confirmed_assocs(self, member):
         """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(member=member, status=AssocStatusChoices.CONFIRMED)
+        return super().get_queryset().filter(member=member, member__status=MemberStatusChoices.ACTIVE, status=AssocStatusChoices.CONFIRMED)
 
     def add_gig_assocs(self, member):
         """ return the assocs for bands the member can create gigs for """

@@ -15,10 +15,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from .forms import MemberCreateForm, InviteForm, SignupForm
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
+from member.util import MemberStatusChoices
 from lib.translation import join_trans
 from django.views import generic
 from django.views.decorators.http import require_POST
@@ -110,6 +111,13 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
             context['invites'] = None
 
         return context
+
+    def render_to_response(self, context):
+        if self.object.status == MemberStatusChoices.DELETED:
+            return HttpResponseNotFound()
+        else:
+            return super().render_to_response(context)
+
 
 
 class UpdateView(BaseUpdateView):
