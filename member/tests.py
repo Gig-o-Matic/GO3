@@ -927,3 +927,12 @@ class MemberDeleteTest(TestCase):
         self.assertTrue(self.client.login(email=self.joeuser.email, password='ThisIsPass716'))
         self.joeuser.delete()
         self.assertFalse(self.client.login(email=self.joeuser.email, password='ThisIsPass716'))
+
+    # test deleting user erases phone and statement
+    def test_delete_personal_info(self):
+        self.joeuser.phone = '123-4567'
+        self.joeuser.statement = 'Cogito Ergo Sum'
+        self.joeuser.save()
+        self.joeuser.delete()
+        self.assertEqual(self.joeuser.phone, '')
+        self.assertEqual(self.joeuser.statement, '')

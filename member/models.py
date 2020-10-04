@@ -148,6 +148,8 @@ class Member(AbstractUser):
         Plan.member_plans.future_plans(self).filter(gig__is_archived=False).delete()
         self.status = MemberStatusChoices.DELETED
         self.email = "user_{0}@gig-o-matic.com".format(self.id)
+        self.phone = ''
+        self.statement = ''
         self.save()
 
     objects = MemberManager()
