@@ -29,6 +29,13 @@ def set_default_section(sender, instance, created, **kwargs):
     if created:
         _ = Section.objects.create(name='No Section', band=instance, is_default=True, order=999)
 
+@receiver(pre_delete, sender=Band)
+def delete_band_parts(sender, instance, **kwargs):
+    # when deleting a band, we need to delete the assocs first; otherwise when the sections delete and the
+    # assocs reset to the default section, things go badly.
+    l=Assoc.objects.filter(band=instance)
+    l.delete()
+
 @receiver(pre_save, sender=Assoc)
 def set_initial_default_section(sender, instance, **kwargs):
     if instance.default_section is None:
