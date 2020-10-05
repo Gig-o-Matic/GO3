@@ -431,6 +431,8 @@ class BandTests(GigTestBase):
         a1.save()
 
         a2 = Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        a2.default_section = section2
+        a2.save()
 
         # at this point, we should have one band, three sections, three assocs, three plans
         self.assertEqual(Band.objects.count(),1)
