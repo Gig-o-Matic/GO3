@@ -19,6 +19,7 @@ from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from .models import Band, Assoc, Section
 from member.models import Member
+from gig.models import Gig, Plan
 from band import helpers
 from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
@@ -419,4 +420,32 @@ class BandTests(GigTestBase):
         defsecs = self.band.sections.filter(is_default=True)
         self.assertEqual(defsecs.count(), 1)
         self.assertEqual(defsec.id, defsecs.first().id)
+
+    def test_delete_band(self):
+        # set up some sections in the band
+        section1 = Section.objects.create(name='section a', order=1, band=self.band, is_default=False)
+        section2 = Section.objects.create(name='section b', order=2, band=self.band, is_default=False)
+
+        g, a1, _ = self.assoc_joe_and_create_gig()
+        a1.default_section = section1
+        a1.save()
+
+        a2 = Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        a2.default_section = section2
+        a2.save()
+
+        # at this point, we should have one band, three sections, three assocs, three plans
+        self.assertEqual(Band.objects.count(),1)
+        self.assertEqual(Section.objects.count(),3)
+        self.assertEqual(Assoc.objects.count(),3)
+        self.assertEqual(g.member_plans.count(),3)
+
+        self.band.delete()
+        # should be no bands, no sections, no assocs, no member plans
+        self.assertEqual(Band.objects.count(),0)
+        self.assertEqual(Section.objects.count(),0)
+        self.assertEqual(Assoc.objects.count(),0)
+        self.assertEqual(Gig.objects.count(),0)
+        self.assertEqual(Plan.objects.count(),0)
+
 

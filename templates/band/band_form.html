@@ -153,13 +153,7 @@
                 <input type="hidden" name="bk" value="{{form.instance.id}}">
             {% endif %}
 
-
             <div class="row mt-4">
-                {% if request.user.is_superuser %}
-                    <div class="form-group col-12 col-md-6">
-                        <a data-toggle="modal" href="#deleteModal" class="btn btn-secondary">{% trans "Delete" %}</a>
-                    </div>
-                {% endif %}
                 <div class="form-group col-12 col-md-6 ml-auto text-right">
                     <a class="btn btn-secondary" href="{% url 'band-detail' pk=form.instance.id %}">{% trans "Cancel" %}</a>
                     <button value="Update" type="submit" class="btn btn-primary">{% trans "Save" %}</button>

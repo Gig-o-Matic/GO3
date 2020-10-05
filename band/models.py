@@ -56,7 +56,6 @@ class Band(models.Model):
 
     status = models.IntegerField(choices=BandStatusChoices.choices, default=BandStatusChoices.ACTIVE)
 
-
     creation_date = models.DateField(auto_now_add=True)
     last_activity = models.DateTimeField(auto_now=True)
 
