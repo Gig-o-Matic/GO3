@@ -25,6 +25,7 @@ from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, send_snooze_reminders
 from .forms import GigForm
 from .views import CreateView, UpdateView
+from .tasks import archive_old_gigs
 from go3 import settings
 from datetime import timedelta, datetime, time
 from django.urls import reverse
@@ -749,4 +750,14 @@ class GigTest(GigTestBase):
         resp = self.client.post(reverse('gig-trash', args=[g.id]))
         self.assertEqual(resp.status_code, 302) # should redirect
         
-
+    def test_gig_autoarchive(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertFalse(g.is_archived)
+        archive_old_gigs()
+        g.refresh_from_db()
+        self.assertFalse(g.is_archived)
+        g.date = timezone.datetime(2000,1,2, 12, tzinfo=pytz_timezone('UTC'))
+        g.save()
+        archive_old_gigs()
+        g.refresh_from_db()
+        self.assertTrue(g.is_archived)
