@@ -346,6 +346,21 @@ class GigTest(GigTestBase):
 
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_reminder_url(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        mail.outbox = []
+        self.client.force_login(self.band_admin)
+        response = self.client.get(reverse('gig-remind', args=[g.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('Reminder', message.subject)
+        self.assertIn('reminder', message.body)
+        self.assertNotIn(MISSING, message.subject)
+        self.assertNotIn(MISSING, message.body)
+
+
     def test_snooze_reminder(self):
         Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)

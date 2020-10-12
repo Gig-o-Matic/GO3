@@ -204,10 +204,12 @@
                         </a>
 
                         {% if user_can_edit %}
-                            <span id="showremind"><a href="#" onclick="sendreminder('{{gig.id}}'); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-envelope"></i>
+                            {% if not gig.was_reminded %}
+                            <span id="showremind"><a href="#" onclick="sendreminder(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-envelope"></i>
                             	{% trans "Remind" %}
                             </a></span>
-                        	<span id="hideremind" style="display:none">
+                            {% endif %}
+                        	<span id="hideremind" {% if not gig.was_reminded %}style="display:none"{% endif %}>
                             	<small>{% trans "Reminder Sent" %}</small>
                         	</span>
                         {% endif %}
@@ -305,14 +307,11 @@ function simpleswitch() {
 }
 
 {% if user_can_edit %}
-function sendreminder(gk) {
+function sendreminder() {
 	$('#showremind').hide();
 	$('#hideremind').show();
 
-	$.post("/sendreminder",
-        {
-            gk: gk
-        });
+	$.get("{% url 'gig-remind' gig.id %}");
 }
 {% endif %}
 
