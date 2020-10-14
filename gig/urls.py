@@ -30,6 +30,8 @@ urlpatterns = [
     path('<int:pk>/untrash', helpers.gig_untrash, name='gig-untrash'),
     path('<int:pk>/archive', helpers.gig_archive, name='gig-archive'),
     path('<int:pk>/remind', helpers.gig_remind, name='gig-remind'),
+    path('<int:pk>/printallplans', views.PrintPlansView.as_view(), {'all':True}, name='gig-print-all-plans'),
+    path('<int:pk>/printconfirmedplans', views.PrintPlansView.as_view(), {'all':False}, name='gig-print-confirmed-plans'),
 
     path('plan/<uuid:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
     path('plan/<uuid:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),

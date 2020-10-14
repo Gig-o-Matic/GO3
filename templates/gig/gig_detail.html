@@ -191,11 +191,11 @@
                         {% trans "Member Plans" %}
                     </div>
                     <div class="ml-auto"">
-                        <span id="printall"><a href="print_planlist?gk={{gig.id}}&printall=1" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
+                        <span id="printall"><a href="{% url 'gig-print-all-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
                         {% trans "Print" %}
                         </a></span>
                     <span id="printcomm" style="display:none">
-                        <a href="print_planlist?gk={{gig.id}}&printall=0" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
+                        <a href="{% url 'gig-print-confirmed-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
                         {% trans "Print" %}
                         </a></span>
                         <a href="#" onclick="simpleswitch(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-sync fs-lg"></i>
