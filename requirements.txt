@@ -20,8 +20,6 @@ lazy-object-proxy==1.4.3
 Markdown==3.2
 MarkupSafe==1.1.1
 mccabe==0.6.1
-mysql-connector-python==1.1.6
-mysqlclient==1.4.6
 pyfakefs==4.0.2
 pylint==2.4.4
 pylint-django==2.0.14
