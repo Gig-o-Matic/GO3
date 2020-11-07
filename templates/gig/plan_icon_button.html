@@ -5,7 +5,9 @@
         <span class="htmx-indicator-replace">
             {% include "gig/plan_icon.html" with plan_value=plan.status %}
         </span>
-        <i class="fa fa-spinner fa-spin fa-lg htmx-indicator"></i>
+        <span class="htmx-indicator">
+            <i class="fa fa-spinner fa-spin fa-lg"></i>
+        </span>
     </button>
     <div class="dropdown-menu" aria-labelledby="{{plan.id}}">
         <a class="dropdown-item" hx-get="{% url 'plan-update' pk=plan.id val=1 %}" hx-target="#plan-{{ plan.id }} span" hx-indicator="#plan-{{ plan.id }}">{% include "gig/plan_icon.html" with plan_value=1 %} {% trans "Definitely" %}</a>
