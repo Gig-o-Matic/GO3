@@ -20,7 +20,7 @@ lazy-object-proxy==1.4.3
 Markdown==3.2
 MarkupSafe==1.1.1
 mccabe==0.6.1
-pyfakefs==4.0.2
+pyfakefs==4.2.1
 pylint==2.4.4
 pylint-django==2.0.14
 pylint-plugin-utils==0.6
