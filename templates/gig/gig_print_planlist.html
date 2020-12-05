@@ -42,7 +42,7 @@
                 <tr>
                 </tr>
                 {% for plan in plans_by_section|lookup_plans:section %}
-                    {% if all is True or plan.status < 3 %}
+                    {% if all is True or plan.attending %}
                     <tr>
                         <td width="20%">
                             {% if forloop.first %}
@@ -72,7 +72,7 @@
 {% endblock footer %}
 
 {% block localscripts %}
-<script>window.jQuery || document.write('<script src="/jquery/jquery-1.10.2.js"><\/script>')</script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>
 <script>
 $(document).ready(function() {
     window.print()
