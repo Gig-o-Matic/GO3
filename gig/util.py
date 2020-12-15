@@ -19,8 +19,8 @@ from django.utils.translation import gettext_lazy as _
 
 class PlanStatusChoices(models.IntegerChoices):
     NO_PLAN = 0, _("No Plan")
-    DEFINITELY = 1, _("Definite")
-    PROBABLY = 2, _("Probable")
+    DEFINITELY = 1, _("Definitely")
+    PROBABLY = 2, _("Probably")
     DONT_KNOW = 3, _("Don't Know")
     PROBABLY_NOT = 4, _("Probably Not")
     CANT_DO_IT = 5, _("Can't Do It")

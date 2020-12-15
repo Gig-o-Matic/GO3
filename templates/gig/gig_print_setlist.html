@@ -1,0 +1,33 @@
+{% extends 'base/go3base_print.html' %}
+{% load i18n %}
+{% load gig_extras %}
+
+
+{% block content %}
+
+<div class="row">
+    <h3 style="margin-top:0px">{% trans 'Setlist For Gig:' %} {{gig.title}}</h3>
+</div>
+<div class="row">
+    {{ gig.date }} {{ gig.calltime }}
+</div>
+<br>
+<div class="panel panel-default">
+    <div class="panel-heading">
+    </div>
+    <div class="panel-body" style="font-size:30px;">
+        {{ gig.setlist|linebreaks}}
+    </div>
+</div>
+{% endblock content %}
+{% block footer %}
+{% endblock footer %}
+
+{% block localscripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>
+<script>
+$(document).ready(function() {
+    window.print()
+    setTimeout(function(){window.close();}, 1);    
+});
+</script>{% endblock localscripts %}

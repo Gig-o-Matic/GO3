@@ -1,0 +1,81 @@
+{% extends 'base/go3base_print.html' %}
+{% load i18n %}
+{% load gig_extras %}
+
+
+{% block content %}
+
+<div class="row">
+    <h3 style="margin-top:0px">{% trans 'Member Plans For Gig:' %} {{gig.title}}</h3>
+</div>
+<div class="row">
+    {{ gig.date }} {{ gig.calltime }}
+</div>
+<br>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Members Planning To Be There</strong>  
+    </div>
+    <div class="panel-body">
+        <table class="table">
+{% comment %}
+
+            {% if request.user.is_superuser or the_user_is_band_admin %}
+                <div class="row mb-4">
+                    {% for p in plan_list %}
+                        {% if p > 0 %}
+                            <div class="mx-auto">
+                                {% include "gig/plan_icon.html" with plan_value=p %}
+                                <span id="count{{p}}">0</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <div class="mx-auto">
+                        {% include "gig/plan_icon.html" with plan_value=0 %}
+                        <span id="count0">0</span>
+                    </div>
+                </div>
+            {% endif %}
+{% endcomment %}        
+        {% regroup gig.member_plans.all by section as plans_by_section %}
+            {% for section in gig.band.sections.all %}
+                <tr>
+                </tr>
+                {% for plan in plans_by_section|lookup_plans:section %}
+                    {% if all is True or plan.attending %}
+                    <tr>
+                        <td width="20%">
+                            {% if forloop.first %}
+                                {% if section.name is None %}
+                                    {% trans "No Section" %}
+                                {% else %}
+                                    {{ section.name }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td width="50%">
+                            {{ plan.assoc.member.display_name }}
+                            ({{plan.status_string }})
+                        </td>
+                        <td width="30%">
+                            {{ plan.assoc.member.phone }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock content %}
+{% block footer %}
+{% endblock footer %}
+
+{% block localscripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>
+<script>
+$(document).ready(function() {
+    window.print()
+    setTimeout(function(){window.close();}, 1);    
+});
+</script>{% endblock localscripts %}
