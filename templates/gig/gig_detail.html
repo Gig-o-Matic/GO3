@@ -169,7 +169,7 @@
                             {% trans "Setlist" %}
                         </div>
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="print_setlist?gk={{gig.id}}" target="new"><i class="fas fa-print"></i>
+                            <a class="btn btn-secondary btn-sm" href="{% url 'gig-print-setlist' gig.id %}" target="new"><i class="fas fa-print"></i>
                             {% trans "Print" %}</a>
                         </div>
                     </div>

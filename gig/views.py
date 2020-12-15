@@ -202,6 +202,15 @@ class PrintPlansView(LoginRequiredMixin, TemplateView):
         context['all'] = kwargs.get('all',True)
         return context
 
+class PrintSetlistView(LoginRequiredMixin, TemplateView):
+    template_name='gig/gig_print_setlist.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        gig = Gig.objects.get(id=self.kwargs['pk'])
+        context['gig'] = gig
+        return context
+
 
 def has_comment_permission(user, gig):
     return Assoc.objects.filter(member = user, band=gig.band).count() == 1
