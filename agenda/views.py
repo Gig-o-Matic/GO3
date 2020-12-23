@@ -27,6 +27,7 @@ def AgendaSelector(request):
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
         AgendaChoices.CALENDAR: CalendarView,
+        AgendaChoices.GRID: GridView,
     }
 
     return view_selector[request.user.preferences.default_view].as_view()(request)
@@ -39,6 +40,21 @@ class AgendaView(LoginRequiredMixin, TemplateView):
 
 class CalendarView(LoginRequiredMixin, TemplateView):
     template_name='agenda/calendar.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        m = self.request.GET.get('m',None)
+        y = self.request.GET.get('y',None)
+
+        if m and y:
+            m = int(m)+1
+            y = int(y)+1900
+            context['initialDate'] = f'{y}-{m:02d}-01'
+
+        return context
+
+class GridView(LoginRequiredMixin, TemplateView):
+    template_name='agenda/grid.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
