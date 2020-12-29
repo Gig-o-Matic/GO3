@@ -1,6 +1,8 @@
 {% extends 'base/go3base.html' %}
 {% load i18n %}
 {% load static %}
+{% csrf_token %}
+
 
 {% block headcontent %}
 <link rel="stylesheet" href="{% static 'heatmap/jquery.CalendarHeatmap.min.css' %}">
@@ -11,7 +13,7 @@
 {% block content %}
     <div class="row">
         <div class="page-header page-header mx-auto col-md-10 col-12">
-            {% trans "Grid" %}
+            {% trans "Grid of Gigs" %}
             {% if user.preferences.default_view != 1 %}
             <span id='default-sel'>
                 <small>(<a hx-get="{% url 'set-default-view' val=1 %}" hx-target='#default-sel' href="#">{% trans "Make this my default view!" %}</a>)</small>
@@ -20,37 +22,63 @@
         </div>
     </div>
     <div class="row">
-        <div class="mx-auto col-md-10 col-12">
-            <div id="heatmap-demo"></div>
+        <div id="hm" class="mx-auto col-md-10 col-12">
+            <div>
+                <button class='btn' onclick=yearClick(-1);><i class="fas fa-minus-square"></i></button>
+                </button><span id='year-display'></span>
+                <button class='btn' onclick=yearClick(1);><i class="fas fa-plus-square"></i></button>
+            </div>
+            <div id='heatmap-parent'>
+
+            </div>
         </div>
     </div>
 {% endblock content %}
 
 {% block localscripts %}
+{% comment %} https://github.com/SeBassTian23/CalendarHeatmap {% endcomment %}
 <script src="{% static 'heatmap/jquery.CalendarHeatmap.min.js'%}"></script>
 <script>
 
-var data = [
-	    {count: 2, date: "2020-09-23"},
-	    {count: 1, date: "2020-10-23"},
-	    {count: 4, date: "2020-11-11"},
-	    {count: 8, date: "2020-11-13"},
-	    {count: 3, date: "2020-11-21"},
-	]
+var data = [];
+var year = {{year}};
 
-function handleClick(x) {
-    console.log('click '+x)
+function handleMonthClick(the_month) {
+    console.log("month click" + the_month);
+}
+
+function yearClick(delta) {
+    year = year + delta;
+    console.log("year click " + year);
+    updateHeatMap();
+}
+
+function updateHeatMap() {
+    console.log("updating heat map for " + year)
+    $.ajax({
+        url: '{% url "grid-heatmap" %}',
+        data: { 'year': JSON.stringify(year) },
+        type: 'post',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(result) {
+            data = JSON.parse(result);
+            $('#year-display').html(year)
+            $('#heatmap-parent').html('<div id="heatmap-location"></div>')
+            $('#heatmap-location').CalendarHeatmap( data, {
+                lastYear: year,
+            } );
+            // for each month, add a handler to update the list of gigs on display
+            $('.ch-month').each(function(i, obj) {
+                obj.addEventListener( "click", function() { handleMonthClick(i); } );
+            });
+        }
+    })
 }
 
 $(document).ready(function() {
-    $("#heatmap-demo").CalendarHeatmap(data, {
-        // options here
-    });
-    
-    // for each month, add a handler to update the list of gigs on display
-    $('.ch-month').each(function(i, obj) {
-        obj.addEventListener( "click", function() { handleClick(i); } );
-    });
+    updateHeatMap();
 });
 
 </script>

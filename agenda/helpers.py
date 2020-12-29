@@ -94,3 +94,38 @@ def set_default_view(request, val):
         logging.error('user tried to set default view to something strange')
     request.user.preferences.save()
     return HttpResponse()
+
+@login_required
+def grid_heatmap(request, *args, **kw):
+    year = int(request.POST['year'])
+
+    # get the gigs for this year
+    the_gigs = Gig.objects.filter(date__year=year).order_by('date').values('date')
+
+    uncooked_data = {}
+    for g in the_gigs:
+        m = g['date'].month
+        d = g['date'].day
+        cooked_date = f"{year}-{m:02}-{d:02}"
+        if cooked_date in uncooked_data:
+            uncooked_data[cooked_date] += 1
+        else:
+            uncooked_data[cooked_date] = 1
+
+    data = []
+    for d in uncooked_data.keys():
+        data.append({
+            'count': uncooked_data[d],
+            'date': d
+        })
+
+    print(data)
+
+    # data = [
+    #         {'count': 2, 'date': "2020-09-23"},
+    #         {'count': 1, 'date': "2020-10-23"},
+    #         {'count': 4, 'date': "2020-11-11"},
+    #         {'count': 8, 'date': "2020-11-13"},
+    #         {'count': 3, 'date': "2020-11-21"},
+    #     ]
+    return HttpResponse(json.dumps(data))

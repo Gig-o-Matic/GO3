@@ -20,6 +20,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from member.models import MemberPreferences
 from member.util import AgendaChoices
+from datetime import datetime
 
 @login_required
 def AgendaSelector(request):
@@ -64,6 +65,19 @@ class GridView(LoginRequiredMixin, TemplateView):
         if m and y:
             m = int(m)+1
             y = int(y)+1900
-            context['initialDate'] = f'{y}-{m:02d}-01'
+            context['year'] = y
+        else:
+            context['year'] = datetime.now().year
+
+        return context
+
+class GridViewHeatmap(LoginRequiredMixin, TemplateView):
+    template_name='agenda/grid_heatmap.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        year = self.request.GET.get('year',None)
+
+        context['year'] = year or datetime.now().year
 
         return context

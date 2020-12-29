@@ -25,7 +25,9 @@ urlpatterns = [
     path('plans/<path:the_type>/<int:page>', helpers.agenda_gigs, name='agenda-gigs'),
     path('calendar', views.CalendarView.as_view(), name='calendar'),
     path('calendar/events/<int:pk>', helpers.calendar_events, name='calendar-events'),
+
     path('grid', views.GridView.as_view(), name='grid'),
+    path('grid/heatmap', helpers.grid_heatmap, name='grid-heatmap'),
 
     path('defaultview/<int:val>', helpers.set_default_view, name='set-default-view'),
 ]
