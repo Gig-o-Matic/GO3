@@ -119,13 +119,4 @@ def grid_heatmap(request, *args, **kw):
             'date': d
         })
 
-    print(data)
-
-    # data = [
-    #         {'count': 2, 'date': "2020-09-23"},
-    #         {'count': 1, 'date': "2020-10-23"},
-    #         {'count': 4, 'date': "2020-11-11"},
-    #         {'count': 8, 'date': "2020-11-13"},
-    #         {'count': 3, 'date': "2020-11-21"},
-    #     ]
     return HttpResponse(json.dumps(data))
