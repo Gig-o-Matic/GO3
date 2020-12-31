@@ -125,7 +125,6 @@ def grid_heatmap(request, *args, **kw):
 @login_required
 def grid_section_members(request, *args, **kw):
     band_id = int(request.POST['band'])
-    band = get_object_or_404(Band, pk=band_id)
     assocs = Assoc.objects.filter(band=band_id).order_by('default_section__order')
     mbs = {}
     for a in assocs:
