@@ -28,6 +28,8 @@ urlpatterns = [
 
     path('grid', views.GridView.as_view(), name='grid'),
     path('grid/heatmap', helpers.grid_heatmap, name='grid-heatmap'),
+    path('grid/section-members', helpers.grid_section_members, name='grid-section-members'),
+    path('grid/gigs', helpers.grid_gigs, name='grid-gigs'),
 
     path('defaultview/<int:val>', helpers.set_default_view, name='set-default-view'),
 ]

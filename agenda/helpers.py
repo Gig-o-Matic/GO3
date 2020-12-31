@@ -16,13 +16,14 @@
 """
 
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 import datetime
 from dateutil.parser import parse
 from django.db.models import Q
 
-from gig.models import Gig
-from band.models import Assoc
+from gig.models import Gig, Plan
+from band.models import Band, Assoc, Section
 from member.util import AgendaChoices
 
 import json
@@ -98,9 +99,9 @@ def set_default_view(request, val):
 @login_required
 def grid_heatmap(request, *args, **kw):
     year = int(request.POST['year'])
+    band_id = int(request.POST['band'])
 
-    # get the gigs for this year
-    the_gigs = Gig.objects.filter(date__year=year).order_by('date').values('date')
+    the_gigs = Gig.objects.filter(date__year=year, band=band_id).order_by('date').values('date')
 
     uncooked_data = {}
     for g in the_gigs:
@@ -120,3 +121,44 @@ def grid_heatmap(request, *args, **kw):
         })
 
     return HttpResponse(json.dumps(data))
+
+@login_required
+def grid_section_members(request, *args, **kw):
+    band_id = int(request.POST['band'])
+    band = get_object_or_404(Band, pk=band_id)
+    assocs = Assoc.objects.filter(band=band_id).order_by('default_section__order')
+    mbs = {}
+    for a in assocs:
+        info = {'id':a.member.id, 'name':a.member.display_name}
+        if a.default_section.id in mbs.keys():
+            mbs[a.default_section.id]['members'].append(info)
+        else:
+            mbs[a.default_section.id] = {'name':a.default_section.name,'members':[info]}
+
+    # convert to just a list
+    data = [{"id":x, "name":mbs[x]['name'], "members":mbs[x]['members']} for x in mbs]
+    return HttpResponse(json.dumps(data))
+    
+
+@login_required
+def grid_gigs(request, *args, **kw):
+    band_id = int(request.POST['band'])
+    month = int(request.POST['month'])
+    year = int(request.POST['year'])
+
+    gigs = Gig.objects.filter(date__month=month+1, date__year=year, band=band_id).order_by('date')
+    
+    data = []
+    print('\nwoo\n')
+    for g in gigs:
+        print('\nboo\n')
+        all_plans = Plan.objects.filter(gig=g).select_related()
+        member_plans = [ { 'member':p.assoc.member_id, 'plan':p.status} for p in all_plans ]
+        data.append ({
+            'title':g.title,
+            'date':str(g.date),
+            'id':g.id,
+            'plans':member_plans
+        })
+    return HttpResponse(json.dumps(data))
+    

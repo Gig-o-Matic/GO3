@@ -20,7 +20,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from member.models import MemberPreferences
 from member.util import AgendaChoices
+from band.models import Assoc
 from datetime import datetime
+import json
 
 @login_required
 def AgendaSelector(request):
@@ -61,6 +63,11 @@ class GridView(LoginRequiredMixin, TemplateView):
 
         context['year'] = datetime.now().year
         context['month'] = datetime.now().month-1
+
+        # find my bands
+        m = self.request.user
+        assocs = Assoc.objects.filter(member=m)
+        context['band_data'] = json.dumps([{'id':a.band.id, 'name':a.band.name} for a in assocs])
 
         return context
 

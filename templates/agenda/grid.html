@@ -6,6 +6,7 @@
 
 {% block headcontent %}
 <link rel="stylesheet" href="{% static 'heatmap/jquery.CalendarHeatmap.min.css' %}">
+
 {% endblock headcontent %}
 
 {% block title %}{% trans "Grid"%}{% endblock title %}
@@ -19,6 +20,18 @@
                 <small>(<a hx-get="{% url 'set-default-view' val=1 %}" hx-target='#default-sel' href="#">{% trans "Make this my default view!" %}</a>)</small>
             </span>
             {% endif %}
+        </div>
+        <div id='bandlist' class='mx-auto col-md-10 col-12'>
+            <div class="dropdown">
+                <a class="btn btn-sm btn-outline-secondary dropdown-toggle text-center" href="#" role="button" data-toggle="dropdown" id="dropdownMenu1">
+                    <span id="band-name"></span> <span class="caret"></span>
+                </a>
+                <div id="band-dropdown" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                    {% for a_band in bands %}
+                        <a class="dropdown-item">{{a_band.name}}</a>
+                    {% endfor %}
+                </div>
+            </div> <!-- dropdown -->
         </div>
     </div>
     <div class="row">
@@ -41,7 +54,9 @@
                 <button class='btn' onclick=monthClick(1);><i class="fas fa-plus-square"></i></button>
             </div>
             <div id='giggrid-parent'>
-
+                <table id="giggrid" class="display" width="100%">
+                    <tr><td>woo</td></tr>
+                </table>
             </div>
         </div>
     </div>
@@ -55,6 +70,62 @@
 var data = [];
 var year = {{year}};
 var month = {{month}};
+var bands = JSON.parse('{{band_data|safe}}');
+var current_band = 0;
+
+
+function setBand(b) {
+    current_band = b;
+    updateBandList();
+    updateHeatMap();
+
+    // get rid of the current data
+    $("#giggrid").empty();
+    $('#giggrid').html('<thead><tr id="title-row"><td></td></tr></thead><tbody id="the_tbody"></tbody></table>')
+
+    updateBandMembers();
+    updateGigGrid();
+}
+
+function updateBandMembers() {
+    // get the members of the current band organized by section
+    $.ajax({
+        url: '{% url "grid-section-members" %}',
+        data: { 'band': JSON.stringify(bands[current_band]['id']) },
+        type: 'post',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(result) {
+            sections = JSON.parse(result);
+            for (let i=0; i<sections.length; i++) {
+                section = sections[i]
+                members = section['members']
+                $('#the_tbody').append('<tr><th>'+section['name']+'</th></tr>');
+                for (let i=0; i<members.length; i++) {
+                    $('#the_tbody').append('<tr id="member-row'+members[i].id+'"><th>'+members[i].name+'</th></tr>');
+                }
+            }
+        }
+    })
+}
+
+function updateBandList() {
+    $("#band-name").html(bands[current_band]['name'])
+    dd = $("#band-dropdown");
+    dd.empty();
+    if (bands.length > 0) {
+        for (let i=0; i<bands.length; i++) {
+            if (i != current_band) {
+                dd.append('<a class="dropdown-item" onclick=bandSelect('+i+')>'+bands[i]['name']+'</a>');
+            }
+        }
+    }
+}
+
+function bandSelect(which) {
+    setBand(which);
+}
 
 function monthClick(delta) {
     month = month + delta;
@@ -74,6 +145,32 @@ function monthClick(delta) {
 
 function updateGigGrid() {
     $('#month-display').html(moment().month(month).format('MMMM'))
+    $('.gig-title').remove();
+    $('.gig-plan').remove();
+
+    $.ajax({
+        url: '{% url "grid-gigs" %}',
+        data: { 
+                'band': JSON.stringify(bands[current_band]['id']),
+                'month': month,
+                'year': year,
+             },
+        type: 'post',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(result) {
+            gigs = JSON.parse(result);
+            for (let i=0; i<gigs.length; i++) {
+                gig = gigs[i];
+                $('#title-row').append('<td class="gig-title">'+gig['title']+' '+gig['date']+'</td>')
+                for (let j=0; j<gig['plans'].length; j++) {
+                    plan = gig['plans'][j]
+                    $('#member-row'+plan['member']).append('<td class="gig-plan">'+plan['plan']+'</td>')
+                }
+            }
+        }
+    })
 
 }
 
@@ -89,7 +186,10 @@ function yearClick(delta) {
 function updateHeatMap() {
     $.ajax({
         url: '{% url "grid-heatmap" %}',
-        data: { 'year': JSON.stringify(year) },
+        data: { 
+            'band': JSON.stringify(bands[current_band]['id']),
+            'year': JSON.stringify(year)
+        },
         type: 'post',
         headers: {
             'X-CSRFToken': '{{ csrf_token }}'
@@ -111,8 +211,8 @@ function updateHeatMap() {
 }
 
 $(document).ready(function() {
+    setBand(0);
     updateHeatMap();
-    updateGigGrid();
 });
 
 </script>
