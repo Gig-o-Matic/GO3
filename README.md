@@ -12,6 +12,10 @@ To create the database, run
 ```
 python manage.py migrate
 ```
+To seed the database with test data, run
+```
+python manage.py loaddata fixtures/testdata.json
+```
 Then, to create an administrative user, run
 ```
 python manage.py createsuperuser

@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django_q',
     'simple_history',
+    'graphene_django'
 ]
 
 MIDDLEWARE = [
@@ -220,6 +221,11 @@ MESSAGE_TAGS = {
     messages.SUCCESS: 'alert-success',
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger'
+}
+
+# Graphene GraphQL settings
+GRAPHENE = {
+    "SCHEMA": "go3.schema.schema"
 }
 
 try:
