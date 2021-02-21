@@ -148,9 +148,7 @@ def grid_gigs(request, *args, **kw):
     gigs = Gig.objects.filter(date__month=month+1, date__year=year, band=band_id).order_by('date')
     
     data = []
-    print('\nwoo\n')
     for g in gigs:
-        print('\nboo\n')
         all_plans = Plan.objects.filter(gig=g).select_related()
         member_plans = [ { 'member':p.assoc.member_id, 'plan':p.status} for p in all_plans ]
         data.append ({

@@ -3,6 +3,9 @@
 {% load static %}
 {% csrf_token %}
 
+{% comment %}
+<!-- Uses https://github.com/SeBassTian23/CalendarHeatmap -->
+{% endcomment %}
 
 {% block headcontent %}
 <link rel="stylesheet" href="{% static 'heatmap/jquery.CalendarHeatmap.min.css' %}">
@@ -49,14 +52,16 @@
     <div class="row">
         <div id="gg" class="mx-auto col-md-10 col-12">
             <div>
-                <button class='btn' onclick=monthClick(-1);><i class="fas fa-minus-square"></i></button>
+                <button class='btn' onclick=nextMonthClick(-1);><i class="fas fa-minus-square"></i></button>
                 </button><span id='month-display'></span>
-                <button class='btn' onclick=monthClick(1);><i class="fas fa-plus-square"></i></button>
+                <button class='btn' onclick=nextMonthClick(1);><i class="fas fa-plus-square"></i></button>
             </div>
-            <div id='giggrid-parent'>
-                <table id="giggrid" class="display" width="100%">
-                    <tr><td>woo</td></tr>
-                </table>
+            <div id='giggrid-outer'>
+                <div id='giggrid-inner'>
+                    <table id="giggrid" class="display" width="100%">
+                        <tr><td>woo</td></tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -81,10 +86,9 @@ function setBand(b) {
 
     // get rid of the current data
     $("#giggrid").empty();
-    $('#giggrid').html('<thead><tr id="title-row"><td></td></tr></thead><tbody id="the_tbody"></tbody></table>')
+    $('#giggrid').html('<thead><tr id="title-row"><th></th></tr></thead><tbody id="the_tbody"></tbody></table>')
 
     updateBandMembers();
-    updateGigGrid();
 }
 
 function updateBandMembers() {
@@ -106,6 +110,7 @@ function updateBandMembers() {
                     $('#the_tbody').append('<tr id="member-row'+members[i].id+'"><th>'+members[i].name+'</th></tr>');
                 }
             }
+            updateGigGrid();
         }
     })
 }
@@ -127,8 +132,13 @@ function bandSelect(which) {
     setBand(which);
 }
 
-function monthClick(delta) {
-    month = month + delta;
+function monthClick(which) {
+    month=which
+    updateGigGrid();
+}
+
+function nextMonthClick(delta) {
+    month += delta
 
     if (month < 0) {
         month = 11;
@@ -142,6 +152,7 @@ function monthClick(delta) {
 
     updateGigGrid();
 }
+
 
 function updateGigGrid() {
     $('#month-display').html(moment().month(month).format('MMMM'))
@@ -163,7 +174,7 @@ function updateGigGrid() {
             gigs = JSON.parse(result);
             for (let i=0; i<gigs.length; i++) {
                 gig = gigs[i];
-                $('#title-row').append('<td class="gig-title">'+gig['title']+' '+gig['date']+'</td>')
+                $('#title-row').append('<td class="gig-title"><a href="/gig/' + gig.id + '">' + gig['title'] + '</a> ' + gig['date'] + '</td>')
                 for (let j=0; j<gig['plans'].length; j++) {
                     plan = gig['plans'][j]
                     $('#member-row'+plan['member']).append('<td class="gig-plan">'+plan['plan']+'</td>')
@@ -200,10 +211,11 @@ function updateHeatMap() {
             $('#heatmap-parent').html('<div id="heatmap-location"></div>')
             $('#heatmap-location').CalendarHeatmap( data, {
                 lastYear: year,
+                lastMonth: 12
             } );
             // for each month, add a handler to update the list of gigs on display
             $('.ch-month').each(function(i, obj) {
-                obj.addEventListener( "click", function() { handleMonthClick(i); } );
+                obj.addEventListener( "click", function() { monthClick(i); } );
             });
 
         }
