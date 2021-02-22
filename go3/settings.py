@@ -190,7 +190,8 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login'
 
 # Configure Django-q message broker
-set_start_method("fork")
+# comment this out if running python on windows - fork is not a valid windows multiprocessing context. fork is declared as a start method if running django python on mac (https://code.djangoproject.com/ticket/31169)
+# set_start_method("fork")
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
