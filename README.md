@@ -26,6 +26,15 @@ python manage.py runserver
 ```
 You can log in with the user created above.
 
+## Testing
+
+```
+python manage.py collectstatic
+```
+```
+python manage.py test
+```
+
 ## Task queue
 
 Django-Q is used as a task queue, and the default setting uses the standard database as a broker.  Tasks can be serialized into the database without any additional configuration.  However, a separate process is used to run these items in the queue.  This can be launched with
