@@ -8,7 +8,7 @@ from member.models import *
 class BandType(DjangoObjectType):
     class Meta:
         model = Band
-        fields = ("name", "hometown", "creation_date", "last_activity")
+        fields = ("name", "hometown", "creation_date")
 
 
 class MemberType(DjangoObjectType):
@@ -19,11 +19,9 @@ class MemberType(DjangoObjectType):
 
 class Query(graphene.ObjectType):
     all_bands = graphene.List(BandType)
-    band_by_name = graphene.Field(
-        BandType, name=graphene.String(required=True))
+    band_by_name = graphene.Field(BandType, name=graphene.String(required=True))
     all_members = graphene.List(MemberType)
-    member_by_email = graphene.Field(
-        MemberType, email=graphene.String(required=True))
+    member_by_email = graphene.Field(MemberType, email=graphene.String(required=True))
 
     def resolve_all_bands(self, root):
         return Band.objects.all()

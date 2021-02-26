@@ -32,21 +32,58 @@ class LanguageTest(TestCase):
 class GraphQLTest(GigTestBase):
 
     # test band queries
-
-    def test_allBands(self):
+    def test_all_bands(self):
         client = Client(schema)
-
-        print("testing allBands")
-
         executed = client.execute(
             """{ allBands {
-            name
+            name,
+            hometown
             } }"""
         )
+        assert executed == {
+            "data": {"allBands": [{"name": "test band", "hometown": "Seattle"}]}
+        }
 
-        print(executed)
-        assert executed == {"data": {"allBands": [{"name": "test band"}]}}
+    def test_band_by_name(self):
+        client = Client(schema)
+        executed = client.execute(
+            """{ bandByName(name:"test band") {
+            name,
+            hometown
+            } }"""
+        )
+        assert executed == {
+            "data": {"bandByName": {"name": "test band", "hometown": "Seattle"}}
+        }
 
-    # test member model
+    # test member queries
+    def test_all_members(self):
+        client = Client(schema)
+        executed = client.execute(
+            """{ allMembers{
+            email,
+            username
+            } }"""
+        )
+        assert executed == {
+            "data": {
+                "allMembers": [
+                    {"email": "super@b.c", "username": ""},
+                    {"email": "admin@e.f", "username": ""},
+                    {"email": "joeuser@h.i", "username": ""},
+                    {"email": "janeuser@k.l", "username": ""},
+                ]
+            }
+        }
 
-    # test assoc model
+    def test_member_by_email(self):
+        client = Client(schema)
+        executed = client.execute(
+            """{ memberByEmail(email:"joeuser@h.i") {
+            email,
+            username
+            } }"""
+        )
+        assert executed == {
+            "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
+        }
