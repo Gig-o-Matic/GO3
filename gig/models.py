@@ -58,6 +58,10 @@ class Plan(models.Model):
     status = models.IntegerField(choices=PlanStatusChoices.choices, default=PlanStatusChoices.NO_PLAN)
 
     @property
+    def status_string(self):
+        return PlanStatusChoices(self.status).label
+
+    @property
     def attending(self):
         return self.status in [PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
 

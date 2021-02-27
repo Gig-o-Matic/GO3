@@ -8,12 +8,14 @@
                 <i class="fas fa-minus fa-sm" style="color:black"></i>
             {% endif %}
         </span>
-        <i class="fa fa-spinner fa-spin fa-lg htmx-indicator"></i>
+        <span class="htmx-indicator">
+            <i class="fa fa-spinner fa-spin fa-lg"></i>
+        </span>
     </button>
     <div class="dropdown-menu" aria-labelledby="ef-{{plan.id}}">
-        <a class="dropdown-item" hx-get="{% url 'plan-update-feedback' pk=plan.id val=0 %}" hx-ext="update-dropdown" hx-target="#ef-{{ plan.id }} span" hx-indicator="#ef-{{ plan.ied }}"><i class="fas fa-minus fa-sm" style="color:black"></i></a>
+        <a class="dropdown-item" hx-get="{% url 'plan-update-feedback' pk=plan.id val=0 %}" hx-ext="update-dropdown" hx-target="#ef-{{ plan.id }} span" hx-indicator="#ef-{{ plan.id }}"><i class="fas fa-minus fa-sm" style="color:black"></i></a>
         {% for string in feedback_strings %}
-            <a class="dropdown-item" hx-get="{% url 'plan-update-feedback' pk=plan.id val=forloop.counter %}" hx-ext="update-dropdown" hx-target="#ef-{{ plan.id }} span" hx-indicator="#ef-{{ plan.ied }}">{{string}}</a>
+            <a class="dropdown-item" hx-get="{% url 'plan-update-feedback' pk=plan.id val=forloop.counter %}" hx-ext="update-dropdown" hx-target="#ef-{{ plan.id }} span" hx-indicator="#ef-{{ plan.id }}">{{string}}</a>
         {% endfor %}
     </div>
 </div>
