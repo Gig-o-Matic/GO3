@@ -49,6 +49,10 @@ query {
 }
 ```
 
+## Formatting standards
+
+We are converting the project to `autopep8`.
+
 ## Task queue
 
 Django-Q is used as a task queue, and the default setting uses the standard database as a broker.  Tasks can be serialized into the database without any additional configuration.  However, a separate process is used to run these items in the queue.  This can be launched with
