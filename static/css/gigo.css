@@ -224,3 +224,11 @@ a {
 ul.errorlist {
   color: #ff0000
 }
+
+/* gig grid
+-------------------------------------------------- */
+.gig-grid-title {
+  border-right: 1px solid;
+  border-color:#999;
+  padding-right: 10px;
+}

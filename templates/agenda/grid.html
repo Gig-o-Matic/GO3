@@ -86,7 +86,21 @@ function setBand(b) {
 
     // get rid of the current data
     $("#giggrid").empty();
-    $('#giggrid').html('<thead><tr id="title-row"><th></th></tr></thead><tbody id="the_tbody"></tbody></table>')
+    $('#giggrid').html(`
+<thead>
+    <tr id="title-row">
+        <th></th>
+    </tr>
+    <tr id="date-row">
+        <th></th>
+    </tr>
+    <tr id="time-row">
+        <th></th>
+    </tr>
+</thead>
+<tbody id="the_tbody">
+</tbody>`
+    )
 
     updateBandMembers();
 }
@@ -153,11 +167,10 @@ function nextMonthClick(delta) {
     updateGigGrid();
 }
 
-
 function updateGigGrid() {
     $('#month-display').html(moment().month(month).format('MMMM'))
-    $('.gig-title').remove();
-    $('.gig-plan').remove();
+    $('.gig-grid-title').remove();
+    $('.gig-grid-plan').remove();
 
     $.ajax({
         url: '{% url "grid-gigs" %}',
@@ -174,10 +187,26 @@ function updateGigGrid() {
             gigs = JSON.parse(result);
             for (let i=0; i<gigs.length; i++) {
                 gig = gigs[i];
-                $('#title-row').append('<td class="gig-title"><a href="/gig/' + gig.id + '">' + gig['title'] + '</a> ' + gig['date'] + '</td>')
+                $('#title-row').append(`
+<td class="gig-grid-title">
+    <a href="/gig/${ gig.id }">${ gig.title }</a>
+</td>
+                `);
+                $('#date-row').append(`
+<td class="gig-grid-title">
+    ${ moment(gig.date).format('L') }
+</td>
+                `);
+                $('#time-row').append(`
+<td class="gig-grid-title">
+    ${ moment(gig.date).format('LT') }
+</td>
+                `);
                 for (let j=0; j<gig['plans'].length; j++) {
                     plan = gig['plans'][j]
-                    $('#member-row'+plan['member']).append('<td class="gig-plan">'+plan['plan']+'</td>')
+                    $('#member-row'+plan['member']).append(`
+<td class="gig-grid-plan">${ plan.plan }</td>
+                    `)
                 }
             }
         }
