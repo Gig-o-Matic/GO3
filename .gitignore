@@ -13,6 +13,5 @@ db.sqlite3
 .vscode
 staticfiles
 settings_local.py
-go3env
-env/
+env
 

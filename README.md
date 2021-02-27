@@ -35,6 +35,20 @@ python manage.py collectstatic
 python manage.py test
 ```
 
+## GraphQL API
+
+To test the GraphQL endpoint, run the project locally and navigate to `http://127.0.0.1:8000/graphql` in your browser. 
+
+Queries in the GUI are formatted as such:
+```
+query {
+	allBands {
+		name,
+		hometown
+	}
+}
+```
+
 ## Task queue
 
 Django-Q is used as a task queue, and the default setting uses the standard database as a broker.  Tasks can be serialized into the database without any additional configuration.  However, a separate process is used to run these items in the queue.  This can be launched with
