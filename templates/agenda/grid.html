@@ -119,9 +119,19 @@ function updateBandMembers() {
             for (let i=0; i<sections.length; i++) {
                 section = sections[i]
                 members = section['members']
-                $('#the_tbody').append('<tr><th>'+section['name']+'</th></tr>');
+                $('#the_tbody').append(`
+<tr class="gig-grid-section-row">
+    <th class="gig-grid-section-cell">${ section['name'] }
+    </th>
+</tr>
+                `);
                 for (let i=0; i<members.length; i++) {
-                    $('#the_tbody').append('<tr id="member-row'+members[i].id+'"><th>'+members[i].name+'</th></tr>');
+                    $('#the_tbody').append(`
+<tr id="member-row${ members[i].id }" class="gig-grid-member-row">
+    <td class="gig-grid-member-cell">${ members[i].name }
+    </td>
+</tr>
+                    `);
                 }
             }
             updateGigGrid();
@@ -204,8 +214,30 @@ function updateGigGrid() {
                 `);
                 for (let j=0; j<gig['plans'].length; j++) {
                     plan = gig['plans'][j]
+                    switch(plan.plan) {
+                        case 1:
+                            icon='<i class="fas fa-circle" style="color:green"></i>';
+                            break;
+                        case 2:
+                            icon='<i class="far fa-circle" style="color:green"></i>';
+                            break;
+                        case 3:
+                            icon='<i class="fas fa-question" style="color:gray"></i>';
+                            break;
+                        case 4:
+                            icon='<i class="far fa-square" style="color:red"></i>';
+                            break;
+                        case 5:
+                            icon='<i class="fas fa-square" style="color:red"></i>';
+                            break;
+                        case 6:
+                            icon='<i class="fas fa-times" style="color:black"></i>';
+                            break;
+                        default:
+                            icon='<i class="fas fa-minus fa-sm" style="color:black"></i>';
+                    }
                     $('#member-row'+plan['member']).append(`
-<td class="gig-grid-plan">${ plan.plan }</td>
+<td class="gig-grid-plan">${ icon }</td>
                     `)
                 }
             }

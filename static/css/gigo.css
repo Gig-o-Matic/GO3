@@ -232,3 +232,13 @@ ul.errorlist {
   border-color:#999;
   padding-right: 10px;
 }
+
+.gig-grid-member-cell {
+  padding-left:20px;
+}
+
+.gig-grid-plan {
+  border-right: 1px solid;
+  border-color:#999;
+  text-align: center;
+}
