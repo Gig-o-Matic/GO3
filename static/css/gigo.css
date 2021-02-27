@@ -231,6 +231,7 @@ ul.errorlist {
   border-right: 1px solid;
   border-color:#999;
   padding-right: 10px;
+  text-align: center;
 }
 
 .gig-grid-member-cell {

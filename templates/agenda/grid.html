@@ -128,7 +128,7 @@ function updateBandMembers() {
                 for (let i=0; i<members.length; i++) {
                     $('#the_tbody').append(`
 <tr id="member-row${ members[i].id }" class="gig-grid-member-row">
-    <td class="gig-grid-member-cell">${ members[i].name }
+    <td class="gig-grid-member-cell"><a href="/member/${ members[i].id }">${ members[i].name }</a>
     </td>
 </tr>
                     `);
