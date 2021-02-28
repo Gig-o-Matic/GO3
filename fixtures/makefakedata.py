@@ -100,8 +100,21 @@ for p in people:
             }
         })
 
+gigs=[]
+for i in range(0,20):
+    gigs.append({
+        "model": "gig.gig",
+        "pk": 100+i,
+        "fields": {
+            "title": f"Test Gig {i}",
+            "band": bands[0]["pk"],
+            "created_date": datetime.datetime.now(),
+            "last_update": datetime.datetime.now(),
+            "date": datetime.datetime.now() + datetime.timedelta(days=random.randrange(0,30))
+        }
+    })
 
-all=people+bands+assocs
+all=people+bands+assocs+gigs
 
 def myconverter(o):
     if isinstance(o, datetime.datetime):
