@@ -55,13 +55,17 @@
                 <button class='btn' onclick=nextMonthClick(-1);><i class="fas fa-minus-square"></i></button>
                 </button><span id='month-display'></span>
                 <button class='btn' onclick=nextMonthClick(1);><i class="fas fa-plus-square"></i></button>
+                <span id='giggrid-loading'>
+                    <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                </span>    
+                <span id='giggrid-nogigs' style='display: none;'>
+                    {% trans "No Gigs" %}
+                </span>    
             </div>
             <div id='giggrid-outer'>
-                <div id='giggrid-inner'>
-                    <table id="giggrid" class="display" width="100%">
-                        <tr><td>woo</td></tr>
-                    </table>
-                </div>
+                <table id="giggrid" class="display" width="100%">
+                    <tr><td>woo</td></tr>
+                </table>
             </div>
         </div>
     </div>
@@ -80,6 +84,7 @@ var current_band = 0;
 
 
 function setBand(b) {
+
     current_band = b;
     updateBandList();
     updateHeatMap();
@@ -178,6 +183,11 @@ function nextMonthClick(delta) {
 }
 
 function updateGigGrid() {
+    $("#giggrid-outer").hide();
+    $("#giggrid-loading").show();
+    $("#giggrid-nogigs").hide();
+
+
     $('#month-display').html(moment().month(month).format('MMMM'))
     $('.gig-grid-title').remove();
     $('.gig-grid-plan').remove();
@@ -241,9 +251,14 @@ function updateGigGrid() {
                     `)
                 }
             }
+            $("#giggrid-loading").hide();
+            if (gigs.length == 0) {
+                $("#giggrid-nogigs").show();
+            } else {
+                $("#giggrid-outer").show();
+            }
         }
     })
-
 }
 
 function yearClick(delta) {
