@@ -27,14 +27,17 @@ from gig.tests import GigTestBase
 from django.utils import timezone
 import json
 
+
 class MemberTests(TestCase):
     def setUp(self):
-        self.super = Member.objects.create_user(email='super@b.c', is_superuser=True)
+        self.super = Member.objects.create_user(
+            email='super@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='admin@e.f')
         self.joeuser = Member.objects.create_user(email='joe@h.i')
         self.janeuser = Member.objects.create_user(email='jane@k.l')
         self.band = Band.objects.create(name='test band')
-        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(member=self.band_admin, band=self.band,
+                             is_admin=True, status=AssocStatusChoices.CONFIRMED)
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -43,13 +46,14 @@ class MemberTests(TestCase):
         Assoc.objects.all().delete()
 
     def assoc_joe(self, status=AssocStatusChoices.CONFIRMED):
-        a = Assoc.objects.create(member=self.joeuser, band=self.band, status=status)
+        a = Assoc.objects.create(
+            member=self.joeuser, band=self.band, status=status)
         return a
-
 
     def test_addband(self):
 
-        request = RequestFactory().get('/band/assoc/create/{}/{}'.format(self.band.id, self.joeuser.id))
+        request = RequestFactory().get(
+            '/band/assoc/create/{}/{}'.format(self.band.id, self.joeuser.id))
 
         # make sure a user can create their own assoc
         request.user = self.joeuser
@@ -83,7 +87,8 @@ class MemberTests(TestCase):
         request.user = self.band_admin
         helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
         helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
-        self.assertEqual(len(Assoc.objects.filter(band=self.band, member=self.joeuser)), 1)
+        self.assertEqual(len(Assoc.objects.filter(
+            band=self.band, member=self.joeuser)), 1)
 
     def test_deleting_section(self):
 
@@ -93,7 +98,7 @@ class MemberTests(TestCase):
 
         # make a new section
         new_section = Section.objects.create(band=self.band, name="foohorn")
-        assoc.default_section=new_section
+        assoc.default_section = new_section
         assoc.save()
 
         # be sure we're now not a member of the default section
@@ -106,7 +111,8 @@ class MemberTests(TestCase):
         new_section.delete()
         assoc = Assoc.objects.get(band=self.band, member=self.band_admin)
         self.assertTrue(assoc.default_section.is_default)
-        self.assertEqual(assoc.default_section,self.band.sections.get(is_default=True))
+        self.assertEqual(assoc.default_section,
+                         self.band.sections.get(is_default=True))
 
     def test_populated_default(self):
         """ if the default section is empty, don't return it from Band.sections.populated() """
@@ -120,7 +126,7 @@ class MemberTests(TestCase):
 
         self.assertEqual(len(self.band.sections.all()), 2)
         self.assertEqual(len(self.band.sections.populated()), 2)
-        
+
         # now change all assocs to be in the new section
         all = Assoc.objects.filter(band=self.band)
         for a in all:
@@ -130,11 +136,11 @@ class MemberTests(TestCase):
         # now show that the populated sections don't include the default
         self.assertEqual(len(self.band.sections.populated()), 1)
 
-
     def test_tf_param_user(self):
         a = self.assoc_joe()
         self.client.force_login(self.joeuser)
-        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+        resp = self.client.post(
+            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_occasional, True)
@@ -142,7 +148,8 @@ class MemberTests(TestCase):
     def test_tf_param_admin(self):
         a = self.assoc_joe()
         self.client.force_login(self.band_admin)
-        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+        resp = self.client.post(
+            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_occasional, True)
@@ -150,7 +157,8 @@ class MemberTests(TestCase):
     def test_tf_param_other(self):
         a = self.assoc_joe()
         self.client.force_login(self.janeuser)
-        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+        resp = self.client.post(
+            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
         self.assertEqual(resp.status_code, 403)
         a.refresh_from_db()
         self.assertEqual(a.is_occasional, False)
@@ -158,7 +166,8 @@ class MemberTests(TestCase):
     def test_tf_param_is_admin_user(self):
         a = self.assoc_joe()
         self.client.force_login(self.joeuser)
-        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+        resp = self.client.post(
+            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_admin, False)
@@ -166,7 +175,8 @@ class MemberTests(TestCase):
     def test_tf_param_is_admin_admin(self):
         a = self.assoc_joe()
         self.client.force_login(self.band_admin)
-        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+        resp = self.client.post(
+            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_admin, True)
@@ -174,7 +184,8 @@ class MemberTests(TestCase):
     def test_tf_param_is_admin_other(self):
         a = self.assoc_joe()
         self.client.force_login(self.janeuser)
-        resp = self.client.post(reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+        resp = self.client.post(
+            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
         self.assertEqual(resp.status_code, 403)
         a.refresh_from_db()
         self.assertEqual(a.is_admin, False)
@@ -299,7 +310,8 @@ class BandTests(GigTestBase):
     def test_band_member_queries(self):
         self.assertEqual(self.band.all_assocs.count(), 1)
         self.assertEqual(self.band.confirmed_assocs.count(), 1)
-        a=Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=False)
+        a = Assoc.objects.create(
+            member=self.joeuser, band=self.band, is_admin=False)
         self.assertEqual(self.band.all_assocs.count(), 2)
         self.assertEqual(self.band.confirmed_assocs.count(), 1)
         a.status = AssocStatusChoices.CONFIRMED
@@ -312,14 +324,14 @@ class BandTests(GigTestBase):
 
     def test_trashed_gigs(self):
         g = self.create_gig(self.joeuser)
-        self.assertEqual(self.band.gigs.count(),1)
-        self.assertEqual(self.band.gigs.active().count(),1)
-        self.assertEqual(self.band.trash_gigs.count(),0)
+        self.assertEqual(self.band.gigs.count(), 1)
+        self.assertEqual(self.band.gigs.active().count(), 1)
+        self.assertEqual(self.band.trash_gigs.count(), 0)
         g.trashed_date = timezone.now()
         g.save()
-        self.assertEqual(self.band.gigs.all().count(),1)
-        self.assertEqual(self.band.gigs.active().count(),0)
-        self.assertEqual(self.band.gigs.trashed().count(),1)
+        self.assertEqual(self.band.gigs.all().count(), 1)
+        self.assertEqual(self.band.gigs.active().count(), 0)
+        self.assertEqual(self.band.gigs.trashed().count(), 1)
 
     def test_trashcan_permission(self):
         _, a, _ = self.assoc_joe_and_create_gig()
@@ -345,24 +357,25 @@ class BandTests(GigTestBase):
         _, a, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.janeuser)
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': [['hey','','hey']],
-                'deletedSections': []
-            }
+                                data={
+            'sectionInfo': [['hey', '', 'hey']],
+            'deletedSections': []
+        }
         )
         self.assertEqual(resp.status_code, 403)
 
     def test_section_setup(self):
         _, a, _ = self.assoc_joe_and_create_gig()
-        self.assertEqual(self.band.sections.count(), 1) # starts with default section
+        # starts with default section
+        self.assertEqual(self.band.sections.count(), 1)
         self.client.force_login(self.band_admin)
 
         # test creation
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': json.dumps([['hey','','hey']]),
-                'deletedSections': json.dumps([])
-            }
+                                data={
+            'sectionInfo': json.dumps([['hey', '', 'hey']]),
+            'deletedSections': json.dumps([])
+        }
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self.band.sections.count(), 2)
@@ -373,10 +386,10 @@ class BandTests(GigTestBase):
 
         # test rename
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': json.dumps([['whoa',sec.id,'hey']]),
-                'deletedSections': json.dumps([])
-            }
+                                data={
+            'sectionInfo': json.dumps([['whoa', sec.id, 'hey']]),
+            'deletedSections': json.dumps([])
+        }
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self.band.sections.count(), 2)
@@ -387,10 +400,10 @@ class BandTests(GigTestBase):
 
         # test delete
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': json.dumps([]),
-                'deletedSections': json.dumps([sec.id])
-            }
+                                data={
+            'sectionInfo': json.dumps([]),
+            'deletedSections': json.dumps([sec.id])
+        }
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self.band.sections.count(), 1)
@@ -398,10 +411,10 @@ class BandTests(GigTestBase):
 
         # test reorder
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': json.dumps([['hey','','hey'],['foo','','foo']]),
-                'deletedSections': json.dumps([])
-            }
+                                data={
+            'sectionInfo': json.dumps([['hey', '', 'hey'], ['foo', '', 'foo']]),
+            'deletedSections': json.dumps([])
+        }
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self.band.sections.count(), 3)
@@ -416,10 +429,10 @@ class BandTests(GigTestBase):
         self.assertEqual(sec2.order, 1)
 
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': json.dumps([['foo',sec2.id,'foo'],['hey',sec1.id,'hey']]),
-                'deletedSections': json.dumps([])
-            }
+                                data={
+            'sectionInfo': json.dumps([['foo', sec2.id, 'foo'], ['hey', sec1.id, 'hey']]),
+            'deletedSections': json.dumps([])
+        }
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self.band.sections.count(), 3)
@@ -434,10 +447,10 @@ class BandTests(GigTestBase):
         self.assertEqual(defsecs.count(), 1)
         defsec = defsecs.first()
         resp = self.client.post(reverse('band-set-sections', args=[a.band.id]),
-            data={
-                'sectionInfo': json.dumps([['foo',sec2.id,'foo'],['hey',sec1.id,'hey']]),
-                'deletedSections': json.dumps([defsec.id])
-            }
+                                data={
+            'sectionInfo': json.dumps([['foo', sec2.id, 'foo'], ['hey', sec1.id, 'hey']]),
+            'deletedSections': json.dumps([defsec.id])
+        }
         )
         self.assertEqual(self.band.sections.count(), 3)
         defsecs = self.band.sections.filter(is_default=True)
@@ -446,29 +459,30 @@ class BandTests(GigTestBase):
 
     def test_delete_band(self):
         # set up some sections in the band
-        section1 = Section.objects.create(name='section a', order=1, band=self.band, is_default=False)
-        section2 = Section.objects.create(name='section b', order=2, band=self.band, is_default=False)
+        section1 = Section.objects.create(
+            name='section a', order=1, band=self.band, is_default=False)
+        section2 = Section.objects.create(
+            name='section b', order=2, band=self.band, is_default=False)
 
         g, a1, _ = self.assoc_joe_and_create_gig()
         a1.default_section = section1
         a1.save()
 
-        a2 = Assoc.objects.create(member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+        a2 = Assoc.objects.create(
+            member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
         a2.default_section = section2
         a2.save()
 
         # at this point, we should have one band, three sections, three assocs, three plans
-        self.assertEqual(Band.objects.count(),1)
-        self.assertEqual(Section.objects.count(),3)
-        self.assertEqual(Assoc.objects.count(),3)
-        self.assertEqual(g.member_plans.count(),3)
+        self.assertEqual(Band.objects.count(), 1)
+        self.assertEqual(Section.objects.count(), 3)
+        self.assertEqual(Assoc.objects.count(), 3)
+        self.assertEqual(g.member_plans.count(), 3)
 
         self.band.delete()
         # should be no bands, no sections, no assocs, no member plans
-        self.assertEqual(Band.objects.count(),0)
-        self.assertEqual(Section.objects.count(),0)
-        self.assertEqual(Assoc.objects.count(),0)
-        self.assertEqual(Gig.objects.count(),0)
-        self.assertEqual(Plan.objects.count(),0)
-
-
+        self.assertEqual(Band.objects.count(), 0)
+        self.assertEqual(Section.objects.count(), 0)
+        self.assertEqual(Assoc.objects.count(), 0)
+        self.assertEqual(Gig.objects.count(), 0)
+        self.assertEqual(Plan.objects.count(), 0)
