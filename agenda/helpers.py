@@ -36,6 +36,7 @@ from django.core.paginator import Paginator
 
 PAGE_LENGTH = 10
 
+
 @login_required
 def agenda_gigs(request, the_type=None, page=1):
 
@@ -47,7 +48,8 @@ def agenda_gigs(request, the_type=None, page=1):
     paginator = Paginator(the_plans, PAGE_LENGTH)
     page_obj = paginator.get_page(page)
 
-    return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'page_obj': page_obj, 'the_type':the_type})
+    return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'page_obj': page_obj, 'the_type': the_type})
+
 
 @login_required
 def calendar_events(request, pk):
@@ -59,7 +61,7 @@ def calendar_events(request, pk):
 
     user_assocs = request.user.confirmed_assocs
 
-    band_colors = { a.band.id:a.colorval for a in user_assocs }
+    band_colors = {a.band.id: a.colorval for a in user_assocs}
 
     the_gigs = Gig.objects.filter(
         (Q(enddate__lte=end) | Q(enddate=None)),
@@ -90,18 +92,20 @@ def calendar_events(request, pk):
 @login_required
 def set_default_view(request, val):
     try:
-        request.user.preferences.default_view=AgendaChoices(val)
+        request.user.preferences.default_view = AgendaChoices(val)
     except ValueError:
         logging.error('user tried to set default view to something strange')
     request.user.preferences.save()
     return HttpResponse()
+
 
 @login_required
 def grid_heatmap(request, *args, **kw):
     year = int(request.POST['year'])
     band_id = int(request.POST['band'])
 
-    the_gigs = Gig.objects.filter(date__year=year, band=band_id).order_by('date').values('date')
+    the_gigs = Gig.objects.filter(
+        date__year=year, band=band_id).order_by('date').values('date')
 
     uncooked_data = {}
     for g in the_gigs:
@@ -122,22 +126,26 @@ def grid_heatmap(request, *args, **kw):
 
     return HttpResponse(json.dumps(data))
 
+
 @login_required
 def grid_section_members(request, *args, **kw):
     band_id = int(request.POST['band'])
-    assocs = Assoc.objects.filter(band=band_id).order_by('default_section__order')
+    assocs = Assoc.objects.filter(
+        band=band_id).order_by('default_section__order')
     mbs = {}
     for a in assocs:
-        info = {'id':a.member.id, 'name':a.member.display_name}
+        info = {'id': a.member.id, 'name': a.member.display_name}
         if a.default_section.id in mbs.keys():
             mbs[a.default_section.id]['members'].append(info)
         else:
-            mbs[a.default_section.id] = {'name':a.default_section.name,'members':[info]}
+            mbs[a.default_section.id] = {
+                'name': a.default_section.name, 'members': [info]}
 
     # convert to just a list
-    data = [{"id":x, "name":mbs[x]['name'], "members":mbs[x]['members']} for x in mbs]
+    data = [{"id": x, "name": mbs[x]['name'], "members":mbs[x]['members']}
+            for x in mbs]
     return HttpResponse(json.dumps(data))
-    
+
 
 @login_required
 def grid_gigs(request, *args, **kw):
@@ -145,17 +153,18 @@ def grid_gigs(request, *args, **kw):
     month = int(request.POST['month'])
     year = int(request.POST['year'])
 
-    gigs = Gig.objects.filter(date__month=month+1, date__year=year, band=band_id).order_by('date')
-    
+    gigs = Gig.objects.filter(
+        date__month=month+1, date__year=year, band=band_id).order_by('date')
+
     data = []
     for g in gigs:
         all_plans = Plan.objects.filter(gig=g).select_related()
-        member_plans = [ { 'member':p.assoc.member_id, 'plan':p.status} for p in all_plans ]
-        data.append ({
-            'title':g.title,
-            'date':str(g.date),
-            'id':g.id,
-            'plans':member_plans
+        member_plans = [{'member': p.assoc.member_id,
+                         'plan': p.status} for p in all_plans]
+        data.append({
+            'title': g.title,
+            'date': str(g.date),
+            'id': g.id,
+            'plans': member_plans
         })
     return HttpResponse(json.dumps(data))
-    
