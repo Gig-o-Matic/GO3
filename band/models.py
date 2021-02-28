@@ -99,12 +99,23 @@ class Band(models.Model):
         return self.name
 
 
+class SectionManager(models.Manager):
+    def populated(self):
+        # find out if there are any members in the default section
+        s = self.all().filter(is_default=True).first()
+        if len(Assoc.objects.filter(default_section=s)) == 1:
+            return self.all()
+        else:
+            return self.all().filter(is_default=False)
+
 class Section(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(default=0)
     band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
 
     is_default = models.BooleanField(default=False)
+
+    objects = SectionManager()
 
     def __str__(self):
         return '{0} in {1}'.format(self.name if self.name else 'No Section', self.band.name)
