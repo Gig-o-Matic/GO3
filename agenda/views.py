@@ -20,6 +20,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from member.models import MemberPreferences
 from member.util import AgendaChoices
+from band.models import Assoc
+from datetime import datetime
+import json
 
 @login_required
 def AgendaSelector(request):
@@ -27,6 +30,7 @@ def AgendaSelector(request):
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
         AgendaChoices.CALENDAR: CalendarView,
+        AgendaChoices.GRID: GridView,
     }
 
     return view_selector[request.user.preferences.default_view].as_view()(request)
@@ -49,5 +53,29 @@ class CalendarView(LoginRequiredMixin, TemplateView):
             m = int(m)+1
             y = int(y)+1900
             context['initialDate'] = f'{y}-{m:02d}-01'
+
+        return context
+
+class GridView(LoginRequiredMixin, TemplateView):
+    template_name='agenda/grid.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['year'] = datetime.now().year
+        context['month'] = datetime.now().month-1
+
+        # find my bands
+        m = self.request.user
+        assocs = Assoc.objects.filter(member=m)
+        context['band_data'] = json.dumps([{'id':a.band.id, 'name':a.band.name} for a in assocs])
+
+        return context
+
+class GridViewHeatmap(LoginRequiredMixin, TemplateView):
+    template_name='agenda/grid_heatmap.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['year'] = self.request.GET.get('year',None) or datetime.now().year
 
         return context

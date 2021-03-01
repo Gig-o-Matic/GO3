@@ -1,0 +1,306 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+{% csrf_token %}
+
+{% comment %}
+<!-- Uses https://github.com/SeBassTian23/CalendarHeatmap -->
+{% endcomment %}
+
+{% block headcontent %}
+<link rel="stylesheet" href="{% static 'heatmap/jquery.CalendarHeatmap.min.css' %}">
+
+{% endblock headcontent %}
+
+{% block title %}{% trans "Grid"%}{% endblock title %}
+
+{% block content %}
+    <div class="row">
+        <div class="page-header page-header mx-auto col-md-10 col-12">
+            {% trans "Grid of Gigs" %}
+            {% if user.preferences.default_view != 1 %}
+            <span id='default-sel'>
+                <small>(<a hx-get="{% url 'set-default-view' val=1 %}" hx-target='#default-sel' href="#">{% trans "Make this my default view!" %}</a>)</small>
+            </span>
+            {% endif %}
+        </div>
+        <div id='bandlist' class='mx-auto col-md-10 col-12'>
+            <div class="dropdown">
+                <a class="btn btn-sm btn-outline-secondary dropdown-toggle text-center" href="#" role="button" data-toggle="dropdown" id="dropdownMenu1">
+                    <span id="band-name"></span> <span class="caret"></span>
+                </a>
+                <div id="band-dropdown" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                    {% for a_band in bands %}
+                        <a class="dropdown-item">{{a_band.name}}</a>
+                    {% endfor %}
+                </div>
+            </div> <!-- dropdown -->
+        </div>
+    </div>
+    <div class="row">
+        <div id="hm" class="mx-auto col-md-10 col-12">
+            <div>
+                <button class='btn' onclick=yearClick(-1);><i class="fas fa-minus-square"></i></button>
+                </button><span id='year-display'></span>
+                <button class='btn' onclick=yearClick(1);><i class="fas fa-plus-square"></i></button>
+            </div>
+            <div id='heatmap-parent'></div>
+        </div>
+    </div>
+    <div class="row">
+        <div id="gg" class="mx-auto col-md-10 col-12">
+            <div>
+                <button class='btn' onclick=nextMonthClick(-1);><i class="fas fa-minus-square"></i></button>
+                </button><span id='month-display'></span>
+                <button class='btn' onclick=nextMonthClick(1);><i class="fas fa-plus-square"></i></button>
+                <span id='giggrid-loading'>
+                    <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                </span>    
+                <span id='giggrid-nogigs' style='display: none;'>
+                    {% trans "No Gigs" %}
+                </span>    
+            </div>
+            <div id='giggrid-outer'>
+                <table id="giggrid" class="display" width="100%">
+                    <tr><td></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block localscripts %}
+{% comment %} https://github.com/SeBassTian23/CalendarHeatmap {% endcomment %}
+<script src="{% static 'heatmap/jquery.CalendarHeatmap.min.js'%}"></script>
+<script>
+
+var data = [];
+var year = {{year}};
+var month = {{month}};
+var bands = JSON.parse('{{band_data|safe}}');
+var current_band = 0;
+
+
+function setBand(b) {
+
+    current_band = b;
+    updateBandList();
+    updateHeatMap();
+
+    // get rid of the current data
+    $("#giggrid").empty();
+    $('#giggrid').html(`
+<thead>
+    <tr id="title-row">
+        <th></th>
+    </tr>
+    <tr id="date-row">
+        <th></th>
+    </tr>
+    <tr id="time-row">
+        <th></th>
+    </tr>
+</thead>
+<tbody id="the_tbody">
+</tbody>`
+    )
+
+    updateBandMembers();
+}
+
+function updateBandMembers() {
+    // get the members of the current band organized by section
+    $.ajax({
+        url: '{% url "grid-section-members" %}',
+        data: { 'band': JSON.stringify(bands[current_band]['id']) },
+        type: 'post',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(result) {
+            sections = JSON.parse(result);
+            for (let i=0; i<sections.length; i++) {
+                section = sections[i]
+                members = section['members']
+                $('#the_tbody').append(`
+<tr class="gig-grid-section-row">
+    <th class="gig-grid-section-cell">${ section['name'] }
+    </th>
+</tr>
+                `);
+                for (let i=0; i<members.length; i++) {
+                    $('#the_tbody').append(`
+<tr id="member-row${ members[i].id }" class="gig-grid-member-row">
+    <td class="gig-grid-member-cell"><a href="/member/${ members[i].id }">${ members[i].name }</a>
+    </td>
+</tr>
+                    `);
+                }
+            }
+            updateGigGrid();
+        }
+    })
+}
+
+function updateBandList() {
+    $("#band-name").html(bands[current_band]['name'])
+    dd = $("#band-dropdown");
+    dd.empty();
+    if (bands.length > 0) {
+        for (let i=0; i<bands.length; i++) {
+            if (i != current_band) {
+                dd.append('<a class="dropdown-item" onclick=bandSelect('+i+')>'+bands[i]['name']+'</a>');
+            }
+        }
+    }
+}
+
+function bandSelect(which) {
+    setBand(which);
+}
+
+function monthClick(which) {
+    month=which
+    updateGigGrid();
+}
+
+function nextMonthClick(delta) {
+    month += delta
+
+    if (month < 0) {
+        month = 11;
+        year -= 1;
+        updateHeatMap();
+    } else if (month > 11) {
+        month = 0;
+        year += 1;
+        updateHeatMap();
+    }
+
+    updateGigGrid();
+}
+
+function updateGigGrid() {
+    $("#giggrid-outer").hide();
+    $("#giggrid-loading").show();
+    $("#giggrid-nogigs").hide();
+
+
+    $('#month-display').html(moment().month(month).format('MMMM'))
+    $('.gig-grid-title').remove();
+    $('.gig-grid-plan').remove();
+
+    $.ajax({
+        url: '{% url "grid-gigs" %}',
+        data: { 
+                'band': JSON.stringify(bands[current_band]['id']),
+                'month': month,
+                'year': year,
+             },
+        type: 'post',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(result) {
+            gigs = JSON.parse(result);
+            for (let i=0; i<gigs.length; i++) {
+                gig = gigs[i];
+                $('#title-row').append(`
+<td class="gig-grid-title">
+    <a href="/gig/${ gig.id }">${ gig.title }</a>
+</td>
+                `);
+                $('#date-row').append(`
+<td class="gig-grid-title">
+    ${ moment(gig.date).format('L') }
+</td>
+                `);
+                $('#time-row').append(`
+<td class="gig-grid-title">
+    ${ moment(gig.date).format('LT') }
+</td>
+                `);
+                for (let j=0; j<gig['plans'].length; j++) {
+                    plan = gig['plans'][j]
+                    switch(plan.plan) {
+                        case 1:
+                            icon='<i class="fas fa-circle" style="color:green"></i>';
+                            break;
+                        case 2:
+                            icon='<i class="far fa-circle" style="color:green"></i>';
+                            break;
+                        case 3:
+                            icon='<i class="fas fa-question" style="color:gray"></i>';
+                            break;
+                        case 4:
+                            icon='<i class="far fa-square" style="color:red"></i>';
+                            break;
+                        case 5:
+                            icon='<i class="fas fa-square" style="color:red"></i>';
+                            break;
+                        case 6:
+                            icon='<i class="fas fa-times" style="color:black"></i>';
+                            break;
+                        default:
+                            icon='<i class="fas fa-minus fa-sm" style="color:black"></i>';
+                    }
+                    $('#member-row'+plan['member']).append(`
+<td class="gig-grid-plan">${ icon }</td>
+                    `)
+                }
+            }
+            $("#giggrid-loading").hide();
+            if (gigs.length == 0) {
+                $("#giggrid-nogigs").show();
+            } else {
+                $("#giggrid-outer").show();
+            }
+        }
+    })
+}
+
+function yearClick(delta) {
+    year = year + delta;
+    updateHeatMap();
+
+    // new year = new month
+    month = 0;
+    updateGigGrid();
+}
+
+function updateHeatMap() {
+    $.ajax({
+        url: '{% url "grid-heatmap" %}',
+        data: { 
+            'band': JSON.stringify(bands[current_band]['id']),
+            'year': JSON.stringify(year)
+        },
+        type: 'post',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(result) {
+            data = JSON.parse(result);
+            $('#year-display').html(year)
+            $('#heatmap-parent').html('<div id="heatmap-location"></div>')
+            $('#heatmap-location').CalendarHeatmap( data, {
+                lastYear: year,
+                lastMonth: 12
+            } );
+            // for each month, add a handler to update the list of gigs on display
+            $('.ch-month').each(function(i, obj) {
+                obj.addEventListener( "click", function() { monthClick(i); } );
+            });
+
+        }
+    })
+}
+
+$(document).ready(function() {
+    setBand(0);
+    updateHeatMap();
+});
+
+</script>
+{% endblock localscripts %}
+

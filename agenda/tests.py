@@ -16,22 +16,52 @@
 """
 from gig.tests import GigTestBase
 from django.test import Client
+from django.urls import reverse
+from json import loads
+
 
 class AgendaTest(GigTestBase):
     def test_agenda(self):
         self.assoc_joe()
-        for i in range(0,19):
+        for i in range(0, 19):
             self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
-        c=Client()
+        c = Client()
         c.force_login(self.joeuser)
 
         # first 'page' of gigs should have 10
         response = c.get(f'/plans/noplans/1')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"),10)
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 10)
 
         # second 'page' of gigs should have 9
         response = c.get(f'/plans/noplans/2')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"),9)
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
 
 
+class GridTest(GigTestBase):
+    def test_grid(self):
+        self.assoc_joe()
+        for i in range(0, 19):
+            self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
+        c = Client()
+        c.force_login(self.joeuser)
 
+        # see that the band has users
+        response = c.post(reverse('grid-section-members'),
+                          data={'band': self.band.id})
+        self.assertEqual(response.status_code, 200)
+        data = loads(response.content)
+        self.assertEqual(len(data), 1)
+        band = data[0]
+        self.assertTrue(type(band) == dict)
+        self.assertTrue('members' in band.keys())
+        self.assertTrue(len(band['members']) == 2)
+
+        # see the right number of gigs
+        response = c.post(reverse('grid-gigs'), data={
+            'band': self.band.id,
+            'month': 0,  # need this to be month-1 because that's how it works in the javascript
+            'year': 2100,
+        })
+        self.assertEqual(response.status_code, 200)
+        gigs = loads(response.content)
+        self.assertEqual(len(gigs), 19)

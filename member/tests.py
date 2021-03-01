@@ -1032,7 +1032,6 @@ class MemberDeleteTest(TestCase):
         self.assertEqual(self.joeuser.phone, '')
         self.assertEqual(self.joeuser.statement, '')
 
-
 class GraphQLTest(GigTestBase):
 
     # test member queries
@@ -1066,3 +1065,4 @@ class GraphQLTest(GigTestBase):
         assert executed == {
             "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
         }
+

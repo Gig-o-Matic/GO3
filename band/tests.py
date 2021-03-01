@@ -116,6 +116,28 @@ class MemberTests(TestCase):
         self.assertEqual(assoc.default_section,
                          self.band.sections.get(is_default=True))
 
+    def test_populated_default(self):
+        """ if the default section is empty, don't return it from Band.sections.populated() """
+        # be sure we're a member of the default section
+        assoc = Assoc.objects.get(band=self.band, member=self.band_admin)
+        self.assertTrue(assoc.default_section.is_default)
+
+        # make a new section
+        new_section = Section.objects.create(band=self.band, name="foohorn")
+        self.assertFalse(new_section.is_default)
+
+        self.assertEqual(len(self.band.sections.all()), 2)
+        self.assertEqual(len(self.band.sections.populated()), 2)
+
+        # now change all assocs to be in the new section
+        all = Assoc.objects.filter(band=self.band)
+        for a in all:
+            a.default_section = new_section
+            a.save()
+
+        # now show that the populated sections don't include the default
+        self.assertEqual(len(self.band.sections.populated()), 1)
+
     def test_tf_param_user(self):
         a = self.assoc_joe()
         self.client.force_login(self.joeuser)
@@ -466,7 +488,6 @@ class BandTests(GigTestBase):
         self.assertEqual(Assoc.objects.count(), 0)
         self.assertEqual(Gig.objects.count(), 0)
         self.assertEqual(Plan.objects.count(), 0)
-
 
 class GraphQLTest(GigTestBase):
 

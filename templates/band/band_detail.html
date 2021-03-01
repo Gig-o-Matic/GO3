@@ -249,7 +249,7 @@
             <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
-                        {% if band.sections.all|length == 1 %}
+                        {% if band.sections.populated|length == 1 %}
                             <div class="col-4">
                                 {% trans "Members" %}
                                 {% if the_user_is_band_admin or request.user.is_superuser %}
@@ -277,7 +277,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12" id="sectionlist">
-                            {% for s in band.sections.all %}
+                            {% for s in band.sections.populated %}
                                 <div class="row"
                                      id="section{{forloop.counter0}}"
                                      hx-get="{% url 'section-members' pk=band.id sk=s.id %}"

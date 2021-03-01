@@ -23,6 +23,7 @@ from member.util import MemberStatusChoices, AgendaChoices
 from django.apps import apps
 import pytz
 
+
 class Band(models.Model):
     name = models.CharField(max_length=200)
     hometown = models.CharField(max_length=200, null=True, blank=True)
@@ -36,17 +37,19 @@ class Band(models.Model):
     member_links = models.TextField(max_length=500, null=True, blank=True)
     thumbnail_img = models.CharField(max_length=200, null=True, blank=True)
 
-    timezone = models.CharField(max_length=200, default='UTC', choices=[(x, x) for x in pytz.common_timezones])
+    timezone = models.CharField(max_length=200, default='UTC', choices=[
+                                (x, x) for x in pytz.common_timezones])
 
     # # sent to new members when they join
-    new_member_message = models.TextField(max_length=500, null=True, blank=True)
+    new_member_message = models.TextField(
+        max_length=500, null=True, blank=True)
 
     share_gigs = models.BooleanField(default=True)
     anyone_can_manage_gigs = models.BooleanField(default=True)
     anyone_can_create_gigs = models.BooleanField(default=True)
     send_updates_by_default = models.BooleanField(default=True)
     rss_feed = models.BooleanField(default=False)
-    
+
     simple_planning = models.BooleanField(default=False)
     plan_feedback = models.TextField(max_length=500, blank=True, null=True)
 
@@ -54,23 +57,24 @@ class Band(models.Model):
     def feedback_strings(self):
         return self.plan_feedback.split('\n')
 
-    status = models.IntegerField(choices=BandStatusChoices.choices, default=BandStatusChoices.ACTIVE)
+    status = models.IntegerField(
+        choices=BandStatusChoices.choices, default=BandStatusChoices.ACTIVE)
 
     creation_date = models.DateField(auto_now_add=True)
     last_activity = models.DateTimeField(auto_now=True)
 
     # # determines whether this band shows up in the band navigator - useful for hiding test bands
     # show_in_nav = models.BooleanField(default=True)
-    
+
     # # flags to determine whether to recompute calendar feeds
     # band_cal_feed_dirty = models.BooleanField(default=True)
     # pub_cal_feed_dirty = ndb.BooleanProperty(default=True)
 
     def has_member(self, member):
-        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count()==1
+        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1
 
     def is_admin(self, member):
-        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count()==1
+        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count() == 1
 
     def is_editor(self, member):
         return self.is_admin(member) or member.is_superuser
@@ -85,7 +89,7 @@ class Band(models.Model):
 
     @property
     def confirmed_members(self):
-        return apps.get_model('member','Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
+        return apps.get_model('member', 'Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
 
     @property
     def trash_gigs(self):
@@ -99,22 +103,36 @@ class Band(models.Model):
         return self.name
 
 
+class SectionManager(models.Manager):
+    def populated(self):
+        # find out if there are any members in the default section
+        s = self.all().filter(is_default=True).first()
+        if len(Assoc.objects.filter(default_section=s)) == 1:
+            return self.all()
+        else:
+            return self.all().filter(is_default=False)
+
+
 class Section(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(default=0)
-    band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
+    band = models.ForeignKey(
+        Band, related_name="sections", on_delete=models.CASCADE)
 
     is_default = models.BooleanField(default=False)
 
+    objects = SectionManager()
+
     def __str__(self):
         return '{0} in {1}'.format(self.name if self.name else 'No Section', self.band.name)
-        
+
     class Meta:
         ordering = ['order']
 
 
 class MemberAssocManager(models.Manager):
     """ functions on the Assoc class that are queries for members """
+
     def confirmed_count(self, member):
         """ returns the asocs for bands we're confirmed for """
         return super().get_queryset().filter(member=member, status=AssocStatusChoices.CONFIRMED).count()
@@ -126,17 +144,23 @@ class MemberAssocManager(models.Manager):
     def add_gig_assocs(self, member):
         """ return the assocs for bands the member can create gigs for """
         return super().get_queryset().filter(
-                            Q(member=member) & Q(status=AssocStatusChoices.CONFIRMED) & (
-                                Q(member__is_superuser=True) | Q(is_admin=True) | Q(band__anyone_can_create_gigs=True)
-                            )
-                        )
+            Q(member=member) & Q(status=AssocStatusChoices.CONFIRMED) & (
+                Q(member__is_superuser=True) | Q(is_admin=True) | Q(
+                    band__anyone_can_create_gigs=True)
+            )
+        )
+
 
 class Assoc(models.Model):
-    band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
-    member = models.ForeignKey("member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
-    default_section = models.ForeignKey(Section, null=True, blank=True, related_name="default_assocs", on_delete=models.DO_NOTHING)
+    band = models.ForeignKey(
+        Band, related_name="assocs", on_delete=models.CASCADE)
+    member = models.ForeignKey(
+        "member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
+    default_section = models.ForeignKey(
+        Section, null=True, blank=True, related_name="default_assocs", on_delete=models.DO_NOTHING)
 
-    status = models.IntegerField(choices=AssocStatusChoices.choices, default=AssocStatusChoices.NOT_CONFIRMED)
+    status = models.IntegerField(
+        choices=AssocStatusChoices.choices, default=AssocStatusChoices.NOT_CONFIRMED)
 
     is_admin = models.BooleanField(default=False)
     is_occasional = models.BooleanField(default=False)
@@ -154,8 +178,8 @@ class Assoc(models.Model):
 
     # default_section_index = ndb.IntegerProperty( default=None )
 
-    is_multisectional = models.BooleanField( default = False )
-    is_occasional = models.BooleanField( default = False )
+    is_multisectional = models.BooleanField(default=False)
+    is_occasional = models.BooleanField(default=False)
     # commitment_number = ndb.IntegerProperty(default=0)
     # commitment_total = ndb.IntegerProperty(default=0)
     color = models.IntegerField(default=0)
@@ -164,14 +188,11 @@ class Assoc(models.Model):
     def colorval(self):
         return the_colors[self.color]
 
-    email_me = models.BooleanField (default=True)
-    hide_from_schedule = models.BooleanField (default=False)
+    email_me = models.BooleanField(default=True)
+    hide_from_schedule = models.BooleanField(default=False)
 
     objects = models.Manager()
     member_assocs = MemberAssocManager()
 
     def __str__(self):
         return "{0} in {1}".format(self.member, self.band)
-
-
-
