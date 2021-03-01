@@ -64,21 +64,27 @@
                     {% if plan_member == member or user.is_superuser or plan.assoc.is_admin %}
                         <div class="dropdown mr-2">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
-                                {% if section == None %}
-                                    {% trans "section" %}...  <span class="caret"></span>
-                                {% else %}
-                                    {{section.name }} <span class="caret"></span>
-                        {% comment %}
-                        TODO the section name had a 'shorten' filter
-                        {% endcomment %}
-                                {% endif %}
+                                <span class="htmx-indicator-replace">
+                                    {% if section == None %}
+                                        {% trans "section" %}...  <span class="caret"></span>
+                                    {% else %}
+                                        {{section.name }} <span class="caret"></span>
+                                        {% comment %}
+                                        TODO the section name had a 'shorten' filter
+                                        {% endcomment %}
+                                    {% endif %}
+                                </span>
+                                <span class="htmx-indicator">
+                                    <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                </span>                        
                             </button>
                             <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
                                 {% for section in band.sections.all %}
                                     <a class="dropdown-item"
                                     hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
                                     hx-ext="update-dropdown"
-                                    hx-target="#sel-{{ plan.id }}">
+                                    hx-target="#sel-{{ plan.id }} span"
+                                    hx-indicator="#sel-{{ plan.id }}"">
                                         {{ section.name }}
                                     </a>
                         {% comment %}

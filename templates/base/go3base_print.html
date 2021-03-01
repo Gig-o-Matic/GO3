@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
+        <link rel="icon" type="image/png" href="/images/gigo.png" />
+        <link rel="shortcut icon" href="/images/gigo.png">
+
+        <title>Gig-o-Matic | {% block title %}{% endblock title %}</title>
+
+
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <!-- font awesome -->
+
+<!--        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
+        <script src="https://kit.fontawesome.com/97a9d560b1.js"></script>
+
+        <!--[if lt IE 9]>
+            <script src="../../assets/js/html5shiv.js"></script>
+            <script src="../../assets/js/respond.min.js"></script>
+        <![endif]-->
+
+        <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/css/jqueryui-editable.css" rel="stylesheet"/>
+
+    </head>
+
+    <body
+        <div class="container">
+        {% block content %}
+        {% endblock content %}
+        </div>
+    </body>
+</html>
+
+{% block localscripts %}
+{% endblock %}
