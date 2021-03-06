@@ -32,10 +32,10 @@ import os
 import sys
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
-from multiprocessing import set_start_method # for task q
+from multiprocessing import set_start_method  # for task q
 
 _testing = False
-if len(sys.argv) > 1 and sys.argv[1] == 'test':
+if len(sys.argv) > 1 and sys.argv[1] == "test":
     _testing = True
     logging.disable(logging.CRITICAL)
 
@@ -47,72 +47,71 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'yat4xel1-))u_nt8a_o+4=-sxhvvs^wj*s6br)^w#n(r%vw9-#'
+SECRET_KEY = "yat4xel1-))u_nt8a_o+4=-sxhvvs^wj*s6br)^w#n(r%vw9-#"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'member.apps.MemberConfig',
-    'band.apps.BandConfig',
-    'motd.apps.MotdConfig',
-    'gig.apps.GigConfig',
-    'agenda.apps.AgendaConfig',
-    'widget_tweaks',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_extensions',
-    'django.contrib.humanize',
-    'django_q',
-    'simple_history',
+    "member.apps.MemberConfig",
+    "band.apps.BandConfig",
+    "motd.apps.MotdConfig",
+    "gig.apps.GigConfig",
+    "agenda.apps.AgendaConfig",
+    "widget_tweaks",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_extensions",
+    "django.contrib.humanize",
+    "django_q",
+    "simple_history",
+    "graphene_django",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
     # 'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'go3.urls'
+ROOT_URLCONF = "go3.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR + '/templates/',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [
+            BASE_DIR + "/templates/",
         ],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.i18n',
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.i18n",
             ],
         },
     },
 ]
 
-FORMAT_MODULE_PATH = [
-    'go3.formats'
-]
+FORMAT_MODULE_PATH = ["go3.formats"]
 
-WSGI_APPLICATION = 'go3.wsgi.application'
+WSGI_APPLICATION = "go3.wsgi.application"
 
 
 # Database
@@ -120,30 +119,30 @@ WSGI_APPLICATION = 'go3.wsgi.application'
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'var', 'go3.sqlite3')
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
     }
 }
 
 
-AUTH_USER_MODEL = 'member.Member'
+AUTH_USER_MODEL = "member.Member"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -152,75 +151,75 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
 LANGUAGES = [
-  ('de', _('German')),
-  ('en-us', _('English (US)')),
-  ('en-uk', _('English (UK)')),
-  ('fr', _('French')),
-  ('it', _('Italian')),
+    ("de", _("German")),
+    ("en-us", _("English (US)")),
+    ("en-uk", _("English (UK)")),
+    ("fr", _("French")),
+    ("it", _("Italian")),
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
 USE_L10N = True
 
 USE_TZ = True
-	
-LOCALE_PATHS = (
-    os.path.join(BASE_DIR, 'locale'),
-)
+
+LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 # for whitenoise
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login'
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login"
 
 # Configure Django-q message broker
-set_start_method("fork")
 Q_CLUSTER = {
-    'name': 'DjangORM',
-    'workers': 4,
-    'timeout': 90,
-    'retry': 120,
-    'queue_limit': 50,
-    'bulk': 10,
-    'orm': 'default',
-    'sync': _testing,
-    'catch_up': False, # don't run scheduled tasks many times if we come back from an extended downtime
+    "name": "DjangORM",
+    "workers": 4,
+    "timeout": 90,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+    "sync": _testing,
+    "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
 }
 
 # Email settings
-DEFAULT_FROM_EMAIL = 'gigomatic.superuser@gmail.com'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = "gigomatic.superuser@gmail.com"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # For production, be sure to set
-#EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'
-#EMAIL_HOST = ...
-#EMAIL_HOST_USER = ...
-#EMAIL_HOST_PASSWORD = ...
+# EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'
+# EMAIL_HOST = ...
+# EMAIL_HOST_USER = ...
+# EMAIL_HOST_PASSWORD = ...
 
 # Calfeed settings
-DYNAMIC_CALFEED = False # True to generate calfeed on demand; False for disk cache
+DYNAMIC_CALFEED = False  # True to generate calfeed on demand; False for disk cache
 
 MESSAGE_TAGS = {
-    messages.DEBUG: 'alert-info',
-    messages.INFO: 'alert-info',
-    messages.SUCCESS: 'alert-success',
-    messages.WARNING: 'alert-warning',
-    messages.ERROR: 'alert-danger'
+    messages.DEBUG: "alert-info",
+    messages.INFO: "alert-info",
+    messages.SUCCESS: "alert-success",
+    messages.WARNING: "alert-warning",
+    messages.ERROR: "alert-danger",
 }
+
+# Graphene GraphQL settings
+GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 
 try:
     from .settings_local import *

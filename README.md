@@ -12,6 +12,10 @@ To create the database, run
 ```
 python manage.py migrate
 ```
+To seed the database with test data, run
+```
+python manage.py loaddata fixtures/testdata.json
+```
 Then, to create an administrative user, run
 ```
 python manage.py createsuperuser
@@ -21,6 +25,33 @@ At this point, you should be able to run the project locally:
 python manage.py runserver
 ```
 You can log in with the user created above.
+
+## Testing
+
+```
+python manage.py collectstatic
+```
+```
+python manage.py test
+```
+
+## GraphQL API
+
+To test the GraphQL endpoint, run the project locally and navigate to `http://127.0.0.1:8000/graphql` in your browser. 
+
+Queries in the GUI are formatted as such:
+```
+query {
+	allBands {
+		name,
+		hometown
+	}
+}
+```
+
+## Formatting standards
+
+We are converting the project to `autopep8`.
 
 ## Task queue
 

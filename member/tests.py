@@ -35,6 +35,9 @@ from django.urls import resolve, reverse
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
 from datetime import timedelta
+from graphene.test import Client as graphQLClient
+from go3.schema import schema
+from gig.tests import GigTestBase
 import pytz
 import os
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
@@ -1028,3 +1031,38 @@ class MemberDeleteTest(TestCase):
         self.joeuser.delete()
         self.assertEqual(self.joeuser.phone, '')
         self.assertEqual(self.joeuser.statement, '')
+
+class GraphQLTest(GigTestBase):
+
+    # test member queries
+    def test_all_members(self):
+        client = graphQLClient(schema)
+        executed = client.execute(
+            """{ allMembers{
+            email,
+            username
+            } }"""
+        )
+        assert executed == {
+            "data": {
+                "allMembers": [
+                    {"email": "super@b.c", "username": ""},
+                    {"email": "admin@e.f", "username": ""},
+                    {"email": "joeuser@h.i", "username": ""},
+                    {"email": "janeuser@k.l", "username": ""},
+                ]
+            }
+        }
+
+    def test_member_by_email(self):
+        client = graphQLClient(schema)
+        executed = client.execute(
+            """{ memberByEmail(email:"joeuser@h.i") {
+            email,
+            username
+            } }"""
+        )
+        assert executed == {
+            "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
+        }
+

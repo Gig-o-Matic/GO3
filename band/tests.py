@@ -25,6 +25,8 @@ from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
 from gig.tests import GigTestBase
 from django.utils import timezone
+from graphene.test import Client as graphQLClient
+from go3.schema import schema
 import json
 
 
@@ -486,3 +488,30 @@ class BandTests(GigTestBase):
         self.assertEqual(Assoc.objects.count(), 0)
         self.assertEqual(Gig.objects.count(), 0)
         self.assertEqual(Plan.objects.count(), 0)
+
+class GraphQLTest(GigTestBase):
+
+    # test band queries
+    def test_all_bands(self):
+        client = graphQLClient(schema)
+        executed = client.execute(
+            """{ allBands {
+            name,
+            hometown
+            } }"""
+        )
+        assert executed == {
+            "data": {"allBands": [{"name": "test band", "hometown": "Seattle"}]}
+        }
+
+    def test_band_by_name(self):
+        client = graphQLClient(schema)
+        executed = client.execute(
+            """{ bandByName(name:"test band") {
+            name,
+            hometown
+            } }"""
+        )
+        assert executed == {
+            "data": {"bandByName": {"name": "test band", "hometown": "Seattle"}}
+        }
