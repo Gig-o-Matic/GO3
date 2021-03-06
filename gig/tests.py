@@ -36,7 +36,8 @@ from lib.template_test import MISSING, flag_missing_vars
 
 class GigTestBase(TestCase):
     def setUp(self):
-        self.super = Member.objects.create_user(email="super@b.c", is_superuser=True)
+        self.super = Member.objects.create_user(
+            email="super@b.c", is_superuser=True)
         self.band_admin = Member.objects.create_user(email="admin@e.f")
         self.joeuser = Member.objects.create_user(email="joeuser@h.i")
         self.janeuser = Member.objects.create_user(email="janeuser@k.l")
@@ -77,8 +78,10 @@ class GigTestBase(TestCase):
             title=title,
             band_id=self.band.id,
             date=thedate,
-            setdate=thedate + timedelta(minutes=30) if set_date == "auto" else set_date,
-            enddate=thedate + timedelta(hours=2) if end_date == "auto" else end_date,
+            setdate=thedate +
+            timedelta(minutes=30) if set_date == "auto" else set_date,
+            enddate=thedate +
+            timedelta(hours=2) if end_date == "auto" else end_date,
             contact=the_member,
             status=GigStatusChoices.UNKNOWN,
         )
@@ -210,7 +213,8 @@ class GigTest(GigTestBase):
         g = self.create_gig(self.band_admin)
         p = g.member_plans.get(assoc__member=self.joeuser)
         self.assertEqual(p.assoc.member, self.joeuser)
-        self.assertEqual(p.plan_section, None)  # we didn't set one so should be None
+        # we didn't set one so should be None
+        self.assertEqual(p.plan_section, None)
         self.assertEqual(p.section, s1)  # should use the member's section
 
         """ change the member's default section and show that it changed for the gig """
@@ -235,7 +239,8 @@ class GigTest(GigTestBase):
         """ make sure that if I don't have permission to create a gig, I can't """
         self.band.anyone_can_create_gigs = False
         self.band.save()
-        self.assoc_joe()  # need a member of the band so there's a valid contact to select from in the form
+        # need a member of the band so there's a valid contact to select from in the form
+        self.assoc_joe()
         self.create_gig_form(
             user=self.janeuser, title="permission gig", expect_code=403
         )
@@ -247,7 +252,8 @@ class GigTest(GigTestBase):
         )
         self.band.anyone_can_manage_gigs = False
         self.band.save()
-        self.update_gig_form(g, user=self.janeuser, title="not legal!", expect_code=403)
+        self.update_gig_form(g, user=self.janeuser,
+                             title="not legal!", expect_code=403)
 
     @flag_missing_vars
     def test_new_gig_email(self):
@@ -299,7 +305,8 @@ class GigTest(GigTestBase):
         )
 
     def test_gig_time_no_end(self):
-        self.assoc_joe_and_create_gig(set_time="12:30 pm", end_date="", end_time="")
+        self.assoc_joe_and_create_gig(
+            set_time="12:30 pm", end_date="", end_time="")
         self.assertIn(
             "Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact",
             mail.outbox[0].body,
@@ -340,7 +347,8 @@ class GigTest(GigTestBase):
 
         message = mail.outbox[0]
         self.assertIn("02.01.2100 (Sa)", message.body)
-        self.assertIn("12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)", message.body)
+        self.assertIn(
+            "12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)", message.body)
         self.assertIn("Nicht fixiert", message.body)
 
     def test_new_gig_time_localization(self):
@@ -451,7 +459,8 @@ class GigTest(GigTestBase):
         self.assertEqual(len(mail.outbox), 2)
         for message in mail.outbox:
             self.assertIn("Reminder", message.subject)
-        self.assertEqual(g.member_plans.filter(snooze_until__isnull=False).count(), 0)
+        self.assertEqual(g.member_plans.filter(
+            snooze_until__isnull=False).count(), 0)
 
     def test_snooze_until_cutoff(self):
         joeassoc = Assoc.objects.create(
@@ -586,9 +595,9 @@ class GigTest(GigTestBase):
 
         message = mail.outbox[0]
         self.assertIn(
-            f'Your current status is "{PlanStatusChoices.DEFINITELY.label}"',
+            f'Your current status is "{PlanStatusChoices.DEFINITELY.label}"',  # pylint: disable=no-member
             message.body,
-        )  # pylint: disable=no-member
+        )
         self.assertNotIn("**can** make it", message.body)
         self.assertIn("**can't** make it", message.body)
 
@@ -601,9 +610,9 @@ class GigTest(GigTestBase):
 
         message = mail.outbox[0]
         self.assertIn(
-            f'Your current status is "{PlanStatusChoices.CANT_DO_IT.label}"',
+            f'Your current status is "{PlanStatusChoices.CANT_DO_IT.label}"',  # pylint: disable=no-member
             message.body,
-        )  # pylint: disable=no-member
+        )
         self.assertIn("**can** make it", message.body)
         self.assertNotIn("**can't** make it", message.body)
 
@@ -679,7 +688,7 @@ class GigTest(GigTestBase):
         p.refresh_from_db()
         self.assertEqual(p.snooze_until, None)
 
-    ### tests of date/time setting using the form
+    # tests of date/time setting using the form
     def assertDateEqual(self, d1, d2):
         """ compare dates ignoring timezone """
         for a in ["month", "day", "year", "hour", "minute"]:
@@ -692,7 +701,8 @@ class GigTest(GigTestBase):
         )
 
     def test_date_only(self):
-        g, _, _ = self.assoc_joe_and_create_gig(call_date="01/02/2023", call_time="")
+        g, _, _ = self.assoc_joe_and_create_gig(
+            call_date="01/02/2023", call_time="")
         self.assertDateEqual(
             g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0)
         )
@@ -847,7 +857,8 @@ class GigTest(GigTestBase):
         self.assertIn('"http://pbs.org"', response.content.decode("ascii"))
 
     def test_address_address(self):
-        g, _, _ = self.assoc_joe_and_create_gig(address="1600 Pennsylvania Avenue")
+        g, _, _ = self.assoc_joe_and_create_gig(
+            address="1600 Pennsylvania Avenue")
         c = Client()
         c.force_login(self.joeuser)
         response = c.get(f"/gig/{g.id}/")
@@ -890,7 +901,8 @@ class GigTest(GigTestBase):
     def test_plan_feedback_user(self):
         _, _, p = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
-        resp = self.client.post(reverse("plan-update-feedback", args=[p.id, 42]))
+        resp = self.client.post(
+            reverse("plan-update-feedback", args=[p.id, 42]))
         self.assertEqual(resp.status_code, 204)
         p.refresh_from_db()
         self.assertEqual(p.feedback_value, 42)
@@ -899,7 +911,8 @@ class GigTest(GigTestBase):
         _, _, p = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
         resp = self.client.post(
-            reverse("plan-update-comment", args=[p.id]), {"value": "Plan comment"}
+            reverse("plan-update-comment",
+                    args=[p.id]), {"value": "Plan comment"}
         )
         self.assertEqual(resp.status_code, 200)
         p.refresh_from_db()
@@ -909,7 +922,8 @@ class GigTest(GigTestBase):
         _, _, p = self.assoc_joe_and_create_gig()
         s = Section.objects.create(name="s1", band=self.band)
         self.client.force_login(self.joeuser)
-        resp = self.client.post(reverse("plan-update-section", args=[p.id, s.id]))
+        resp = self.client.post(
+            reverse("plan-update-section", args=[p.id, s.id]))
         self.assertEqual(resp.status_code, 204)
         p.refresh_from_db()
         self.assertEqual(p.plan_section, s)
@@ -918,7 +932,8 @@ class GigTest(GigTestBase):
         g, _, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
-        self.assertEqual(resp.status_code, 403)  # should fail - joeuser is not an admin
+        # should fail - joeuser is not an admin
+        self.assertEqual(resp.status_code, 403)
         self.client.force_login(self.band_admin)
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         self.assertEqual(resp.status_code, 302)  # should redirect
