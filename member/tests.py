@@ -334,7 +334,7 @@ class MemberCalfeedTest(FSTestCase):
         self.joeuser.save()
         update_member_calfeed(self.joeuser.id)
         self.joeuser.refresh_from_db()
-        self.assertFalse(self.joeuser.cal_feed_dirty)
+        # self.assertFalse(self.joeuser.cal_feed_dirty) # moved this to an async task
 
         cf = calfeed(request=None, pk=self.joeuser.cal_feed_id)
         self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)
