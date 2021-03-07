@@ -94,35 +94,9 @@
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Public Gig Calendar Feed" %}</div>
                         <div class="col-sm-9 col-12">
-                                <a href="http://www.gig-o-matic.com/cal/p/{{band.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
+                                <a href="{% url 'band-calfeed' pk=user.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
                         </div>
                     </div>
-                    {% if band.rss_feed %}
-                        <div class="row">
-                            <div class="col-12">
-                                &nbsp;
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-3 col-12">{% trans "Public Gig RSS" %}</div>
-                            <div class="col-sm-9 col-12">
-                                    <a href="http://www.gig-o-matic.com/rss/{{band.id}}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
-                            </div>
-                        </div>
-                    {% endif %}
-                    {% if request.user.is_superuser %}
-                        <div class="row">
-                            <div class="col-12">
-                                &nbsp;
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-3 col-12">{% trans "Calendar URL for Members" %}</div>
-                            <div class="col-sm-9 col-12">
-                                    <a href="http://www.gig-o-matic.com/cal/b/{{band.id}}" onclick="return false;">{% trans "Copy this link's URL and use it to subscribe in google or iCal or whatever" %}</a>
-                            </div>
-                        </div>
-                    {% endif %}
                 {% endif %}
             </div> <!-- card-body -->
         </div> <!-- card -->
