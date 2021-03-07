@@ -23,7 +23,7 @@ from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .views import AssocsView, OtherBandsView
-from .helpers import prepare_calfeed, calfeed, update_all_calfeeds
+from .helpers import prepare_calfeed, calfeed, update_member_calfeed
 from .util import MemberStatusChoices
 from lib.email import DEFAULT_SUBJECT, prepare_email
 from lib.template_test import MISSING, flag_missing_vars, TemplateTestCase
@@ -327,11 +327,14 @@ class MemberCalfeedTest(FSTestCase):
         self.setUpPyfakefs()    # fake a file system
         os.mkdir('calfeeds')
 
+        # turn on dynamic calfeeds - worry about the queue version some other time
+        settings.DYNAMIC_CALFEED = True
+
         self.joeuser.cal_feed_dirty = True
         self.joeuser.save()
-        update_all_calfeeds()
+        update_member_calfeed(self.joeuser.id)
         self.joeuser.refresh_from_db()
-        self.assertFalse(self.joeuser.cal_feed_dirty)
+        # self.assertFalse(self.joeuser.cal_feed_dirty) # moved this to an async task
 
         cf = calfeed(request=None, pk=self.joeuser.cal_feed_id)
         self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)

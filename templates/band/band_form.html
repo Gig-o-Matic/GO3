@@ -107,6 +107,15 @@
                     </div>
                 </div>
             </div>
+            <div class='row'>
+                <div class="offset-lg-2 offset-md-1 col-lg-4 col-md-5 col-6">
+                    <div class="form-group">
+                        {{ form.default_language.errors }}
+                        {{ form.default_language.label_tag }}
+                        {% render_field form.default_language class+="form-control" %}
+                    </div>
+                </div>
+            </div>
 
             <div class='row'>
                 <div class="mx-auto col-lg-8 col-md-10 col-12">

@@ -22,6 +22,8 @@ from .util import BandStatusChoices, AssocStatusChoices
 from member.util import MemberStatusChoices, AgendaChoices
 from django.apps import apps
 import pytz
+import uuid
+from go3.settings import LANGUAGES
 
 
 class Band(models.Model):
@@ -68,7 +70,10 @@ class Band(models.Model):
 
     # # flags to determine whether to recompute calendar feeds
     # band_cal_feed_dirty = models.BooleanField(default=True)
-    # pub_cal_feed_dirty = ndb.BooleanProperty(default=True)
+    pub_cal_feed_dirty = models.BooleanField(default=True)
+    pub_cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+
+    default_language = models.CharField(choices=LANGUAGES, max_length=200, default='en-us')
 
     def has_member(self, member):
         return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1

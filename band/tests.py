@@ -18,16 +18,24 @@
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from .models import Band, Assoc, Section
+from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed
 from member.models import Member
 from gig.models import Gig, Plan
+from gig.util import GigStatusChoices, PlanStatusChoices
 from band import helpers
 from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
 from gig.tests import GigTestBase
 from django.utils import timezone
+from datetime import timedelta
+import pytz
+from pytz import timezone as pytz_timezone
 from graphene.test import Client as graphQLClient
 from go3.schema import schema
 import json
+import os
+from django.conf import settings
+from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 
 
 class MemberTests(TestCase):
@@ -488,6 +496,104 @@ class BandTests(GigTestBase):
         self.assertEqual(Assoc.objects.count(), 0)
         self.assertEqual(Gig.objects.count(), 0)
         self.assertEqual(Plan.objects.count(), 0)
+
+
+class BandCalfeedTest(FSTestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(
+            email='a@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='d@e.f')
+
+        self.joeuser = Member.objects.create_user(email='g@h.i')
+        self.joeuser.preferences.hide_canceled_gigs = False
+        self.joeuser.preferences.calendar_show_only_confirmed = False
+        self.joeuser.preferences.calendar_show_only_committed = False
+        self.joeuser.preferences.save()
+
+        self.janeuser = Member.objects.create_user(email='j@k.l')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(member=self.joeuser,
+                             band=self.band, is_admin=True)
+        self.create_gigs()
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+        Gig.objects.all().delete()
+
+    def create_gigs(self):
+        the_date = timezone.datetime(
+            2100, 1, 2, tzinfo=pytz.timezone(self.band.timezone))
+        Gig.objects.create(
+            title="Gig1",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED
+        )
+        Gig.objects.create(
+            title="Gig2",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            hide_from_calendar=True,
+            status=GigStatusChoices.CONFIRMED
+        )
+        Gig.objects.create(
+            title="Gig3",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CANCELLED
+        )
+
+    def test_band_caldav_stream(self):
+        cf = prepare_band_calfeed(self.band)
+        self.assertTrue(cf.find(b'Gig1') >= 0)
+        self.assertTrue(cf.find(b'Gig2') < 0)
+        self.assertTrue(cf.find(b'Gig3') < 0)
+
+    def test_member_calfeed_bad_url(self):
+        """ fail on bad calfeed url """
+        self.setUpPyfakefs()    # fake a file system
+        os.mkdir('calfeeds')
+
+        # should fail due to bad calfeed id
+        r = band_calfeed(request=None, pk='xyz')
+        self.assertEqual(r.status_code, 404)
+
+    def test_band_calfeed_url(self):
+        """ fake a file system """
+        self.setUpPyfakefs()    # fake a file system
+        os.mkdir('calfeeds')
+
+        # turn on dynamic calfeeds - worry about the queue version some other time
+        settings.DYNAMIC_CALFEED = True
+
+        self.band.pub_cal_feed_dirty = True
+        self.band.save()
+        update_band_calfeed(self.band.id)
+        self.band.refresh_from_db()
+        # self.assertFalse(self.band.pub_cal_feed_dirty) # moved this to an async task
+
+        cf = band_calfeed(request=None, pk=self.band.pub_cal_feed_id)
+        self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)
+
+    def test_band_calfeeds_dirty(self):
+        self.band.pub_cal_feed_dirty = False
+        self.band.save()
+
+        g = Gig.objects.first()
+        g.title = "Edited"
+        g.save()
+        self.band.refresh_from_db()
+        self.assertTrue(self.band.pub_cal_feed_dirty)
+
 
 class GraphQLTest(GigTestBase):
 

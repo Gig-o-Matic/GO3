@@ -29,7 +29,7 @@ class BandForm(forms.ModelForm):
     class Meta:
         model = Band
         fields = ['name', 'shortname', 'hometown', 'description', 'member_links', 'website',
-            'new_member_message', 'thumbnail_img', 'images', 'timezone',
+            'new_member_message', 'thumbnail_img', 'images', 'timezone', 'default_language',
             'anyone_can_create_gigs', 'anyone_can_manage_gigs', 'share_gigs',
             'send_updates_by_default', 'rss_feed', 'simple_planning', 'plan_feedback']
 
