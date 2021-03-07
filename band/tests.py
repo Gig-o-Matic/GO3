@@ -526,7 +526,7 @@ class BandCalfeedTest(FSTestCase):
     def create_gigs(self):
         the_date = timezone.datetime(
             2100, 1, 2, tzinfo=pytz.timezone(self.band.timezone))
-        g1 = Gig.objects.create(
+        Gig.objects.create(
             title="Gig1",
             band_id=self.band.id,
             date=the_date,
@@ -534,7 +534,7 @@ class BandCalfeedTest(FSTestCase):
             enddate=the_date + timedelta(hours=2),
             status=GigStatusChoices.CONFIRMED
         )
-        g2 = Gig.objects.create(
+        Gig.objects.create(
             title="Gig2",
             band_id=self.band.id,
             date=the_date,
@@ -543,7 +543,7 @@ class BandCalfeedTest(FSTestCase):
             hide_from_calendar=True,
             status=GigStatusChoices.CONFIRMED
         )
-        g3 = Gig.objects.create(
+        Gig.objects.create(
             title="Gig3",
             band_id=self.band.id,
             date=the_date,
