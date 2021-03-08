@@ -35,7 +35,7 @@ class BandList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'bands'
 
 
-class DetailView(LoginRequiredMixin, generic.DetailView):
+class DetailView(LoginRequiredMixin, BandMemberRequiredMixin, generic.DetailView):
     model = Band
     # fields = ['name', 'hometown']
 
@@ -63,7 +63,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
 
-class UpdateView(LoginRequiredMixin, BaseUpdateView):
+class UpdateView(LoginRequiredMixin, BandMemberRequiredMixin, BaseUpdateView):
     model = Band
     form_class = BandForm
 
@@ -71,7 +71,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
         return reverse('band-detail', kwargs={'pk': self.object.id})
 
 
-class AllMembersView(LoginRequiredMixin, TemplateView):
+class AllMembersView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
     template_name = 'band/band_all_members.html'
 
     def get_context_data(self, **kwargs):
@@ -81,7 +81,7 @@ class AllMembersView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class SectionMembersView(LoginRequiredMixin, TemplateView):
+class SectionMembersView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
     template_name = 'band/band_section_members.html'
 
     def get_context_data(self, **kwargs):
