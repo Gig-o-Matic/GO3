@@ -112,6 +112,7 @@ a {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+  z-index:9999;
 }
 
 .h5, h5 {

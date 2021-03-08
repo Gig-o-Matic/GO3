@@ -7,7 +7,7 @@
                 <button type="button" class="btn btn-sm btn-secondary dropdown-toggle text-center" data-toggle="dropdown">
                     <i class="fas fa-plus-square"></i> {% trans "Add Band" %}
                 </button>
-                <div class="dropdown-menu">
+                <div class="dropdown-menu" style="-index: 100000 !important;">
                     {% for a_band in bands %}
                         <a class="dropdown-item" role="presentation" role="menuitem" tabindex="-1" href="#" hx-ext="reload" hx-post="{% url 'assoc-join' bk=a_band.id mk=member_id %}" hx-trigger="click" hx-target="#bandlist">{{a_band.name}}</a>
                     {% endfor %}
