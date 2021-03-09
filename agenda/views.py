@@ -23,6 +23,8 @@ from member.util import AgendaChoices
 from band.models import Assoc
 from datetime import datetime
 import json
+from graphene_django.views import GraphQLView
+
 
 @login_required
 def AgendaSelector(request):
@@ -35,19 +37,23 @@ def AgendaSelector(request):
 
     return view_selector[request.user.preferences.default_view].as_view()(request)
 
+
 class AgendaView(LoginRequiredMixin, TemplateView):
-    template_name='agenda/agenda.html'
+    template_name = 'agenda/agenda.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
 
+
 class CalendarView(LoginRequiredMixin, TemplateView):
-    template_name='agenda/calendar.html'
+    template_name = 'agenda/calendar.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        m = self.request.GET.get('m',None)
-        y = self.request.GET.get('y',None)
+        m = self.request.GET.get('m', None)
+        y = self.request.GET.get('y', None)
 
         if m and y:
             m = int(m)+1
@@ -56,8 +62,10 @@ class CalendarView(LoginRequiredMixin, TemplateView):
 
         return context
 
+
 class GridView(LoginRequiredMixin, TemplateView):
-    template_name='agenda/grid.html'
+    template_name = 'agenda/grid.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -67,15 +75,23 @@ class GridView(LoginRequiredMixin, TemplateView):
         # find my bands
         m = self.request.user
         assocs = Assoc.objects.filter(member=m)
-        context['band_data'] = json.dumps([{'id':a.band.id, 'name':a.band.name} for a in assocs])
+        context['band_data'] = json.dumps(
+            [{'id': a.band.id, 'name': a.band.name} for a in assocs])
 
         return context
 
+
 class GridViewHeatmap(LoginRequiredMixin, TemplateView):
-    template_name='agenda/grid_heatmap.html'
+    template_name = 'agenda/grid_heatmap.html'
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['year'] = self.request.GET.get('year',None) or datetime.now().year
+        context['year'] = self.request.GET.get(
+            'year', None) or datetime.now().year
 
         return context
+
+
+class PrivateGraphQLView(LoginRequiredMixin, GraphQLView):
+    pass
