@@ -38,6 +38,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.http import Http404
 
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
@@ -114,7 +115,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
     def render_to_response(self, context):
         if self.object.status == MemberStatusChoices.DELETED:
-            return HttpResponseNotFound()
+            # return HttpResponseNotFound()
+            raise Http404
         else:
             return super().render_to_response(context)
 
