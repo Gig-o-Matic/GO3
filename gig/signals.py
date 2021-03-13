@@ -29,6 +29,7 @@ def create_member_plans(sender, instance, created, **kwargs):
     if created:
         _ = instance.member_plans
 
+
 @receiver(post_save, sender=Gig)
 def set_calfeed_dirty(sender, instance, created, **kwargs):
     async_task('band.helpers.set_calfeeds_dirty', instance.band)
@@ -38,5 +39,7 @@ def set_calfeed_dirty(sender, instance, created, **kwargs):
 def update_plan_section(sender, instance, **kwargs):
     """ set the section to the plan_section, unless there isn't one - in that case use the member's default """
     instance.section = instance.plan_section or instance.assoc.section
+
+    # if our answer changes from DONT_KNOW to anything, make sure we don't have a snooze reminder set
     if instance.status not in (PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW):
         instance.snooze_until = None

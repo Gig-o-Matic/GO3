@@ -161,19 +161,6 @@ def send_reminder_email(gig):
     undecided = gig.member_plans.filter(status__in=(PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW))
     send_emails_from_plans(undecided, 'email/gig_reminder.md')
 
-def send_snooze_reminders():
-    """
-    Send a reminder for all plans with a snooze_until in the next day and a gig
-    date in the future.  Set the snooze_until property of all such plans to None,
-    to so we don't send another reminder in the future.
-    """
-    now = datetime.datetime.now(tz=timezone.get_current_timezone())
-    next_day = now + datetime.timedelta(days=1)
-    unsnooze = Plan.objects.filter(snooze_until__isnull=False,
-                                   snooze_until__lte=next_day,
-                                   gig__date__gt=now)
-    send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
-    unsnooze.update(snooze_until=None)
 
 def notify_new_gig(gig, created):
     async_task('gig.helpers.send_email_from_gig', gig,
