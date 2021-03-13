@@ -1,0 +1,35 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Calendar Feed" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="page-header mx-auto col-md-10 col-12">
+        {% trans "Calendar Help!" %}
+    </div>
+</div>
+<div class="row">
+    <div class="mx-auto col-md-10 col-12">
+        {% trans "calhelp_1" %}
+        <br><br>
+        {% trans "calhelp_2" %}
+        <br><br>
+        {% url 'member-calfeed' pk=member.cal_feed_id %}
+        <br><br>
+        <strong>{% trans "Subscribing in Google Calendar" %}</strong>: {% trans "calhelp_3" %}
+        <br><br>
+        <strong>{% trans "Subscribing in Apple Calendar" %}</strong>: {% trans "calhelp_4" %}
+        <br><br>
+        <strong>{% trans "Subscribing in Outlook" %}</strong>: {% trans "calhelp_5" %}
+        <br><br>
+        <a href="{% url 'member-detail' pk=member.id %}">{% trans "Return to profile" %}</a>        
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block localscripts %}
+{% endblock localscripts %}
+
+
