@@ -24,4 +24,4 @@ jobs:
         python manage.py test
     - name: Check with Pylint
       if: ${{ always() && steps.pip.outcome == 'Success' }}
-      run: modules=(*/__init__.py) && pylint -j0 ${modules[@]%/*}
+      run: modules=(*/__init__.py) && pylint -j0 --load-plugins=pylint_django --django-settings-module=go3.settings ${modules[@]%/*}
