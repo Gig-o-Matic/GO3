@@ -14,9 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from gig.models import Gig
+from gig.models import Gig, Plan
+from gig.helpers import send_emails_from_plans
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.db.models import Q
 
 def delete_old_trashed_gigs():
@@ -40,4 +41,18 @@ def archive_old_gigs():
     num = over_gigs.count()
     over_gigs.update(is_archived=True)
     return f'archived {num} gigs'
+
+def send_snooze_reminders():
+    """
+    Send a reminder for all plans with a snooze_until in the next day and a gig
+    date in the future.  Set the snooze_until property of all such plans to None,
+    to so we don't send another reminder in the future.
+    """
+    now = datetime.now(tz=timezone.get_current_timezone())
+    next_day = now + timedelta(days=1)
+    unsnooze = Plan.objects.filter(snooze_until__isnull=False,
+                                   snooze_until__lte=next_day,
+                                   gig__date__gt=now)
+    send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
+    unsnooze.update(snooze_until=None)
 

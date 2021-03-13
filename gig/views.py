@@ -31,6 +31,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 import urllib.parse
 from validators import url as url_validate
 
+
 class DetailView(generic.DetailView):
     model = Gig
 
@@ -43,9 +44,11 @@ class DetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_can_edit'] = has_manage_permission(self.request.user, self.object.band)
-        context['user_can_create'] = has_create_permission(self.request.user, self.object.band)
-                                   
+        context['user_can_edit'] = has_manage_permission(
+            self.request.user, self.object.band)
+        context['user_can_create'] = has_create_permission(
+            self.request.user, self.object.band)
+
         context['timezone'] = self.object.band.timezone
 
         context['plan_list'] = [x.value for x in PlanStatusChoices]
@@ -82,7 +85,7 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
         return context
 
     def get_band_from_kwargs(self, **kwargs):
-         return Band.objects.get(id=self.kwargs['bk'])
+        return Band.objects.get(id=self.kwargs['bk'])
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(CreateView, self).get_form_kwargs(*args, **kwargs)
@@ -135,9 +138,9 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
 
         return result
 
-          
+
 class DuplicateView(UserPassesTestMixin, CreateView):
-  
+
     def test_func(self):
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.is_editor(self.request.user)
@@ -150,8 +153,8 @@ class DuplicateView(UserPassesTestMixin, CreateView):
         self.kwargs['bk'] = gig_orig.band.id
 
         # populate the initial data from the original gig
-        kwargs['initial'] = forms.models.model_to_dict(gig_orig, 
-                                                        exclude=['calldate', 'setdate', 'enddate'])
+        kwargs['initial'] = forms.models.model_to_dict(gig_orig,
+                                                       exclude=['calldate', 'setdate', 'enddate'])
         # ...but replace the title with a 'copy of'
         kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
         return kwargs
@@ -162,14 +165,15 @@ class DuplicateView(UserPassesTestMixin, CreateView):
 
 
 class CommentsView(LoginRequiredMixin, TemplateView):
-    template_name='gig/gig_comments.html'
+    template_name = 'gig/gig_comments.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
         context['gig'] = gig
         try:
-            context['comments'] = GigComment.objects.filter(gig__id=self.kwargs['pk']).order_by('created_date')
+            context['comments'] = GigComment.objects.filter(
+                gig__id=self.kwargs['pk']).order_by('created_date')
         except GigComment.DoesNotExist:
             context['comments'] = None
         return context
@@ -179,31 +183,32 @@ class CommentsView(LoginRequiredMixin, TemplateView):
             return HttpResponseForbidden()
         return super().get(request, **kwargs)
 
-
     def post(self, request, **kwargs):
         if not has_comment_permission(self.request.user, get_object_or_404(Gig, id=kwargs['pk'])):
             return HttpResponseForbidden()
 
-        text = request.POST.get('commenttext','').strip()
+        text = request.POST.get('commenttext', '').strip()
         if text:
-            GigComment.objects.create(text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
+            GigComment.objects.create(
+                text=text, member=request.user, gig=Gig.objects.get(id=kwargs['pk']))
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
 
 class PrintPlansView(LoginRequiredMixin, TemplateView):
-    template_name='gig/gig_print_planlist.html'
+    template_name = 'gig/gig_print_planlist.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
         context['gig'] = gig
         context['plan_list'] = PlanStatusChoices.labels
-        context['all'] = kwargs.get('all',True)
+        context['all'] = kwargs.get('all', True)
         return context
 
+
 class PrintSetlistView(LoginRequiredMixin, TemplateView):
-    template_name='gig/gig_print_setlist.html'
+    template_name = 'gig/gig_print_setlist.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -213,16 +218,19 @@ class PrintSetlistView(LoginRequiredMixin, TemplateView):
 
 
 def has_comment_permission(user, gig):
-    return Assoc.objects.filter(member = user, band=gig.band).count() == 1
+    return Assoc.objects.filter(member=user, band=gig.band).count() == 1
+
 
 def has_manage_permission(user, band):
     return user.is_superuser or band.anyone_can_manage_gigs or band.is_admin(user)
+
 
 def has_create_permission(user, band):
     return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
 
 
 def answer(request, pk, val):
+    """ update the answer via URL. If we have a snooze reminder set it will be unset in the plan save signal """
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
     if val == PlanStatusChoices.DONT_KNOW:

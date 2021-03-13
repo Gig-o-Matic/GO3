@@ -22,7 +22,8 @@ from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email, send_snooze_reminders
+from .helpers import send_reminder_email
+from .tasks import send_snooze_reminders
 from .forms import GigForm
 from .views import CreateView, UpdateView
 from .tasks import archive_old_gigs
