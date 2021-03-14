@@ -14,12 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.apps import AppConfig
-# from trackstats.models import Domain, Metric
 
+from .models import BandMetric, Stat
+from band.models import Band
 
-class StatsConfig(AppConfig):
-    name = 'stats'
+def get_band_stats(the_band):
+    """ return the stats that exist for a band """
 
-    def ready(self):
-        pass
+    the_stats = {}
+
+    the_metrics = BandMetric.objects.filter(band=the_band)
+    for m in the_metrics:
+        the_stat = m.stats.order_by('updated').last()
+        the_stats[m.name] = {
+            'date': the_stat.updated,
+            'value': the_stat.value
+        }
+    return the_stats
