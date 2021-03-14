@@ -13,6 +13,7 @@ from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
 from member.util import MemberStatusChoices
+from stats.helpers import get_band_stats
 import json
 from django.utils.safestring import SafeString
 
@@ -78,6 +79,16 @@ class AllMembersView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
         the_band = Band.objects.get(id=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
         context['member_assocs'] = the_band.confirmed_assocs
+        return context
+
+
+class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
+    template_name = 'band/band_stats.html'
+
+    def get_context_data(self, **kwargs):
+        the_band = Band.objects.get(id=self.kwargs['pk'])
+        context = super().get_context_data(**kwargs)
+        context['the_stats'] = get_band_stats(the_band)
         return context
 
 

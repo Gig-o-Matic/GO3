@@ -27,18 +27,25 @@ def collect_band_stats():
     for b in Band.objects.all():
 
         # number of members in each band
-        m = BandMetric.objects.filter(name='Number of Members', band=b).first()
+        m = BandMetric.objects.filter(name='Number of Active Members', band=b).first()
         if m is None:
-            m = BandMetric(name='Number of Members', band=b, kind=MetricTypes.DAILY)
+            m = BandMetric(name='Number of Active Members', band=b, kind=MetricTypes.DAILY)
             m.save()
         m.register(b.confirmed_members.count())
+
+        # all time members in each band
+        m = BandMetric.objects.filter(name='All Time Number of Members', band=b).first()
+        if m is None:
+            m = BandMetric(name='All Time Number of Members', band=b, kind=MetricTypes.DAILY)
+            m.save()
+        m.register(b.assocs.count())
 
         # number of gigs each band is planning
         m = BandMetric.objects.filter(name='Number of Gigs', band=b).first()
         if m is None:
             m = BandMetric(name='Number of Gigs', band=b,  kind=MetricTypes.DAILY)
             m.save()
-        gigcount = Gig.objects.active().filter(
+        gigcount = Gig.objects.future().filter(
             band=b,
             date__gte=pytz.utc.localize(datetime.utcnow())
         ).count()

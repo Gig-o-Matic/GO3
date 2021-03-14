@@ -34,6 +34,9 @@ class GigsManager(models.Manager):
     def trashed(self):
         return super().filter(trashed_date__isnull = False)
 
+    def future(self):
+        return self.active().filter(is_archived = False)
+
 
 class MemberPlanManager(models.Manager):
     def all(self):

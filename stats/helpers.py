@@ -23,15 +23,16 @@ from django.http import HttpResponse
 def get_band_stats(the_band):
     """ return the stats that exist for a band """
 
-    the_stats = {}
+    the_stats = []
 
     the_metrics = BandMetric.objects.filter(band=the_band)
     for m in the_metrics:
         the_stat = m.stats.order_by('updated').last()
-        the_stats[m.name] = {
+        the_stats.append({
+            'name': m.name,
             'date': the_stat.updated,
             'value': the_stat.value
-        }
+        })
     return the_stats
 
 def test_stats(request):

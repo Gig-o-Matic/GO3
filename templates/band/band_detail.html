@@ -299,6 +299,22 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="mt-4 card">
+                    <div class="card-header collapsed" data-toggle="collapse" href="#collapseTwo" aria-expanded="false" aria-controls="collapseOne">
+                        <a class="card-title titlerow">
+                            {% trans "Band Statistics" %}
+                        </a>
+                    </div>
+                    <div id="collapseTwo" class="collapse card-body" role="tabpanel" aria-labelledby="headingOne">
+                        <div class="row">
+                            <div class="col-12" id="bandstats" hx-get="{% url 'band-stats' pk=band.id %}" hx-trigger="load">
+                                <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             {% endif %}
         {% endif %}
     </div>
