@@ -41,3 +41,13 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(self.band.confirmed_assocs.count(),1)
         self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
+
+    def test_band_gigcount_stat(self):
+        """ show that we collect band gig count stats properly """
+        self.assoc_joe_and_create_gig()
+        self.create_gig_form(contact=self.joeuser)
+        collect_band_stats()
+        m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
+        self.assertEqual(m.stats.count(),1)
+        self.assertEqual(m.stats.first().value,2)
+
