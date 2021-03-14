@@ -22,7 +22,7 @@ from gig.tests import GigTestBase
 class StatsTest(GigTestBase):
 
     def test_band_member_stat(self):
-        """ show that when a gig is created, every member has a plan """
+        """ show that we collect band member stats properly """
         self.assoc_joe()
         collect_band_stats()
 
@@ -30,3 +30,14 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
 
+    def test_band_member_stat_delete(self):
+        """ show that we collect band member stats properly after member is deleted """
+        self.assoc_joe()
+        self.joeuser.delete()
+
+        collect_band_stats()
+
+        m = BandMetric.objects.get(name='Number of Members', band=self.band)
+        self.assertEqual(m.stats.count(),1)
+        self.assertEqual(self.band.confirmed_assocs.count(),1)
+        self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
