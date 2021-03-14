@@ -51,3 +51,15 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value,2)
 
+    def test_band_multiple_stat(self):
+        """ show that every time we collect stats we...get more stats """
+        self.assoc_joe_and_create_gig()
+        collect_band_stats()
+        m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
+        self.assertEqual(m.stats.count(),1)
+
+        self.create_gig_form(contact=self.joeuser)
+        collect_band_stats()
+        m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
+        self.assertEqual(m.stats.count(),2)
+        self.assertEqual(m.stats.order_by('updated').last().value,2)
