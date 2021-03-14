@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from .models import BandMetric, Stat
+from .models import BandMetric, Stat, MetricTypes
 from band.models import Band
 from gig.models import Gig
 from datetime import datetime
@@ -24,22 +24,29 @@ import pytz
 
 def collect_band_stats():
 
-    # number of members in each band
     for b in Band.objects.all():
+
+        # number of members in each band
         m = BandMetric.objects.filter(name='Number of Members', band=b).first()
         if m is None:
-            m = BandMetric(name='Number of Members', band=b)
+            m = BandMetric(name='Number of Members', band=b, kind=MetricTypes.DAILY)
             m.save()
-        Stat(metric=m, value=b.confirmed_members.count()).save()
+        m.register(b.confirmed_members.count())
 
-    # number of gigs each band is planning
-    for b in Band.objects.all():
+        # number of gigs each band is planning
         m = BandMetric.objects.filter(name='Number of Gigs', band=b).first()
         if m is None:
-            m = BandMetric(name='Number of Gigs', band=b)
+            m = BandMetric(name='Number of Gigs', band=b,  kind=MetricTypes.DAILY)
             m.save()
         gigcount = Gig.objects.active().filter(
             band=b,
             date__gte=pytz.utc.localize(datetime.utcnow())
         ).count()
-        Stat(metric=m, value=gigcount).save()
+        m.register(gigcount)
+
+        # number of gigs total for each band
+        m = BandMetric.objects.filter(name='Total Gigs', band=b).first()
+        if m is None:
+            m = BandMetric(name='Total Gigs', band=b, kind=MetricTypes.ALLTIME)
+            m.save()
+        m.register(Gig.objects.filter(band=b).count())

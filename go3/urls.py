@@ -43,6 +43,7 @@ urlpatterns =[
     path('member/', include('member.urls')),
     path('gig/', include('gig.urls')),
     path('help/', include('help.urls')),
+    path('stats/', include('stats.urls')),
     path('admin/', admin.site.urls),
     path("graphql", GraphQLView.as_view(graphiql=True))
 ]

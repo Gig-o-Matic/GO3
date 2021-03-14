@@ -14,16 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.core.management.base import BaseCommand
-from stats.models import Metric, Stat
-from stats.tasks import collect_band_stats
 
+from django.urls import path
+from .helpers import test_stats
 
-class Command(BaseCommand):
-    help = 'Sets up stats tracking'
-
-    def handle(self, *args, **kwargs):
-
-        # delete all the stats and set up a new set
-        Metric.objects.all().delete()
-        collect_band_stats()
+urlpatterns = [
+   
+    path('gen', test_stats),
+]

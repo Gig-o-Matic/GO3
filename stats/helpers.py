@@ -17,6 +17,8 @@
 
 from .models import BandMetric, Stat
 from band.models import Band
+from .tasks import collect_band_stats
+from django.http import HttpResponse
 
 def get_band_stats(the_band):
     """ return the stats that exist for a band """
@@ -31,3 +33,7 @@ def get_band_stats(the_band):
             'value': the_stat.value
         }
     return the_stats
+
+def test_stats(request):
+    collect_band_stats()
+    return HttpResponse()

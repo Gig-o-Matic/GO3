@@ -17,12 +17,30 @@
 
 from django.db import models
 from band.models import Band
+from django.utils import timezone
 
-# Create your models here.
+
+class MetricTypes(models.IntegerChoices):
+    DAILY = 0, "Daily"
+    ALLTIME = 1, "All Time"
 
 
 class Metric(models.Model):
     name = models.TextField(max_length=500, blank=False)
+    kind = models.IntegerField(
+        choices=MetricTypes.choices, default=MetricTypes.DAILY)
+
+    def register(self, val):
+        if self.kind == MetricTypes.ALLTIME:
+            self.stats.all().delete()
+        elif self.kind == MetricTypes.DAILY:
+            # see if we already have one for today
+            now = timezone.now()
+            self.stats.filter(updated__year=now.year,
+                              updated__day=now.day,
+                              updated__month=now.month).delete()
+        s = Stat(metric=self, value=val)
+        s.save()
 
     def __str__(self):
         return "{0}".format(self.name)
