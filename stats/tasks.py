@@ -18,6 +18,7 @@
 from .models import BandMetric, Stat
 from band.models import Band
 
+
 def collect_band_stats():
 
     # number of members in each band
@@ -27,4 +28,3 @@ def collect_band_stats():
             m = BandMetric(name='Number of Members', band=b)
             m.save()
         Stat(metric=m, value=b.confirmed_members.count()).save()
-        

@@ -18,6 +18,7 @@ from django.core.management.base import BaseCommand
 from stats.models import Metric, Stat
 from stats.tasks import collect_band_stats
 
+
 class Command(BaseCommand):
     help = 'Sets up stats tracking'
 
@@ -26,4 +27,3 @@ class Command(BaseCommand):
         # set up the number of band members stat
         Metric.objects.all().delete()
         collect_band_stats()
-

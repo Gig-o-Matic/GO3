@@ -17,8 +17,10 @@
 from django.apps import AppConfig
 # from trackstats.models import Domain, Metric
 
+
 class StatsConfig(AppConfig):
     name = 'stats'
+
     def ready(self):
         """ make sure the domain and metrics are registered """
         pass
