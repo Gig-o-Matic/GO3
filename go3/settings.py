@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "motd.apps.MotdConfig",
     "gig.apps.GigConfig",
     "agenda.apps.AgendaConfig",
+    "stats.apps.StatsConfig",
     "widget_tweaks",
     "django.contrib.admin",
     "django.contrib.auth",

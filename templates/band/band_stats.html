@@ -1,0 +1,14 @@
+{% load i18n %}
+{% for stat in the_stats %}
+    <div class="row" style="padding-top: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+        <div class="col-3">
+            {% trans stat.name %}
+        </div>
+        <div class="col-3">
+            {{ stat.value }}
+        </div>
+        <div class="col-3">
+            {{ stat.date|date:"D d M Y" }}
+        </div>
+    </div>
+{% endfor %}

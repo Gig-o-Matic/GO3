@@ -170,6 +170,8 @@ class Assoc(models.Model):
     is_admin = models.BooleanField(default=False)
     is_occasional = models.BooleanField(default=False)
 
+    join_date = models.DateField(auto_now_add=True)
+
     @property
     def is_confirmed(self):
         return self.status == AssocStatusChoices.CONFIRMED
