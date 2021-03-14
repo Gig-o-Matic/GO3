@@ -26,7 +26,7 @@ class StatsTest(GigTestBase):
         self.assoc_joe()
         collect_band_stats()
 
-        m = BandMetric.objects.get(name='Number of Members', band=self.band)
+        m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
 
@@ -37,7 +37,7 @@ class StatsTest(GigTestBase):
 
         collect_band_stats()
 
-        m = BandMetric.objects.get(name='Number of Members', band=self.band)
+        m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(self.band.confirmed_assocs.count(),1)
         self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
@@ -61,5 +61,5 @@ class StatsTest(GigTestBase):
         self.create_gig_form(contact=self.joeuser)
         collect_band_stats()
         m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
-        self.assertEqual(m.stats.count(),2)
+        self.assertEqual(m.stats.count(),1) # we just replaced the old one
         self.assertEqual(m.stats.order_by('updated').last().value,2)
