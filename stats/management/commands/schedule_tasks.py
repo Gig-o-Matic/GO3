@@ -17,6 +17,7 @@
 from django.core.management.base import BaseCommand
 from django_q.models import Schedule
 
+
 class Command(BaseCommand):
     help = 'Sets up gig-o-matic scheduled commands'
 
@@ -59,7 +60,3 @@ class Command(BaseCommand):
                                 schedule_type=Schedule.DAILY,
                                 repeats=-1
                                 )
-
-
-
-
