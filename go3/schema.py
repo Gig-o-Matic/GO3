@@ -32,15 +32,15 @@ class Query(graphene.ObjectType):
     member_by_email = graphene.Field(
         MemberType, email=graphene.String(required=True))
 
-    # def resolve_all_bands(self, root):
-    #     return Band.objects.all()
-
     def resolve_all_bands(self, info):
         # get all assocs for the user in context
         user = info.context.user
-        assocs = Assoc.objects.filter(member=user)
 
-        if not info.context.user.is_authenticated:
+        assocs = Assoc.objects.filter(member=user)
+        # print("context: ", request.POST.items())
+        if info.context.user.is_superuser:
+            return Assoc.objects.all()
+        elif not info.context.user.is_authenticated:
             return Assoc.objects.none()
         else:
             return assocs
