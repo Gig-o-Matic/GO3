@@ -21,6 +21,7 @@ from django.contrib.auth.decorators import login_required
 from member.models import MemberPreferences
 from member.util import AgendaChoices
 from band.models import Assoc
+from band.util import AssocStatusChoices
 from datetime import datetime
 import json
 
@@ -66,7 +67,7 @@ class GridView(LoginRequiredMixin, TemplateView):
 
         # find my bands
         m = self.request.user
-        assocs = Assoc.objects.filter(member=m)
+        assocs = Assoc.objects.filter(member=m, status=AssocStatusChoices.CONFIRMED)
         context['band_data'] = json.dumps([{'id':a.band.id, 'name':a.band.name} for a in assocs])
 
         return context

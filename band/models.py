@@ -112,7 +112,7 @@ class SectionManager(models.Manager):
     def populated(self):
         # find out if there are any members in the default section
         s = self.all().filter(is_default=True).first()
-        if len(Assoc.objects.filter(default_section=s)) == 1:
+        if Assoc.objects.filter(default_section=s).count():
             return self.all()
         else:
             return self.all().filter(is_default=False)
