@@ -24,6 +24,7 @@ from django.db.models import Q
 
 from gig.models import Gig, Plan
 from band.models import Band, Assoc, Section
+from band.util import AssocStatusChoices
 from member.util import AgendaChoices
 
 import json
@@ -131,7 +132,7 @@ def grid_heatmap(request, *args, **kw):
 def grid_section_members(request, *args, **kw):
     band_id = int(request.POST['band'])
     assocs = Assoc.objects.filter(
-        band=band_id).order_by('default_section__order')
+        band=band_id, status=AssocStatusChoices.CONFIRMED).order_by('default_section__order')
     mbs = {}
     for a in assocs:
         info = {'id': a.member.id, 'name': a.member.display_name}
