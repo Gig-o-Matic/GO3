@@ -3,6 +3,7 @@ from graphene_django import DjangoObjectType
 
 from band.models import Band, Assoc
 from member.models import Member
+from graphql import GraphQLError
 
 
 class BandType(DjangoObjectType):
@@ -26,6 +27,8 @@ class MemberType(DjangoObjectType):
 class Query(graphene.ObjectType):
     # all_bands = graphene.List(BandType)
     all_bands = graphene.List(AssocType)
+    # band_by_name = graphene.Field(
+    #     BandType, name=graphene.String(required=True))
     band_by_name = graphene.Field(
         BandType, name=graphene.String(required=True))
     all_members = graphene.List(MemberType)
@@ -35,19 +38,28 @@ class Query(graphene.ObjectType):
     def resolve_all_bands(self, info):
         # get all assocs for the user in context
         user = info.context.user
-
         assocs = Assoc.objects.filter(member=user)
-        # print("context: ", request.POST.items())
-        if info.context.user.is_superuser:
-            return Assoc.objects.all()
-        elif not info.context.user.is_authenticated:
+
+        if not info.context.user.is_authenticated:
             return Assoc.objects.none()
+        elif info.context.user.is_superuser:
+            return Assoc.objects.all()
         else:
             return assocs
 
-    def resolve_band_by_name(self, root, name):
+    # superuser only
+    # def resolve_band_by_name(self, root, name):
+    #     try:
+    #         return Band.objects.get(name=name)
+    #     except Band.DoesNotExist:
+    #         return None
+    def resolve_band_by_name(self, info, name):
         try:
-            return Band.objects.get(name=name)
+            if info.context.user.is_superuser:
+                return Band.objects.get(name=name)
+            else:
+                raise GraphQLError(
+                    'User is not authorized for this operation.')
         except Band.DoesNotExist:
             return None
 
