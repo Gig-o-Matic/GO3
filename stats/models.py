@@ -36,9 +36,7 @@ class Metric(models.Model):
         elif self.kind == MetricTypes.DAILY:
             # see if we already have one for today
             now = timezone.now()
-            self.stats.filter(updated__year=now.year,
-                              updated__day=now.day,
-                              updated__month=now.month).delete()
+            self.stats.filter(created__date=now).delete()
         s = Stat(metric=self, value=val)
         s.save()
 
@@ -57,8 +55,8 @@ class BandMetric(Metric):
 class Stat(models.Model):
     metric = models.ForeignKey(
         Metric, related_name="stats", on_delete=models.CASCADE, null=False)
-    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(default=timezone.now)
     value = models.IntegerField(blank=True, default=0)
 
     def __str__(self):
-        return "Stat of '{0}' updated {1}".format(self.metric.name, self.updated)
+        return "Stat of '{0}' created {1}".format(self.metric.name, self.updated)

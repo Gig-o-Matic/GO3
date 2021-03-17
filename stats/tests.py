@@ -62,4 +62,4 @@ class StatsTest(GigTestBase):
         collect_band_stats()
         m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
         self.assertEqual(m.stats.count(),1) # we just replaced the old one
-        self.assertEqual(m.stats.order_by('updated').last().value,2)
+        self.assertEqual(m.stats.order_by('created').last().value,2)
