@@ -236,6 +236,37 @@ class GigTest(GigTestBase):
         p = g.plans.get(assoc__member=a.member)
         self.assertEqual(p.section, s3)  # should use the override section
 
+    def test_deleting_section(self):
+        """ show that if we delete a section which has been selected as a plan override
+        that the plan section is set back to the user's default section, not the
+        band's default section """
+
+        s1 = Section.objects.create(name="s1", band=self.band)
+        s2 = Section.objects.create(name="s2", band=self.band)
+
+        # set joe's default section to s1
+        a = self.assoc_joe()
+        a.default_section = s1
+        a.save()
+
+        g = self.create_gig(self.band_admin)
+        p = g.member_plans.get(assoc__member=self.joeuser)
+        # we didn't set one so should be None
+        self.assertEqual(p.plan_section, None)
+        self.assertEqual(p.section, s1)  # should use the member's section
+
+        # override the section in the plan
+        p.plan_section = s2
+        p.save()
+        p.refresh_from_db()
+        self.assertEqual(p.section, s2) # should be using the override
+
+        # now delete the override section
+        s2.delete()
+        p.refresh_from_db()
+        self.assertEqual(p.section, s1) # should revert to joe's default
+
+
     def test_gig_create_permissions(self):
         """ make sure that if I don't have permission to create a gig, I can't """
         self.band.anyone_can_create_gigs = False
