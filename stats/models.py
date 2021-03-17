@@ -59,4 +59,4 @@ class Stat(models.Model):
     value = models.IntegerField(blank=True, default=0)
 
     def __str__(self):
-        return "Stat of '{0}' created {1}".format(self.metric.name, self.updated)
+        return "Stat of '{0}' created {1}".format(self.metric.name, self.created)

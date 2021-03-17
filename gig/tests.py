@@ -241,7 +241,6 @@ class GigTest(GigTestBase):
         that the plan section is set back to the user's default section, not the
         band's default section """
 
-        s0 = self.band.sections.get(is_default=True)
         s1 = Section.objects.create(name="s1", band=self.band)
         s2 = Section.objects.create(name="s2", band=self.band)
 
