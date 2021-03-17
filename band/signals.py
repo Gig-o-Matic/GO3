@@ -57,6 +57,15 @@ def set_sections_of_assocs(sender, instance, **kwargs):
     # when a section gets deleted, set any assocs in the section to the band's default section before proceeding
     band_default_section = instance.band.sections.get(is_default=True)
     instance.default_assocs.update(default_section=band_default_section)
-    Plan.objects.filter(section=instance).update(section=band_default_section)
-    Plan.objects.filter(plan_section=instance).update(plan_section=band_default_section)
+    
+    # if any plans are using this section, set them back to the member's default section
+    plans = Plan.objects.filter(plan_section=instance)
+    for p in plans:
+        p.plan_section = p.assoc.default_section
+        p.save() 
+
+    plans = Plan.objects.filter(section=instance)
+    for p in plans:
+        p.section = p.assoc.default_section
+        p.save()
 
