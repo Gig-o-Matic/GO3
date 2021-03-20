@@ -1,7 +1,7 @@
 import logging
 from django import forms
 from django.core.exceptions import ValidationError
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext as _
 from .models import Member
 
@@ -29,6 +29,14 @@ class MemberCreateForm(UserCreationForm):
             user.save()
         return user
 
+
+class MemberChangeForm(UserChangeForm):
+    class Meta:
+        model = Member
+        fields = ['email','username','nickname','password1','password2','phone','statement','images']
+
+    password1 = forms.Field(required=False, label=_('Password'))
+    password2 = forms.Field(required=False, label=_('Password Again'))
 
 class InviteForm(forms.Form):
     emails = forms.CharField(widget=forms.Textarea)

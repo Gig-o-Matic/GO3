@@ -21,7 +21,7 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if user.id == request.user.id or request.user.is_superuser %}
+                    {% if member_is_me or request.user.is_superuser %}
                         <div class="ml-auto">
                             <a class="btn btn-primary btn-sm" href="{% url 'member-update' pk=member.id %}">{% trans "Edit" %}</a>
                         </div>
