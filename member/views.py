@@ -53,7 +53,7 @@ def verify_requestor_is_in_user_band(request, user):
         make sure that whoever is requesting to see a member's details
         is in the band with that member
     """
-    if request.user.id = user.id or request.user.is_superuser:
+    if request.user.id == user.id or request.user.is_superuser:
         return True
     
     rbands = [a.band for a in request.user.confirmed_assocs]
@@ -106,7 +106,6 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['the_member_bands'] = the_member_bands
         context['show_email'] = show_email
-        context['show_phone'] = show_phone
         context['member_is_me'] = the_user.id == the_member.id
         if is_me or the_user.is_superuser:
             context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
