@@ -1054,24 +1054,47 @@ class MemberEditTest(TemplateTestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
+    def test_member_view(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.get('/member', follow=True)
+        self.assertOK(response)
+
+    def test_member_view2(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-detail', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+
+    def test_member_view3(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-detail', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+
     def test_member_edit(self):
         self.client.force_login(self.joeuser)
         response = self.client.post(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+        response = self.client.get(reverse('member-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_another_member_edit(self):
         self.client.force_login(self.joeuser)
         response = self.client.post(reverse('member-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
+        response = self.client.get(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
 
     def test_member_prefs_edit(self):
         self.client.force_login(self.joeuser)
         response = self.client.post(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
+        response = self.client.get(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
 
     def test_another_member_prefs_edit(self):
         self.client.force_login(self.joeuser)
         response = self.client.post(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+        response = self.client.get(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
 class GraphQLTest(GigTestBase):
