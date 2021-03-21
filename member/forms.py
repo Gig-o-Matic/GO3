@@ -33,10 +33,7 @@ class MemberCreateForm(UserCreationForm):
 class MemberChangeForm(UserChangeForm):
     class Meta:
         model = Member
-        fields = ['email','username','nickname','password1','password2','phone','statement','images']
-
-    password1 = forms.Field(required=False, label=_('Password'))
-    password2 = forms.Field(required=False, label=_('Password Again'))
+        fields = ['email','username','nickname','phone','statement','images']
 
 class InviteForm(forms.Form):
     emails = forms.CharField(widget=forms.Textarea)
