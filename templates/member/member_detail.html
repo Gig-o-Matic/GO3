@@ -21,7 +21,7 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if member_is_me or request.user.is_superuser %}
+                    {% if member_is_me or user.is_superuser %}
                         <div class="ml-auto">
                             <a class="btn btn-primary btn-sm" href="{% url 'member-update' pk=member.id %}">{% trans "Edit" %}</a>
                         </div>
@@ -45,20 +45,20 @@
                         </div>
                     </div>
                 {% endif %}
-                <div class="row mt-4">
-                    <div class="col-sm-3 col-12">{% trans "Password" %}</div>
-                    <div class="col-sm-9 col-12">
-                        <a class="btn btn-primary btn-sm" href="{% url 'member-password-change' %}">{% trans "Change Password" %}
-                        </a>
-                    </div>
-                </div>
-                {% if show_phone %}
-                    {% if  member.phone %}
-                        <div class="row">
-                            <div class="col-sm-3 col-12">{% trans "Phone" %}</div>
-                            <div class="col-sm-9 col-12">{{  member.phone|escape }}</div>
+                {% if member_is_me %}
+                    <div class="row mt-4">
+                        <div class="col-sm-3 col-12">{% trans "Password" %}</div>
+                        <div class="col-sm-9 col-12">
+                            <a class="btn btn-primary btn-sm" href="{% url 'member-password-change' %}">{% trans "Change Password" %}
+                            </a>
                         </div>
-                    {% endif %}
+                    </div>
+                {% endif %}
+                {% if  member.phone %}
+                    <div class="row">
+                        <div class="col-sm-3 col-12">{% trans "Phone" %}</div>
+                        <div class="col-sm-9 col-12">{{  member.phone|escape }}</div>
+                    </div>
                 {% endif %}
                 {% if member.statement %}
                     <div class="row mt-4">
@@ -66,7 +66,7 @@
                         <div class="col-sm-9 col-12">{{  member.statement|escape }}</div>
                     </div>
                 {% endif %}
-                {% if not member_is_me or True %}
+                {% if not member_is_me  %}
                     <div class="row mt-4">
                         <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
                         <div class="col-sm-9 col-12">
@@ -112,7 +112,7 @@
             </div>
         {% endif %}
 
-        {% if user.id == request.user.id or request.user.is_superuser %}
+        {% if member_is_me or user.is_superuser %}
             {% if invites %}
                 <div class="card mt-4">
                     <div class="card-header">
@@ -161,7 +161,7 @@
                         <div class="col-4">
                             {% trans "Preferences" %}
                         </div>
-                        {% if user.id == request.user.id or request.user.is_superuser %}
+                        {% if user.id == member.id or user.is_superuser %}
                             <div class="ml-auto">
                                 <a class="btn btn-primary btn-sm" href="{% url 'member-prefs-update' pk=member.id %}">{% trans "Edit" %}</a>
                             </div>
@@ -206,7 +206,7 @@
                         <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                     </div>
-                    {% if request.user.is_superuser %}
+                    {% if user.is_superuser %}
                         <br>
                         <div class="row">
                             <div class="col-sm-3 col-12">Verified:</div>
