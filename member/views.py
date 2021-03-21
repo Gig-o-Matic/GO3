@@ -43,6 +43,10 @@ from django.http import Http404
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
 
+def verify_requester_is_user(request, user):
+    if not (request.user.id==user.id or request.user.is_superuser):
+        raise PermissionDenied
+
 class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
@@ -129,14 +133,12 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if not (self.request.user.id==self.object.id or self.request.user.is_superuser):
-            raise PermissionDenied
+        verify_requester_is_user(self.request, self.object)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if not (self.request.user.id==self.object.id or self.request.user.is_superuser):
-            raise PermissionDenied
+        verify_requester_is_user(self.request, self.object)
         return super().post(request, *args, **kwargs)
 
     def __init__(self, **kwargs):
@@ -149,6 +151,16 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
               'calendar_show_only_committed']
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        verify_requester_is_user(self.request, self.object)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        verify_requester_is_user(self.request, self.object)
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})

@@ -1064,6 +1064,15 @@ class MemberEditTest(TemplateTestCase):
         response = self.client.post(reverse('member-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
+    def test_member_prefs_edit(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+
+    def test_another_member_prefs_edit(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
 
 class GraphQLTest(GigTestBase):
 
