@@ -48,6 +48,20 @@ def verify_requester_is_user(request, user):
     if not (request.user.id==user.id or request.user.is_superuser):
         raise PermissionDenied
 
+def verify_requestor_is_in_user_band(request, user):
+    """
+        make sure that whoever is requesting to see a member's details
+        is in the band with that member
+    """
+    if request.user.id == user.id or request.user.is_superuser:
+        return True
+    
+    rbands = [a.band for a in request.user.confirmed_assocs]
+    ubands = [a.band for a in user.confirmed_assocs]
+    if len(set(rbands) & set(ubands)) == 0:
+        raise PermissionDenied
+
+
 class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
@@ -63,10 +77,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         the_member = self.object
         the_user = self.request.user
 
-        verify_requester_is_user(self.request, the_member)
+        verify_requestor_is_in_user_band(self.request, the_member)
 
-        # ok_to_show = False
-        same_band = False
         if the_member.id == the_user.id:
             is_me = True
             # ok_to_show = True
@@ -75,22 +87,6 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
         # # find the bands this member is associated with
         the_member_bands = [a.band for a in the_member.assocs.all()]
-
-        # if is_me == False:
-        #   are we at least in the same band, or superuser?
-        #   if the_user.is_superuser:
-        #         ok_to_show = True
-        #   TODO this is to make sure only people who are in the same band can see a member or if we're sharing profile
-        #   the_other_band_keys = assoc.get_band_keys_of_member_key(the_member_key=the_user.key, confirmed_only=True)
-        #   for b in the_other_band_keys:
-        #         if b in the_band_keys:
-        #          ok_to_show = True
-        #            same_band = True
-        #            break
-        #   if ok_to_show == False:
-        #         # check to see if we're sharing our profile - if not, bail!
-        #       if (the_member.preferences and the_member.preferences.share_profile == False) and the_user.is_superuser == False:
-        #             return self.redirect('/')
 
         # email_change = self.request.get('emailAddressChanged',False)
         # if email_change:
@@ -105,19 +101,9 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         elif the_member.preferences.share_profile and the_member.preferences.share_email:
             show_email = True
 
-        show_phone = False
-        if the_member == the_user.id or the_user.is_superuser:
-            show_phone = True
-        else:
-            # are we in the same band? If so, always show email and phone
-            if same_band:
-                show_phone = True
-                show_email = True
-
         context = super().get_context_data(**kwargs)
         context['the_member_bands'] = the_member_bands
         context['show_email'] = show_email
-        context['show_phone'] = show_phone
         context['member_is_me'] = the_user.id == the_member.id
         if is_me or the_user.is_superuser:
             context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
