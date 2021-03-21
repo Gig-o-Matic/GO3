@@ -16,7 +16,7 @@
 """
 
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
-from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
+from .forms import MemberCreateForm, InviteForm, SignupForm
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
@@ -122,9 +122,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
 class UpdateView(LoginRequiredMixin, BaseUpdateView):
     template_name = 'member/member_form.html'
-    form_class = MemberChangeForm
     model = Member
-    # fields = ['email','username','nickname','phone','statement','images']
+    fields = ['email','username','nickname','phone','statement','images']
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
