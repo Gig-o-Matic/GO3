@@ -29,6 +29,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import PasswordChangeDoneView
 from django.contrib import messages
 from go3.colors import the_colors
 from django.utils import translation
@@ -51,10 +52,18 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
 
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except AttributeError:
+            return self.request.user
+
     def get_context_data(self, **kwargs):
 
         the_member = self.object
         the_user = self.request.user
+
+        verify_requester_is_user(self.request, the_member)
 
         # ok_to_show = False
         same_band = False
@@ -347,3 +356,9 @@ class SignupView(FormView):
 
         Invite.objects.create(band=None, email=email)
         return render(self.request, 'member/signup_pending.html', {'email': email})
+
+
+class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView):
+    def get_success_url(self):
+        return reverse('member-detail', kwargs={'pk': str(self.request.user.id)})
+
