@@ -53,6 +53,7 @@ class MemberTest(TestCase):
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
+        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
@@ -861,6 +862,7 @@ class MemberDeleteTest(TestCase):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
         Band.objects.all().delete()
+        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
         Assoc.objects.all().delete()
 
     def create_gig(self, the_member, title="New Gig", start_date='auto', set_date='auto', end_date='auto'):
@@ -1035,6 +1037,66 @@ class MemberDeleteTest(TestCase):
         self.assertEqual(self.joeuser.phone, '')
         self.assertEqual(self.joeuser.statement, '')
 
+
+class MemberEditTest(TemplateTestCase):
+    def setUp(self):
+        self.joeuser = Member.objects.create_user('a@b.com', password='abc')
+        self.jilluser = Member.objects.create_user('c@d.com', password='def')
+        b = Band.objects.create(name='test band')
+        Assoc.objects.create(band=b, member=self.joeuser)
+        Assoc.objects.create(band=b, member=self.jilluser)
+        Band.objects.create(name='another band')
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+
+    def test_member_view(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.get('/member', follow=True)
+        self.assertOK(response)
+
+    def test_member_view2(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-detail', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+
+    def test_member_view3(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.get(reverse('member-detail', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+
+    def test_member_edit(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+        response = self.client.get(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+
+    def test_another_member_edit(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+        response = self.client.get(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+
+    def test_member_prefs_edit(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+        response = self.client.get(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        self.assertOK(response)
+
+    def test_another_member_prefs_edit(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+        response = self.client.get(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        self.assertPermissionDenied(response)
+
 class GraphQLTest(GigTestBase):
 
     # test member queries
@@ -1068,4 +1130,5 @@ class GraphQLTest(GigTestBase):
         assert executed == {
             "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
         }
+
 

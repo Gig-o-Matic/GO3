@@ -16,7 +16,7 @@
 """
 
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
-from .forms import MemberCreateForm, InviteForm, SignupForm
+from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
 from .models import Member, MemberPreferences, Invite
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
@@ -29,6 +29,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import PasswordChangeDoneView
 from django.contrib import messages
 from go3.colors import the_colors
 from django.utils import translation
@@ -43,14 +44,26 @@ from django.http import Http404
 def index(request):
     return HttpResponse("Hello, world. You're at the member index.")
 
+def verify_requester_is_user(request, user):
+    if not (request.user.id==user.id or request.user.is_superuser):
+        raise PermissionDenied
+
 class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
+
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except AttributeError:
+            return self.request.user
 
     def get_context_data(self, **kwargs):
 
         the_member = self.object
         the_user = self.request.user
+
+        verify_requester_is_user(self.request, the_member)
 
         # ok_to_show = False
         same_band = False
@@ -121,18 +134,42 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
             return super().render_to_response(context)
 
 
-
-class UpdateView(BaseUpdateView):
+class UpdateView(LoginRequiredMixin, BaseUpdateView):
+    template_name = 'member/member_form.html'
+    form_class = MemberChangeForm
     model = Member
-    fields = ['email','username','nickname','phone','statement','images']
+    # fields = ['email','username','nickname','phone','statement','images']
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        verify_requester_is_user(self.request, self.object)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        verify_requester_is_user(self.request, self.object)
+        return super().post(request, *args, **kwargs)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
-class PreferencesUpdateView(BaseUpdateView):
+class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
               'calendar_show_only_committed']
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        verify_requester_is_user(self.request, self.object)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        verify_requester_is_user(self.request, self.object)
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
@@ -319,3 +356,9 @@ class SignupView(FormView):
 
         Invite.objects.create(band=None, email=email)
         return render(self.request, 'member/signup_pending.html', {'email': email})
+
+
+class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView):
+    def get_success_url(self):
+        return reverse('member-detail', kwargs={'pk': str(self.request.user.id)})
+
