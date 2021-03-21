@@ -41,6 +41,8 @@ urlpatterns = [
     path('create/<uuid:pk>', views.MemberCreateView.as_view(), name='member-create'),
     path('signup', views.SignupView.as_view(), name='member-signup'),
 
+    path('email/<uuid:pk>', views.confirm_email, name='member-confirm-email'),
+
     path('<int:pk>/delete', helpers.delete_member, name='member-delete'),
 
 ]

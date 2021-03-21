@@ -17,7 +17,7 @@
 
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
-from .models import Member, MemberPreferences, Invite
+from .models import Member, MemberPreferences, Invite, EmailConfirmation
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
 from lib.translation import join_trans
@@ -138,6 +138,9 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def form_valid(self, form):
+        pass
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
@@ -348,3 +351,23 @@ class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView)
     def get_success_url(self):
         return redirect('member-detail')
 
+
+def confirm_email(request, pk):
+    conf = get_object_or_404(EmailConfirmation, pk=pk)
+
+    if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
+        # We need the language active before we try to render anything.
+        translation.activate(invite.language)
+        def set_language(response):
+            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, invite.language)
+            return response
+    else:
+        def set_language(response):
+            return response
+
+    conf.member.email = conf.new_email
+    conf.member.save()
+    conf.delete()
+
+    # return render(request, 'member/claim_invite.html', {'invite': invite, 'member': member})
+    return HttpResponse()

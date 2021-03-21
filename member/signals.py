@@ -17,7 +17,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
-from .models import Member, MemberPreferences, Invite
+from .models import Member, MemberPreferences, Invite, EmailConfirmation
 
 # signals to make sure a set of preferences is created for every user
 @receiver(post_save, sender=Member)
@@ -31,3 +31,8 @@ def handle_user_preferences(sender, instance, created, **kwargs):
 def send_invite(sender, instance, created, **kwargs):
     if created:
         async_task('member.helpers.send_invite', instance)
+
+@receiver(post_save, sender=EmailConfirmation)
+def send_email_conf(sender, instance, created, **kwargs):
+    if created:
+        async_task('member.helpers.send_email_conf', instance)

@@ -71,6 +71,14 @@ def send_invite(invite):
     send_messages_async([prepare_email(invite.as_email_recipient(), template, context)])
 
 
+def send_email_conf(confirmation):
+    context = {
+        'confirmation_id': confirmation.id,
+    }
+    template = 'email/email_confirmation.md'
+    send_messages_async([prepare_email(confirmation.as_email_recipient(), template, context)])
+
+
 def prepare_calfeed(member):
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
