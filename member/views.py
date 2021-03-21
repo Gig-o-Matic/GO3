@@ -79,8 +79,6 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
         verify_requestor_is_in_user_band(self.request, the_member)
 
-        # ok_to_show = False
-        same_band = False
         if the_member.id == the_user.id:
             is_me = True
             # ok_to_show = True
