@@ -17,6 +17,9 @@ class TemplateTestCase(TestCase):
     def assertOK(self, response):
         self.assertEqual(response.status_code, 200)
 
+    def assertPermissionDenied(self, response):
+        self.assertEqual(response.status_code, 403)
+
     def assertRenderLanguage(self, lang, render_cmd='django.shortcuts.render'):
         test_case = self
 
