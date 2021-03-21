@@ -346,5 +346,5 @@ class SignupView(FormView):
 
 class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView):
     def get_success_url(self):
-        return reverse('member-detail', kwargs={'pk': str(self.request.user.id)})
+        return redirect('member-detail')
 
