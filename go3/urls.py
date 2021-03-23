@@ -46,7 +46,5 @@ urlpatterns = [
     path('gig/', include('gig.urls')),
     path('help/', include('help.urls')),
     path('admin/', admin.site.urls),
-    # comment toggle for restricting graphql view to logon
-    path("graphql", GraphQLView.as_view(graphiql=True)),
-    # path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
+    path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
 ]
