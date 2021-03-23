@@ -53,7 +53,7 @@ class MemberTest(TestCase):
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
-        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        self.assertEqual(Assoc.objects.all().count(), 0)  # should all be gone!
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
@@ -862,7 +862,7 @@ class MemberDeleteTest(TestCase):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
         Band.objects.all().delete()
-        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        self.assertEqual(Assoc.objects.all().count(), 0)  # should all be gone!
         Assoc.objects.all().delete()
 
     def create_gig(self, the_member, title="New Gig", start_date='auto', set_date='auto', end_date='auto'):
@@ -1050,7 +1050,7 @@ class MemberEditTest(TemplateTestCase):
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
-        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        self.assertEqual(Assoc.objects.all().count(), 0)  # should all be gone!
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
@@ -1061,74 +1061,112 @@ class MemberEditTest(TemplateTestCase):
 
     def test_member_view2(self):
         self.client.force_login(self.joeuser)
-        response = self.client.get(reverse('member-detail', args=[self.joeuser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-detail', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_member_view3(self):
         self.client.force_login(self.joeuser)
-        response = self.client.get(reverse('member-detail', args=[self.jilluser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-detail', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
     def test_member_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
-        response = self.client.get(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_another_member_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
-        response = self.client.get(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
     def test_member_prefs_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
-        response = self.client.get(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_another_member_prefs_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
-        response = self.client.get(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
-class GraphQLTest(GigTestBase):
+
+class GraphQLTest(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(
+            email='super@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@e.f')
+        self.joeuser = Member.objects.create_user(email='joe@h.i')
+        self.janeuser = Member.objects.create_user(email='jane@k.l')
+        """ set context for test graphene requests """
+        self.request_factory = RequestFactory()
+        self.context_value = self.request_factory.get('/api/')
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
 
     # test member queries
-    def test_all_members(self):
+    def test_all_members_superuser(self):
         client = graphQLClient(schema)
+        self.context_value.user = self.super
         executed = client.execute(
             """{ allMembers{
             email,
             username
-            } }"""
+            } }""", context_value=self.context_value
         )
-        assert executed == {
-            "data": {
-                "allMembers": [
-                    {"email": "super@b.c", "username": ""},
-                    {"email": "admin@e.f", "username": ""},
-                    {"email": "joeuser@h.i", "username": ""},
-                    {"email": "janeuser@k.l", "username": ""},
-                ]
-            }
-        }
+        assert executed == {'data': {'allMembers': [{'email': 'super@b.c', 'username': ''}, {
+            'email': 'admin@e.f', 'username': ''}, {'email': 'joe@h.i', 'username': ''}, {'email': 'jane@k.l', 'username': ''}]}}
 
-    def test_member_by_email(self):
+    def test_all_members_not_superuser(self):
         client = graphQLClient(schema)
+        self.context_value.user = self.joeuser
         executed = client.execute(
-            """{ memberByEmail(email:"joeuser@h.i") {
+            """{ allMembers{
             email,
             username
-            } }"""
+            } }""", context_value=self.context_value
+        )
+        assert "errors" in executed
+
+    def test_member_by_email_superuser(self):
+        client = graphQLClient(schema)
+        self.context_value.user = self.super
+        executed = client.execute(
+            """{ memberByEmail(email:"joe@h.i") {
+            email,
+            username
+            } }""", context_value=self.context_value
         )
         assert executed == {
-            "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
+            "data": {"memberByEmail": {"email": "joe@h.i", "username": ""}}
         }
 
-
+    def test_member_by_email_not_superuser(self):
+        client = graphQLClient(schema)
+        self.context_value.user = self.joeuser
+        executed = client.execute(
+            """{ memberByEmail(email:"joe@h.i") {
+            email,
+            username
+            } }""", context_value=self.context_value
+        )
+        assert "errors" in executed

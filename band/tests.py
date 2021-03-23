@@ -595,29 +595,79 @@ class BandCalfeedTest(FSTestCase):
         self.assertTrue(self.band.pub_cal_feed_dirty)
 
 
-class GraphQLTest(GigTestBase):
+class GraphQLTest(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(
+            email='super@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@e.f')
+        self.joeuser = Member.objects.create_user(email='joe@h.i')
+        self.janeuser = Member.objects.create_user(email='jane@k.l')
+        self.band = Band.objects.create(name='test band', hometown='Seattle')
+        Assoc.objects.create(member=self.band_admin, band=self.band,
+                             is_admin=True, status=AssocStatusChoices.CONFIRMED)
+        """ set context for test graphene requests """
+        self.request_factory = RequestFactory()
+        self.context_value = self.request_factory.get('/api/')
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
 
     # test band queries
-    def test_all_bands(self):
+
+    def test_all_bands_superuser(self):
         client = graphQLClient(schema)
+        self.context_value.user = self.super
+
         executed = client.execute(
             """{ allBands {
-            name,
-            hometown
-            } }"""
-        )
+                    band {
+                        name,
+                        hometown
+                    }
+                } }""", context_value=self.context_value)
+
         assert executed == {
-            "data": {"allBands": [{"name": "test band", "hometown": "Seattle"}]}
+            "data": {'allBands': [{'band': {'name': 'test band', 'hometown': 'Seattle'}}]}
         }
 
-    def test_band_by_name(self):
+    def test_all_bands_not_superuser(self):
         client = graphQLClient(schema)
+        self.context_value.user = self.joeuser
+
+        executed = client.execute(
+            """{ allBands {
+                    band {
+                        name,
+                        hometown
+                    }
+                } }""", context_value=self.context_value)
+        assert executed == {
+            "data": {'allBands': []}
+        }
+
+    def test_band_by_name_superuser(self):
+        client = graphQLClient(schema)
+        self.context_value.user = self.super
         executed = client.execute(
             """{ bandByName(name:"test band") {
             name,
             hometown
-            } }"""
+            } }""", context_value=self.context_value
         )
         assert executed == {
             "data": {"bandByName": {"name": "test band", "hometown": "Seattle"}}
         }
+
+    def test_band_by_name_not_superuser(self):
+        client = graphQLClient(schema)
+        self.context_value.user = self.joeuser
+        executed = client.execute(
+            """{ bandByName(name:"test band") {
+            name,
+            hometown
+            } }""", context_value=self.context_value
+        )
+        assert "errors" in executed
