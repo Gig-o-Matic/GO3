@@ -18,7 +18,7 @@
 from unittest.mock import patch, mock_open
 
 from django.test import TestCase, RequestFactory, Client
-from .models import Member, MemberPreferences, Invite
+from .models import Member, MemberPreferences, Invite, EmailConfirmation
 from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
@@ -1096,6 +1096,23 @@ class MemberEditTest(TemplateTestCase):
         self.assertPermissionDenied(response)
         response = self.client.get(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
+
+    def test_change_email(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-update', args=[self.joeuser.id]), data={ 'email':'foo@bar.com' }, follow=True)
+        self.assertOK(response)
+        self.assertTrue(self.joeuser.pending_email.count()==1)
+        self.assertTrue(self.joeuser.pending_email.first().new_email=='foo@bar.com')
+
+        response = self.client.post(reverse('member-update', args=[self.joeuser.id]), data={ 'email':'janeuser@k.l' }, follow=True)
+        self.assertOK(response)
+        self.assertTrue(self.joeuser.pending_email.count()==1)
+        self.assertTrue(self.joeuser.pending_email.first().new_email=='foo@bar.com')
+
+        response = self.client.get(reverse('member-confirm-email', args=[self.joeuser.pending_email.first().id]), follow=True)
+        self.joeuser.refresh_from_db()
+        self.assertTrue(self.joeuser.email=='foo@bar.com')
+        
 
 class GraphQLTest(GigTestBase):
 

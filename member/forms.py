@@ -47,6 +47,10 @@ class MemberChangeForm(UserChangeForm):
                 self.add_error('email',_('This email address is already in use.'))
             else:
                 # we can use this email
+                
+                # make sure we don't have another confirmation sitting around already
+                EmailConfirmation.objects.filter(member=self.instance).delete()
+
                 c = EmailConfirmation(member=self.instance, new_email=self.cleaned_data['email'])
                 c.save()
 
