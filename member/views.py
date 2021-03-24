@@ -140,7 +140,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
         super().__init__(**kwargs)
 
     def form_valid(self, form):
-        pass
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})

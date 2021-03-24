@@ -6,7 +6,7 @@ Subject: Gig-o-Matic Email Confirmation
 
 Someone has requested to use this email address for a member of the Gig-o-Matic{% endblocktrans %}
 
-{% blocktrans %}[Click here](https://gig-o-matic.com{{ url }}) to confirm the address.{% endblocktrans %}{% endif %}
+{% blocktrans %}[Click here](https://gig-o-matic.com{{ url }}) to confirm the address.{% endblocktrans %}
 
 {% blocktrans %}Thanks,
 The Gig-o-Matic Administration Council{% endblocktrans %}{% endautoescape %}
