@@ -18,7 +18,7 @@
 from unittest.mock import patch, mock_open
 
 from django.test import TestCase, RequestFactory, Client
-from .models import Member, MemberPreferences, Invite
+from .models import Member, MemberPreferences, Invite, EmailConfirmation
 from band.models import Band, Assoc, AssocStatusChoices
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
@@ -53,7 +53,7 @@ class MemberTest(TestCase):
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
-        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        self.assertEqual(Assoc.objects.all().count(), 0)  # should all be gone!
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
@@ -862,7 +862,7 @@ class MemberDeleteTest(TestCase):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
         Band.objects.all().delete()
-        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        self.assertEqual(Assoc.objects.all().count(), 0)  # should all be gone!
         Assoc.objects.all().delete()
 
     def create_gig(self, the_member, title="New Gig", start_date='auto', set_date='auto', end_date='auto'):
@@ -1050,7 +1050,7 @@ class MemberEditTest(TemplateTestCase):
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
-        self.assertEqual(Assoc.objects.all().count(), 0) # should all be gone!
+        self.assertEqual(Assoc.objects.all().count(), 0)  # should all be gone!
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
@@ -1061,41 +1061,76 @@ class MemberEditTest(TemplateTestCase):
 
     def test_member_view2(self):
         self.client.force_login(self.joeuser)
-        response = self.client.get(reverse('member-detail', args=[self.joeuser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-detail', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_member_view3(self):
         self.client.force_login(self.joeuser)
-        response = self.client.get(reverse('member-detail', args=[self.jilluser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-detail', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
     def test_member_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
-        response = self.client.get(reverse('member-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_another_member_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
-        response = self.client.get(reverse('member-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
     def test_member_prefs_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
-        response = self.client.get(reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-prefs-update', args=[self.joeuser.id]), follow=True)
         self.assertOK(response)
 
     def test_another_member_prefs_edit(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.post(
+            reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
-        response = self.client.get(reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
+        response = self.client.get(
+            reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
+
+    def test_change_email(self):
+        self.client.force_login(self.joeuser)
+        response = self.client.post(reverse('member-update', args=[self.joeuser.id]),
+                                    {'username': 'joey', 'email': 'foo@bar.com'}, follow=True)
+        self.assertOK(response)
+        self.assertTrue(self.joeuser.pending_email.count() == 1)
+        self.assertTrue(
+            self.joeuser.pending_email.first().new_email == 'foo@bar.com')
+
+        self.assertTrue(len(mail.outbox), 1)
+        self.assertTrue(mail.outbox[0].subject.find('Email Confirmation') > 0)
+
+        response = self.client.post(reverse(
+            'member-update', args=[self.joeuser.id]), data={'email': 'janeuser@k.l'}, follow=True)
+        self.assertOK(response)
+        self.assertTrue(self.joeuser.pending_email.count() == 1)
+        self.assertTrue(
+            self.joeuser.pending_email.first().new_email == 'foo@bar.com')
+
+        response = self.client.get(reverse(
+            'member-confirm-email', args=[self.joeuser.pending_email.first().id]), follow=True)
+        self.joeuser.refresh_from_db()
+        self.assertTrue(self.joeuser.email == 'foo@bar.com')
+
 
 class GraphQLTest(GigTestBase):
 
@@ -1130,5 +1165,3 @@ class GraphQLTest(GigTestBase):
         assert executed == {
             "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
         }
-
-

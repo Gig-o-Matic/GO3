@@ -1,0 +1,18 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Email Change" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Email Change" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+{% if validlink %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+        <p>{% trans "Your email has been changed" %}</p>
+    </div>
+</div>
+{% else %}
+    <p>{% trans "This email link is invalid.  It may have already been used." %}</p>
+{% endif %}
+{% endblock pagecontent %}

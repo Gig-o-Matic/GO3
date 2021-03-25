@@ -197,3 +197,17 @@ class Invite(models.Model):
 
     def as_email_recipient(self):
         return EmailRecipient(email=self.email, language=self.language)
+
+
+class EmailConfirmation(models.Model):
+    """
+    When a user wants to change email addresses, send an email to them with a link
+    they can use to confirm that they really own it.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    member = models.ForeignKey(Member, related_name="pending_email", on_delete=models.CASCADE, null=True)
+    new_email = models.EmailField(_('new email'))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
+
+    def as_email_recipient(self):
+        return EmailRecipient(email=self.member.email, language=self.language)
