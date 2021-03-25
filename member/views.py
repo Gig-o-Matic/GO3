@@ -353,21 +353,25 @@ class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView)
 
 
 def confirm_email(request, pk):
-    conf = get_object_or_404(EmailConfirmation, pk=pk)
 
-    if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
-        # We need the language active before we try to render anything.
-        translation.activate(invite.language)
-        def set_language(response):
-            response.set_cookie(settings.LANGUAGE_COOKIE_NAME, invite.language)
-            return response
-    else:
-        def set_language(response):
-            return response
+    valid = True
+    try:
+        conf = EmailConfirmation.objects.get(pk=pk)
+    except EmailConfirmation.DoesNotExist:
+        valid = False
 
-    conf.member.email = conf.new_email
-    conf.member.save()
-    conf.delete()
+    if valid:
+        if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
+            valid=False
 
-    # return render(request, 'member/claim_invite.html', {'invite': invite, 'member': member})
-    return HttpResponse()
+
+        conf.member.email = conf.new_email
+        conf.member.save()
+        conf.delete()
+
+    def set_language(response):
+        return response
+
+    return set_language(
+                render(request, 'member/email_change_confirmation.html',
+                        {'validlink': valid}))
