@@ -122,8 +122,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
 class UpdateView(LoginRequiredMixin, BaseUpdateView):
     template_name = 'member/member_form.html'
-    form_class = MemberChangeForm
     model = Member
+    form_class = MemberChangeForm
     # fields = ['email','username','nickname','phone','statement','images']
 
     def get(self, request, *args, **kwargs):
@@ -363,11 +363,10 @@ def confirm_email(request, pk):
     if valid:
         if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
             valid=False
-
-
-        conf.member.email = conf.new_email
-        conf.member.save()
-        conf.delete()
+        else:
+            conf.member.email = conf.new_email
+            conf.member.save()
+            conf.delete()
 
     def set_language(response):
         return response

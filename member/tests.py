@@ -1109,8 +1109,8 @@ class MemberEditTest(TemplateTestCase):
 
     def test_change_email(self):
         self.client.force_login(self.joeuser)
-        response = self.client.post(reverse(
-            'member-update', args=[self.joeuser.id]), data={'email': 'foo@bar.com'}, follow=True)
+        response = self.client.post(reverse('member-update', args=[self.joeuser.id]),
+                                    {'username': 'joey', 'email': 'foo@bar.com'}, follow=True)
         self.assertOK(response)
         self.assertTrue(self.joeuser.pending_email.count() == 1)
         self.assertTrue(

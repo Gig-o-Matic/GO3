@@ -54,9 +54,9 @@ class MemberChangeForm(UserChangeForm):
                 c = EmailConfirmation(member=self.instance, new_email=self.cleaned_data['email'])
                 c.save()
 
-
         # no matter what, don't change the member's current email address
         return self.instance.email
+
 
 class InviteForm(forms.Form):
     emails = forms.CharField(widget=forms.Textarea)
