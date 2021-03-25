@@ -88,11 +88,10 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         # # find the bands this member is associated with
         the_member_bands = [a.band for a in the_member.assocs.all()]
 
-        # email_change = self.request.get('emailAddressChanged',False)
-        # if email_change:
-        #     email_change_msg='You have selected a new email address - check your inbox to verify!'
-        # else:
-        #     email_change_msg = None
+        if the_member.pending_email.count() > 0:
+            email_change_msg=_('You have selected a new email address - check your inbox to verify!')
+        else:
+            email_change_msg = None
 
         # if I'm not sharing my email, don't share my email
         show_email = False
@@ -105,6 +104,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         context['the_member_bands'] = the_member_bands
         context['show_email'] = show_email
         context['member_is_me'] = the_user.id == the_member.id
+        context['email_change_msg'] = email_change_msg
         if is_me or the_user.is_superuser:
             context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
         else:
