@@ -1107,6 +1107,7 @@ class MemberEditTest(TemplateTestCase):
             reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
+
     def test_change_email(self):
         self.client.force_login(self.joeuser)
         response = self.client.post(reverse('member-update', args=[self.joeuser.id]),
@@ -1131,37 +1132,66 @@ class MemberEditTest(TemplateTestCase):
         self.joeuser.refresh_from_db()
         self.assertTrue(self.joeuser.email == 'foo@bar.com')
 
+          
+class GraphQLTest(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(
+            email='super@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@e.f')
+        self.joeuser = Member.objects.create_user(email='joe@h.i')
+        self.janeuser = Member.objects.create_user(email='jane@k.l')
+        """ set context for test graphene requests """
+        self.request_factory = RequestFactory()
+        self.context_value = self.request_factory.get('/api/')
 
-class GraphQLTest(GigTestBase):
-
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+          
     # test member queries
-    def test_all_members(self):
+    def test_all_members_superuser(self):
         client = graphQLClient(schema)
+        self.context_value.user = self.super
         executed = client.execute(
             """{ allMembers{
             email,
             username
-            } }"""
+            } }""", context_value=self.context_value
         )
-        assert executed == {
-            "data": {
-                "allMembers": [
-                    {"email": "super@b.c", "username": ""},
-                    {"email": "admin@e.f", "username": ""},
-                    {"email": "joeuser@h.i", "username": ""},
-                    {"email": "janeuser@k.l", "username": ""},
-                ]
-            }
-        }
+        assert executed == {'data': {'allMembers': [{'email': 'super@b.c', 'username': ''}, {
+            'email': 'admin@e.f', 'username': ''}, {'email': 'joe@h.i', 'username': ''}, {'email': 'jane@k.l', 'username': ''}]}}
 
-    def test_member_by_email(self):
+    def test_all_members_not_superuser(self):
         client = graphQLClient(schema)
+        self.context_value.user = self.joeuser
         executed = client.execute(
-            """{ memberByEmail(email:"joeuser@h.i") {
+            """{ allMembers{
             email,
             username
-            } }"""
+            } }""", context_value=self.context_value
+        )
+        assert "errors" in executed
+
+    def test_member_by_email_superuser(self):
+        client = graphQLClient(schema)
+        self.context_value.user = self.super
+        executed = client.execute(
+            """{ memberByEmail(email:"joe@h.i") {
+            email,
+            username
+            } }""", context_value=self.context_value
         )
         assert executed == {
-            "data": {"memberByEmail": {"email": "joeuser@h.i", "username": ""}}
+            "data": {"memberByEmail": {"email": "joe@h.i", "username": ""}}
         }
+
+    def test_member_by_email_not_superuser(self):
+        client = graphQLClient(schema)
+        self.context_value.user = self.joeuser
+        executed = client.execute(
+            """{ memberByEmail(email:"joe@h.i") {
+            email,
+            username
+            } }""", context_value=self.context_value
+        )
+        assert "errors" in executed

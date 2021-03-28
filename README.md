@@ -43,8 +43,11 @@ Queries in the GUI are formatted as such:
 ```
 query {
 	allBands {
-		name,
-		hometown
+		band {
+      		name,
+		  	hometown,
+		  	creation_date
+		}
 	}
 }
 ```
