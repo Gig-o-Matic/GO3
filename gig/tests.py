@@ -1006,7 +1006,7 @@ class GigSecurityTest(GigTestBase):
         self.assertEqual(response.status_code, 200)
 
         c.force_login(self.janeuser)
-        response = c.get(reverse("gig-detail", args=[self.band.id]))
+        response = c.get(reverse("gig-create", args=[self.band.id]))
         self.assertEqual(response.status_code, 403) # fail if we're not associated
 
         self.assoc_user(self.janeuser)

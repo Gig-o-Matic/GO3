@@ -23,7 +23,7 @@ class StatsTest(GigTestBase):
 
     def test_band_member_stat(self):
         """ show that we collect band member stats properly """
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         collect_band_stats()
 
         m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
@@ -32,7 +32,7 @@ class StatsTest(GigTestBase):
 
     def test_band_member_stat_delete(self):
         """ show that we collect band member stats properly after member is deleted """
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         self.joeuser.delete()
 
         collect_band_stats()

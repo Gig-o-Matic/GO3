@@ -22,7 +22,7 @@ from json import loads
 
 class AgendaTest(GigTestBase):
     def test_agenda(self):
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         for i in range(0, 19):
             self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
         c = Client()
@@ -39,7 +39,7 @@ class AgendaTest(GigTestBase):
 
 class GridTest(GigTestBase):
     def test_grid(self):
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         for i in range(0, 19):
             self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
         c = Client()
