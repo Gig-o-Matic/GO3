@@ -183,6 +183,8 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
 class DuplicateView(UserPassesTestMixin, CreateView):
 
     def test_func(self):
+        if not self.request.user.is_authenticated:
+            return self.handle_no_permission()
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.is_editor(self.request.user)
 
@@ -205,8 +207,14 @@ class DuplicateView(UserPassesTestMixin, CreateView):
         return get_object_or_404(Gig, id=self.kwargs['pk']).band
 
 
-class CommentsView(LoginRequiredMixin, TemplateView):
+class CommentsView(UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_comments.html'
+
+    def test_func(self):
+        if not self.request.user.is_authenticated:
+            return self.handle_no_permission()
+        gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+        return gig.band.has_member(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
