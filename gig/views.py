@@ -143,6 +143,18 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Gig
     form_class = GigForm
 
+    # cribbed from UserPassesTestMixin
+    def dispatch(self, request, *args, **kwargs):
+        user_test_result = self.test_func()
+        if not user_test_result:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def test_func(self):
+        # can only edit the gig if you're logged in and in the band        
+        gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+        return gig.band.has_member(self.request.user) and has_manage_permission(self.request.user, gig.band)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['timezone'] = self.object.band.timezone

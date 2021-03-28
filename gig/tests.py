@@ -1020,3 +1020,26 @@ class GigSecurityTest(GigTestBase):
         c = Client()
         response = c.get(reverse("gig-detail", args=[self.band.id]))
         self.assertEqual(response.status_code, 302) # fail if we're logged out
+
+    def test_gig_edit_access(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+
+        c.force_login(self.janeuser)
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 403) # fail if we're not associated
+
+        self.assoc_user(self.janeuser)
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 200) # pass - we're assoc'd
+        self.band.anyone_can_manage_gigs = False
+        self.band.save()
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+
+        c = Client()
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 302) # fail if we're logged out
