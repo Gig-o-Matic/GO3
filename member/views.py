@@ -16,8 +16,8 @@
 """
 
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
-from .forms import MemberCreateForm, InviteForm, SignupForm
-from .models import Member, MemberPreferences, Invite
+from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
+from .models import Member, MemberPreferences, Invite, EmailConfirmation
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
 from lib.translation import join_trans
@@ -88,11 +88,10 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         # # find the bands this member is associated with
         the_member_bands = [a.band for a in the_member.assocs.all()]
 
-        # email_change = self.request.get('emailAddressChanged',False)
-        # if email_change:
-        #     email_change_msg='You have selected a new email address - check your inbox to verify!'
-        # else:
-        #     email_change_msg = None
+        if the_member.pending_email.count() > 0:
+            email_change_msg=_('You have selected a new email address - check your inbox to verify!')
+        else:
+            email_change_msg = None
 
         # if I'm not sharing my email, don't share my email
         show_email = False
@@ -105,6 +104,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         context['the_member_bands'] = the_member_bands
         context['show_email'] = show_email
         context['member_is_me'] = the_user.id == the_member.id
+        context['email_change_msg'] = email_change_msg
         if is_me or the_user.is_superuser:
             context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
         else:
@@ -123,7 +123,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 class UpdateView(LoginRequiredMixin, BaseUpdateView):
     template_name = 'member/member_form.html'
     model = Member
-    fields = ['email','username','nickname','phone','statement','images']
+    form_class = MemberChangeForm
+    # fields = ['email','username','nickname','phone','statement','images']
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -137,6 +138,9 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def form_valid(self, form):
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
@@ -347,3 +351,26 @@ class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView)
     def get_success_url(self):
         return redirect('member-detail')
 
+
+def confirm_email(request, pk):
+
+    valid = True
+    try:
+        conf = EmailConfirmation.objects.get(pk=pk)
+    except EmailConfirmation.DoesNotExist:
+        valid = False
+
+    if valid:
+        if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
+            valid=False
+        else:
+            conf.member.email = conf.new_email
+            conf.member.save()
+            conf.delete()
+
+    def set_language(response):
+        return response
+
+    return set_language(
+                render(request, 'member/email_change_confirmation.html',
+                        {'validlink': valid}))
