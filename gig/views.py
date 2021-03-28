@@ -32,8 +32,25 @@ import urllib.parse
 from validators import url as url_validate
 
 
-class DetailView(generic.DetailView):
+def has_comment_permission(user, gig):
+    return user and Assoc.objects.filter(member=user, band=gig.band).count() == 1
+
+
+def has_manage_permission(user, band):
+    return user and (user.is_superuser or band.anyone_can_manage_gigs or band.is_admin(user))
+
+
+def has_create_permission(user, band):
+    return user and (user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user))
+
+
+class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Gig
+
+    def test_func(self):
+        # can only see the gig if you're logged in and in the band        
+        gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+        return gig.band.has_member(self.request.user)
 
     def get_template_names(self):
         if self.object.is_archived:
@@ -73,6 +90,18 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    # cribbed from UserPassesTestMixin
+    def dispatch(self, request, *args, **kwargs):
+        user_test_result = self.test_func()
+        if not user_test_result:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+    def test_func(self):
+        # can only create the gig if you're logged in and in the band        
+        band = get_object_or_404(Band, id=self.kwargs['bk'])
+        return band.has_member(self.request.user) and has_create_permission(self.request.user, band)
 
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
@@ -215,18 +244,6 @@ class PrintSetlistView(LoginRequiredMixin, TemplateView):
         gig = Gig.objects.get(id=self.kwargs['pk'])
         context['gig'] = gig
         return context
-
-
-def has_comment_permission(user, gig):
-    return Assoc.objects.filter(member=user, band=gig.band).count() == 1
-
-
-def has_manage_permission(user, band):
-    return user.is_superuser or band.anyone_can_manage_gigs or band.is_admin(user)
-
-
-def has_create_permission(user, band):
-    return user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user)
 
 
 def answer(request, pk, val):
