@@ -1195,3 +1195,24 @@ class GraphQLTest(TestCase):
             } }""", context_value=self.context_value
         )
         assert "errors" in executed
+
+
+class MemberSecurityTest(GigTestBase):
+    def test_member_detail_access(self):
+        c = Client()
+        c.force_login(self.joeuser)
+
+        # can see myself
+        response = c.get(reverse("member-detail"))
+        self.assertEqual(response.status_code, 200)
+        response = c.get(reverse("member-detail", args=[self.joeuser.id]))
+
+        _, _, _ = self.assoc_joe_and_create_gig()
+        response = c.get(reverse("member-detail", args=[self.janeuser.id]))
+        self.assertEqual(response.status_code, 403) # fail if we're not in the same band
+
+        self.assoc_user(self.janeuser)
+        response = c.get(reverse("member-detail", args=[self.janeuser.id]))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTrue(False)

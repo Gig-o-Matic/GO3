@@ -28,7 +28,7 @@ from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
 from django.contrib.auth.views import PasswordChangeDoneView
 from django.contrib import messages
 from go3.colors import the_colors
@@ -60,11 +60,16 @@ def verify_requestor_is_in_user_band(request, user):
     ubands = [a.band for a in user.confirmed_assocs]
     if len(set(rbands) & set(ubands)) == 0:
         raise PermissionDenied
+    return True
 
 
-class DetailView(LoginRequiredMixin, generic.DetailView):
+class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
+
+    def test_func(self):
+        # can see the member if we're in the same band or are superuser    
+        return self.request.user.is_superuser or verify_requestor_is_in_user_band(self.request, self.get_object())
 
     def get_object(self, queryset=None):
         try:
