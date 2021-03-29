@@ -1214,5 +1214,3 @@ class MemberSecurityTest(GigTestBase):
         self.assoc_user(self.janeuser)
         response = c.get(reverse("member-detail", args=[self.janeuser.id]))
         self.assertEqual(response.status_code, 200)
-
-        self.assertTrue(False)
