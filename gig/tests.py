@@ -999,7 +999,7 @@ class GigSecurityTest(GigTestBase):
         self.assertEqual(response.status_code, 302) # fail if we're logged out
 
     def test_gig_create_access(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
+        _, _, _ = self.assoc_joe_and_create_gig()
         c = Client()
         c.force_login(self.joeuser)
         response = c.get(reverse("gig-create", args=[self.band.id]))
