@@ -81,8 +81,10 @@ class Band(models.Model):
         return member and not member.is_anonymous and self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1
 
     def is_admin(self, member):
-        return member and not member.is_anonymous and self.assocs.filter(
-            member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count() == 1
+        not_anon = not member.is_anonymous
+        is_confirmed = self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count() == 1
+        is_super = member.is_superuser
+        return member and (is_super or (not_anon and is_confirmed))
 
     def is_editor(self, member):
         return member and not member.is_anonymous and (self.is_admin(member) or member.is_superuser)
