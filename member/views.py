@@ -169,6 +169,11 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
         translation.activate(self.object.language)
         response = super().form_valid(form)
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.object.language )
+
+        if 'calendar_show_only_confirmed' in form.changed_data or 'calendar_show_only_committed' in form.changed_data:
+           self.object.member.cal_feed_dirty = True
+           self.object.member.save()
+
         return response
 
 
