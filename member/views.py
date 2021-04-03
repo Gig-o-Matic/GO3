@@ -41,9 +41,6 @@ from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the member index.")
-
 def verify_requester_is_user(request, user):
     if not (request.user.id==user.id or request.user.is_superuser):
         raise PermissionDenied
@@ -177,6 +174,12 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
 
 class AssocsView(LoginRequiredMixin, TemplateView):
     template_name='member/member_assocs.html'
+
+    def get(self, request, *args, **kwargs):
+        object = get_object_or_404(Member, pk=self.kwargs['pk'])
+        verify_requester_is_user(self.request, object)
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['assocs'] = Assoc.objects.select_related('band').filter(member__id = self.kwargs['pk'])
@@ -187,6 +190,12 @@ class AssocsView(LoginRequiredMixin, TemplateView):
 
 class OtherBandsView(LoginRequiredMixin, TemplateView):
     template_name='member/member_band_popup.html'
+
+    def get(self, request, *args, **kwargs):
+        object = get_object_or_404(Member, pk=self.kwargs['pk'])
+        verify_requester_is_user(self.request, object)
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
@@ -208,7 +217,7 @@ class InviteView(LoginRequiredMixin, FormView):
         band = get_object_or_404(Band, pk=self.kwargs['bk'])
         emails = form.cleaned_data['emails'].replace(',', ' ').split()
 
-        if not (band.is_admin(self.request.user) or self.request.user.is_superuser):
+        if not band.is_admin(self.request.user):
             raise PermissionDenied
 
         invited, in_band, invalid = [], [], []
