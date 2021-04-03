@@ -28,7 +28,7 @@ from django.urls import reverse
 from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
 from django.contrib.auth.views import PasswordChangeDoneView
 from django.contrib import messages
 from go3.colors import the_colors
@@ -40,9 +40,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404
-
-def index(request):
-    return HttpResponse("Hello, world. You're at the member index.")
 
 def verify_requester_is_user(request, user):
     if not (request.user.id==user.id or request.user.is_superuser):
@@ -60,11 +57,16 @@ def verify_requestor_is_in_user_band(request, user):
     ubands = [a.band for a in user.confirmed_assocs]
     if len(set(rbands) & set(ubands)) == 0:
         raise PermissionDenied
+    return True
 
 
-class DetailView(LoginRequiredMixin, generic.DetailView):
+class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Member
     template_name = 'member/member_detail.html'
+
+    def test_func(self):
+        # can see the member if we're in the same band or are superuser    
+        return self.request.user.is_superuser or verify_requestor_is_in_user_band(self.request, self.get_object())
 
     def get_object(self, queryset=None):
         try:
@@ -172,6 +174,12 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
 
 class AssocsView(LoginRequiredMixin, TemplateView):
     template_name='member/member_assocs.html'
+
+    def get(self, request, *args, **kwargs):
+        object = get_object_or_404(Member, pk=self.kwargs['pk'])
+        verify_requester_is_user(self.request, object)
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['assocs'] = Assoc.objects.select_related('band').filter(member__id = self.kwargs['pk'])
@@ -182,6 +190,12 @@ class AssocsView(LoginRequiredMixin, TemplateView):
 
 class OtherBandsView(LoginRequiredMixin, TemplateView):
     template_name='member/member_band_popup.html'
+
+    def get(self, request, *args, **kwargs):
+        object = get_object_or_404(Member, pk=self.kwargs['pk'])
+        verify_requester_is_user(self.request, object)
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
@@ -203,7 +217,7 @@ class InviteView(LoginRequiredMixin, FormView):
         band = get_object_or_404(Band, pk=self.kwargs['bk'])
         emails = form.cleaned_data['emails'].replace(',', ' ').split()
 
-        if not (band.is_admin(self.request.user) or self.request.user.is_superuser):
+        if not band.is_admin(self.request.user):
             raise PermissionDenied
 
         invited, in_band, invalid = [], [], []

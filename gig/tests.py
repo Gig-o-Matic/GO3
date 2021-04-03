@@ -168,14 +168,14 @@ class GigTestBase(TestCase):
         the_gig.refresh_from_db()
         return the_gig
 
-    def assoc_joe(self):
+    def assoc_user(self, user):
         a = Assoc.objects.create(
-            member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
+            member=user, band=self.band, status=AssocStatusChoices.CONFIRMED
         )
         return a
 
     def assoc_joe_and_create_gig(self, **kwargs):
-        a = self.assoc_joe()
+        a = self.assoc_user(self.joeuser)
         g = self.create_gig_form(contact=self.joeuser, **kwargs)
         p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
@@ -184,7 +184,7 @@ class GigTestBase(TestCase):
 class GigTest(GigTestBase):
     def test_no_section(self):
         """ show that the band has a default section called 'No Section' """
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         a = self.band.assocs.first()
         s = a.default_section
         self.assertTrue(s.is_default)
@@ -192,7 +192,7 @@ class GigTest(GigTestBase):
 
     def test_gig_plans(self):
         """ show that when a gig is created, every member has a plan """
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         g = self.create_gig_form()
         self.assertEqual(g.plans.count(), self.band.assocs.count())
 
@@ -204,7 +204,7 @@ class GigTest(GigTestBase):
         self.assertEqual(self.band.sections.count(), 4)
 
         """ make the band's first assoc default to s1 section """
-        a = self.assoc_joe()
+        a = self.assoc_user(self.joeuser)
         a.default_section = s1
         a.save()
         self.assertEqual(self.joeuser.assocs.first().default_section, s1)
@@ -245,7 +245,7 @@ class GigTest(GigTestBase):
         s2 = Section.objects.create(name="s2", band=self.band)
 
         # set joe's default section to s1
-        a = self.assoc_joe()
+        a = self.assoc_user(self.joeuser)
         a.default_section = s1
         a.save()
 
@@ -272,7 +272,7 @@ class GigTest(GigTestBase):
         self.band.anyone_can_create_gigs = False
         self.band.save()
         # need a member of the band so there's a valid contact to select from in the form
-        self.assoc_joe()
+        self.assoc_user(self.joeuser)
         self.create_gig_form(
             user=self.janeuser, title="permission gig", expect_code=403
         )
@@ -981,3 +981,65 @@ class GigTest(GigTestBase):
         archive_old_gigs()
         g.refresh_from_db()
         self.assertTrue(g.is_archived)
+
+class GigSecurityTest(GigTestBase):
+    def test_gig_detail_access(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(reverse("gig-detail", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+
+        c.force_login(self.janeuser)
+        response = c.get(reverse("gig-detail", args=[g.id]))
+        self.assertEqual(response.status_code, 403) # fail if we're not associated
+
+        c = Client()
+        response = c.get(reverse("gig-detail", args=[g.id]))
+        self.assertEqual(response.status_code, 302) # fail if we're logged out
+
+    def test_gig_create_access(self):
+        _, _, _ = self.assoc_joe_and_create_gig()
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(reverse("gig-create", args=[self.band.id]))
+        self.assertEqual(response.status_code, 200)
+
+        c.force_login(self.janeuser)
+        response = c.get(reverse("gig-create", args=[self.band.id]))
+        self.assertEqual(response.status_code, 403) # fail if we're not associated
+
+        self.assoc_user(self.janeuser)
+        response = c.get(reverse("gig-create", args=[self.band.id]))
+        self.assertEqual(response.status_code, 200) # pass - we're assoc'd
+        self.band.anyone_can_create_gigs = False
+        self.band.save()
+        response = c.get(reverse("gig-create", args=[self.band.id]))
+        self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+
+        c = Client()
+        response = c.get(reverse("gig-detail", args=[self.band.id]))
+        self.assertEqual(response.status_code, 302) # fail if we're logged out
+
+    def test_gig_edit_access(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+
+        c.force_login(self.janeuser)
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 403) # fail if we're not associated
+
+        self.assoc_user(self.janeuser)
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 200) # pass - we're assoc'd
+        self.band.anyone_can_manage_gigs = False
+        self.band.save()
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+
+        c = Client()
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 302) # fail if we're logged out

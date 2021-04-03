@@ -35,6 +35,9 @@
                         {% if  member.nickname %}
                             ({{  member.nickname | escape }})
                         {% endif %}
+                        {% if user.is_superuser %}
+                        (#{{member.id}})
+                        {% endif %}
                     </div>
                 </div>
                 {% if show_email %}

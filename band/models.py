@@ -71,18 +71,23 @@ class Band(models.Model):
     # # flags to determine whether to recompute calendar feeds
     # band_cal_feed_dirty = models.BooleanField(default=True)
     pub_cal_feed_dirty = models.BooleanField(default=True)
-    pub_cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    pub_cal_feed_id = models.UUIDField(
+        unique=True, default=uuid.uuid4, editable=False)
 
-    default_language = models.CharField(choices=LANGUAGES, max_length=200, default='en-us')
+    default_language = models.CharField(
+        choices=LANGUAGES, max_length=200, default='en-us')
 
     def has_member(self, member):
-        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1
+        return member and not member.is_anonymous and self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1
 
     def is_admin(self, member):
-        return self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count() == 1
+        not_anon = not member.is_anonymous
+        is_confirmed = self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count() == 1
+        is_super = member.is_superuser
+        return member and (is_super or (not_anon and is_confirmed))
 
     def is_editor(self, member):
-        return self.is_admin(member) or member.is_superuser
+        return member and not member.is_anonymous and (self.is_admin(member) or member.is_superuser)
 
     @property
     def all_assocs(self):
