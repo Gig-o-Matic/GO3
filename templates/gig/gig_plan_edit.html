@@ -100,14 +100,14 @@
             </div>
         {% else %}
             <div class="col-8" style="display:flex; align-items:center;" >
-                <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.value %}</span>
+                <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span>
                 {{ plan.feedback_string }}
                 {{ plan.comment }}
             </div>
         {% endif %}
     {% else %}
         <div class="col-8" style="display:flex; align-items:center;" >
-            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.value %}</span> {{ plan.feedback_string }} {{ plan.comment }}
+            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span> {{ plan.feedback_string }} {{ plan.comment }}
         </div>
     {% endif %}
 </div>
