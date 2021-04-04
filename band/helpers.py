@@ -20,8 +20,9 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFoun
 from .models import Band, Assoc, Section
 from gig.helpers import update_plan_default_section
 from gig.util import GigStatusChoices
-from gig.models import Gig
+from gig.models import Gig, Plan
 from member.models import Member
+from member.util import MemberStatusChoices
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from band.util import AssocStatusChoices
@@ -31,6 +32,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
 
 
 def assoc_editor_required(func):
@@ -134,7 +136,29 @@ def join_assoc(request, bk, mk):
 @login_required
 @assoc_editor_required
 def delete_assoc(request, a):
-    a.delete()
+    """ when we delete an assoc we don't want to just delete it because that will kill all the plans """
+    """ and everything else. Instead, change it to point to a ghost member. """
+
+    if a.status==AssocStatusChoices.CONFIRMED:
+        # we can get rid of any future plans associated with this assoc
+        Plan.member_plans.future_plans(a.member).filter(gig__is_archived=False).delete()
+
+        # make a new member
+        m = Member.objects.create_user('deleted user', password=make_password(None))
+        m.status = MemberStatusChoices.DELETED
+        m.email = "assoc_{0}@gig-o-matic.com".format(m.id)
+        m.username = "former user"
+        m.nickname = ''
+        m.phone = ''
+        m.statement = ''
+        m.set_unusable_password()
+        m.save()
+
+        a.member = m
+        a.save()
+    else:
+        # well, if it's not a confirmed member we can delete the assoc
+        a.delete()
 
     return HttpResponse(status=204)
 
