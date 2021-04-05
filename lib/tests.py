@@ -22,7 +22,7 @@ from lib.email import send_messages_async
 from gig.models import Gig
 from member.models import Member
 from band.models import Band, Assoc
-from lib.caldav import save_calfeed, get_calfeed, make_calfeed
+from lib.caldav import save_calfeed, get_calfeed, make_calfeed, delete_calfeed
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 import os
 from datetime import timedelta
@@ -164,6 +164,14 @@ class CaldavFileTest(FSTestCase):
         save_calfeed('testfile2',b'hi')
         cf = get_calfeed('testfile2')
         self.assertEqual(cf,'hi')
+
+    def test_delete_calfeed(self):
+        save_calfeed('testfile2',b'hi')
+        cf = get_calfeed('testfile2')
+        self.assertEqual(cf,'hi')
+        delete_calfeed('testfile2')
+        with self.assertRaises(ValueError):
+            cf = get_calfeed('testfile2')
 
 
 

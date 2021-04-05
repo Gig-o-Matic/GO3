@@ -42,6 +42,12 @@ def get_calfeed(tag):
     return s
 
 
+def delete_calfeed(tag):
+    file_path = f'{tag}.txt'
+    if filesys.exists(file_path):
+        filesys.delete(file_path)
+
+
 def make_calfeed(the_title, the_events, the_language, the_uid):
     """ construct an ical-compliant stream from a list of events """
 
