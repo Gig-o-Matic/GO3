@@ -22,6 +22,8 @@ from django.utils.translation import gettext_lazy as _
 import os
 from django.core.files.storage import DefaultStorage
 from gig.util import GigStatusChoices
+from django.conf import settings
+
 
 filesys = FileSystemStorage("calfeeds", "calfeeds")
 
@@ -40,6 +42,13 @@ def get_calfeed(tag):
     except FileNotFoundError:
         raise ValueError()
     return s
+
+
+def delete_calfeed(tag):
+    if settings.DYNAMIC_CALFEED:
+        file_path = f'{tag}.txt'
+        if filesys.exists(file_path):
+            filesys.delete(file_path)
 
 
 def make_calfeed(the_title, the_events, the_language, the_uid):

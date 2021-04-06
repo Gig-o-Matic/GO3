@@ -27,6 +27,7 @@ from .util import MemberStatusChoices, AgendaChoices
 from band.models import Assoc, Band
 from go3.settings import LANGUAGES
 from lib.email import EmailRecipient
+from lib.caldav import delete_calfeed
 import uuid
 
 class MemberManager(BaseUserManager):
@@ -145,6 +146,7 @@ class Member(AbstractUser):
     def delete(self, *args, **kwargs):
         """ when we get deleted, remove plans for future gigs and set us to deleted """
         Plan.member_plans.future_plans(self).filter(gig__is_archived=False).delete()
+        delete_calfeed(self.cal_feed_id)
         self.status = MemberStatusChoices.DELETED
         self.email = "user_{0}@gig-o-matic.com".format(self.id)
         self.username = "deleted user"
