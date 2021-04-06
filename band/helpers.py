@@ -27,7 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from band.util import AssocStatusChoices
 import json
-from lib.caldav import make_calfeed, save_calfeed, get_calfeed
+from lib.caldav import make_calfeed, save_calfeed, get_calfeed, delete_calfeed
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
@@ -142,6 +142,7 @@ def delete_assoc(request, a):
     if a.status==AssocStatusChoices.CONFIRMED:
         # we can get rid of any future plans associated with this assoc
         Plan.member_plans.future_plans(a.member).filter(gig__is_archived=False).delete()
+        a.member.cal_feed_dirty = True
 
         # make a new member
         m = Member.objects.create_user('deleted user', password=make_password(None))
