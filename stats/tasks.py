@@ -36,7 +36,7 @@ def collect_band_stats():
         # all time members in each band
         m = BandMetric.objects.filter(name='All Time Number of Members', band=b).first()
         if m is None:
-            m = BandMetric(name='All Time Number of Members', band=b, kind=MetricTypes.DAILY)
+            m = BandMetric(name='All Time Number of Members', band=b, kind=MetricTypes.ALLTIME)
             m.save()
         m.register(b.assocs.count())
 
@@ -52,8 +52,8 @@ def collect_band_stats():
         m.register(gigcount)
 
         # number of gigs total for each band
-        m = BandMetric.objects.filter(name='Total Gigs', band=b).first()
+        m = BandMetric.objects.filter(name='All Time Total Gigs', band=b).first()
         if m is None:
-            m = BandMetric(name='Total Gigs', band=b, kind=MetricTypes.ALLTIME)
+            m = BandMetric(name='All Time Total Gigs', band=b, kind=MetricTypes.ALLTIME)
             m.save()
         m.register(Gig.objects.filter(band=b).count())
