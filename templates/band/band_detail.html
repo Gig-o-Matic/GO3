@@ -312,6 +312,9 @@
                                 <i class="fas fa-spinner fa-pulse fa-lg"></i>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-12" id="bandcharts"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -325,6 +328,8 @@
 {% endblock modal %}
 
 {% block localscripts %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="{% static 'js/band_stats.js' %}"></script>
 {% comment %}
 <script src="/js/jquery.validate.js"></script>
 {% endcomment %}
@@ -379,6 +384,7 @@ function toggle_names() {
 $(document).ready(function() {
     updateUpcoming();
     updatePublic();
+    initStats('bandcharts');
 });
 </script>
 {% endblock localscripts %}
