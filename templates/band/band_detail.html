@@ -325,6 +325,8 @@
 {% endblock modal %}
 
 {% block localscripts %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="{% static 'js/band_stats.js' %}"></script>
 {% comment %}
 <script src="/js/jquery.validate.js"></script>
 {% endcomment %}
@@ -375,6 +377,13 @@ function toggle_names() {
         $('.the_longname').show();
     };
 }
+
+htmx.on("htmx:afterSettle", function(evt) {
+    if (evt['target'].id == 'bandstats') {
+        initStats('bandcharts');
+    }
+});
+
 
 $(document).ready(function() {
     updateUpcoming();
