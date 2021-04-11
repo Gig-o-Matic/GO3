@@ -35,6 +35,14 @@ def get_band_stats(the_band):
         })
     return the_stats
 
+def get_gigs_over_time_stats(the_band):
+    the_metric = BandMetric.objects.filter(band=the_band, name='Number of Gigs').first()
+    if the_metric is None:
+        return []
+    the_stats = the_metric.stats
+    return [ [s.created, s.value] for s in the_stats.all()]
+    
+
 def test_stats(request):
     collect_band_stats()
     return HttpResponse()

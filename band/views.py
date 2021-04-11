@@ -13,9 +13,10 @@ from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
 from member.util import MemberStatusChoices
-from stats.helpers import get_band_stats
+from stats.helpers import get_band_stats, get_gigs_over_time_stats
 import json
 from django.utils.safestring import SafeString
+from datetime import datetime
 
 
 class BandMemberRequiredMixin(AccessMixin):
@@ -89,6 +90,14 @@ class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
         the_band = Band.objects.get(id=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
         context['the_stats'] = get_band_stats(the_band)
+
+        # get the gigs over time data
+
+        def myconverter(o):
+            if isinstance(o, datetime):
+                return [o.year, o.month, o.day]
+        context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=myconverter)
+
         return context
 
 
