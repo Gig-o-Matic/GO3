@@ -11,15 +11,17 @@ from google.appengine.api import datastore
 import progressbar
 import random
 
+DEBUG=False
+
 # order is important
 objects=[
          'Band', 
-         'Section', 
-         'Member', 
-         'Assoc', 
-         'Gig', 
-         'Plan', 
-         'Comment'
+        #  'Section', 
+        #  'Member', 
+        #  'Assoc', 
+        #  'Gig', 
+        #  'Plan', 
+        #  'Comment'
         ]
 count={}
 
@@ -38,7 +40,7 @@ columns={
     'Band': ['show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
              'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
              'enable_forum', 'website', 'description', 'send_updates_by_default', 'thumbnail_img', 'anyone_can_manage_gigs',
-             'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name'],
+             'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name', 'images'],
     'Assoc': ['is_occasional', 'hide_from_schedule', 'is_confirmed', 'created', 'color', 'is_multisectional', 'default_section_index', 
               'default_section','is_invited', 'member','band','is_band_admin','email_me','member_name'],
     'Plan': ['comment', 'section', 'feedback_value', 'value', 'member'],
@@ -77,6 +79,8 @@ def key_to_str(key):
 
 def find_id(entity_type, key):
     val = mappings[entity_type].get(key)
+    if val is None and DEBUG:
+        val = 999
     return val
 
 
@@ -85,7 +89,13 @@ def get_key(entity):
     parent=("\"{0}\"".format(key_to_str(entity.parent()))) # parent
     return key[1:-1], parent[1:-1]
 
+def enc(string):
+    return string.encode('utf-8') if string else ''
 
+# 'show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
+# 'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
+# 'enable_forum', 'website', 'description', 'send_updates_by_default', 'thumbnail_img', 'anyone_can_manage_gigs',
+# 'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name'
 def make_band_object(entity):
     key, parent = get_key(entity)
 
@@ -96,9 +106,40 @@ def make_band_object(entity):
     "pk": {0},
     "fields": {{
         "name": "{1}",
-        "creation_date": "{2}",
+        "hometowm": "{2}",
+        "shortname": "{3}",
+        "website": "{4}",
+        "description": "{5}",
+        "images": "{6}",
+        "member_links": "{7}",
+        "thumbnail_img": "{8}",
+        "timezone": "{9}",
+        "new_member_message": "{10}",
+        "anyone_can_manage_gigs": {11},
+        "anyone_can_create_gigs": {12},
+        "send_updates_by_default": {13},
+        "simple_planning": {14},
+        "plan_feedback": "{15}",
+        "creation_date": "{16}",
     }}
-}},\n""".format(id, entity['name'].encode('utf-8'), entity['created'].strftime('%Y-%m-%d'))
+}},\n""".format(id, 
+                enc(entity['name']),
+                enc(entity['hometown']),
+                enc(entity['shortname']),
+                entity['website'],
+                enc(entity['description']),
+                entity.get('images'),
+                enc(entity['member_links']),
+                entity['thumbnail_img'],
+                entity['timezone'],
+                enc(entity.get('new_member_message')),
+                entity['anyone_can_manage_gigs'],
+                entity.get('anyone_can_create_gigs',entity['anyone_can_manage_gigs']),
+                entity['send_updates_by_default'],
+                entity['simple_planning'],
+                enc(entity['plan_feedback']),
+                entity['created'].strftime('%Y-%m-%d')
+        )
 
 
 def make_section_object(entity):
