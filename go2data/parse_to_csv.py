@@ -15,9 +15,9 @@ DEBUG=False
 
 # order is important
 objects=[
-         'Band', 
+        #  'Band', 
         #  'Section', 
-        #  'Member', 
+         'Member', 
         #  'Assoc', 
         #  'Gig', 
         #  'Plan', 
@@ -26,6 +26,10 @@ objects=[
 count={}
 
 columns={
+    'Band': ['show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
+             'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
+             'enable_forum', 'website', 'description', 'send_updates_by_default', 'thumbnail_img', 'anyone_can_manage_gigs',
+             'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name', 'images'],
     'Section': ['name'],
     'Member': ['preferences.default_view','email_address','preferences.email_new_gig','show_long_agenda','display_name',
                'pending_change_email', 'preferences.locale','is_superuser','seen_motd_time','statement','preferences.share_email',
@@ -37,10 +41,6 @@ columns={
             'status', 'comment_id', 'hide_from_calendar', 'calltime', 'paid', 'address', 'date', 
             'invite_occasionals', 'endtime', 'is_private', 'was_reminded', 'enddate', 'rss_description',
             'setlist', 'contact', 'settime', 'created_date', 'postgig'],
-    'Band': ['show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
-             'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
-             'enable_forum', 'website', 'description', 'send_updates_by_default', 'thumbnail_img', 'anyone_can_manage_gigs',
-             'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name', 'images'],
     'Assoc': ['is_occasional', 'hide_from_schedule', 'is_confirmed', 'created', 'color', 'is_multisectional', 'default_section_index', 
               'default_section','is_invited', 'member','band','is_band_admin','email_me','member_name'],
     'Plan': ['comment', 'section', 'feedback_value', 'value', 'member'],
@@ -142,6 +142,7 @@ def make_band_object(entity):
         )
 
 
+#    'Section': ['name'],
 def make_section_object(entity):
     key, parent = get_key(entity)
 
@@ -158,19 +159,62 @@ def make_section_object(entity):
 }},\n""".format(id, entity['name'].encode('utf-8'), parent_id)
 
 
+# 'Member': ['preferences.default_view','email_address','preferences.email_new_gig','show_long_agenda','display_name',
+#             'pending_change_email', 'preferences.locale','is_superuser','seen_motd_time','statement','preferences.share_email',
+#             'is_betatester','seen_motd','updated','preferences.agenda_show_time','phone','is_band_editor','seen_welcome',
+#             'verified','nickname','name','created', 'preferences.calendar_show_only_committed', 'preferences.share_profile',
+#             'preferences.calendar_show_only_confirmed', 'preferences.hide_canceled_gigs','created'],
 def make_member_object(entity):
     key, parent = get_key(entity)
     id = make_id('Member', key)
 
-    return """{{
+    member_obj = """{{
         "model": "member.member",
         "pk": {0},
         "fields": {{
             "email": "{1}",
             "username": "{2}",
-        }}
-}},\n""".format(id, entity['email_address'], entity['name'].encode('utf-8'),)
+            "nickname": "{3}",
+            "phone": "{4}",
+            "statement": "{5}",
+            "status": {6}
+    }}
+}},\n""".format(id,
+                entity['email_address'],
+                enc(entity['name']),
+                enc(entity['nickname']),
+                enc(entity['phone']),
+                enc(entity['statement']),
+                0, # active
+                )
 
+    pref_obj = """{{
+        "model": "member.memberpreferences",
+        "pk": {0},
+        "fields": {{
+            "member": {1},
+            "hide_canceled_gigs": {2},
+            "language": {3},
+            "share_profile": {4},
+            "share_email": {5},
+            "calendar_show_only_confirmed": {6},
+            "calendar_show_only_committed": {7},
+            "agenda_show_time": {8},
+            "default_view": {9},
+    }}
+}},\n""".format(id, # we'll use the same pk as the member object we're associated with
+                id, # member id
+                entity['preferences.hide_canceled_gigs'],
+                entity['preferences.locale'],
+                entity['preferences.share_profile'],
+                entity['preferences.share_email'],
+                entity['preferences.calendar_show_only_confirmed'],
+                entity['preferences.calendar_show_only_committed'],
+                entity['preferences.agenda_show_time'],
+                entity['preferences.default_view'],
+                )
+
+    return "{0}\n{1}".format(member_obj, pref_obj)
 
 def make_assoc_object(entity):
     key, parent = get_key(entity)
