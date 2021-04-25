@@ -15,10 +15,10 @@ DEBUG=False
 
 # order is important
 objects=[
-        #  'Band', 
-        #  'Section', 
+         'Band', 
+         'Section', 
          'Member', 
-        #  'Assoc', 
+         'Assoc', 
         #  'Gig', 
         #  'Plan', 
         #  'Comment'
@@ -200,7 +200,7 @@ def make_member_object(entity):
             "calendar_show_only_confirmed": {6},
             "calendar_show_only_committed": {7},
             "agenda_show_time": {8},
-            "default_view": {9},
+            "default_view": {9}
     }}
 }},\n""".format(id, # we'll use the same pk as the member object we're associated with
                 id, # member id
@@ -216,6 +216,9 @@ def make_member_object(entity):
 
     return "{0}\n{1}".format(member_obj, pref_obj)
 
+
+# 'is_occasional', 'hide_from_schedule', 'is_confirmed', 'created', 'color', 'is_multisectional', 'default_section_index', 
+#               'default_section','is_invited', 'member','band','is_band_admin','email_me','member_name'
 def make_assoc_object(entity):
     key, parent = get_key(entity)
     id = make_id('Assoc', key)
@@ -231,8 +234,18 @@ def make_assoc_object(entity):
             "band": "{1}",
             "member": "{2}",
             "status": {3},
+            "default_section": {4},
+            "is_admin": {5},
+            "is_occasional": {6},
         }}
-}},\n""".format(id, band_id, member_id, status)
+}},\n""".format(id, 
+                band_id, 
+                member_id, 
+                status,
+                find_id('Section',key_to_str(entity['default_section'])),
+                entity['is_band_admin'],
+                entity['is_occasional']
+                )
 
 
 def make_gig_object(entity):
