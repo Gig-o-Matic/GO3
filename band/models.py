@@ -191,7 +191,6 @@ class Assoc(models.Model):
     # default_section_index = ndb.IntegerProperty( default=None )
 
     is_multisectional = models.BooleanField(default=False)
-    is_occasional = models.BooleanField(default=False)
     # commitment_number = ndb.IntegerProperty(default=0)
     # commitment_total = ndb.IntegerProperty(default=0)
     color = models.IntegerField(default=0)
