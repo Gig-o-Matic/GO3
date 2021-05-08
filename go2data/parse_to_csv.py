@@ -16,10 +16,10 @@ DEBUG=False
 # order is important
 objects=[
          'Band', 
-         'Section', 
-         'Member', 
-         'Assoc', 
-        #  'Gig', 
+        #  'Section', 
+        #  'Member', 
+        #  'Assoc', 
+         'Gig', 
         #  'Plan', 
         #  'Comment'
         ]
@@ -90,7 +90,9 @@ def get_key(entity):
     return key[1:-1], parent[1:-1]
 
 def enc(string):
-    return string.encode('utf-8') if string else ''
+    the_str=string.encode('utf-8') if string else ''
+    the_str=the_str.replace('"','\"')
+    return the_str
 
 # 'show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
 # 'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
@@ -231,12 +233,17 @@ def make_assoc_object(entity):
         "model": "band.assoc",
         "pk": {0},
         "fields": {{
-            "band": "{1}",
-            "member": "{2}",
+            "band": {1},
+            "member": {2},
             "status": {3},
             "default_section": {4},
             "is_admin": {5},
             "is_occasional": {6},
+            "join_date": {7},
+            "is_multisectional": {8}
+            "color": {9},
+            "email_me": {10},
+            "hide_from_schedule": {11},
         }}
 }},\n""".format(id, 
                 band_id, 
@@ -244,24 +251,65 @@ def make_assoc_object(entity):
                 status,
                 find_id('Section',key_to_str(entity['default_section'])),
                 entity['is_band_admin'],
-                entity['is_occasional']
+                entity['is_occasional'],
+                entity['created'] if 'created' in entity else None,
+                entity['is_multisectional'],
+                entity['color'],
+                entity['email_me'],
+                entity['hide_from_schedule']
                 )
 
-
+# 'Gig': ['creator','is_archived','is_in_trash','trueenddate','dress','archive_id','trashed_date',
+#         'is_canceled','is_confirmed','title','details','default_to_attending', 'leader',
+#         'status', 'comment_id', 'hide_from_calendar', 'calltime', 'paid', 'address', 'date', 
+#         'invite_occasionals', 'endtime', 'is_private', 'was_reminded', 'enddate', 'rss_description',
+#         'setlist', 'contact', 'settime', 'created_date', 'postgig'],
 def make_gig_object(entity):
     key, parent = get_key(entity)
     id = make_id('Gig', key)
 
     parent_id = find_id('Band', parent)
 
+    created_date=None
+    if 'created_date' in entity:
+        if entity['created_date']:
+            created_date = entity['created_date']
+
     return """{{
         "model": "gig.gig",
         "pk": {0},
         "fields": {{
-            "band": "{1}", 
+            "band": {1}, 
             "title": "{2}",
+            "details": "{3}",
+            "created_date": "{4}",
+            "last_update": "",
+            "date": "",
+            "address": "",
+            "status": "",
+            "is_archived": "",
+            "is_private": "",
+            "creator": "",
+            "invite_occasionals": "",
+            "was_reminded": "",
+            "hide_from_calendar": "",
+            "default_to_attending": "",
+            "trashed_date": "",
+            "contact": "",
+            "setlist": "",
+            "setdate": "",
+            "enddate": "",
+            "dress": "",
+            "paid": "",
+            "postgig": "",
+            "leader": "",
         }}
-}},\n""".format(id, parent_id, entity['title'].encode('utf-8'),)
+}},\n""".format(id, 
+                parent_id,
+                entity['title'].encode('utf-8'),
+                enc(entity['details']), 
+                created_date,
+            )
 
 
 def make_plan_object(entity):
