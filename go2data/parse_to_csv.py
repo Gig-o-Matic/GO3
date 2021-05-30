@@ -10,6 +10,7 @@ from google.appengine.datastore import entity_pb
 from google.appengine.api import datastore
 import progressbar
 import random
+import datetime
 
 DEBUG=False
 
@@ -17,11 +18,11 @@ DEBUG=False
 objects=[
          'Band', 
         #  'Section', 
-         'Member', 
+        #  'Member', 
         #  'Assoc', 
-         'Gig', 
+        #  'Gig', 
+        #  'Comment',
         #  'Plan', 
-        #  'Comment'
         ]
 count={}
 
@@ -48,6 +49,8 @@ columns={
 }
 
 mappings = {}
+assocs = {}
+gigs = {}
 
 DATA_DIRECTORY = 'export'
 DELIMITER = '\t'
@@ -84,10 +87,33 @@ def find_id(entity_type, key):
     return val
 
 
+def store_assoc(band_id, member_id, assoc_id):
+    if not band_id in assocs:
+        assocs[band_id] = {}
+    assocs[band_id][member_id] = assoc_id
+
+
+def find_assoc(band_id, member_id):
+    if not band_id in assocs:
+        return None
+    if not member_id in assocs[band_id]:
+        return None
+    return assocs[band_id][member_id]
+
+
+def store_gig_band(gig_id, band_id):
+    gigs[gig_id] = band_id
+
+
+def find_gig_band(gig_id):
+    return gigs[gig_id]
+
+
 def get_key(entity):
     key=("\"{0}\"".format(key_to_str(entity.key()))) # key
     parent=("\"{0}\"".format(key_to_str(entity.parent()))) # parent
     return key[1:-1], parent[1:-1]
+
 
 def enc(string):
     the_str=string.encode('utf-8') if string else ''
@@ -140,7 +166,7 @@ def make_band_object(entity):
                 entity['send_updates_by_default'],
                 entity['simple_planning'],
                 enc(entity['plan_feedback']),
-                entity['created'].strftime('%Y-%m-%d')
+                entity['created'].isoformat()
         )
 
 
@@ -229,6 +255,8 @@ def make_assoc_object(entity):
     band_id = find_id('Band',key_to_str(entity['band']))
     status = 1 if entity['is_confirmed'] else 2 if entity['is_invited'] else 0
 
+    store_assoc(band_id, member_id, id)
+
     return """{{
         "model": "band.assoc",
         "pk": {0},
@@ -271,10 +299,23 @@ def make_gig_object(entity):
 
     parent_id = find_id('Band', parent)
 
+    store_gig_band(id, parent_id)
+
     created_date=None
     if 'created_date' in entity:
         if entity['created_date']:
             created_date = entity['created_date']
+
+    gig_date = None
+    if 'calltime' in entity:
+        if entity['calltime']:
+            gig_date = entity['calltime']
+        else:
+            gig_date = entity['date']
+    if type(gig_date) is datetime.datetime:
+        gig_date = str(gig_date)
+    else:
+        gig_date = enc(gig_date)
 
     return """{{
         "model": "gig.gig",
@@ -298,20 +339,21 @@ def make_gig_object(entity):
             "trashed_date": "{15}",
             "contact": {16},
             "setlist": "{17}",
-            "setdate": "",
-            "enddate": "",
-            "dress": "",
-            "paid": "",
-            "postgig": "",
-            "leader": "",
+            "setdate": "{18}",
+            "enddate": "{19}",
+            "dress": "{20}",
+            "paid": "{21}",
+            "postgig": "{22}",
+            "leader": "{23}",
         }}
-}},\n""".format(id, 
+}},\n""".format(id,
                 parent_id,
-                entity['title'].encode('utf-8'),
+                enc(entity['title']),
                 enc(entity['details']), 
                 created_date,
-                entity['date'],
-                enc(entity.get('address','')),
+                gig_date,
+                # 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,
+                enc(entity.get('address',None)),
                 entity['status'],
                 entity['is_archived'],
                 entity.get('is_private', None),
@@ -323,9 +365,16 @@ def make_gig_object(entity):
                 entity.get('trashed_date', None),
                 find_id('Member',key_to_str(entity['contact'])),
                 enc(entity['setlist']),
+                entity['date'] if 'calltime' in entity else None,
+                entity.get('enddate',None),
+                enc(entity.get('dress',None)),
+                enc(entity.get('paid',None)),
+                enc(entity.get('postgig',None)),
+                enc(entity['leader'] if 'leader' in entity else None),
             )
 
 
+# 'comment', 'section', 'feedback_value', 'value', 'member'
 def make_plan_object(entity):
     key, parent = get_key(entity)
     id = make_id('Plan', key)
@@ -333,18 +382,41 @@ def make_plan_object(entity):
     parent_id = find_id('Gig', parent)
     member_id = find_id('Member', key_to_str(entity['member']))
 
+    if parent_id is None:
+        # gig was deleted but not the plan - weird
+        return None
+
+    band_id = find_gig_band(parent_id)
+
     if member_id is None:
         # member deleted at some point but the plan wasn't - weird
         return None
+
+    assoc_id = find_assoc(band_id, member_id)
+
+    section_id = find_id('Section', entity['section'])
 
     return """{{
         "model": "gig.plan",
         "pk": {0},
         "fields": {{
-            "gig": "{1}", 
-            "member": "{2}",
+            "gig": {1}, 
+            "assoc": {2},
+            "status": {3},
+            "feedback_value": {4},
+            "comment": "{5}",
+            "section": {6},
+            "plan_section": {7},
         }}   
-}},\n""".format(id, parent_id, member_id,)
+}},\n""".format(id, 
+                parent_id,
+                assoc_id,
+                entity['value'],
+                entity.get('feedback_value',None),
+                enc(entity.get('comment','')),
+                section_id,
+                section_id
+                )
 
 
 def make_comment_object(entity):
@@ -362,11 +434,16 @@ def make_comment_object(entity):
         "model": "gig.gigcomment",
         "pk": {0},
         "fields": {{
-            "gig": "{1}", 
-            "member": "{2}",
-            "text": "{3}"
+            "gig": {1}, 
+            "member": {2},
+            "text": "{3}",
+            "created_date": "{4}"
         }}   
-}},\n""".format(id, parent_id, member_id, entity['comment'].encode('utf-8'),)
+}},\n""".format(id, 
+                parent_id,
+                member_id,
+                enc(entity['comment']),
+                entity['created_date'])
 
 
 def write_object(outs, the_type, entity):
