@@ -1,14 +1,13 @@
 aniso8601==7.0.0
 arrow==1.0.3
-asgiref==3.3.1
+asgiref==3.3.4
 astroid==2.5.1
 autopep8==1.5.5
 Babel==2.9.0
-beautifulsoup4==4.9.3
 blessed==1.18.0
 certifi==2020.12.5
 decorator==4.4.2
-Django==3.1.8
+Django==3.2.3
 django-crispy-forms==1.11.1
 django-extensions==3.1.1
 django-picklefield==3.0.1
