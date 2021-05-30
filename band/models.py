@@ -37,7 +37,7 @@ class Band(models.Model):
     description = models.TextField(max_length=500, null=True, blank=True)
     images = models.TextField(max_length=500, null=True, blank=True)
     member_links = models.TextField(max_length=500, null=True, blank=True)
-    thumbnail_img = models.CharField(max_length=200, null=True, blank=True)
+    thumbnail_img = models.CharField(max_length=500, null=True, blank=True)
 
     timezone = models.CharField(max_length=200, default='UTC', choices=[
                                 (x, x) for x in pytz.common_timezones])
