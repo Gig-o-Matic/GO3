@@ -117,8 +117,12 @@ def get_key(entity):
 
 def enc(string):
     the_str=string.encode('utf-8') if string else ''
-    the_str=the_str.replace('"','\"')
+    the_str=the_str.replace('"','\\"')
+    the_str=the_str.replace('\r\n','\\n')
     return the_str
+
+def tf(it):
+    return 'true' if it else 'false'
 
 # 'show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
 # 'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
@@ -134,7 +138,7 @@ def make_band_object(entity):
     "pk": {0},
     "fields": {{
         "name": "{1}",
-        "hometowm": "{2}",
+        "hometown": "{2}",
         "shortname": "{3}",
         "website": "{4}",
         "description": "{5}",
@@ -149,6 +153,7 @@ def make_band_object(entity):
         "simple_planning": {14},
         "plan_feedback": "{15}",
         "creation_date": "{16}",
+        "last_activity": "{17}"
     }}
 }},\n""".format(id, 
                 enc(entity['name']),
@@ -161,12 +166,13 @@ def make_band_object(entity):
                 entity['thumbnail_img'],
                 entity['timezone'],
                 enc(entity.get('new_member_message')),
-                entity['anyone_can_manage_gigs'],
-                entity.get('anyone_can_create_gigs',entity['anyone_can_manage_gigs']),
-                entity['send_updates_by_default'],
-                entity['simple_planning'],
+                tf(entity['anyone_can_manage_gigs']),
+                tf(entity.get('anyone_can_create_gigs')),
+                tf(entity['send_updates_by_default']),
+                tf(entity['simple_planning']),
                 enc(entity['plan_feedback']),
-                entity['created'].isoformat()
+                entity['created'].strftime('%Y-%m-%d'),
+                entity['created']
         )
 
 
@@ -271,7 +277,7 @@ def make_assoc_object(entity):
             "is_multisectional": {8}
             "color": {9},
             "email_me": {10},
-            "hide_from_schedule": {11},
+            "hide_from_schedule": {11}
         }}
 }},\n""".format(id, 
                 band_id, 
@@ -344,7 +350,7 @@ def make_gig_object(entity):
             "dress": "{20}",
             "paid": "{21}",
             "postgig": "{22}",
-            "leader": "{23}",
+            "leader": "{23}"
         }}
 }},\n""".format(id,
                 parent_id,
@@ -406,7 +412,7 @@ def make_plan_object(entity):
             "feedback_value": {4},
             "comment": "{5}",
             "section": {6},
-            "plan_section": {7},
+            "plan_section": {7}
         }}   
 }},\n""".format(id, 
                 parent_id,
