@@ -79,7 +79,7 @@ class Member(AbstractUser):
     username = models.CharField(max_length=200)
     nickname = models.CharField(max_length=100, blank=True )
     phone = models.CharField(max_length=100, blank=True)
-    statement = models.CharField(max_length=200, blank=True)
+    statement = models.CharField(max_length=500, blank=True)
     motd_dirty = models.BooleanField(default=True)
     seen_welcome = models.BooleanField(default=False)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
