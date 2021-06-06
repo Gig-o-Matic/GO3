@@ -50,7 +50,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     def test_func(self):
         # can only see the gig if you're logged in and in the band        
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user)
+        return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
     def get_template_names(self):
         if self.object.is_archived:
