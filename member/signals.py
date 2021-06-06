@@ -23,7 +23,9 @@ from .models import Member, MemberPreferences, Invite, EmailConfirmation
 @receiver(post_save, sender=Member)
 def handle_user_preferences(sender, instance, created, **kwargs):
     if created:
-        MemberPreferences.objects.create(member=instance)
+        # MemberPreferences.objects.create(member=instance)
+        pass # for ETL from go2, don't do this because one will be created during import
+
     else:
         instance.preferences.save()
 
