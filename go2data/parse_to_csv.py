@@ -11,16 +11,18 @@ from google.appengine.api import datastore
 import progressbar
 import random
 import datetime
+from pytz import timezone as tzone, utc
+from dateutil.parser import parse
 
 DEBUG=False
 
 # order is important
 objects=[
-         'Band', 
-        #  'Section', 
-        #  'Member', 
-        #  'Assoc', 
-        #  'Gig', 
+        'Band', 
+        'Section', 
+        'Member', 
+        'Assoc', 
+        'Gig', 
         #  'Comment',
         #  'Plan', 
         ]
@@ -30,7 +32,7 @@ columns={
     'Band': ['show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
              'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
              'enable_forum', 'website', 'description', 'send_updates_by_default', 'thumbnail_img', 'anyone_can_manage_gigs',
-             'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name', 'images'],
+             'simple_planning', 'plan_feedback', 'name', 'created', 'lower_name', 'images', 'sections'],
     'Section': ['name'],
     'Member': ['preferences.default_view','email_address','preferences.email_new_gig','show_long_agenda','display_name',
                'pending_change_email', 'preferences.locale','is_superuser','seen_motd_time','statement','preferences.share_email',
@@ -51,6 +53,8 @@ columns={
 mappings = {}
 assocs = {}
 gigs = {}
+band_sections = {}
+band_timezones = {}
 
 DATA_DIRECTORY = 'export'
 DELIMITER = '\t'
@@ -109,6 +113,22 @@ def find_gig_band(gig_id):
     return gigs[gig_id]
 
 
+def save_band_sections(band_id, sections):
+    band_sections[band_id] = sections
+
+
+def find_band_sections(band_id):
+    return band_sections[band_id]
+
+
+def save_band_timezone(band_id, timezone):
+    band_timezones[band_id] = timezone
+
+
+def find_band_timezone(band_id):
+    return band_timezones[band_id]
+
+
 def get_key(entity):
     key=("\"{0}\"".format(key_to_str(entity.key()))) # key
     parent=("\"{0}\"".format(key_to_str(entity.parent()))) # parent
@@ -117,12 +137,17 @@ def get_key(entity):
 
 def enc(string):
     the_str=string.encode('utf-8') if string else ''
+    the_str=the_str.replace('\\','\\\\')
     the_str=the_str.replace('"','\\"')
     the_str=the_str.replace('\r\n','\\n')
+    the_str=the_str.replace('	', ' ')
     return the_str
 
 def tf(it):
     return 'true' if it else 'false'
+
+def date(d):
+    return date.isoformat()
 
 # 'show_in_nav', 'hometown', 'member_links', 'new_member_message','timezone', 'anyone_can_create_gigs',
 # 'condensed_name', 'share_gigs', 'band_cal_feed_dirty', 'rss_feed', 'pub_cal_feed_dirty', 'shortname',
@@ -132,6 +157,10 @@ def make_band_object(entity):
     key, parent = get_key(entity)
 
     id = make_id('Band', key)
+
+    sections = entity.get('sections', [])
+    save_band_sections(id,[str(s) for s in sections])
+    save_band_timezone(id, entity['timezone'])
 
     return """{{
     "model": "band.band",
@@ -183,14 +212,28 @@ def make_section_object(entity):
     id = make_id('Section', key)
     parent_id = find_id('Band', parent)
 
+    # figure out the index of this section
+    band_sections = find_band_sections(parent_id)
+
+    try:
+        idx = band_sections.index(key)
+    except ValueError:
+        # section that doesn't seem to belong to a band properly - weird
+        return ''
+
     return """{{
         "model": "band.section",
         "pk": {0},
         "fields": {{
             "name": "{1}",
             "band": {2},
+            "order": {3}
         }}
-}},\n""".format(id, entity['name'].encode('utf-8'), parent_id)
+}},\n""".format(id, 
+                entity['name'].encode('utf-8'), 
+                parent_id,
+                idx
+                )
 
 
 # 'Member': ['preferences.default_view','email_address','preferences.email_new_gig','show_long_agenda','display_name',
@@ -201,6 +244,11 @@ def make_section_object(entity):
 def make_member_object(entity):
     key, parent = get_key(entity)
     id = make_id('Member', key)
+
+    statement = enc(entity['statement'])
+    if not statement or statement=='None':
+        statement = ''
+
 
     member_obj = """{{
         "model": "member.member",
@@ -218,17 +266,16 @@ def make_member_object(entity):
                 enc(entity['name']),
                 enc(entity['nickname']),
                 enc(entity['phone']),
-                enc(entity['statement']),
+                statement,
                 0, # active
                 )
 
     pref_obj = """{{
         "model": "member.memberpreferences",
-        "pk": {0},
         "fields": {{
             "member": {1},
             "hide_canceled_gigs": {2},
-            "language": {3},
+            "language": "{3}",
             "share_profile": {4},
             "share_email": {5},
             "calendar_show_only_confirmed": {6},
@@ -238,13 +285,13 @@ def make_member_object(entity):
     }}
 }},\n""".format(id, # we'll use the same pk as the member object we're associated with
                 id, # member id
-                entity['preferences.hide_canceled_gigs'],
+                tf(entity['preferences.hide_canceled_gigs']),
                 entity['preferences.locale'],
-                entity['preferences.share_profile'],
-                entity['preferences.share_email'],
-                entity['preferences.calendar_show_only_confirmed'],
-                entity['preferences.calendar_show_only_committed'],
-                entity['preferences.agenda_show_time'],
+                tf(entity['preferences.share_profile']),
+                tf(entity['preferences.share_email']),
+                tf(entity['preferences.calendar_show_only_confirmed']),
+                tf(entity['preferences.calendar_show_only_committed']),
+                tf(entity['preferences.agenda_show_time']),
                 entity['preferences.default_view'],
                 )
 
@@ -261,7 +308,19 @@ def make_assoc_object(entity):
     band_id = find_id('Band',key_to_str(entity['band']))
     status = 1 if entity['is_confirmed'] else 2 if entity['is_invited'] else 0
 
+    join_date = entity['created'] if 'created' in entity else None
+    if join_date is None:
+        join_date = '2021-01-01'
+    elif type(join_date) == datetime.datetime:
+        join_date = join_date.strftime('%Y-%m-%d')
+
     store_assoc(band_id, member_id, id)
+
+    default_section = find_id('Section',key_to_str(entity['default_section']))
+    if not default_section:
+        default_section = ''
+    else:
+        default_section = '"default_section": {0},'.format(default_section)
 
     return """{{
         "model": "band.assoc",
@@ -270,11 +329,11 @@ def make_assoc_object(entity):
             "band": {1},
             "member": {2},
             "status": {3},
-            "default_section": {4},
+            {4}
             "is_admin": {5},
             "is_occasional": {6},
-            "join_date": {7},
-            "is_multisectional": {8}
+            "join_date": "{7}",
+            "is_multisectional": {8},
             "color": {9},
             "email_me": {10},
             "hide_from_schedule": {11}
@@ -283,15 +342,16 @@ def make_assoc_object(entity):
                 band_id, 
                 member_id, 
                 status,
-                find_id('Section',key_to_str(entity['default_section'])),
-                entity['is_band_admin'],
-                entity['is_occasional'],
-                entity['created'] if 'created' in entity else None,
-                entity['is_multisectional'],
+                default_section,
+                tf(entity['is_band_admin']),
+                tf(entity['is_occasional']),
+                join_date,
+                tf(entity['is_multisectional']),
                 entity['color'],
-                entity['email_me'],
-                entity['hide_from_schedule']
+                tf(entity['email_me']),
+                tf(entity['hide_from_schedule'])
                 )
+
 
 # 'Gig': ['creator','is_archived','is_in_trash','trueenddate','dress','archive_id','trashed_date',
 #         'is_canceled','is_confirmed','title','details','default_to_attending', 'leader',
@@ -307,21 +367,75 @@ def make_gig_object(entity):
 
     store_gig_band(id, parent_id)
 
-    created_date=None
+    tz = find_band_timezone(parent_id)
+    def parsetime(d):
+        if type(d) is datetime.datetime:
+            return d, ''
+        p_d = None
+        datenotes = ''
+        if d:
+            try:
+                p_d = parse(d)
+            except ValueError:
+                # can't parse it, so call this the notes
+                datenotes = d
+
+        return p_d, datenotes
+
+    created_date=datetime.datetime.now()
     if 'created_date' in entity:
         if entity['created_date']:
             created_date = entity['created_date']
+    created_date = created_date.replace(tzinfo=tzone(tz))
 
-    gig_date = None
-    if 'calltime' in entity:
-        if entity['calltime']:
-            gig_date = entity['calltime']
-        else:
-            gig_date = entity['date']
-    if type(gig_date) is datetime.datetime:
-        gig_date = str(gig_date)
+    # deal with dates. GO2 has date, end date, and times for call, set, and end
+    # we want datetimes for date, setdate, and enddate
+    e_calltime = entity.get('calltime', None)
+    e_settime = entity.get('settime', None)
+    e_endtime = entity.get('endtime', None)
+    e_date = entity.get('date', None)
+    e_enddate = entity.get('enddate', None)
+
+    # print(e_calltime, e_settime, e_endtime, e_date, e_enddate)
+
+    pe_calltime, dn1 = parsetime(e_calltime)
+    pe_settime, dn2 = parsetime(e_settime)
+    pe_endtime, dn3 = parsetime(e_endtime)
+
+    if pe_settime is None:
+        pe_settime = datetime.time(hour=0, minute=0)
+
+    if pe_calltime is None:
+        pe_calltime = pe_settime
+
+    if pe_endtime is None:
+        pe_endtime = pe_settime
+
+    date = e_date.replace(hour=pe_calltime.hour, minute=pe_calltime.minute)
+    setdate = e_date.replace(hour=pe_settime.hour, minute=pe_settime.minute)
+
+    if e_enddate:
+        enddate = e_enddate.replace(hour=pe_endtime.hour, minute=pe_endtime.minute)
     else:
-        gig_date = enc(gig_date)
+        enddate = e_date.replace(hour=pe_endtime.hour, minute=pe_endtime.minute)
+
+    datenotes = ' '.join([dn1, dn2, dn3]).strip()
+
+    date = date.replace(tzinfo=tzone(tz))
+    setdate = setdate.replace(tzinfo=tzone(tz))
+    enddate = enddate.replace(tzinfo=tzone(tz))
+
+    trashed_date, note = parsetime(entity.get('trashed_date', None))
+    if not trashed_date:
+        trashed_date = created_date
+    else:
+        trashed_date = trashed_date.replace(tzinfo=tzone(tz))
+
+    enddate = enddate.isoformat()
+    date = date.isoformat()
+    setdate = setdate.isoformat()
+    trashed_date = trashed_date.isoformat()
+    created_date = created_date.isoformat()
 
     return """{{
         "model": "gig.gig",
@@ -331,14 +445,14 @@ def make_gig_object(entity):
             "title": "{2}",
             "details": "{3}",
             "created_date": "{4}",
-            "last_update": None,
+            "last_update": "2021-01-01",
             "date": "{5}",
             "address": "{6}",
-            "status": "{7}",
-            "is_archived": "{8}",
-            "is_private": "{9}",
+            "status": {7},
+            "is_archived": {8},
+            "is_private": {9},
             "creator": {10},
-            "invite_occasionals": "{11}",
+            "invite_occasionals": {11},
             "was_reminded": {12},
             "hide_from_calendar": {13},
             "default_to_attending": {14},
@@ -350,33 +464,34 @@ def make_gig_object(entity):
             "dress": "{20}",
             "paid": "{21}",
             "postgig": "{22}",
-            "leader": "{23}"
+            "leader": {23},
+            "datenotes": "{24}"
         }}
 }},\n""".format(id,
                 parent_id,
                 enc(entity['title']),
                 enc(entity['details']), 
                 created_date,
-                gig_date,
-                # 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,
+                date,
                 enc(entity.get('address',None)),
                 entity['status'],
-                entity['is_archived'],
-                entity.get('is_private', None),
+                tf(entity['is_archived']),
+                tf(entity.get('is_private', None)),
                 None,
-                entity.get('invite_occasionals', None),
-                entity.get('was_reminded', None),
-                entity.get('hide_from_calendar', None),
-                entity.get('default_to_attending', False),
-                entity.get('trashed_date', None),
+                tf(entity.get('invite_occasionals', None)),
+                tf(entity.get('was_reminded', None)),
+                tf(entity.get('hide_from_calendar', None)),
+                tf(entity.get('default_to_attending', False)),
+                trashed_date,
                 find_id('Member',key_to_str(entity['contact'])),
                 enc(entity['setlist']),
-                entity['date'] if 'calltime' in entity else None,
-                entity.get('enddate',None),
+                setdate,
+                enddate,
                 enc(entity.get('dress',None)),
                 enc(entity.get('paid',None)),
                 enc(entity.get('postgig',None)),
-                enc(entity['leader'] if 'leader' in entity else None),
+                'null', # enc(entity['leader'] if 'leader' in entity else None),
+                enc(datenotes)
             )
 
 
@@ -465,12 +580,15 @@ def write_object(outs, the_type, entity):
     }[the_type](entity)
     f = outs[the_type]
     if (obj):
+        # last minute replacement - sheesh
+        obj = obj.replace('\"None\",','null,')
+        obj = obj.replace('None,','null,')
         f.write(obj)
         f.write("\n")
 
 
 def readfile(f,otype,outs):
-    raw = open('{0}/{1}/{2}'.format(DATA_DIRECTORY,otype,f), 'r')
+    raw = open('{0}/kind_{1}/{2}'.format(DATA_DIRECTORY,otype,f), 'r')
     reader = records.RecordsReader(raw)
     last = ''
     for record in reader:
@@ -484,7 +602,7 @@ def readfile(f,otype,outs):
             count[otype] += 1
 
 def get_files(otype):
-    allfiles = os.listdir("{0}/{1}".format(DATA_DIRECTORY,otype))
+    allfiles = os.listdir("{0}/kind_{1}".format(DATA_DIRECTORY,otype))
     allfiles = [f for f in allfiles if f.startswith('output-')]
     return allfiles
     # return ['output-205']
@@ -501,6 +619,5 @@ def main():
             readfile(f, o, outs)
         print('found {}'.format(count[o]))
     close_outputs(outs)
-    
 if __name__ == '__main__':
     main()
