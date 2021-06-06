@@ -111,6 +111,7 @@ class AbstractEvent(models.Model):
     last_update = models.DateTimeField(auto_now=True)
 
     date = models.DateTimeField()
+    datenotes = models.TextField(null=True, blank=True)
 
     address = models.TextField(null=True, blank=True)
     status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNKNOWN)

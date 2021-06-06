@@ -58,6 +58,8 @@ class GigForm(forms.ModelForm):
         else:
             raise(ValueError('issue with band'))
 
+        # self.fields['datenotes'].widget.attrs['style'] = 'width:100%;'
+
     def clean(self):
         """
         Checks to make sure the dates are valid. If there is an end-date set, it is assumed that the gig is "all day" events,
@@ -179,6 +181,7 @@ class GigForm(forms.ModelForm):
     end_time = forms.Field(required=False, label=_('End Time'))
     end_date = forms.Field(required=False, label=_('End Date'))
     timezone = forms.Field(required=False, widget=forms.HiddenInput())
+    datenotes = forms.Field(required=False, label=_('Date Notes'))
 
     add_series = forms.BooleanField(required=False, label=_('Add A Series Of Copies'))
     total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=1, max_value=10)
@@ -196,7 +199,7 @@ class GigForm(forms.ModelForm):
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
                 'address','dress','paid','leader', 'postgig', 'details','setlist','rss_description','invite_occasionals',
-                'hide_from_calendar','send_update','add_series','total_gigs']
+                'hide_from_calendar','send_update','add_series','total_gigs','datenotes']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
