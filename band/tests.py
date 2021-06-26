@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from re import A
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from .models import Band, Assoc, Section
@@ -271,14 +272,16 @@ class MemberTests(TestCase):
         self.client.force_login(self.joeuser)
         resp = self.client.post(reverse('assoc-delete', args=[a.id]))
         self.assertEqual(resp.status_code, 204)
-        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 0)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.ALUMNI)
 
     def test_delete_admin(self):
         a = self.assoc_joe()
         self.client.force_login(self.band_admin)
         resp = self.client.post(reverse('assoc-delete', args=[a.id]))
         self.assertEqual(resp.status_code, 204)
-        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 0)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.ALUMNI)
 
     def test_delete_other(self):
         a = self.assoc_joe()
@@ -500,37 +503,31 @@ class BandTests(GigTestBase):
 
     def test_delete_assoc(self):
         # when we delete an assoc using the helper function, it should actually keep the assoc
-        # but change the member to a new member with a 'former member' name. Future plans
+        # but change the status to ALUMNI. Future plans
         # should be deleted but old plans should stay around.
-        g, a, _ = self.assoc_joe_and_create_gig()
-        g.date=g.date.replace(year=2020)
-        g.save()
-        plans = g.plans.filter(assoc__member=self.joeuser)
+        g1, a1, _ = self.assoc_joe_and_create_gig()
+        g1.date=g1.date.replace(year=2020)
+        g1.save()
+        plans = g1.plans.filter(assoc__member=self.joeuser)
         self.assertEqual(plans.count(),1)
         self.assertEqual(plans.first().gig.date.year,2020)
-        p1 = plans.first()
-        m1 = p1.assoc.member
-
+        
         g2 = self.create_gig_form() # make another gig
         plans = g2.plans.filter(assoc__member=self.joeuser)
         self.assertEqual(plans.count(),1)
 
-        # now delete the assoc and show the the plan now belongs to a "former member"
+        # now delete the assoc and show the the plan now belongs to an alumni
         self.client.force_login(self.joeuser)
-        resp = self.client.post(reverse('assoc-delete', args=[a.id]))
+        resp = self.client.post(reverse('assoc-delete', args=[a1.id]))
         self.assertEqual(resp.status_code, 204)
 
-        plans = g.plans.exclude(assoc__member=self.band_admin)
+        plans = g1.plans.exclude(assoc__member=self.band_admin)
         self.assertEqual(plans.count(),1)
-        p2 = plans.first()
-        m2 = p2.assoc.member
-        self.assertEqual(p1.assoc, p2.assoc)
-        self.assertNotEqual(m1, m2)
-        self.assertIn('former user',m2.username)
+        self.assertEqual(plans.first().assoc.status, AssocStatusChoices.ALUMNI)
 
         # make sure the future gig plan got deleted
         plans = g2.plans.filter(assoc__member=self.joeuser)
-        self.assertEqual(plans.count(),0)
+        self.assertEqual(plans.count(),0) # future plan should be gone
 
 
 class BandCalfeedTest(FSTestCase):

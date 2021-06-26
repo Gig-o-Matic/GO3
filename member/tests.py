@@ -204,7 +204,7 @@ class MemberCalfeedTest(FSTestCase):
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band')
         Assoc.objects.create(member=self.joeuser,
-                             band=self.band, is_admin=True)
+                             band=self.band, is_admin=True, status=AssocStatusChoices.CONFIRMED)
         self.create_gig()
 
     def tearDown(self):
