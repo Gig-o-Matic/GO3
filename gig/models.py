@@ -188,7 +188,9 @@ class Gig(AbstractEvent):
         """ if this gig is not archived, find any members that don't have plans yet. This is called whenever a new gig is created
             through the signaling system, or when a member joins a band from the assoc signal. """
         if self.is_archived is False:
-            absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True)).filter(member__status = MemberStatusChoices.ACTIVE)
+            absent = self.band.assocs.exclude(id__in = self.plans.values_list('assoc',flat=True)) \
+                .filter(member__status = MemberStatusChoices.ACTIVE) \
+                .filter(status = AssocStatusChoices.CONFIRMED)
             # Plan.objects.bulk_create(
             #     [Pn(glaig=self, assoc=a, section=a.band.sections.get(is_default=True)) for a in absent]
             # )

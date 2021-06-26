@@ -159,20 +159,6 @@ def do_delete_assoc(a):
         # and now make this member an "alum"
         a.status=AssocStatusChoices.ALUMNI
         a.save()
-
-        # # make a new member
-        # m = Member.objects.create_user('deleted user', password=make_password(None))
-        # m.status = MemberStatusChoices.DELETED
-        # m.email = "assoc_{0}@gig-o-matic.com".format(m.id)
-        # m.username = "former user"
-        # m.nickname = ''
-        # m.phone = ''
-        # m.statement = ''
-        # m.set_unusable_password()
-        # m.save()
-
-        # a.member = m
-        # a.save()
     else:
         # well, if it's not a confirmed member we can delete the assoc
         a.delete()
