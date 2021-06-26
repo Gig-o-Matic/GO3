@@ -135,33 +135,48 @@ def join_assoc(request, bk, mk):
 
 @login_required
 @assoc_editor_required
+def rejoin_assoc(request, a):
+    a.status = AssocStatusChoices.PENDING
+    a.save()
+    return HttpResponse(status=204)
+
+
+@login_required
+@assoc_editor_required
 def delete_assoc(request, a):
+    do_delete_assoc(a)
+    return HttpResponse(status=204)
+
+def do_delete_assoc(a):
     """ when we delete an assoc we don't want to just delete it because that will kill all the plans """
-    """ and everything else. Instead, change it to point to a ghost member. """
+    """ and everything else. """
 
     if a.status==AssocStatusChoices.CONFIRMED:
         # we can get rid of any future plans associated with this assoc
         Plan.member_plans.future_plans(a.member).filter(gig__is_archived=False).delete()
         a.member.cal_feed_dirty = True
 
-        # make a new member
-        m = Member.objects.create_user('deleted user', password=make_password(None))
-        m.status = MemberStatusChoices.DELETED
-        m.email = "assoc_{0}@gig-o-matic.com".format(m.id)
-        m.username = "former user"
-        m.nickname = ''
-        m.phone = ''
-        m.statement = ''
-        m.set_unusable_password()
-        m.save()
-
-        a.member = m
+        # and now make this member an "alum"
+        a.status=AssocStatusChoices.ALUMNI
         a.save()
+
+        # # make a new member
+        # m = Member.objects.create_user('deleted user', password=make_password(None))
+        # m.status = MemberStatusChoices.DELETED
+        # m.email = "assoc_{0}@gig-o-matic.com".format(m.id)
+        # m.username = "former user"
+        # m.nickname = ''
+        # m.phone = ''
+        # m.statement = ''
+        # m.set_unusable_password()
+        # m.save()
+
+        # a.member = m
+        # a.save()
     else:
         # well, if it's not a confirmed member we can delete the assoc
         a.delete()
 
-    return HttpResponse(status=204)
 
 
 @login_required

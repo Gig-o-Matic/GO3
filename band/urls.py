@@ -40,6 +40,7 @@ urlpatterns = [
     path('<int:bk>/join/<int:mk>', helpers.join_assoc, name='assoc-join'),
     path('assoc/<int:ak>/confirm', helpers.confirm_assoc, name='assoc-confirm'),
     path('assoc/<int:ak>/delete', helpers.delete_assoc, name='assoc-delete'),
+    path('assoc/<int:ak>/rejoin', helpers.rejoin_assoc, name='assoc-rejoin'),
 
     path('calfeed/<uuid:pk>', helpers.band_calfeed, name='band-calfeed'),
 

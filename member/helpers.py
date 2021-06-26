@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from band.util import AssocStatusChoices
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -30,6 +31,11 @@ from lib.email import prepare_email, send_messages_async
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
+
+from band.helpers import do_delete_assoc
+from member.util import MemberStatusChoices
+
+from django.utils.translation import gettext_lazy as _
 
 def superuser_required(func):
     def decorated(request, pk, *args, **kw):
@@ -56,9 +62,24 @@ def delete_member(request, pk):
     member = get_object_or_404(Member, pk=pk)
     if request.user != member and request.user.is_superuser is False:
         return HttpResponseForbidden()
-    member.delete()
+    # member.delete()
+    # instead of deleting the member, anonymize
+    member.status = MemberStatusChoices.DELETED
+    member.email = "assoc_{0}@gig-o-matic.com".format(member.id)
+    member.username = _("former member")
+    member.nickname = ''
+    member.phone = ''
+    member.statement = ''
+    member.set_unusable_password()
+    member.save()
+
+    the_assocs = member.assocs.all()
+    for a in the_assocs:
+        do_delete_assoc(a) # will set to "ALUMNI"
+
     if request.user.is_superuser is False:
         logout(request)
+
     return redirect('home')
 
 def send_invite(invite):

@@ -182,6 +182,14 @@ class Assoc(models.Model):
         return self.status == AssocStatusChoices.CONFIRMED
 
     @property
+    def is_pending(self):
+        return self.status == AssocStatusChoices.PENDING
+
+    @property
+    def is_alum(self):
+        return self.status == AssocStatusChoices.ALUMNI
+
+    @property
     def section(self):
         if self.default_section is None:
             return self.band.sections.get(is_default=True)
@@ -206,4 +214,4 @@ class Assoc(models.Model):
     member_assocs = MemberAssocManager()
 
     def __str__(self):
-        return "{0} in {1}".format(self.member, self.band)
+        return "{0} in {1} ({2})".format(self.member, self.band, self.status)

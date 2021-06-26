@@ -203,7 +203,7 @@ class Gig(AbstractEvent):
         if self.is_archived:
             return plans
         else:
-            return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE)
+            return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE).filter(assoc__status=AssocStatusChoices.CONFIRMED)
 
 class GigComment(models.Model):
     gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)

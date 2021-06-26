@@ -58,7 +58,7 @@
             </div>
         {% endif %}
 
-        {% if the_assoc.member != request.user %}
+        {% if the_assoc.member != request.user or request.user.is_superuser %}
             <div class="col-md-2">
                 <div class="form-check">
                     <input class="form-check-input"

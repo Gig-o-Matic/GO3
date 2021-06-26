@@ -257,6 +257,25 @@
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+
+    <div class="modal fade" id="rejoinModal" tabindex="-1" role="dialog" aria-labelledby="rejoinModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{% trans "Confirm Rejoin" %}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans "Do you really want to rejoin" %} <span id='band-name'></span>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">{% trans "Don't Rejoin" %}</button>
+                    <a class="btn btn-primary btn-sm" href="#" id="rejoin-ak" data-dismiss="modal">{% trans "Yes, Rejoin" %}</a>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
 {% endblock modal %}
 
 {% block localscripts %}
@@ -270,5 +289,16 @@ function leave_band(ak, bandname) {
 function do_delete(ak){
     $(`#leave-${ak}`)[0].dispatchEvent(new Event('bootstrap-confirm'));
 }
+
+function rejoin_band(ak, bandname) {
+    $('#band-name').html(bandname);
+    $('#rejoin-ak').attr('onclick',"do_rejoin("+ak+")");
+    $('#rejoinModal').modal('show');
+}
+
+function do_rejoin(ak){
+    $(`#rejoin-${ak}`)[0].dispatchEvent(new Event('bootstrap-confirm-rejoin'));
+}
+
 </script>
 {% endblock localscripts %}
