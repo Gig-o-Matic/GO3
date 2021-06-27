@@ -51,11 +51,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env('SECRET_KEY', default='123')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env('DEBUG', default=True)
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -216,8 +217,8 @@ DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
 # EMAIL_HOST_USER = ...
 # EMAIL_HOST_PASSWORD = ...
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = env('SENDGRID_API_KEY')
-SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG')
+SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
 
 # Calfeed settings
 DYNAMIC_CALFEED = False  # True to generate calfeed on demand; False for disk cache
