@@ -30,9 +30,14 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import logging
 import os
 import sys
+import environ
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 from multiprocessing import set_start_method  # for task q
+
+env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool)
+# reading .env file
+environ.Env.read_env()
 
 _testing = False
 if len(sys.argv) > 1 and sys.argv[1] == "test":
@@ -47,10 +52,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "yat4xel1-))u_nt8a_o+4=-sxhvvs^wj*s6br)^w#n(r%vw9-#"
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -202,13 +207,17 @@ Q_CLUSTER = {
 }
 
 # Email settings
-DEFAULT_FROM_EMAIL = "gigomatic.superuser@gmail.com"
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # For production, be sure to set
 # EMAIL_BACKEND = 'django.core.mail.backend.smtp.EmailBackend'
 # EMAIL_HOST = ...
 # EMAIL_HOST_USER = ...
 # EMAIL_HOST_PASSWORD = ...
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = env('SENDGRID_API_KEY')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG')
+print(f'sandbox = {type(SENDGRID_SANDBOX_MODE_IN_DEBUG)}')
 
 # Calfeed settings
 DYNAMIC_CALFEED = False  # True to generate calfeed on demand; False for disk cache
