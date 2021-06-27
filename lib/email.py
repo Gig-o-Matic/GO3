@@ -6,7 +6,7 @@ from django.utils import translation
 from django_q.tasks import async_task
 from markdown import markdown
 
-from go3.settings import LANGUAGE_CODE
+from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE
 
 SUBJECT = 'Subject:'
 DEFAULT_SUBJECT = 'Message from Gig-O-Matic'
@@ -35,6 +35,14 @@ def prepare_email(recipient, template, context=None, **kw):
         context = dict()
     context['recipient'] = recipient
 
+    gig = context.get('gig',None)
+    if gig:
+        the_from = gig.band.name
+    else:
+        the_from = DEFAULT_FROM_EMAIL_NAME
+
+    the_from = f'{the_from}<{DEFAULT_FROM_EMAIL}>'
+
     with translation.override(recipient.language):
         text = render_to_string(template, context).strip()
     if text.startswith(SUBJECT):
@@ -43,6 +51,6 @@ def prepare_email(recipient, template, context=None, **kw):
         subject = DEFAULT_SUBJECT
     html = markdown(text, extensions=['nl2br'])
 
-    message = mail.EmailMultiAlternatives(subject, text, to=[recipient.email_line], **kw)
+    message = mail.EmailMultiAlternatives(subject, text, from_email=the_from, to=[recipient.email_line], **kw)
     message.attach_alternative(html, 'text/html')
     return message

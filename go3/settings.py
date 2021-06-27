@@ -207,6 +207,7 @@ Q_CLUSTER = {
 }
 
 # Email settings
+DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # For production, be sure to set
@@ -217,7 +218,6 @@ DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = env('SENDGRID_API_KEY')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG')
-print(f'sandbox = {type(SENDGRID_SANDBOX_MODE_IN_DEBUG)}')
 
 # Calfeed settings
 DYNAMIC_CALFEED = False  # True to generate calfeed on demand; False for disk cache
