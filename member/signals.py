@@ -18,14 +18,15 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 from .models import Member, MemberPreferences, Invite, EmailConfirmation
+from go3.settings import IN_ETL
 
 # signals to make sure a set of preferences is created for every user
 @receiver(post_save, sender=Member)
 def handle_user_preferences(sender, instance, created, **kwargs):
     if created:
-        MemberPreferences.objects.create(member=instance)
-        # pass # for ETL from go2, don't do this because one will be created during import
-
+        # for ETL from go2, don't do this because one will be created during import
+        if IN_ETL is False:
+            MemberPreferences.objects.create(member=instance)
     else:
         instance.preferences.save()
 

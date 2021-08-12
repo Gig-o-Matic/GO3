@@ -229,6 +229,9 @@ MESSAGE_TAGS = {
 # Graphene GraphQL settings
 GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 
+# if we're doing ETL from Go2, set this True
+IN_ETL = False
+
 try:
     from .settings_local import *
 except ImportError:

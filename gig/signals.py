@@ -21,6 +21,7 @@ from .util import PlanStatusChoices
 from gig.helpers import send_emails_from_plans
 from band.helpers import set_calfeeds_dirty
 from django_q.tasks import async_task
+from go3.settings import IN_ETL
 
 
 @receiver(post_save, sender=Gig)
@@ -32,7 +33,8 @@ def create_member_plans(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Gig)
 def set_calfeed_dirty(sender, instance, created, **kwargs):
-    async_task('band.helpers.set_calfeeds_dirty', instance.band)
+    if IN_ETL is False:
+        async_task('band.helpers.set_calfeeds_dirty', instance.band)
 
 
 @receiver(pre_save, sender=Plan)

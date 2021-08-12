@@ -23,8 +23,8 @@ objects=[
         'Member', 
         'Assoc', 
         'Gig', 
-        #  'Comment',
-        #  'Plan', 
+        'Comment',
+        'Plan', 
         ]
 count={}
 
@@ -140,6 +140,7 @@ def enc(string):
     the_str=the_str.replace('\\','\\\\')
     the_str=the_str.replace('"','\\"')
     the_str=the_str.replace('\r\n','\\n')
+    the_str=the_str.replace('\n','\\n')
     the_str=the_str.replace('	', ' ')
     return the_str
 
@@ -551,6 +552,14 @@ def make_comment_object(entity):
         # member deleted at some point but the plan wasn't - weird
         return None
 
+    tz = find_band_timezone(find_gig_band(parent_id))
+
+    created_date=datetime.datetime.now()
+    if 'created_date' in entity:
+        if entity['created_date']:
+            created_date = entity['created_date']
+    created_date = created_date.replace(tzinfo=tzone(tz))
+
     return """{{
         "model": "gig.gigcomment",
         "pk": {0},
@@ -564,7 +573,7 @@ def make_comment_object(entity):
                 parent_id,
                 member_id,
                 enc(entity['comment']),
-                entity['created_date'])
+                created_date)
 
 
 def write_object(outs, the_type, entity):
