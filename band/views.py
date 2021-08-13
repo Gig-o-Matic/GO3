@@ -51,14 +51,28 @@ class DetailView(LoginRequiredMixin, BandMemberRequiredMixin, generic.DetailView
             assoc = Assoc.objects.get(band=the_band, member=the_user)
         except Assoc.DoesNotExist:
             context['the_user_is_associated'] = False
-        else:
-            context['the_user_is_associated'] = True
-            context['the_user_is_band_admin'] = assoc.is_admin
+            return context
+            
+        context['the_user_is_associated'] = True
+        context['the_user_is_band_admin'] = assoc.is_admin
 
-            context['the_pending_members'] = Assoc.objects.filter(
-                band=the_band, status=AssocStatusChoices.PENDING)
-            context['the_invited_members'] = Invite.objects.filter(
-                band=the_band)
+        context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
+        context['the_invited_members'] = Invite.objects.filter(band=the_band)
+
+        if the_band.member_links:
+            links = []
+            linklist = the_band.member_links.split('\n')
+            for l in linklist:
+                parts = l.strip().split(':')
+                if len(parts) == 2:
+                    links.append([l,l])
+                else:
+                    links.append([parts[0],':'.join(parts[1:])])
+            context['the_member_links'] = links
+
+        if the_band.images:
+            context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
+
         return context
 
     def get_success_url(self):
