@@ -516,7 +516,17 @@ def make_plan_object(entity):
 
     assoc_id = find_assoc(band_id, member_id)
 
+    if assoc_id is None:
+        # super weird
+        return None
+
+
     section_id = find_id('Section', entity['section'])
+
+    tz = find_band_timezone(find_gig_band(parent_id))
+    mod_date = datetime.datetime.now()
+    mod_date = mod_date.replace(tzinfo=tzone(tz))
+
 
     return """{{
         "model": "gig.plan",
@@ -528,16 +538,18 @@ def make_plan_object(entity):
             "feedback_value": {4},
             "comment": "{5}",
             "section": {6},
-            "plan_section": {7}
+            "plan_section": {7},
+            "last_update": "{8}"
         }}   
 }},\n""".format(id, 
                 parent_id,
                 assoc_id,
                 entity['value'],
                 entity.get('feedback_value',None),
-                enc(entity.get('comment','')),
+                enc(entity.get('comment',''))[:200],
                 section_id,
-                section_id
+                section_id,
+                mod_date
                 )
 
 
@@ -590,8 +602,8 @@ def write_object(outs, the_type, entity):
     f = outs[the_type]
     if (obj):
         # last minute replacement - sheesh
-        obj = obj.replace('\"None\",','null,')
-        obj = obj.replace('None,','null,')
+        obj = obj.replace(': \"None\"',': null')
+        obj = obj.replace(': None',': null')
         f.write(obj)
         f.write("\n")
 
