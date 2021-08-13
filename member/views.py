@@ -203,7 +203,7 @@ class OtherBandsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk']))
+        context['bands'] = Band.objects.exclude(assocs__in=Assoc.objects.filter(member__id=self.kwargs['pk'])).order_by('name')
         context['member_id'] = self.kwargs['pk']
         return context
 
