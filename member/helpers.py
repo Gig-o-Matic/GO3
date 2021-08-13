@@ -57,6 +57,17 @@ def motd_seen(request, pk):
 
     return HttpResponse()
 
+
+@login_required
+def send_test_email(request):
+    print("sending test email")
+
+    template = 'email/email_test.md'
+    send_messages_async([prepare_email(request.user.as_email_recipient(), template)])
+
+    return HttpResponse(_("test email sent"))
+
+
 @login_required
 def delete_member(request, pk):
     member = get_object_or_404(Member, pk=pk)
