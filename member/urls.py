@@ -31,6 +31,8 @@ urlpatterns = [
     path('<int:pk>/assocs/', views.AssocsView.as_view(), name='member-assocs'),
     path('<int:pk>/otherbands/', views.OtherBandsView.as_view(), name='member-otherbands'),
 
+    path('send-test-email', helpers.send_test_email, name='member-test-email'),
+
     path('<int:pk>/motd_seen',helpers.motd_seen),
 
     path('calfeed/<uuid:pk>', helpers.calfeed, name='member-calfeed'),

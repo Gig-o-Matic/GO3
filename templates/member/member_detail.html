@@ -44,9 +44,24 @@
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Email" %}</div>
                         <div class="col-sm-9 col-12"><a href="mailto:{{ member.email}}">{{  member.email }}</a>
-                        {% if email_change_msg %}<br>{{ email_change_msg }}{% endif %}
+                            {% if member_is_me or user.is_superuser %}
+                            <span class="btn btn-primary btn-sm" hx-get='{% url "member-test-email" %}' hx-swap='outerHTML'>
+                                {% trans "Test" %}
+                                <span class="htmx-indicator">
+                                    <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                </span>
+                            </span>
+                            {% endif %}
                         </div>
                     </div>
+                    {% if email_change_msg %}
+                    <div class="row">
+                        <div class="col-sm-3 col-12"></div>
+                        <div class="col-sm-9 col-12">
+                            {{ email_change_msg }}
+                        </div>
+                    </div>
+                    {% endif %}
                 {% endif %}
                 {% if member_is_me %}
                     <div class="row mt-4">
