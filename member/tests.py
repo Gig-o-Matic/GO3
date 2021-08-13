@@ -533,7 +533,7 @@ class InviteTest(TemplateTestCase):
     def test_test_email(self):
         self.client.force_login(self.joeuser)
         self.assertEqual(len(mail.outbox), 0)
-        response = self.client.get(reverse('member-test-email'))
+        _ = self.client.get(reverse('member-test-email'))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['joe@example.com'])
 
