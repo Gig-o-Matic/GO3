@@ -68,7 +68,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
     # set up language
     cal = Calendar()
     with translation.override(the_language):
-        cal.add('prodid', f'-//{{URL_BASE}}//gig-o-matic.com//')
+        cal.add('prodid', '-//{0}//gig-o-matic.com//'.format(URL_BASE))
         cal.add('version', '2.0')
         cal.add('X-WR-CALNAME', the_title)
         cal.add('X-WR-CALDESC',
@@ -85,7 +85,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
                 event.add(
-                    'url', f'http://{{URL_BASE}}/gig/{0}'.format(e.id))
+                    'url', 'http://{0}/gig/{1}'.format(URL_BASE, e.id))
                 # todo don't hardwire the URL
                 # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
                 cal.add_component(event)
