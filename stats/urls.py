@@ -17,8 +17,9 @@
 
 from django.urls import path
 from .helpers import test_stats
+from . import views
 
 urlpatterns = [
-   
     path('gen', test_stats),
+    path('', views.AllStatsView.as_view(), name='stats-all'),
 ]
