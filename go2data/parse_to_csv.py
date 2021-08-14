@@ -183,7 +183,8 @@ def make_band_object(entity):
         "simple_planning": {14},
         "plan_feedback": "{15}",
         "creation_date": "{16}",
-        "last_activity": "{17}"
+        "last_activity": "{17}",
+        "default_language": "en-us"
     }}
 }},\n""".format(id, 
                 enc(entity['name']),
