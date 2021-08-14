@@ -68,7 +68,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
     # set up language
     cal = Calendar()
     with translation.override(the_language):
-        cal.add('prodid', '-//{0}//gig-o-matic.com//'.format(URL_BASE))
+        cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//'.format(URL_BASE))
         cal.add('version', '2.0')
         cal.add('X-WR-CALNAME', the_title)
         cal.add('X-WR-CALDESC',
