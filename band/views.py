@@ -112,6 +112,8 @@ class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
                 return [o.year, o.month, o.day]
         context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=myconverter)
 
+        context['last_gig_created'] = the_band.gigs.all().order_by('created_date').last().created_date
+
         return context
 
 
