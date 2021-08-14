@@ -46,7 +46,7 @@ class Metric(models.Model):
 
 class BandMetric(Metric):
     band = models.ForeignKey(Band, related_name="metrics",
-                             on_delete=models.CASCADE, null=False)
+                             on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return "{0} for band {1}".format(super().__str__(), self.band)
