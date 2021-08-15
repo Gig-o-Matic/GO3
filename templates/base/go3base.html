@@ -73,6 +73,9 @@
 
             <div class="container">
                     <div class="inner-container">
+                            {% if False %}
+                                {% include 'base/beta.html' %}
+                            {% endif %}
                             {% if user %}
                                 {% block welcome %}
                                     {% include 'base/welcome.html' %}
