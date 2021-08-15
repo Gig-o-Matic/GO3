@@ -23,7 +23,7 @@ import os
 from django.core.files.storage import DefaultStorage
 from gig.util import GigStatusChoices
 from django.conf import settings
-
+from go3.settings import URL_BASE
 
 filesys = FileSystemStorage("calfeeds", "calfeeds")
 
@@ -85,7 +85,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
                 event.add(
-                    'url', 'http://www.gig-o-matic.com/gig/{0}'.format(e.id))
+                    'url', 'http://{0}/gig/{1}'.format(URL_BASE, e.id))
                 # todo don't hardwire the URL
                 # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
                 cal.add_component(event)

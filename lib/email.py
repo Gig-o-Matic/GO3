@@ -6,7 +6,7 @@ from django.utils import translation
 from django_q.tasks import async_task
 from markdown import markdown
 
-from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE
+from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE
 
 SUBJECT = 'Subject:'
 DEFAULT_SUBJECT = 'Message from Gig-O-Matic'
@@ -34,6 +34,7 @@ def prepare_email(recipient, template, context=None, **kw):
     if not context:
         context = dict()
     context['recipient'] = recipient
+    context['url_base'] = URL_BASE
 
     gig = context.get('gig',None)
     if gig:
