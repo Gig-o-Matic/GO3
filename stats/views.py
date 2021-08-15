@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .helpers import get_all_gigs_over_time_stats, get_all_stats
 import json
 from datetime import datetime
+from go3.settings import URL_BASE
 
 # Create your views here.
 class AllStatsView(LoginRequiredMixin, TemplateView):
@@ -11,6 +12,7 @@ class AllStatsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['url_base'] = URL_BASE
         context['the_stats'] = get_all_stats()
 
         # get the gigs over time data
