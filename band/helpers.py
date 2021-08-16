@@ -132,9 +132,7 @@ def join_assoc(request, bk, mk):
         band=b, member=m, status=AssocStatusChoices.PENDING)
 
     # now tell the band admins about it
-    the_admins = [a.member for a in b.band_admins]
-    print('emailing admins: {0}'.format(the_admins))
-    email_admins_about_joiner(b, the_admins, m)
+    email_admins_about_joiner(b, m)
 
     return HttpResponse(status=204)
 
@@ -147,8 +145,9 @@ def joiner_email(the_band, the_admin, the_joiner, template):
     return prepare_email(the_admin.as_email_recipient(), template, context)
 
 
-def email_admins_about_joiner(the_band, the_admins, the_joiner):
+def email_admins_about_joiner(the_band, the_joiner):
     template = 'email/joiner.md'
+    the_admins = [a.member for a in the_band.band_admins]
     send_messages_async(joiner_email(the_band, a, the_joiner, template) for a in the_admins)
 
 
@@ -157,6 +156,8 @@ def email_admins_about_joiner(the_band, the_admins, the_joiner):
 def rejoin_assoc(request, a):
     a.status = AssocStatusChoices.PENDING
     a.save()
+    # now tell the band admins about it
+    email_admins_about_joiner(a.band, a.member)
     return HttpResponse(status=204)
 
 
