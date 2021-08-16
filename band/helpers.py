@@ -28,6 +28,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from band.util import AssocStatusChoices
 import json
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed, delete_calfeed
+from lib.email import send_messages_async, prepare_email
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
@@ -130,7 +131,25 @@ def join_assoc(request, bk, mk):
     Assoc.objects.get_or_create(
         band=b, member=m, status=AssocStatusChoices.PENDING)
 
+    # now tell the band admins about it
+    the_admins = [a.member for a in b.band_admins]
+    print('emailing admins: {0}'.format(the_admins))
+    email_admins_about_joiner(b, the_admins, m)
+
     return HttpResponse(status=204)
+
+
+def joiner_email(the_band, the_admin, the_joiner, template):
+    context = {
+        'band': the_band,
+        'joiner': the_joiner
+    }
+    return prepare_email(the_admin.as_email_recipient(), template, context)
+
+
+def email_admins_about_joiner(the_band, the_admins, the_joiner):
+    template = 'email/joiner.md'
+    send_messages_async(joiner_email(the_band, a, the_joiner, template) for a in the_admins)
 
 
 @login_required
