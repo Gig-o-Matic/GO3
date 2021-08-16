@@ -18,6 +18,7 @@
 from re import A
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
+from django.core import mail
 from .models import Band, Assoc, Section
 from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, delete_assoc
 from member.models import Member
@@ -69,6 +70,10 @@ class MemberTests(TestCase):
         # make sure a user can create their own assoc
         request.user = self.joeuser
         helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
+
+        # make sure a mail is sent to band admin
+        self.assertEqual(len(mail.outbox), 1)
+
         a = Assoc.objects.get(band=self.band, member=self.joeuser)
         a.delete()
 
