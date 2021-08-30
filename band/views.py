@@ -17,7 +17,7 @@ from stats.helpers import get_band_stats, get_gigs_over_time_stats
 import json
 from django.utils.safestring import SafeString
 from datetime import datetime
-
+from django.utils.translation import gettext_lazy as _
 
 class BandMemberRequiredMixin(AccessMixin):
     """Verify that the current user is authenticated."""
@@ -112,7 +112,10 @@ class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
                 return [o.year, o.month, o.day]
         context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=myconverter)
 
-        context['last_gig_created'] = the_band.gigs.all().order_by('created_date').last().created_date
+        if the_band.gigs.count():
+            context['last_gig_created'] = the_band.gigs.latest('created_date').created_date
+        else:
+            context['last_gig_created'] = _('not ever!')
 
         return context
 

@@ -2,7 +2,7 @@
 {% for the_assoc in member_assocs %}
     <div class="row" style="padding-top: 5px; {% cycle '' 'background:#f5f5f5;' %}">
         <div class="col-12">
-            <a href="{% url 'member-detail' pk=the_assoc.member.id %}">{{ the_assoc.member.username }}</a>
+            <a href="{% url 'member-detail' pk=the_assoc.member.id %}">{{ the_assoc.member.display_name }}</a>
         </div>
     </div>
     <div class="row" style="padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
