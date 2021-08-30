@@ -116,6 +116,7 @@ def prepare_calfeed(member):
     filter_args = {
         "assoc__member_id": member.id,
         "gig__date__gt": date_earliest,
+        "gig__hide_from_calendar": False,
     }
 
     if member.preferences.calendar_show_only_confirmed:
@@ -134,6 +135,7 @@ def prepare_calfeed(member):
     cf = make_calfeed(member, the_gigs,
                       member.preferences.language, member.cal_feed_id)
     return cf
+
 
 def update_member_calfeed(id):
     m = Member.objects.get(id=id)

@@ -577,7 +577,7 @@ class BandCalfeedTest(FSTestCase):
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
-            hide_from_calendar=True,
+            is_private=True,
             status=GigStatusChoices.CONFIRMED
         )
         Gig.objects.create(

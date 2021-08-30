@@ -68,6 +68,7 @@ def calendar_events(request, pk):
         (Q(enddate__lte=end) | Q(enddate=None)),
         date__gte=start,
         band__in=[a.band for a in user_assocs],
+        hide_from_calendar=False,
     )
 
     events = []
@@ -155,7 +156,7 @@ def grid_gigs(request, *args, **kw):
     year = int(request.POST['year'])
 
     gigs = Gig.objects.filter(
-        date__month=month+1, date__year=year, band=band_id).order_by('date')
+        date__month=month+1, date__year=year, band=band_id, hide_from_calendar=False).order_by('date')
 
     data = []
     for g in gigs:
