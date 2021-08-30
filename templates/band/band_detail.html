@@ -94,7 +94,7 @@
                     <div class="row">
                         <div class="col-sm-3 col-12">{% trans "Public Gig Calendar Feed" %}</div>
                         <div class="col-sm-9 col-12">
-                                <a href="{% url 'band-calfeed' pk=user.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
+                                <a href="{% url 'band-calfeed' pk=band.pub_cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
                         </div>
                     </div>
                 {% endif %}

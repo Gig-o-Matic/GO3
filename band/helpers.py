@@ -248,7 +248,7 @@ def prepare_band_calfeed(band):
 
     filter_args = {
         "band": band,
-        "hide_from_calendar": False,
+        "is_private": False,
         "date__gt": date_earliest,
         "status": GigStatusChoices.CONFIRMED,
     }
@@ -277,4 +277,6 @@ def band_calfeed(request, pk):
         hr.status_code = 404
         return hr
 
-    return HttpResponse(tf)
+    response = HttpResponse(tf)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
