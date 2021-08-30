@@ -4,7 +4,7 @@
         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
             {% if assoc.is_pending %}
                 <div class="col-3">
-                    <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
+                    {{assoc.band.name}}
                     ({% trans "pending" %})
                 </div>
                 <div class="col-9">
@@ -133,7 +133,7 @@
                 </div>
             {% elif assoc.is_alum %}
                 <div class="col-3">
-                    <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
+                    {{assoc.band.name}}
                     ({% trans "alumni" %})
                 </div>
                 <div class="col-9">
