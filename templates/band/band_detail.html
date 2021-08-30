@@ -180,18 +180,24 @@
                                 {{ assoc.member.email|escape }}
                             </div>
                             <div class="col-md-6 col-sm-6 col-12">
-                                <a class="btn btn-primary btn-sm"
-                                   href="#"
+                                <button class="btn btn-primary btn-sm"
                                    hx-ext="reload-page"
-                                   hx-post="{% url 'assoc-confirm' ak=assoc.id %}">
+                                   hx-post="{% url 'assoc-confirm' ak=assoc.id %}"
+                                   hx-swap="none">
                                     {% trans "yes, confirm member!" %}
-                                </a>
-                                <a class="btn btn-secondary btn-sm"
-                                   href="#"
+                                    <span class="htmx-indicator">
+                                        <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                    </span>    
+                                </button>
+                                <button class="btn btn-secondary btn-sm"
                                    hx-ext="reload-page"
-                                   hx-post="{% url 'assoc-delete' ak=assoc.id %}">
+                                   hx-post="{% url 'assoc-delete' ak=assoc.id %}"
+                                   hx-swap="none">
                                     {% trans "no, reject!" %}
-                                </a>
+                                    <span class="htmx-indicator">
+                                        <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                    </span>    
+                                </button>
                             </div>
                         </div>
                         {% endfor %}
