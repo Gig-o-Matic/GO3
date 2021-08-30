@@ -83,6 +83,7 @@ for p in people:
                 "color": 1,
                 "email_me": True,
                 "hide_from_schedule": False,
+                "join_date": datetime.datetime.now()
             },
         }
     )
