@@ -251,6 +251,7 @@ def prepare_band_calfeed(band):
         "is_private": False,
         "date__gt": date_earliest,
         "status": GigStatusChoices.CONFIRMED,
+        "hide_from_calendar": False,
     }
 
     the_gigs = Gig.objects.filter(**filter_args)

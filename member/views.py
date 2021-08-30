@@ -147,10 +147,15 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
     def get_success_url(self):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
+
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
               'calendar_show_only_committed']
+
+    def get_object(self, queryset=None):
+            m = Member.objects.get(id=self.kwargs['pk'])
+            return m.preferences
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -163,7 +168,7 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('member-detail', kwargs={'pk': self.object.id})
+        return reverse('member-detail', kwargs={'pk': self.object.member.id})
 
     def form_valid(self, form):
         translation.activate(self.object.language)
