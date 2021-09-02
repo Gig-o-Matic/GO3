@@ -177,7 +177,7 @@ class MemberPreferences(models.Model):
     member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
 
     hide_canceled_gigs = models.BooleanField(default=False)
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
     share_profile = models.BooleanField(default=True)
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=True)
@@ -195,7 +195,7 @@ class Invite(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     band = models.ForeignKey(Band, related_name="invites", on_delete=models.CASCADE, null=True)
     email = models.EmailField(_('email address'))
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
 
     def as_email_recipient(self):
         return EmailRecipient(email=self.email, language=self.language)
@@ -209,7 +209,7 @@ class EmailConfirmation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     member = models.ForeignKey(Member, related_name="pending_email", on_delete=models.CASCADE, null=True)
     new_email = models.EmailField(_('new email'))
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en')
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
 
     def as_email_recipient(self):
         return EmailRecipient(email=self.member.email, language=self.language)
