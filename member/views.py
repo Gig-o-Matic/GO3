@@ -159,12 +159,12 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        verify_requester_is_user(self.request, self.object)
+        verify_requester_is_user(self.request, self.object.member)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        verify_requester_is_user(self.request, self.object)
+        verify_requester_is_user(self.request, self.object.member)
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
