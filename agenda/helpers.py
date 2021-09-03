@@ -20,6 +20,9 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 import datetime
 from dateutil.parser import parse
+from dateutil.relativedelta import relativedelta
+from pytz import timezone as pytz_timezone
+
 from django.db.models import Q
 
 from gig.models import Gig, Plan
@@ -155,8 +158,11 @@ def grid_gigs(request, *args, **kw):
     month = int(request.POST['month'])
     year = int(request.POST['year'])
 
-    gigs = Gig.objects.filter(
-        date__month=month+1, date__year=year, band=band_id, hide_from_calendar=False).order_by('date')
+    # can't just filter by date__month because that doesn't seem to work in mariadb
+    band = Band.objects.get(id=band_id)
+    start = datetime.datetime(year=year, month=month+1, day=1, tzinfo=pytz_timezone(band.timezone))
+    end = start + relativedelta(months=1)
+    gigs = Gig.objects.filter(date__gte=start, date__lt=end, band=band_id, hide_from_calendar=False)
 
     data = []
     for g in gigs:
