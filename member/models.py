@@ -105,10 +105,6 @@ class Member(AbstractUser):
         return self.username if self.username else self.email
 
     @property
-    def is_active(self):
-        return self.status == MemberStatusChoices.ACTIVE
-
-    @property
     def band_count(self):
         """ return number of bands for which I'm confirmed """
         return Assoc.member_assocs.confirmed_count(self)
