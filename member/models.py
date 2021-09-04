@@ -105,10 +105,6 @@ class Member(AbstractUser):
         return self.username if self.username else self.email
 
     @property
-    def is_active(self):
-        return self.status == MemberStatusChoices.ACTIVE
-
-    @property
     def band_count(self):
         """ return number of bands for which I'm confirmed """
         return Assoc.member_assocs.confirmed_count(self)
@@ -148,6 +144,7 @@ class Member(AbstractUser):
         Plan.member_plans.future_plans(self).filter(gig__is_archived=False).delete()
         delete_calfeed(self.cal_feed_id)
         self.status = MemberStatusChoices.DELETED
+        self.is_active = False
         self.email = "user_{0}@gig-o-matic.com".format(self.id)
         self.username = "deleted user"
         self.nickname = ''
