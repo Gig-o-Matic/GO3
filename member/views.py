@@ -102,6 +102,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         elif the_member.preferences.share_profile and the_member.preferences.share_email:
             show_email = True
 
+
         context = super().get_context_data(**kwargs)
         context['the_member_bands'] = the_member_bands
         context['show_email'] = show_email
@@ -111,6 +112,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
         else:
             context['invites'] = None
+        context['member_images'] = the_member.images.split()
 
         return context
 
