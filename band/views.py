@@ -37,7 +37,7 @@ class BandList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'bands'
 
 
-class DetailView(LoginRequiredMixin, BandMemberRequiredMixin, generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Band
     # fields = ['name', 'hometown']
 
@@ -47,31 +47,34 @@ class DetailView(LoginRequiredMixin, BandMemberRequiredMixin, generic.DetailView
 
         context = super().get_context_data(**kwargs)
 
+        is_associated = True
         try:
             assoc = Assoc.objects.get(band=the_band, member=the_user)
         except Assoc.DoesNotExist:
-            context['the_user_is_associated'] = False
-            return context
+            assoc = None
             
-        context['the_user_is_associated'] = True
-        context['the_user_is_band_admin'] = assoc.is_admin
+        is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
+        context['the_user_is_associated'] = is_associated
 
-        context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
-        context['the_invited_members'] = Invite.objects.filter(band=the_band)
+        if is_associated:
+            context['the_user_is_band_admin'] = assoc.is_admin
 
-        if the_band.member_links:
-            links = []
-            linklist = the_band.member_links.split('\n')
-            for l in linklist:
-                parts = l.strip().split(':')
-                if len(parts) == 2:
-                    links.append([l,l])
-                else:
-                    links.append([parts[0],':'.join(parts[1:])])
-            context['the_member_links'] = links
+            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
+            context['the_invited_members'] = Invite.objects.filter(band=the_band)
 
-        if the_band.images:
-            context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
+            if the_band.member_links:
+                links = []
+                linklist = the_band.member_links.split('\n')
+                for l in linklist:
+                    parts = l.strip().split(':')
+                    if len(parts) == 2:
+                        links.append([l,l])
+                    else:
+                        links.append([parts[0],':'.join(parts[1:])])
+                context['the_member_links'] = links
+
+            if the_band.images:
+                context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
 
         return context
 
