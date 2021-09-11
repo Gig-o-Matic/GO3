@@ -56,8 +56,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
         context['the_user_is_associated'] = is_associated
 
-        if is_associated or the_user.is_superuser:
-            context['the_user_is_band_admin'] = assoc.is_admin
+        if is_associated or (the_user and the_user.is_superuser):
+            context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
 
             context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
             context['the_invited_members'] = Invite.objects.filter(band=the_band)
