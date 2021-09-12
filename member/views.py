@@ -40,6 +40,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404
+from lib.captcha import verify_captcha, get_captcha_site_key
 
 def verify_requester_is_user(request, user):
     if not (request.user.id==user.id or request.user.is_superuser):
@@ -363,7 +364,17 @@ class SignupView(FormView):
     template_name = 'member/signup.html'
     form_class = SignupForm
 
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['site_key'] = get_captcha_site_key()
+        return context
+
     def form_valid(self, form):
+
+        # first check the captcha
+        if not verify_captcha(self.request):
+            return redirect('home')
+
         email = form.cleaned_data['email']
         if Member.objects.filter(email=email).count() > 0:
             messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
