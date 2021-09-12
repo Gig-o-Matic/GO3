@@ -21,7 +21,7 @@ from urllib import parse as urllib_parse
 
 
 def get_captcha_site_key():
-    return env('CAPTCHA_SITE_KEY')
+    return env('CAPTCHA_SITE_KEY',"")
 
 
 def verify_captcha(request):
