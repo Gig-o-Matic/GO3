@@ -15,15 +15,20 @@
     <div class="form-group">
         {% render_field form.email class="form-control" %}
     </div>
-    <div class="form-group text-right">
-        <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
-        <button type="submit" class="btn btn-primary g-recaptcha" data-sitekey="{{ site_key }}" data-callback='onSubmit' 
-        data-action='submit'>{% trans 'Sign me up!' %}</button>
+    <div class="row">
+        <div class="col-lg-8 col-12 form-group ml-auto text-right">
+            <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary g-recaptcha" data-sitekey="{{ site_key }}" data-callback='onSubmit' 
+            data-action='submit'>{% trans 'Sign me up!' %}</button>
+        </div>
     </div>
 </form>
 {% endblock pagecontent %}
 
 {% block localscripts %}
+<script src="/static/js/randomback.js"></script>
 <script src="https://www.google.com/recaptcha/api.js"></script>
 <script>
     function onSubmit(token) {

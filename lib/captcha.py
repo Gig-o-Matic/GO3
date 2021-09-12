@@ -36,7 +36,6 @@ def verify_captcha(request):
         }
         response = json.loads(urllib_request.urlopen("https://www.google.com/recaptcha/api/siteverify", 
                                                         data=urllib_parse.urlencode(verify_data).encode('utf-8')).read())
-        print('\n\n{0}\n\n'.format(response))
         if not (response['success'] and response['score']>float(env('CAPTCHA_THRESHOLD'))):
             return False
     else:

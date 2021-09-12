@@ -29,7 +29,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
-from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
 from django.contrib import messages
 from go3.colors import the_colors
 from django.utils import translation
@@ -370,7 +370,6 @@ class SignupView(FormView):
         return context
 
     def form_valid(self, form):
-
         # first check the captcha
         if not verify_captcha(self.request):
             return redirect('home')
@@ -382,6 +381,20 @@ class SignupView(FormView):
 
         Invite.objects.create(band=None, email=email)
         return render(self.request, 'member/signup_pending.html', {'email': email})
+
+
+class CaptchaPasswordResetView(PasswordResetView):
+    """ override the default so we can check the captcha """
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['site_key'] = get_captcha_site_key()
+        return context
+
+    def form_valid(self, form):
+        # first check the captcha
+        if not verify_captcha(self.request):
+            return redirect('home')
+        return super().form_valid(form)
 
 
 class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView):
