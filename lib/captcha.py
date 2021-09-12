@@ -21,7 +21,7 @@ from urllib import parse as urllib_parse
 
 
 def get_captcha_site_key():
-    return env('CAPTCHA_SITE_KEY',"")
+    return env('CAPTCHA_SITE_KEY',default='xyz')
 
 
 def verify_captcha(request):
@@ -30,13 +30,13 @@ def verify_captcha(request):
     
     if captcha_token:
         verify_data={
-            'secret': env('CAPTCHA_SECRET_KEY'),
+            'secret': env('CAPTCHA_SECRET_KEY',default='xyz'),
             'response': captcha_token,
             'remoteip'  : request.get_host()
         }
         response = json.loads(urllib_request.urlopen("https://www.google.com/recaptcha/api/siteverify", 
                                                         data=urllib_parse.urlencode(verify_data).encode('utf-8')).read())
-        if not (response['success'] and response['score']>float(env('CAPTCHA_THRESHOLD'))):
+        if not (response['success'] and response['score']>env('CAPTCHA_THRESHOLD',default=0)):
             return False
     else:
         return False

@@ -35,7 +35,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 from multiprocessing import set_start_method  # for task q
 
-env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool)
+env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float)
 # reading .env file
 environ.Env.read_env()
 
