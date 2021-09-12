@@ -29,7 +29,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
-from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
 from django.contrib import messages
 from go3.colors import the_colors
 from django.utils import translation
@@ -40,6 +40,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404
+from lib.captcha import verify_captcha, get_captcha_site_key
 
 def verify_requester_is_user(request, user):
     if not (request.user.id==user.id or request.user.is_superuser):
@@ -363,7 +364,16 @@ class SignupView(FormView):
     template_name = 'member/signup.html'
     form_class = SignupForm
 
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['site_key'] = get_captcha_site_key()
+        return context
+
     def form_valid(self, form):
+        # first check the captcha
+        if not verify_captcha(self.request):
+            return redirect('home')
+
         email = form.cleaned_data['email']
         if Member.objects.filter(email=email).count() > 0:
             messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
@@ -371,6 +381,20 @@ class SignupView(FormView):
 
         Invite.objects.create(band=None, email=email)
         return render(self.request, 'member/signup_pending.html', {'email': email})
+
+
+class CaptchaPasswordResetView(PasswordResetView):
+    """ override the default so we can check the captcha """
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['site_key'] = get_captcha_site_key()
+        return context
+
+    def form_valid(self, form):
+        # first check the captcha
+        if not verify_captcha(self.request):
+            return redirect('home')
+        return super().form_valid(form)
 
 
 class RedirectPasswordChangeDoneView(LoginRequiredMixin, PasswordChangeDoneView):

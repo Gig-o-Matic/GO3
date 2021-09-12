@@ -27,6 +27,7 @@ urlpatterns = [
     path('<int:pk>/preferences/update/', views.PreferencesUpdateView.as_view(), name='member-prefs-update'),
     path('password-change/', PasswordChangeView.as_view(), name='member-password-change'),
     path('password-change/done/', views.DetailView.as_view(), name='password_change_done'),
+    path('member-password-reset/', views.CaptchaPasswordResetView.as_view(), name='member-password-reset'),
 
     path('<int:pk>/assocs/', views.AssocsView.as_view(), name='member-assocs'),
     path('<int:pk>/otherbands/', views.OtherBandsView.as_view(), name='member-otherbands'),
