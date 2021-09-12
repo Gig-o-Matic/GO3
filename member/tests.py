@@ -364,6 +364,16 @@ class InviteTest(TemplateTestCase):
                              status=AssocStatusChoices.CONFIRMED)
         self.password = 'sb8bBb5cGmE2uNn'  # Random value, but validates
 
+        """ patch out the verify_captcha so we don't just fail """
+        def mock_verify_captcha(*args, **kw):
+            return True
+
+        self.patcher = patch('member.views.verify_captcha', mock_verify_captcha)
+        self.patcher.start()
+        
+
+
+
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
@@ -830,13 +840,6 @@ class InviteTest(TemplateTestCase):
 
     def test_signup(self):
 
-        """ patch out the verify_captcha so we don't just fail """
-        def mock_verify_captcha(*args, **kw):
-            return True
-
-        self.patcher = patch('member.views.verify_captcha', mock_verify_captcha)
-        self.patcher.start()
-        
         response = self.client.post(
             reverse('member-signup'), {'email': 'new@example.com'})
         self.assertOK(response)
