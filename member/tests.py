@@ -42,7 +42,6 @@ import pytz
 import os
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 
-
 class MemberTest(TestCase):
     def setUp(self):
         m = Member.objects.create_user('a@b.com', password='abc')
@@ -830,6 +829,14 @@ class InviteTest(TemplateTestCase):
         self.assertTrue(auth.get_user(self.client).is_authenticated)
 
     def test_signup(self):
+
+        """ patch out the verify_captcha so we don't just fail """
+        def mock_verify_captcha(*args, **kw):
+            return True
+
+        self.patcher = patch('member.views.verify_captcha', mock_verify_captcha)
+        self.patcher.start()
+        
         response = self.client.post(
             reverse('member-signup'), {'email': 'new@example.com'})
         self.assertOK(response)
