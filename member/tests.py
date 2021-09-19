@@ -371,9 +371,6 @@ class InviteTest(TemplateTestCase):
         self.patcher = patch('member.views.verify_captcha', mock_verify_captcha)
         self.patcher.start()
         
-
-
-
     def tearDown(self):
         """ make sure we get rid of anything we made """
         Member.objects.all().delete()
@@ -749,6 +746,16 @@ class InviteTest(TemplateTestCase):
         self.client.get(reverse('member-invite-accept', args=[invite.id]))
         self.assertEqual(
             self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, 'en-us')
+
+    def test_accept_invite_invalid_invite(self):
+        invite = Invite.objects.create(
+            email='jane@example.com', band=self.band)
+        the_id = invite.id
+        invite.delete()
+        response = self.client.get(
+            reverse('member-invite-accept', args=[the_id]))
+        self.assertOK(response)
+        self.assertTemplateUsed(response, 'member/invite_expired.html')
 
     def test_create_member(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band)

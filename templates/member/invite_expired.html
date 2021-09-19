@@ -1,0 +1,11 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Expired!" %}{% endblock title %}
+
+{% block pageheader %}{% trans "Expired!" %}{% endblock pageheader %}
+
+{% block pagecontent %}
+<p>{% blocktrans %}The invitation you clicked has expired! Please contact the band for another.{% endblocktrans %}</p>
+{% endblock pagecontent %}
