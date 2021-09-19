@@ -32,8 +32,10 @@ urlpatterns = [
     path('<int:pk>/trashcan', views.TrashcanView.as_view(), name='band-trashcan'),
     path('<int:pk>/archive', views.ArchiveView.as_view(), name='band-archive'),
     path('<int:pk>/sections', views.SectionSetupView.as_view(), name='band-section-setup'),
-   
     path('<int:pk>/set_sections', helpers.set_sections, name='band-set-sections'), 
+
+    path('<str:name>', helpers.band_public_page, name='band-public-page'),
+
     path('assoc/<int:ak>/tfparam', helpers.set_assoc_tfparam, name='assoc-tfparam'),
     path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),
     path('assoc/<int:ak>/section/<int:sk>', helpers.set_assoc_section, name='assoc-section'),
