@@ -271,7 +271,10 @@ class InviteView(LoginRequiredMixin, FormView):
 
 
 def accept_invite(request, pk):
-    invite = get_object_or_404(Invite, pk=pk)
+    try:
+        invite = Invite.objects.get(pk=pk)
+    except Invite.DoesNotExist:
+        return render(request, 'member/invite_expired.html')
 
     if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
         # We need the language active before we try to render anything.
