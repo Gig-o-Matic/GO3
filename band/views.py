@@ -38,7 +38,7 @@ class BandList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'bands'
 
 
-class DetailView(LoginRequiredMixin, generic.DetailView):
+class DetailView(generic.DetailView):
     model = Band
     # fields = ['name', 'hometown']
 
@@ -51,10 +51,13 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         context['url_base'] = URL_BASE
 
         is_associated = True
-        try:
-            assoc = Assoc.objects.get(band=the_band, member=the_user)
-        except Assoc.DoesNotExist:
+        if the_user.is_anonymous:
             assoc = None
+        else:
+            try:
+                assoc = Assoc.objects.get(band=the_band, member=the_user)
+            except Assoc.DoesNotExist:
+                assoc = None
             
         is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
         context['the_user_is_associated'] = is_associated

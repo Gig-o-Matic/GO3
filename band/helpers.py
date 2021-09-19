@@ -281,3 +281,12 @@ def band_calfeed(request, pk):
     response = HttpResponse(tf)
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
+
+
+def band_public_page(request, name):
+    try:
+        band = Band.objects.get(condensed_name=name)
+    except:
+        return redirect('/')
+
+    return redirect('band-detail', pk=band.id)
