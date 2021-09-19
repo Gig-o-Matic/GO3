@@ -18,6 +18,7 @@ import json
 from django.utils.safestring import SafeString
 from datetime import datetime
 from django.utils.translation import gettext_lazy as _
+from go3.settings import URL_BASE
 
 class BandMemberRequiredMixin(AccessMixin):
     """Verify that the current user is authenticated."""
@@ -46,6 +47,8 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         the_user = self.request.user
 
         context = super().get_context_data(**kwargs)
+
+        context['url_base'] = URL_BASE
 
         is_associated = True
         try:
