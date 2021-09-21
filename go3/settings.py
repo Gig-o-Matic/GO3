@@ -207,6 +207,15 @@ Q_CLUSTER = {
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
 }
 
+
+# Local memory cache. To monitor djanqo-q, need to use filesystem or database
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
