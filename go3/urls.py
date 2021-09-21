@@ -35,7 +35,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from graphene_django.views import GraphQLView
-from .views import Custom404
+from .views import Custom404, QueuesView
 from go3.schema import schema
 from agenda.views import PrivateGraphQLView
 urlpatterns = [
@@ -49,6 +49,7 @@ urlpatterns = [
     path('stats/', include('stats.urls')),
     path('admin/', admin.site.urls),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
+    path('queues', QueuesView.as_view()),
 ]
 
 handler404 = Custom404.as_view()
