@@ -143,15 +143,19 @@ function updateBandMembers() {
 }
 
 function updateBandList() {
-    $("#band-name").html(bands[current_band]['name'])
-    dd = $("#band-dropdown");
-    dd.empty();
-    if (bands.length > 0) {
+    if (bands.length > 1) {
+        $("#band-name").html(bands[current_band]['name'])
+        dd = $("#band-dropdown");
+        dd.empty();
         for (let i=0; i<bands.length; i++) {
             if (i != current_band) {
                 dd.append('<a class="dropdown-item" onclick=bandSelect('+i+')>'+bands[i]['name']+'</a>');
             }
         }
+    } else if (bands.length == 1) {
+        dd = $("#bandlist");
+        dd.empty();
+        dd.append(bands[0].name)
     }
 }
 
