@@ -50,7 +50,7 @@
                                         checked
                                     {% endif %}
                                     >
-                                    <label class="form-check-label" for="msbk-{{assoc.id}}">{% trans "other sections, too" %}</label>
+                                    <label class="form-check-label" for="msbk-{{assoc.id}}">{% trans "I play in other sections too" %}</label>
                                 </div>
                             </div>
                         </div>
@@ -65,7 +65,7 @@
                                     checked
                                 {% endif %}
                                 >
-                                <label class="form-check-label" for="oak-{{assoc.id}}">{% trans "occasional" %}</label>
+                                <label class="form-check-label" for="oak-{{assoc.id}}">{% trans "occasional member" %}</label>
                             </div>
                         </div>
                         <div class="col-6">
@@ -81,10 +81,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row" style="padding-bottom: 5px;">
                         <div class="col-6">
-                            <div class="row">
-                                <div class="col-6">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
                                         name="email_me" hx-ext="checkbox"
@@ -95,29 +93,30 @@
                                         >
                                         <label class="form-check-label" for="mailbk-{{assoc.id}}">{% trans "email notifications" %}</label>
                                     </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="dropdown">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
-                                            {% include "member/color.html" %}
-                                        </button>
-                                        <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
-                                            {% for c in the_colors %}
-                                                <a class="dropdown-item" id="color-{{forloop.counter0}}"
-                                                    hx-post="{% url 'assoc-color' ak=assoc.id colorindex=forloop.counter0 %}"
-                                                    hx-trigger="click"
-                                                    hx-target="#cbk-{{ assoc.id }}"
-                                                >{% if forloop.first %}
-                                                    <i class="far fa-square"></i>
-                                                {% else %}
-                                                    <i class="fas fa-square" style="color:{{ c }};"></i>
-                                                {% endif %}</a>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="dropdown">
+                                {% trans "color coding" %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
+                                    {% include "member/color.html" %}
+                                </button>
+                                <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
+                                    {% for c in the_colors %}
+                                        <a class="dropdown-item" id="color-{{forloop.counter0}}"
+                                            hx-post="{% url 'assoc-color' ak=assoc.id colorindex=forloop.counter0 %}"
+                                            hx-trigger="click"
+                                            hx-target="#cbk-{{ assoc.id }}"
+                                        >{% if forloop.first %}
+                                            <i class="far fa-square"></i>
+                                        {% else %}
+                                            <i class="fas fa-square" style="color:{{ c }};"></i>
+                                        {% endif %}</a>
+                                    {% endfor %}
                                 </div>
                             </div>
-                        </div>
+                </div>
                         <div class="col-6">
                             <button class="btn btn-secondary btn-sm"
                                 id="leave-{{ assoc.id }}"
