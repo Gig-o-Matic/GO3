@@ -210,7 +210,7 @@ function updateGigGrid() {
             for (let i=0; i<gigs.length; i++) {
                 gig = gigs[i];
                 $('#title-row').append(`
-<td class="gig-grid-title">
+<td class="gig-grid-title" width="20%">
     <a href="/gig/${ gig.id }">${ gig.title }</a>
 </td>
                 `);
@@ -253,6 +253,8 @@ function updateGigGrid() {
                     `)
                 }
             }
+            $('#title-row').append('<td class="gig-grid-title" style="border: none" width="100%"></td>');
+
             $("#giggrid-loading").hide();
             if (gigs.length == 0) {
                 $("#giggrid-nogigs").show();
