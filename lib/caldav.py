@@ -14,30 +14,30 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import default_storage, FileSystemStorage
 from icalendar import Calendar, Event
 from datetime import timedelta
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 import os
-from django.core.files.storage import DefaultStorage
 from gig.util import GigStatusChoices
 from django.conf import settings
 from go3.settings import URL_BASE
 
-filesys = FileSystemStorage("calfeeds", "calfeeds")
-
+if default_storage.__class__ == FileSystemStorage:
+    default_storage.location = 'calfeeds'
+    default_storage.base_url = 'calfeeds'
 
 def save_calfeed(tag, content):
     file_path = f'{tag}.txt'
 
-    with filesys.open(file_path, mode='wb') as f:
+    with default_storage.open(file_path, mode='wb') as f:
         f.write(content)
 
 
 def get_calfeed(tag):
     try:
-        with filesys.open('{0}.txt'.format(tag), mode='r') as f:
+        with default_storage.open('{0}.txt'.format(tag), mode='r') as f:
             s = f.read()
     except FileNotFoundError:
         raise ValueError()
@@ -47,8 +47,8 @@ def get_calfeed(tag):
 def delete_calfeed(tag):
     if settings.DYNAMIC_CALFEED:
         file_path = f'{tag}.txt'
-        if filesys.exists(file_path):
-            filesys.delete(file_path)
+        if default_storage.exists(file_path):
+            default_storage.delete(file_path)
 
 
 def make_calfeed(the_title, the_events, the_language, the_uid):

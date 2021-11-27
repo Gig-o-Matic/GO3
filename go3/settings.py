@@ -205,6 +205,7 @@ Q_CLUSTER = {
     "orm": "default",
     "sync": _testing,
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
+    "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
 }
 
 
