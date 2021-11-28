@@ -129,10 +129,12 @@ WSGI_APPLICATION = "go3.wsgi.application"
 
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
-    }
+    # The db() method is an alias for db_url().
+    'default': env.db()
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
+    # }
 }
 
 
@@ -227,7 +229,10 @@ SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=T
 SENDGRID_TRACK_CLICKS_HTML = False
 
 # Calfeed settings
-DYNAMIC_CALFEED = False  # True to generate calfeed on demand; False for disk cache
+DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED',default=False) # True to generate calfeed on demand; False for disk cache
+DEFAULT_FILE_STORAGE = env('CALFEED_DEFAULT_FILE_STORAGE',default='django.core.files.storage.FileSystemStorage')
+GS_BUCKET_NAME = env('CALFEED_GS_BUCKET_NAME',default=None)
+
 
 MESSAGE_TAGS = {
     messages.DEBUG: "alert-info",
@@ -244,9 +249,9 @@ GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 IN_ETL = False
 
 # base URL
-URL_BASE = "https://www.gig-o-matic.com"
+URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 
-try:
-    from .settings_local import *
-except ImportError:
-    pass
+# try:
+#     from .settings_local import *
+# except ImportError:
+#     pass
