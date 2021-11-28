@@ -31,6 +31,7 @@ graphene==2.1.9
 graphene-django==2.15.0
 graphql-core==2.3.2
 graphql-relay==2.0.1
+gunicorn==20.1.0
 icalendar==4.0.7
 idna==3.3
 isort==5.9.3

@@ -58,7 +58,7 @@ SECRET_KEY = env('SECRET_KEY', default='123')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG', default=True)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ['*'] # this is safe for running in GAE
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "django_q",
     "simple_history",
     "graphene_django",
+    "storages"
 ]
 
 MIDDLEWARE = [
