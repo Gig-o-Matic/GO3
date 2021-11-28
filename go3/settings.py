@@ -35,7 +35,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 from multiprocessing import set_start_method  # for task q
 
-env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float)
+env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
+                  CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool)
 # reading .env file
 environ.Env.read_env()
 
@@ -213,12 +214,19 @@ Q_CLUSTER = {
 
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+if env('CACHE_USE_FILEBASED', default=False):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': '/var/tmp/django_cache',
+        }
     }
-}
-
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
