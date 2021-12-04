@@ -127,16 +127,14 @@ WSGI_APPLICATION = "go3.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-
 DATABASES = {
     # The db() method is an alias for db_url().
-    'default': env.db()
+    'default': env.db(default='sqlite:////tmp/my-tmp-sqlite.db')
     # "default": {
     #     "ENGINE": "django.db.backends.sqlite3",
     #     "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
     # }
 }
-
 
 AUTH_USER_MODEL = "member.Member"
 
