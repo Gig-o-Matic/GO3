@@ -35,7 +35,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 from multiprocessing import set_start_method  # for task q
 
-env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float)
+env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
+                  CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool)
 # reading .env file
 environ.Env.read_env()
 
@@ -58,7 +59,7 @@ SECRET_KEY = env('SECRET_KEY', default='123')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG', default=True)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ['*'] # this is safe for running in GAE
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -126,14 +127,14 @@ WSGI_APPLICATION = "go3.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
-    }
+    # The db() method is an alias for db_url().
+    'default': env.db(default='sqlite:////tmp/my-tmp-sqlite.db')
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
+    # }
 }
-
 
 AUTH_USER_MODEL = "member.Member"
 
@@ -210,12 +211,19 @@ Q_CLUSTER = {
 
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+if env('CACHE_USE_FILEBASED', default=False):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': '/var/tmp/django_cache',
+        }
     }
-}
-
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
@@ -226,7 +234,10 @@ SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=T
 SENDGRID_TRACK_CLICKS_HTML = False
 
 # Calfeed settings
-DYNAMIC_CALFEED = False  # True to generate calfeed on demand; False for disk cache
+DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED',default=False) # True to generate calfeed on demand; False for disk cache
+DEFAULT_FILE_STORAGE = env('CALFEED_DEFAULT_FILE_STORAGE',default='django.core.files.storage.FileSystemStorage')
+GS_BUCKET_NAME = env('CALFEED_GS_BUCKET_NAME',default=None)
+
 
 MESSAGE_TAGS = {
     messages.DEBUG: "alert-info",
@@ -243,9 +254,9 @@ GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 IN_ETL = False
 
 # base URL
-URL_BASE = "https://www.gig-o-matic.com"
+URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 
-try:
-    from .settings_local import *
-except ImportError:
-    pass
+# try:
+#     from .settings_local import *
+# except ImportError:
+#     pass
