@@ -22,10 +22,10 @@ from django.utils.translation import gettext_lazy as _
 import os
 from gig.util import GigStatusChoices
 from django.conf import settings
-from go3.settings import URL_BASE
+from go3.settings import URL_BASE, BASE_DIR
 
 if default_storage.__class__ == FileSystemStorage:
-    default_storage.location = 'calfeeds'
+    default_storage.location = os.path.join(BASE_DIR, "calfeeds")
     default_storage.base_url = 'calfeeds'
 
 def save_calfeed(tag, content):
