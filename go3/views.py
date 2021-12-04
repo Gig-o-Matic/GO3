@@ -23,14 +23,3 @@ from django_q.monitor import Stat
 class Custom404(TemplateView):
     template_name='base/404.html'
 
-
-
-# Create your views here.
-class QueuesView(LoginRequiredMixin, TemplateView):
-    template_name = 'queues/queues.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['stats'] = Stat.get_all()
-
-        return context
