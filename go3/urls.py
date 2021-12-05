@@ -36,6 +36,7 @@ from django.contrib import admin
 from django.urls import include, path
 from graphene_django.views import GraphQLView
 from .views import Custom404
+from .tasks import do_daily_tasks, do_hourly_tasks
 from go3.schema import schema
 from agenda.views import PrivateGraphQLView
 urlpatterns = [
@@ -49,6 +50,8 @@ urlpatterns = [
     path('stats/', include('stats.urls')),
     path('admin/', admin.site.urls),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
+    path('tasks/hourly',do_hourly_tasks),
+    path('tasks/daily',do_daily_tasks),
 ]
 
 handler404 = Custom404.as_view()
