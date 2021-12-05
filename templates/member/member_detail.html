@@ -208,7 +208,7 @@
                         {% endcomment %}
                         <div class="col-sm-3 col-12">{% trans "Calendar URL for My Bands" %}</div>
                         <div class="col-sm-9 col-12">
-                                <a href="{% url 'member-calfeed' pk=user.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="{% url 'help-calfeed' pk=user.id %}">{% trans "click here for help" %}</a>]
+                                <a href="{% url 'member-calfeed' pk=member.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="{% url 'help-calfeed' pk=user.id %}">{% trans "click here for help" %}</a>]
                         </div>
                     </div>
                     <br>
