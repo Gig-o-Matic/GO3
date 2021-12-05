@@ -1,0 +1,13 @@
+{% extends 'base/logged_out.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Ruh-roh!" %}{% endblock title %}
+
+{% block pagecontent %}
+
+Ruh-roh! An error has occurred. Please head back <a href="/">home</a>.
+<br><br><br>
+(error {{error}})
+
+{% endblock pagecontent %}
+

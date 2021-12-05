@@ -35,7 +35,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from graphene_django.views import GraphQLView
-from .views import Custom404
+from .views import error404, error500
 from .tasks import do_daily_tasks, do_hourly_tasks
 from go3.schema import schema
 from agenda.views import PrivateGraphQLView
@@ -54,4 +54,5 @@ urlpatterns = [
     path('tasks/daily',do_daily_tasks),
 ]
 
-handler404 = Custom404.as_view()
+handler404 = error404
+handler500 = error500

@@ -15,11 +15,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.views.generic.base import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django_q.monitor import Stat
+from django.shortcuts import render
 
+def error404(request, exception):
+    data={'error':'404'}
+    return render(request,'base/error.html', data, status=404)
 
-class Custom404(TemplateView):
-    template_name='base/404.html'
-
+def error500(request):
+    data={'error':'500'}
+    return render(request,'base/error.html', data, status=500)
