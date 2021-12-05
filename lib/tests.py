@@ -28,6 +28,7 @@ import os
 from datetime import timedelta
 from django.utils import timezone
 import pytz
+from django.conf import settings
 
 class EmailTest(TestCase):
 
@@ -130,6 +131,7 @@ class CaldavFileTest(FSTestCase):
 
     def setUp(self):
         """ fake a file system """
+        settings.DYNAMIC_CALFEED = False # make sure we're using the filesystem
         self.super = Member.objects.create_user(email='a@b.c', is_superuser=True)
         self.band_admin = Member.objects.create_user(email='d@e.f')
         self.joeuser = Member.objects.create_user(email='g@h.i')
