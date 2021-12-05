@@ -21,7 +21,8 @@ from django.conf import settings
 from django.http import HttpResponse
 
 def do_daily_tasks(request):
-    return HttpResponse(f'in daily:{request.META["HTTP_HOST"]}')
+    r={k:v for k,v in request.META.items() if k in ['HTTP_HOST','REMOTE_ADDR']}
+    return HttpResponse(f'in daily:{r}')
 
 def do_hourly_tasks(request):
-    return HttpResponse(f'in daily:{request.META["HTTP_HOST"]}')
+    return HttpResponse()
