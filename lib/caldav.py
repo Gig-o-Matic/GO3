@@ -25,7 +25,7 @@ from django.conf import settings
 from go3.settings import URL_BASE, BASE_DIR
 
 if default_storage.__class__ == FileSystemStorage:
-    default_storage.location = os.path.join(BASE_DIR, "calfeeds")
+    default_storage.location = 'calfeeds'
     default_storage.base_url = 'calfeeds'
 
 def save_calfeed(tag, content):
@@ -45,7 +45,7 @@ def get_calfeed(tag):
 
 
 def delete_calfeed(tag):
-    if settings.DYNAMIC_CALFEED:
+    if settings.DYNAMIC_CALFEED is False:
         file_path = f'{tag}.txt'
         if default_storage.exists(file_path):
             default_storage.delete(file_path)
