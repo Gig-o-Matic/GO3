@@ -23,7 +23,7 @@ from . import helpers
 urlpatterns = [
     path('', views.BandList.as_view(), name='band-nav'),
     path('<int:pk>/', views.DetailView.as_view(), name='band-detail'),
-    path('<int:pk>/update', views.UpdateView.as_view(), name='band-update'),
+    path('<int:pk>/update/', views.UpdateView.as_view(), name='band-update'),
     path('<int:pk>/members/', views.AllMembersView.as_view(), name='all-members'),
     path('<int:pk>/stats/', views.BandStatsView.as_view(), name='band-stats'),
     path('<int:pk>/section/<int:sk>', views.SectionMembersView.as_view(), name='section-members'),
@@ -34,7 +34,7 @@ urlpatterns = [
     path('<int:pk>/sections', views.SectionSetupView.as_view(), name='band-section-setup'),
     path('<int:pk>/set_sections', helpers.set_sections, name='band-set-sections'), 
 
-    path('<str:name>', helpers.band_public_page, name='band-public-page'),
+    path('pub/<str:name>/', helpers.band_public_page, name='band-public-page'),
 
     path('assoc/<int:ak>/tfparam', helpers.set_assoc_tfparam, name='assoc-tfparam'),
     path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),
