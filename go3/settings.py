@@ -36,7 +36,8 @@ from django.contrib.messages import constants as messages
 from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
-                  CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list)
+                  CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
+                  ROUTINE_TASK_KEY=int)
 # reading .env file
 environ.Env.read_env()
 
@@ -254,6 +255,9 @@ IN_ETL = False
 
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
+
+# for calling routine tasks in go3.tasks
+ROUTINE_TASK_KEY = env('ROUTINE_TASK_KEY',default=1)
 
 # try:
 #     from .settings_local import *

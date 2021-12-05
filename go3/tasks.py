@@ -14,15 +14,24 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from member.models import Member
-from member.helpers import update_member_calfeed
 from django_q.tasks import async_task 
 from django.conf import settings
 from django.http import HttpResponse
 
 def do_daily_tasks(request):
-    r={k:v for k,v in request.META.items() if k in ['HTTP_HOST','REMOTE_ADDR']}
-    return HttpResponse(f'in daily:{r}')
+    if int(request.GET.get('key',0)) == settings.ROUTINE_TASK_KEY:
+        async_task('gig.tasks.delete_old_trashed_gigs')
+        async_task('gig.tasks.archive_old_gigs')
+        async_task('gig.tasks.send_snooze_reminders')
+        async_task('stats.tasks.collect_band_stats')
+        return HttpResponse('did it!')
+    else:
+        return HttpResponse()
 
 def do_hourly_tasks(request):
-    return HttpResponse()
+    if int(request.GET.get('key',0)) == settings.ROUTINE_TASK_KEY:
+        async_task('member.tasks.update_all_calfeeds')
+        async_task('band.tasks.update_all_calfeeds')
+        return HttpResponse('did it!')
+    else:
+        return HttpResponse()
