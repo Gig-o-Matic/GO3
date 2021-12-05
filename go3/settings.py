@@ -234,10 +234,9 @@ SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=T
 SENDGRID_TRACK_CLICKS_HTML = False
 
 # Calfeed settings
-DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED',default=False) # True to generate calfeed on demand; False for disk cache
-DEFAULT_FILE_STORAGE = env('CALFEED_DEFAULT_FILE_STORAGE',default='django.core.files.storage.FileSystemStorage')
-GS_BUCKET_NAME = env('CALFEED_GS_BUCKET_NAME',default=None)
-
+DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache
+DEFAULT_FILE_STORAGE = env('CALFEED_DEFAULT_FILE_STORAGE', default='django.core.files.storage.FileSystemStorage')
+CALFEED_BASEDIR = env('CALFEED_CALFEED_BASEDIR', default='')
 
 MESSAGE_TAGS = {
     messages.DEBUG: "alert-info",

@@ -25,7 +25,7 @@ from django.conf import settings
 from go3.settings import URL_BASE, BASE_DIR
 
 if default_storage.__class__ == FileSystemStorage:
-    default_storage.location = 'calfeeds'
+    default_storage.location = f'{settings.CALFEED_BASEDIR}calfeeds'
     default_storage.base_url = 'calfeeds'
 
 def save_calfeed(tag, content):
