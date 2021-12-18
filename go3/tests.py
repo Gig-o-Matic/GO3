@@ -13,9 +13,11 @@
 """
 
 from django.test import TestCase, RequestFactory
+from member.models import Member
 from .settings import LANGUAGES
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
 
 
 class LanguageTest(TestCase):
@@ -24,3 +26,12 @@ class LanguageTest(TestCase):
         self.assertEqual(_("Schedule"), "Schedule")
         translation.activate("fr")
         self.assertEqual(_("Schedule"), "Liste des concerts ")
+
+class ErrorTest(TestCase):
+    def setUp(self):
+        self.member = Member.objects.create_user('a@b.com', password='abc')
+
+    def test_404(self):
+        self.client.force_login(self.member)
+        response = self.client.get('/404')
+        self.assertEqual(response.status_code, 404)

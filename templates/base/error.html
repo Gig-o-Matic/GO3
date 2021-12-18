@@ -1,13 +1,21 @@
 {% extends 'base/logged_out.html' %}
 {% load i18n %}
+{% load static %}
 
 {% block title %}{% trans "Ruh-roh!" %}{% endblock title %}
 
 {% block pagecontent %}
 
-Ruh-roh! An error has occurred. Please head back <a href="/">home</a>.
-<br><br><br>
-(error {{error}})
+<div class="row">
+    <div class="col">
+        <img src="{% static 'images/404_man.png' %}" height=400>
+    </div>
+    <div class="col">
+        <h1>Ruh-roh!<br><br>An error has occurred. Please head back <a href="/">home</a>.</h1>
+        <br><br><br>
+        (error {{error}})
+    </div>
+</div>
 
 {% endblock pagecontent %}
 
