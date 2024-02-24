@@ -1,0 +1,12 @@
+---
+version: "3.8"
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: gig-o-matic
+      MYSQL_USER: gig-o-matic
+      MYSQL_PASSWORD: gig-o-matic
+      MYSQL_DATABASE: gig-o-matic
+    ports:
+      - "13307:3306"
