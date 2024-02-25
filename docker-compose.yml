@@ -6,45 +6,47 @@ services:
     image: go3
     command: python manage.py runserver 0.0.0.0:8000
     environment:
-      DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
+      DATABASE_URL: "postgres://gig-o-matic:gig-o-matic@db/gig-o-matic"
     ports:
       - "8000:8000"
     depends_on:
-      migration:
-        condition: service_completed_successfully
-      db:
-        condition: service_healthy
+      - migration
+      - db
+      #migration:
+      #  condition: service_completed_successfully
+      #db:
+      #  condition: service_healthy
   worker:
     image: go3
     command: python manage.py qcluster
     environment:
-      DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
+      DATABASE_URL: "postgres://gig-o-matic:gig-o-matic@db/gig-o-matic"
     depends_on:
       migration:
         condition: service_completed_successfully
       db:
         condition: service_healthy
   db:
-    image: mysql:8
+    image: postgres:16-alpine
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: gig-o-matic
-      MYSQL_USER: gig-o-matic
-      MYSQL_PASSWORD: gig-o-matic
-      MYSQL_DATABASE: gig-o-matic
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      POSTGRES_USER: gig-o-matic
+      POSTGRES_PASSWORD: gig-o-matic
+      POSTGRES_DATABASE: gig-o-matic
+    #healthcheck:
+    #  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
     volumes:
-      - "db_data:/var/lib/mysql"
-    ports:
-      - "13307:3306"
+      - "db_data:/var/lib/postgresql/data"
+    #ports:
+    #  - "13307:3306"
   migration:
     image: go3
     command: python manage.py migrate --noinput
     environment:
-      DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
+      DATABASE_URL: "postgres://gig-o-matic:gig-o-matic@db/gig-o-matic"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      #  condition: service_healthy
 
 volumes:
   db_data:
