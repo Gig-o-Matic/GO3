@@ -1,6 +1,17 @@
 ---
 version: "3.8"
 services:
+  web:
+    build: .
+    image: go3
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - migration
+      - db
   db:
     image: mysql:8
     environment:
@@ -10,3 +21,10 @@ services:
       MYSQL_DATABASE: gig-o-matic
     ports:
       - "13307:3306"
+  migration:
+    image: go3
+    command: python manage.py migrate --noinput
+    environment:
+      DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
+    depends_on:
+      - db

@@ -130,14 +130,15 @@ WSGI_APPLICATION = "go3.wsgi.application"
 
 DATABASES = {
     # The db() method is an alias for db_url().
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "gig-o-matic",
-        "HOST": "127.0.0.1",
-        "PORT": 13307,
-        "USER": "gig-o-matic",
-        "PASSWORD": "gig-o-matic",
-    }
+    "default": env.db_url()
+    #    {
+    #        "ENGINE": "django.db.backends.mysql",
+    #        "NAME": "gig-o-matic",
+    #        "HOST": "127.0.0.1",
+    #        "PORT": 13307,
+    #        "USER": "gig-o-matic",
+    #        "PASSWORD": "gig-o-matic",
+    #    }
 }
 
 AUTH_USER_MODEL = "member.Member"
