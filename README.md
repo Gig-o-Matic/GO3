@@ -1,5 +1,7 @@
 # murg-o-matic
 
+[![Run Tests](https://github.com/lamurgadeaustin/go3/actions/workflows/testing.yml/badge.svg)](https://github.com/lamurgadeaustin/go3/actions/workflows/testing.yml)
+
 ## Local development
 
 This project is targeted at Python 3.8.  The required packages can be installed with [poetry](python-poetry.org)
