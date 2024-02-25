@@ -29,7 +29,7 @@ from .forms import GigForm
 from .views import CreateView, UpdateView
 from .tasks import archive_old_gigs
 from go3 import settings
-from datetime import timedelta, datetime, time
+from datetime import timedelta, datetime, time, date
 from django.urls import reverse
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
@@ -726,38 +726,46 @@ class GigTest(GigTestBase):
         )
 
     def test_date_only(self):
-        g, _, _ = self.assoc_joe_and_create_gig(call_date="01/02/2023", call_time="")
+        next_year = date.today().year + 1  # so that we have a date in the future...
+        g, _, _ = self.assoc_joe_and_create_gig(
+            call_date=f"01/02/{next_year}",
+            call_time="",
+        )
         self.assertDateEqual(
-            g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0)
+            g.date, datetime(month=1, day=2, year=next_year, hour=0, minute=0)
         )
 
     def test_dates_only(self):
+        next_year = date.today().year + 1
         g, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023", call_time="", end_date="02/03/2023"
+            call_date=f"01/02/{next_year}",
+            call_time="",
+            end_date=f"02/03/{next_year}",
         )
         self.assertDateEqual(
-            g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0)
+            g.date, datetime(month=1, day=2, year=next_year, hour=0, minute=0)
         )
         self.assertIsNone(g.setdate)
         self.assertDateEqual(
-            g.enddate, datetime(month=2, day=3, year=2023, hour=0, minute=0)
+            g.enddate, datetime(month=2, day=3, year=next_year, hour=0, minute=0)
         )
 
     def test_times(self):
+        next_year = date.today().year + 1
         g, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023",
+            call_date=f"01/02/{next_year}",
             call_time="12:00 pm",
             set_time="1:00 pm",
             end_time="2:00 pm",
         )
         self.assertDateEqual(
-            g.date, datetime(month=1, day=2, year=2023, hour=12, minute=0)
+            g.date, datetime(month=1, day=2, year=next_year, hour=12, minute=0)
         )
         self.assertDateEqual(
-            g.setdate, datetime(month=1, day=2, year=2023, hour=13, minute=0)
+            g.setdate, datetime(month=1, day=2, year=next_year, hour=13, minute=0)
         )
         self.assertDateEqual(
-            g.enddate, datetime(month=1, day=2, year=2023, hour=14, minute=0)
+            g.enddate, datetime(month=1, day=2, year=next_year, hour=14, minute=0)
         )
 
     def test_settime_order(self):
