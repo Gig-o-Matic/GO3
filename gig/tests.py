@@ -733,56 +733,75 @@ class GigTest(GigTestBase):
         )
 
     def test_date_only(self):
+        future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023", call_time="")
+            call_date=future_date.strftime("%m/%d/%Y"), call_time="")
         self.assertDateEqual(
-            g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0)
+            g.date, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=0, minute=0)
         )
 
     def test_dates_only(self):
+        future_start_date = datetime.now() + timedelta(days=7)
+        future_end_date = future_start_date + timedelta(days=1)
         g, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023", call_time="", end_date="02/03/2023"
+            call_date=future_start_date.strftime("%m/%d/%Y"), call_time="", end_date=future_end_date.strftime("%m/%d/%Y")
         )
         self.assertDateEqual(
-            g.date, datetime(month=1, day=2, year=2023, hour=0, minute=0)
+            g.date, datetime(month=future_start_date.month, day=future_start_date.day, year=future_start_date.year, hour=0, minute=0)
         )
         self.assertIsNone(g.setdate)
         self.assertDateEqual(
-            g.enddate, datetime(month=2, day=3, year=2023, hour=0, minute=0)
+            g.enddate, datetime(month=future_end_date.month, day=future_end_date.day, year=future_end_date.year, hour=0, minute=0)
         )
 
     def test_times(self):
+        future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023",
+            call_date=future_date.strftime("%m/%d/%Y"),
             call_time="12:00 pm",
             set_time="1:00 pm",
             end_time="2:00 pm",
         )
         self.assertDateEqual(
-            g.date, datetime(month=1, day=2, year=2023, hour=12, minute=0)
+            g.date, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=12, minute=0)
         )
         self.assertDateEqual(
-            g.setdate, datetime(month=1, day=2, year=2023, hour=13, minute=0)
+            g.setdate, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=13, minute=0)
         )
         self.assertDateEqual(
-            g.enddate, datetime(month=1, day=2, year=2023, hour=14, minute=0)
+            g.enddate, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=14, minute=0)
         )
 
     def test_settime_order(self):
-        # should fail and reload the edit page - response code 200
+        future_date = datetime.now() + timedelta(days=7)
+        # because set time is before call time,
+        # this should fail and reload the edit page - response code 200
         _, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023",
+            call_date=future_date.strftime("%m/%d/%Y"),
             call_time="1:00 pm",
             set_time="12:00 pm",
             expect_code=200,
         )
 
     def test_endtime_order(self):
+        future_date = datetime.now() + timedelta(days=7)
+        # because end time is before call time,
         # should fail and reload the edit page - response code 200
         _, _, _ = self.assoc_joe_and_create_gig(
-            call_date="01/02/2023",
+            call_date=future_date.strftime("%m/%d/%Y"),
             call_time="1:00 pm",
             end_time="12:00 pm",
+            expect_code=200,
+        )
+
+    def test_gig_date_in_past(self):
+        past_date = datetime.now() - timedelta(days=7)
+        # because gig date is in the past,
+        # should fail and reload the edit page - response code 200
+        _, _, _ = self.assoc_joe_and_create_gig(
+            call_date=past_date.strftime("%m/%d/%Y"),
+            call_time="1:00 pm",
+            end_time="2:00 pm",
             expect_code=200,
         )
 
