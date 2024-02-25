@@ -14,13 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.core.management.base import BaseCommand
 from stats.models import Metric, Stat
 from stats.tasks import collect_band_stats
 
 
 class Command(BaseCommand):
-    help = 'Sets up stats tracking'
+    help = "Sets up stats tracking"
 
     def handle(self, *args, **kwargs):
 

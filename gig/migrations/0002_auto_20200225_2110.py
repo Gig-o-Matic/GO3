@@ -11,23 +11,39 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('gig', '0001_initial'),
+        ("gig", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='gig',
-            name='contact',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contact_gigs', to=settings.AUTH_USER_MODEL),
+            model_name="gig",
+            name="contact",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="contact_gigs",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='gig',
-            name='creator',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='creator_gigs', to=settings.AUTH_USER_MODEL),
+            model_name="gig",
+            name="creator",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="creator_gigs",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='gig',
-            name='leader',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='leader_gigs', to=settings.AUTH_USER_MODEL),
+            model_name="gig",
+            name="leader",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="leader_gigs",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

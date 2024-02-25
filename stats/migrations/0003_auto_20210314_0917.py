@@ -7,23 +7,45 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('band', '0011_auto_20210313_1757'),
-        ('stats', '0002_auto_20210314_0913'),
+        ("band", "0011_auto_20210313_1757"),
+        ("stats", "0002_auto_20210314_0913"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='stat',
-            name='metric',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name='stats', to='stats.metric'),
+            model_name="stat",
+            name="metric",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="stats",
+                to="stats.metric",
+            ),
             preserve_default=False,
         ),
         migrations.CreateModel(
-            name='BandStat',
+            name="BandStat",
             fields=[
-                ('stat_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='stats.stat')),
-                ('band', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='band', to='band.band')),
+                (
+                    "stat_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="stats.stat",
+                    ),
+                ),
+                (
+                    "band",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="band",
+                        to="band.band",
+                    ),
+                ),
             ],
-            bases=('stats.stat',),
+            bases=("stats.stat",),
         ),
     ]

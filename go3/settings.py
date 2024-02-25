@@ -35,9 +35,15 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 from multiprocessing import set_start_method  # for task q
 
-env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
-                  CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int)
+env = environ.Env(
+    DEBUG=bool,
+    SENDGRID_SANDBOX_MODE_IN_DEBUG=bool,
+    CAPTCHA_THRESHOLD=float,
+    CALFEED_DYNAMIC_CALFEED=bool,
+    CACHE_USE_FILEBASED=bool,
+    ALLOWED_HOSTS=list,
+    ROUTINE_TASK_KEY=int,
+)
 # reading .env file
 environ.Env.read_env()
 
@@ -55,14 +61,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='123')
+SECRET_KEY = env("SECRET_KEY", default="123")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG', default=True)
+DEBUG = env("DEBUG", default=True)
 
-ALLOWED_HOSTS = env('ALLOWED_HOSTS', default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Application definition
 
@@ -130,7 +136,7 @@ WSGI_APPLICATION = "go3.wsgi.application"
 
 DATABASES = {
     # The db() method is an alias for db_url().
-    'default': env.db(default='sqlite:////tmp/my-tmp-sqlite.db')
+    "default": env.db(default="sqlite:////tmp/my-tmp-sqlite.db")
     # "default": {
     #     "ENGINE": "django.db.backends.sqlite3",
     #     "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
@@ -206,22 +212,22 @@ Q_CLUSTER = {
     "orm": "default",
     "sync": _testing,
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
-    "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
+    "poll": 10,  # turn down the poll rate - doesn't need to be 5 times per second!
 }
 
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
-if env('CACHE_USE_FILEBASED', default=False):
+if env("CACHE_USE_FILEBASED", default=False):
     CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': '/var/tmp/django_cache',
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": "/var/tmp/django_cache",
         }
     }
 else:
     CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         }
     }
 
@@ -229,14 +235,19 @@ else:
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
-SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
+SENDGRID_API_KEY = env("SENDGRID_API_KEY", default="456")
+SENDGRID_SANDBOX_MODE_IN_DEBUG = env("SENDGRID_SANDBOX_MODE_IN_DEBUG", default=True)
 SENDGRID_TRACK_CLICKS_HTML = False
 
 # Calfeed settings
-DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache
-DEFAULT_FILE_STORAGE = env('CALFEED_DEFAULT_FILE_STORAGE', default='django.core.files.storage.FileSystemStorage')
-CALFEED_BASEDIR = env('CALFEED_CALFEED_BASEDIR', default='')
+DYNAMIC_CALFEED = env(
+    "CALFEED_DYNAMIC_CALFEED", default=False
+)  # True to generate calfeed on demand; False for disk cache
+DEFAULT_FILE_STORAGE = env(
+    "CALFEED_DEFAULT_FILE_STORAGE",
+    default="django.core.files.storage.FileSystemStorage",
+)
+CALFEED_BASEDIR = env("CALFEED_CALFEED_BASEDIR", default="")
 
 MESSAGE_TAGS = {
     messages.DEBUG: "alert-info",
@@ -253,10 +264,10 @@ GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 IN_ETL = False
 
 # base URL
-URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
+URL_BASE = env("URL_BASE", default="https://www.gig-o-matic.com")
 
 # for calling routine tasks in go3.tasks
-ROUTINE_TASK_KEY = env('ROUTINE_TASK_KEY',default=1)
+ROUTINE_TASK_KEY = env("ROUTINE_TASK_KEY", default=1)
 
 # try:
 #     from .settings_local import *

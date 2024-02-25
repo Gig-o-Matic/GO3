@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -40,7 +41,7 @@ def AgendaSelector(request):
 
 
 class AgendaView(LoginRequiredMixin, TemplateView):
-    template_name = 'agenda/agenda.html'
+    template_name = "agenda/agenda.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -48,49 +49,48 @@ class AgendaView(LoginRequiredMixin, TemplateView):
 
 
 class CalendarView(LoginRequiredMixin, TemplateView):
-    template_name = 'agenda/calendar.html'
+    template_name = "agenda/calendar.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        m = self.request.GET.get('m', None)
-        y = self.request.GET.get('y', None)
+        m = self.request.GET.get("m", None)
+        y = self.request.GET.get("y", None)
 
         if m and y:
-            m = int(m)+1
-            y = int(y)+1900
-            context['initialDate'] = f'{y}-{m:02d}-01'
+            m = int(m) + 1
+            y = int(y) + 1900
+            context["initialDate"] = f"{y}-{m:02d}-01"
 
         return context
 
 
 class GridView(LoginRequiredMixin, TemplateView):
-    template_name = 'agenda/grid.html'
+    template_name = "agenda/grid.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['year'] = datetime.now().year
-        context['month'] = datetime.now().month-1
+        context["year"] = datetime.now().year
+        context["month"] = datetime.now().month - 1
 
         # find my bands
         m = self.request.user
-        assocs = Assoc.objects.filter(
-            member=m, status=AssocStatusChoices.CONFIRMED)
-        context['band_data'] = json.dumps(
-            [{'id': a.band.id, 'name': a.band.name} for a in assocs])
+        assocs = Assoc.objects.filter(member=m, status=AssocStatusChoices.CONFIRMED)
+        context["band_data"] = json.dumps(
+            [{"id": a.band.id, "name": a.band.name} for a in assocs]
+        )
 
         return context
 
 
 class GridViewHeatmap(LoginRequiredMixin, TemplateView):
-    template_name = 'agenda/grid_heatmap.html'
+    template_name = "agenda/grid_heatmap.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['year'] = self.request.GET.get(
-            'year', None) or datetime.now().year
+        context["year"] = self.request.GET.get("year", None) or datetime.now().year
 
         return context
 

@@ -21,25 +21,47 @@ from . import views
 from . import helpers
 
 urlpatterns = [
-    path('create/<int:bk>', views.CreateView.as_view(), name='gig-create'),
-    path('<int:pk>/', views.DetailView.as_view(), name='gig-detail'),
-    path('<int:pk>/update', views.UpdateView.as_view(), name='gig-update'),
-    path('<int:pk>/comments', views.CommentsView.as_view(), name='gig-comments'),
-    path('<int:pk>/duplicate', views.DuplicateView.as_view(), name='gig-duplicate'),
-    path('<int:pk>/trash', helpers.gig_trash, name='gig-trash'),
-    path('<int:pk>/untrash', helpers.gig_untrash, name='gig-untrash'),
-    path('<int:pk>/archive', helpers.gig_archive, name='gig-archive'),
-    path('<int:pk>/remind', helpers.gig_remind, name='gig-remind'),
-    path('<int:pk>/printallplans', views.PrintPlansView.as_view(), {'all':True}, name='gig-print-all-plans'),
-    path('<int:pk>/printconfirmedplans', views.PrintPlansView.as_view(), {'all':False}, name='gig-print-confirmed-plans'),
-    path('<int:pk>/printsetlist', views.PrintSetlistView.as_view(), name='gig-print-setlist'),
-
-    path('plan/<uuid:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
-    path('plan/<uuid:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),
-    path('plan/<uuid:pk>/comment', helpers.update_plan_comment, name='plan-update-comment'),
-    path('plan/<uuid:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
-
-    path('answer/<uuid:pk>/<int:val>', views.answer, name='gig-answer'),
-
-
+    path("create/<int:bk>", views.CreateView.as_view(), name="gig-create"),
+    path("<int:pk>/", views.DetailView.as_view(), name="gig-detail"),
+    path("<int:pk>/update", views.UpdateView.as_view(), name="gig-update"),
+    path("<int:pk>/comments", views.CommentsView.as_view(), name="gig-comments"),
+    path("<int:pk>/duplicate", views.DuplicateView.as_view(), name="gig-duplicate"),
+    path("<int:pk>/trash", helpers.gig_trash, name="gig-trash"),
+    path("<int:pk>/untrash", helpers.gig_untrash, name="gig-untrash"),
+    path("<int:pk>/archive", helpers.gig_archive, name="gig-archive"),
+    path("<int:pk>/remind", helpers.gig_remind, name="gig-remind"),
+    path(
+        "<int:pk>/printallplans",
+        views.PrintPlansView.as_view(),
+        {"all": True},
+        name="gig-print-all-plans",
+    ),
+    path(
+        "<int:pk>/printconfirmedplans",
+        views.PrintPlansView.as_view(),
+        {"all": False},
+        name="gig-print-confirmed-plans",
+    ),
+    path(
+        "<int:pk>/printsetlist",
+        views.PrintSetlistView.as_view(),
+        name="gig-print-setlist",
+    ),
+    path("plan/<uuid:pk>/update/<int:val>", helpers.update_plan, name="plan-update"),
+    path(
+        "plan/<uuid:pk>/feedback/<int:val>",
+        helpers.update_plan_feedback,
+        name="plan-update-feedback",
+    ),
+    path(
+        "plan/<uuid:pk>/comment",
+        helpers.update_plan_comment,
+        name="plan-update-comment",
+    ),
+    path(
+        "plan/<uuid:pk>/section/<int:val>",
+        helpers.update_plan_section,
+        name="plan-update-section",
+    ),
+    path("answer/<uuid:pk>/<int:val>", views.answer, name="gig-answer"),
 ]

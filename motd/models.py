@@ -14,10 +14,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.db import models
 from django.apps import apps
 
+
 class MOTD(models.Model):
     text = models.TextField(max_length=500, blank=True, null=True)
-    updated = models.DateTimeField(auto_now= True)
-
+    updated = models.DateTimeField(auto_now=True)

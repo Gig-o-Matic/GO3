@@ -3,16 +3,18 @@
 from django.db import migrations
 import uuid
 
+
 def gen_uuid(apps, schema_editor):
-    MyModel = apps.get_model('band', 'Band')
+    MyModel = apps.get_model("band", "Band")
     for row in MyModel.objects.all():
         row.pub_cal_feed_id = uuid.uuid4()
-        row.save(update_fields=['pub_cal_feed_id'])
+        row.save(update_fields=["pub_cal_feed_id"])
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('band', '0005_band_pub_cal_feed_id'),
+        ("band", "0005_band_pub_cal_feed_id"),
     ]
 
     operations = [

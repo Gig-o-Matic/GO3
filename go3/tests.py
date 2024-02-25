@@ -27,11 +27,12 @@ class LanguageTest(TestCase):
         translation.activate("fr")
         self.assertEqual(_("Schedule"), "Liste des concerts ")
 
+
 class ErrorTest(TestCase):
     def setUp(self):
-        self.member = Member.objects.create_user('a@b.com', password='abc')
+        self.member = Member.objects.create_user("a@b.com", password="abc")
 
     def test_404(self):
         self.client.force_login(self.member)
-        response = self.client.get('/404')
+        response = self.client.get("/404")
         self.assertEqual(response.status_code, 404)

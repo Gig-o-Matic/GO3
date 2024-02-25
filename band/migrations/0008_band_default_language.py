@@ -6,13 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('band', '0007_populate_uuid_values'),
+        ("band", "0007_populate_uuid_values"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='band',
-            name='default_language',
-            field=models.CharField(choices=[('de', 'German'), ('en-us', 'English (US)'), ('en-uk', 'English (UK)'), ('fr', 'French'), ('it', 'Italian')], default='en', max_length=200),
+            model_name="band",
+            name="default_language",
+            field=models.CharField(
+                choices=[
+                    ("de", "German"),
+                    ("en-us", "English (US)"),
+                    ("en-uk", "English (UK)"),
+                    ("fr", "French"),
+                    ("it", "Italian"),
+                ],
+                default="en",
+                max_length=200,
+            ),
         ),
     ]

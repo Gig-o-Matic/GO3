@@ -27,8 +27,7 @@ class MetricTypes(models.IntegerChoices):
 
 class Metric(models.Model):
     name = models.TextField(max_length=500, blank=False)
-    kind = models.IntegerField(
-        choices=MetricTypes.choices, default=MetricTypes.DAILY)
+    kind = models.IntegerField(choices=MetricTypes.choices, default=MetricTypes.DAILY)
 
     def register(self, val):
         if self.kind == MetricTypes.ALLTIME:
@@ -45,8 +44,9 @@ class Metric(models.Model):
 
 
 class BandMetric(Metric):
-    band = models.ForeignKey(Band, related_name="metrics",
-                             on_delete=models.CASCADE, null=True)
+    band = models.ForeignKey(
+        Band, related_name="metrics", on_delete=models.CASCADE, null=True
+    )
 
     def __str__(self):
         return "{0} for band {1}".format(super().__str__(), self.band)
@@ -54,7 +54,8 @@ class BandMetric(Metric):
 
 class Stat(models.Model):
     metric = models.ForeignKey(
-        Metric, related_name="stats", on_delete=models.CASCADE, null=False)
+        Metric, related_name="stats", on_delete=models.CASCADE, null=False
+    )
     created = models.DateTimeField(default=timezone.now)
     value = models.IntegerField(blank=True, default=0)
 

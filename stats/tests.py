@@ -14,52 +14,54 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.test import TestCase
 from .models import Metric, Stat, BandMetric
 from .tasks import collect_band_stats
 from gig.tests import GigTestBase
 
+
 class StatsTest(GigTestBase):
 
     def test_band_member_stat(self):
-        """ show that we collect band member stats properly """
+        """show that we collect band member stats properly"""
         self.assoc_user(self.joeuser)
         collect_band_stats()
 
-        m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
+        m = BandMetric.objects.get(name="Number of Active Members", band=self.band)
+        self.assertEqual(m.stats.count(), 1)
+        self.assertEqual(m.stats.first().value, self.band.confirmed_assocs.count())
 
     def test_band_member_stat_delete(self):
-        """ show that we collect band member stats properly after member is deleted """
+        """show that we collect band member stats properly after member is deleted"""
         self.assoc_user(self.joeuser)
         self.joeuser.delete()
 
         collect_band_stats()
 
-        m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(self.band.confirmed_assocs.count(),1)
-        self.assertEqual(m.stats.first().value,self.band.confirmed_assocs.count())
+        m = BandMetric.objects.get(name="Number of Active Members", band=self.band)
+        self.assertEqual(m.stats.count(), 1)
+        self.assertEqual(self.band.confirmed_assocs.count(), 1)
+        self.assertEqual(m.stats.first().value, self.band.confirmed_assocs.count())
 
     def test_band_gigcount_stat(self):
-        """ show that we collect band gig count stats properly """
+        """show that we collect band gig count stats properly"""
         self.assoc_joe_and_create_gig()
         self.create_gig_form(contact=self.joeuser)
         collect_band_stats()
-        m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value,2)
+        m = BandMetric.objects.get(name="Number of Gigs", band=self.band)
+        self.assertEqual(m.stats.count(), 1)
+        self.assertEqual(m.stats.first().value, 2)
 
     def test_band_multiple_stat(self):
-        """ show that every time we collect stats we...get more stats """
+        """show that every time we collect stats we...get more stats"""
         self.assoc_joe_and_create_gig()
         collect_band_stats()
-        m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
-        self.assertEqual(m.stats.count(),1)
+        m = BandMetric.objects.get(name="Number of Gigs", band=self.band)
+        self.assertEqual(m.stats.count(), 1)
 
         self.create_gig_form(contact=self.joeuser)
         collect_band_stats()
-        m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
-        self.assertEqual(m.stats.count(),1) # we just replaced the old one
-        self.assertEqual(m.stats.order_by('created').last().value,2)
+        m = BandMetric.objects.get(name="Number of Gigs", band=self.band)
+        self.assertEqual(m.stats.count(), 1)  # we just replaced the old one
+        self.assertEqual(m.stats.order_by("created").last().value, 2)

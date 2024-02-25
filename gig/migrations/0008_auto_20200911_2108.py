@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gig', '0007_gigcomment'),
+        ("gig", "0007_gigcomment"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='gig',
-            name='is_archived',
+            model_name="gig",
+            name="is_archived",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='historicalgig',
-            name='is_archived',
+            model_name="historicalgig",
+            name="is_archived",
             field=models.BooleanField(default=False),
         ),
     ]

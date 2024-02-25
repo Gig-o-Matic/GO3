@@ -39,12 +39,12 @@ class Band(models.Model):
     member_links = models.TextField(max_length=500, null=True, blank=True)
     thumbnail_img = models.CharField(max_length=500, null=True, blank=True)
 
-    timezone = models.CharField(max_length=200, default='UTC', choices=[
-                                (x, x) for x in pytz.common_timezones])
+    timezone = models.CharField(
+        max_length=200, default="UTC", choices=[(x, x) for x in pytz.common_timezones]
+    )
 
     # # sent to new members when they join
-    new_member_message = models.TextField(
-        max_length=500, null=True, blank=True)
+    new_member_message = models.TextField(max_length=500, null=True, blank=True)
 
     share_gigs = models.BooleanField(default=True)
     anyone_can_manage_gigs = models.BooleanField(default=True)
@@ -57,10 +57,11 @@ class Band(models.Model):
 
     @property
     def feedback_strings(self):
-        return self.plan_feedback.split('\n')
+        return self.plan_feedback.split("\n")
 
     status = models.IntegerField(
-        choices=BandStatusChoices.choices, default=BandStatusChoices.ACTIVE)
+        choices=BandStatusChoices.choices, default=BandStatusChoices.ACTIVE
+    )
 
     creation_date = models.DateField(auto_now_add=True)
     last_activity = models.DateTimeField(auto_now=True)
@@ -71,23 +72,39 @@ class Band(models.Model):
     # # flags to determine whether to recompute calendar feeds
     # band_cal_feed_dirty = models.BooleanField(default=True)
     pub_cal_feed_dirty = models.BooleanField(default=True)
-    pub_cal_feed_id = models.UUIDField(
-        unique=True, default=uuid.uuid4, editable=False)
+    pub_cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
 
     default_language = models.CharField(
-        choices=LANGUAGES, max_length=200, default='en-us')
+        choices=LANGUAGES, max_length=200, default="en-us"
+    )
 
     def has_member(self, member):
-        return member and not member.is_anonymous and self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1
+        return (
+            member
+            and not member.is_anonymous
+            and self.assocs.filter(
+                member=member, status=AssocStatusChoices.CONFIRMED
+            ).count()
+            == 1
+        )
 
     def is_admin(self, member):
         not_anon = not member.is_anonymous
-        is_confirmed = self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True).count() == 1
+        is_confirmed = (
+            self.assocs.filter(
+                member=member, status=AssocStatusChoices.CONFIRMED, is_admin=True
+            ).count()
+            == 1
+        )
         is_super = member.is_superuser
         return member and (is_super or (not_anon and is_confirmed))
 
     def is_editor(self, member):
-        return member and not member.is_anonymous and (self.is_admin(member) or member.is_superuser)
+        return (
+            member
+            and not member.is_anonymous
+            and (self.is_admin(member) or member.is_superuser)
+        )
 
     @property
     def all_assocs(self):
@@ -95,11 +112,18 @@ class Band(models.Model):
 
     @property
     def confirmed_assocs(self):
-        return self.assocs.filter(status=AssocStatusChoices.CONFIRMED, member__status=MemberStatusChoices.ACTIVE)
+        return self.assocs.filter(
+            status=AssocStatusChoices.CONFIRMED,
+            member__status=MemberStatusChoices.ACTIVE,
+        )
 
     @property
     def confirmed_members(self):
-        return apps.get_model('member', 'Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
+        return apps.get_model("member", "Member").objects.filter(
+            assocs__status=AssocStatusChoices.CONFIRMED,
+            assocs__band=self,
+            status=MemberStatusChoices.ACTIVE,
+        )
 
     @property
     def band_admins(self):
@@ -130,51 +154,81 @@ class SectionManager(models.Manager):
 class Section(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(default=0)
-    band = models.ForeignKey(
-        Band, related_name="sections", on_delete=models.CASCADE)
+    band = models.ForeignKey(Band, related_name="sections", on_delete=models.CASCADE)
 
     is_default = models.BooleanField(default=False)
 
     objects = SectionManager()
 
     def __str__(self):
-        return '{0} in {1}'.format(self.name if self.name else 'No Section', self.band.name)
+        return "{0} in {1}".format(
+            self.name if self.name else "No Section", self.band.name
+        )
 
     class Meta:
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class MemberAssocManager(models.Manager):
-    """ functions on the Assoc class that are queries for members """
+    """functions on the Assoc class that are queries for members"""
 
     def confirmed_count(self, member):
-        """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(member=member, status=AssocStatusChoices.CONFIRMED).count()
+        """returns the asocs for bands we're confirmed for"""
+        return (
+            super()
+            .get_queryset()
+            .filter(member=member, status=AssocStatusChoices.CONFIRMED)
+            .count()
+        )
 
     def confirmed_assocs(self, member):
-        """ returns the asocs for bands we're confirmed for """
-        return super().get_queryset().filter(member=member, member__status=MemberStatusChoices.ACTIVE, status=AssocStatusChoices.CONFIRMED)
+        """returns the asocs for bands we're confirmed for"""
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                member=member,
+                member__status=MemberStatusChoices.ACTIVE,
+                status=AssocStatusChoices.CONFIRMED,
+            )
+        )
 
     def add_gig_assocs(self, member):
-        """ return the assocs for bands the member can create gigs for """
-        return super().get_queryset().filter(
-            Q(member=member) & Q(status=AssocStatusChoices.CONFIRMED) & (
-                Q(member__is_superuser=True) | Q(is_admin=True) | Q(
-                    band__anyone_can_create_gigs=True)
+        """return the assocs for bands the member can create gigs for"""
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                Q(member=member)
+                & Q(status=AssocStatusChoices.CONFIRMED)
+                & (
+                    Q(member__is_superuser=True)
+                    | Q(is_admin=True)
+                    | Q(band__anyone_can_create_gigs=True)
+                )
             )
         )
 
 
 class Assoc(models.Model):
-    band = models.ForeignKey(
-        Band, related_name="assocs", on_delete=models.CASCADE)
+    band = models.ForeignKey(Band, related_name="assocs", on_delete=models.CASCADE)
     member = models.ForeignKey(
-        "member.Member", verbose_name="member", related_name="assocs", on_delete=models.CASCADE)
+        "member.Member",
+        verbose_name="member",
+        related_name="assocs",
+        on_delete=models.CASCADE,
+    )
     default_section = models.ForeignKey(
-        Section, null=True, blank=True, related_name="default_assocs", on_delete=models.DO_NOTHING)
+        Section,
+        null=True,
+        blank=True,
+        related_name="default_assocs",
+        on_delete=models.DO_NOTHING,
+    )
 
     status = models.IntegerField(
-        choices=AssocStatusChoices.choices, default=AssocStatusChoices.NOT_CONFIRMED)
+        choices=AssocStatusChoices.choices, default=AssocStatusChoices.NOT_CONFIRMED
+    )
 
     is_admin = models.BooleanField(default=False)
     is_occasional = models.BooleanField(default=False)

@@ -19,9 +19,9 @@ from django.apps import AppConfig
 
 
 class MemberConfig(AppConfig):
-    name = 'member'
+    name = "member"
 
     @staticmethod
     def ready():
-        print("loaded member signals") #todo make debug
+        print("loaded member signals")  # todo make debug
         from . import signals

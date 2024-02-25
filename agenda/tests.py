@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from gig.tests import GigTestBase
 from django.test import Client
 from django.urls import reverse
@@ -29,12 +30,12 @@ class AgendaTest(GigTestBase):
         c.force_login(self.joeuser)
 
         # first 'page' of gigs should have 10
-        response = c.get(f'/plans/noplans/1')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 10)
+        response = c.get(f"/plans/noplans/1")
+        self.assertEqual(response.content.decode("ascii").count("xyzzy"), 10)
 
         # second 'page' of gigs should have 9
-        response = c.get(f'/plans/noplans/2')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
+        response = c.get(f"/plans/noplans/2")
+        self.assertEqual(response.content.decode("ascii").count("xyzzy"), 9)
 
 
 class GridTest(GigTestBase):
@@ -46,22 +47,24 @@ class GridTest(GigTestBase):
         c.force_login(self.joeuser)
 
         # see that the band has users
-        response = c.post(reverse('grid-section-members'),
-                          data={'band': self.band.id})
+        response = c.post(reverse("grid-section-members"), data={"band": self.band.id})
         self.assertEqual(response.status_code, 200)
         data = loads(response.content)
         self.assertEqual(len(data), 1)
         band = data[0]
         self.assertTrue(type(band) == dict)
-        self.assertTrue('members' in band.keys())
-        self.assertTrue(len(band['members']) == 2)
+        self.assertTrue("members" in band.keys())
+        self.assertTrue(len(band["members"]) == 2)
 
         # see the right number of gigs
-        response = c.post(reverse('grid-gigs'), data={
-            'band': self.band.id,
-            'month': 0,  # need this to be month-1 because that's how it works in the javascript
-            'year': 2100,
-        })
+        response = c.post(
+            reverse("grid-gigs"),
+            data={
+                "band": self.band.id,
+                "month": 0,  # need this to be month-1 because that's how it works in the javascript
+                "year": 2100,
+            },
+        )
         self.assertEqual(response.status_code, 200)
         gigs = loads(response.content)
         self.assertEqual(len(gigs), 19)

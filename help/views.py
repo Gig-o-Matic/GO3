@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from member.models import Member
 from django.shortcuts import render
 from django.views.generic.edit import FormView
@@ -23,41 +24,49 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import BandRequestForm
 from lib import email
 
+
 @login_required
 def help(request):
-    return render(request, 'help/help.html')
+    return render(request, "help/help.html")
+
 
 @login_required
 def privacy(request):
-    return render(request, 'help/privacy.html')
+    return render(request, "help/privacy.html")
+
 
 @login_required
 def credits(request):
-    return render(request, 'help/credits.html')
+    return render(request, "help/credits.html")
+
 
 @login_required
 def changelog(request):
-    return render(request, 'help/changelog.html')
+    return render(request, "help/changelog.html")
+
 
 class CalfeedView(LoginRequiredMixin, TemplateView):
-    template_name = 'help/calfeed.html'
+    template_name = "help/calfeed.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        member = Member.objects.get(id=self.kwargs['pk'])
-        context['member'] = member
+        member = Member.objects.get(id=self.kwargs["pk"])
+        context["member"] = member
         return context
 
 
 def whatis(request):
-    return render(request, 'help/whatis.html')
+    return render(request, "help/whatis.html")
+
 
 class BandRequestView(FormView):
-    template_name = 'help/band_request.html'
+    template_name = "help/band_request.html"
     form_class = BandRequestForm
 
     def form_valid(self, form):
-        recipient = email.EmailRecipient(email='gigomatic.superuser@gmail.com')
-        message = email.prepare_email(recipient, 'email/band_request.md', form.cleaned_data)
+        recipient = email.EmailRecipient(email="gigomatic.superuser@gmail.com")
+        message = email.prepare_email(
+            recipient, "email/band_request.md", form.cleaned_data
+        )
         email.send_messages_async([message])
-        return render(self.request, 'help/confirm_band_request.html')
+        return render(self.request, "help/confirm_band_request.html")

@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from .models import Gig, Plan
@@ -26,7 +27,7 @@ from go3.settings import IN_ETL
 
 @receiver(post_save, sender=Gig)
 def create_member_plans(sender, instance, created, **kwargs):
-    """ makes sure every member has a plan set for a newly created gig """
+    """makes sure every member has a plan set for a newly created gig"""
     if created:
         _ = instance.member_plans
 
@@ -34,12 +35,12 @@ def create_member_plans(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Gig)
 def set_calfeed_dirty(sender, instance, created, **kwargs):
     if IN_ETL is False:
-        async_task('band.helpers.set_calfeeds_dirty', instance.band)
+        async_task("band.helpers.set_calfeeds_dirty", instance.band)
 
 
 @receiver(pre_save, sender=Plan)
 def update_plan_section(sender, instance, **kwargs):
-    """ set the section to the plan_section, unless there isn't one - in that case use the member's default """
+    """set the section to the plan_section, unless there isn't one - in that case use the member's default"""
     instance.section = instance.plan_section or instance.assoc.section
 
     # if our answer changes from DONT_KNOW to anything, make sure we don't have a snooze reminder set

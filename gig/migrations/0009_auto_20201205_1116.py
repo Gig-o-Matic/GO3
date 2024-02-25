@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gig', '0008_auto_20200911_2108'),
+        ("gig", "0008_auto_20200911_2108"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='plan',
-            name='status',
-            field=models.IntegerField(choices=[(0, 'No Plan'), (1, 'Definitely'), (2, 'Probably'), (3, "Don't Know"), (4, 'Probably Not'), (5, "Can't Do It"), (6, 'Not Interested')], default=0),
+            model_name="plan",
+            name="status",
+            field=models.IntegerField(
+                choices=[
+                    (0, "No Plan"),
+                    (1, "Definitely"),
+                    (2, "Probably"),
+                    (3, "Don't Know"),
+                    (4, "Probably Not"),
+                    (5, "Can't Do It"),
+                    (6, "Not Interested"),
+                ],
+                default=0,
+            ),
         ),
     ]

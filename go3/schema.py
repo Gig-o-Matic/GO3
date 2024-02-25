@@ -26,11 +26,9 @@ class MemberType(DjangoObjectType):
 
 class Query(graphene.ObjectType):
     all_bands = graphene.List(AssocType)
-    band_by_name = graphene.Field(
-        BandType, name=graphene.String(required=True))
+    band_by_name = graphene.Field(BandType, name=graphene.String(required=True))
     all_members = graphene.List(MemberType)
-    member_by_email = graphene.Field(
-        MemberType, email=graphene.String(required=True))
+    member_by_email = graphene.Field(MemberType, email=graphene.String(required=True))
 
     def resolve_all_bands(self, info):
         user = info.context.user
@@ -43,37 +41,32 @@ class Query(graphene.ObjectType):
         else:
             return assocs
 
-    ''' superuser only '''
+    """ superuser only """
 
     def resolve_band_by_name(self, info, name):
         try:
             if info.context.user.is_superuser:
                 return Band.objects.get(name=name)
             else:
-                raise GraphQLError(
-                    'User is not authorized for this operation.')
+                raise GraphQLError("User is not authorized for this operation.")
         except Band.DoesNotExist:
             # return None
-            raise GraphQLError(
-                "Requested band '" + name + "' does not exist.")
+            raise GraphQLError("Requested band '" + name + "' does not exist.")
 
     def resolve_all_members(self, info):
         if info.context.user.is_superuser:
             return Member.objects.all()
         else:
-            raise GraphQLError(
-                'User is not authorized for this operation.')
+            raise GraphQLError("User is not authorized for this operation.")
 
     def resolve_member_by_email(self, info, email):
         try:
             if info.context.user.is_superuser:
                 return Member.objects.get(email=email)
             else:
-                raise GraphQLError(
-                    'User is not authorized for this operation.')
+                raise GraphQLError("User is not authorized for this operation.")
         except Member.DoesNotExist:
-            raise GraphQLError(
-                "Requested member '" + email + "' does not exist.")
+            raise GraphQLError("Requested member '" + email + "' does not exist.")
 
 
 schema = graphene.Schema(query=Query)

@@ -14,13 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.apps import AppConfig
 
 
 class MotdConfig(AppConfig):
-    name = 'motd'
+    name = "motd"
 
     @staticmethod
     def ready():
-        print("loaded motd signals") # todo make debug pring
+        print("loaded motd signals")  # todo make debug pring
         from . import signals

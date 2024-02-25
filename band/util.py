@@ -14,12 +14,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.db import models
+
 
 class BandStatusChoices(models.IntegerChoices):
     ACTIVE = 0, "Active"
     DORMANT = 1, "Dormant"
     DELETED = 2, "Deleted"
+
 
 class AssocStatusChoices(models.IntegerChoices):
     NOT_CONFIRMED = 0, "Not Confirmed"

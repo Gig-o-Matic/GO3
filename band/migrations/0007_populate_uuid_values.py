@@ -4,17 +4,17 @@ from django.db import migrations
 from django.db import models
 import uuid
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('band', '0006_remove_uuid_null'),
+        ("band", "0006_remove_uuid_null"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='band',
-            name='pub_cal_feed_id',
+            model_name="band",
+            name="pub_cal_feed_id",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
-
     ]

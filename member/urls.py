@@ -21,31 +21,37 @@ from . import helpers
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
 urlpatterns = [
-    path('', views.DetailView.as_view(), name='member-detail'),
-    path('<int:pk>/', views.DetailView.as_view(), name='member-detail'),
-    path('<int:pk>/update/', views.UpdateView.as_view(), name='member-update'),
-    path('<int:pk>/preferences/update/', views.PreferencesUpdateView.as_view(), name='member-prefs-update'),
-    path('password-change/', PasswordChangeView.as_view(), name='member-password-change'),
-    path('password-change/done/', views.DetailView.as_view(), name='password_change_done'),
-    path('member-password-reset/', views.CaptchaPasswordResetView.as_view(), name='member-password-reset'),
-
-    path('<int:pk>/assocs/', views.AssocsView.as_view(), name='member-assocs'),
-    path('<int:pk>/otherbands/', views.OtherBandsView.as_view(), name='member-otherbands'),
-
-    path('send-test-email', helpers.send_test_email, name='member-test-email'),
-
-    path('<int:pk>/motd_seen',helpers.motd_seen),
-
-    path('calfeed/<uuid:pk>', helpers.calfeed, name='member-calfeed'),
-
-    path('invite/<int:bk>', views.InviteView.as_view(), name='member-invite'),
-    path('invite/<uuid:pk>', views.accept_invite, name='member-invite-accept'),
-    path('invite/delete/<uuid:pk>', views.delete_invite, name='member-invite-delete'),
-    path('create/<uuid:pk>', views.MemberCreateView.as_view(), name='member-create'),
-    path('signup', views.SignupView.as_view(), name='member-signup'),
-
-    path('email/<uuid:pk>', views.confirm_email, name='member-confirm-email'),
-
-    path('<int:pk>/delete', helpers.delete_member, name='member-delete'),
-
+    path("", views.DetailView.as_view(), name="member-detail"),
+    path("<int:pk>/", views.DetailView.as_view(), name="member-detail"),
+    path("<int:pk>/update/", views.UpdateView.as_view(), name="member-update"),
+    path(
+        "<int:pk>/preferences/update/",
+        views.PreferencesUpdateView.as_view(),
+        name="member-prefs-update",
+    ),
+    path(
+        "password-change/", PasswordChangeView.as_view(), name="member-password-change"
+    ),
+    path(
+        "password-change/done/", views.DetailView.as_view(), name="password_change_done"
+    ),
+    path(
+        "member-password-reset/",
+        views.CaptchaPasswordResetView.as_view(),
+        name="member-password-reset",
+    ),
+    path("<int:pk>/assocs/", views.AssocsView.as_view(), name="member-assocs"),
+    path(
+        "<int:pk>/otherbands/", views.OtherBandsView.as_view(), name="member-otherbands"
+    ),
+    path("send-test-email", helpers.send_test_email, name="member-test-email"),
+    path("<int:pk>/motd_seen", helpers.motd_seen),
+    path("calfeed/<uuid:pk>", helpers.calfeed, name="member-calfeed"),
+    path("invite/<int:bk>", views.InviteView.as_view(), name="member-invite"),
+    path("invite/<uuid:pk>", views.accept_invite, name="member-invite-accept"),
+    path("invite/delete/<uuid:pk>", views.delete_invite, name="member-invite-delete"),
+    path("create/<uuid:pk>", views.MemberCreateView.as_view(), name="member-create"),
+    path("signup", views.SignupView.as_view(), name="member-signup"),
+    path("email/<uuid:pk>", views.confirm_email, name="member-confirm-email"),
+    path("<int:pk>/delete", helpers.delete_member, name="member-delete"),
 ]

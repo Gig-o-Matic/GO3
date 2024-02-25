@@ -7,18 +7,18 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gig', '0003_historicalgig'),
+        ("gig", "0003_historicalgig"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='gig',
-            name='cal_feed_gig',
+            model_name="gig",
+            name="cal_feed_gig",
             field=models.UUIDField(default=uuid.uuid4, editable=False),
         ),
         migrations.AddField(
-            model_name='historicalgig',
-            name='cal_feed_gig',
+            model_name="historicalgig",
+            name="cal_feed_gig",
             field=models.UUIDField(default=uuid.uuid4, editable=False),
         ),
     ]
