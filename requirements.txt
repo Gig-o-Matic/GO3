@@ -30,7 +30,7 @@ MarkupSafe==2.0.1
 mccabe==0.6.1
 pipupgrade==1.9.0
 promise==2.3
-protobuf==3.17.3
+protobuf==3.18.3
 pycodestyle==2.7.0
 pyfakefs==4.5.0
 pylint==2.9.6
