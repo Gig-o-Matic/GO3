@@ -10,16 +10,20 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - migration
-      - db
+      migration:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
   worker:
     image: go3
     command: python manage.py qcluster
     environment:
       DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
     depends_on:
-      - migration
-      - db
+      migration:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
   db:
     image: mysql:8
     environment:
@@ -27,6 +31,10 @@ services:
       MYSQL_USER: gig-o-matic
       MYSQL_PASSWORD: gig-o-matic
       MYSQL_DATABASE: gig-o-matic
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    volumes:
+      - "db_data:/var/lib/mysql"
     ports:
       - "13307:3306"
   migration:
@@ -35,4 +43,8 @@ services:
     environment:
       DATABASE_URL: "mysql://gig-o-matic:gig-o-matic@db:3306/gig-o-matic"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
