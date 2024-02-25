@@ -1,5 +1,7 @@
 # gig-o-matic
 
+[![Testing](https://github.com/Gig-o-Matic/GO3/actions/workflows/testing.yml/badge.svg)](https://github.com/Gig-o-Matic/GO3/actions/workflows/testing.yml)
+
 ## Local development
 
 This project is targeted at Python 3.8.  The required packages can be installed with [poetry](python-poetry.org)
