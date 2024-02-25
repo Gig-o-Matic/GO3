@@ -130,7 +130,7 @@ WSGI_APPLICATION = "go3.wsgi.application"
 
 DATABASES = {
     # The db() method is an alias for db_url().
-    "default": env.db_url()
+    "default": env.db_url(default='sqlite:////tmp/my-tmp-sqlite.db')
     #    {
     #        "ENGINE": "django.db.backends.mysql",
     #        "NAME": "gig-o-matic",
