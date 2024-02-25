@@ -31,6 +31,7 @@ class PreferencesInline(admin.StackedInline):
     classes = ['collapse']
     verbose_name_plural = "Preferences"
 
+@admin.register(Member)
 class MemberAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
@@ -73,6 +74,5 @@ class MemberAdmin(BaseUserAdmin):
     ordering = ('email',)
     filter_horizontal = ()
 
-admin.site.register(Member, MemberAdmin)
 admin.site.register(MemberPreferences)
 admin.site.register(Invite)
