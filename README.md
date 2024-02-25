@@ -1,6 +1,7 @@
 # murg-o-matic
 
 [![Run Tests](https://github.com/lamurgadeaustin/go3/actions/workflows/testing.yml/badge.svg)](https://github.com/lamurgadeaustin/go3/actions/workflows/testing.yml)
+[![Lint](https://github.com/lamurgadeaustin/go3/actions/workflows/lint.yml/badge.svg)](https://github.com/lamurgadeaustin/go3/actions/workflows/lint.yml)
 
 ## Local development
 
