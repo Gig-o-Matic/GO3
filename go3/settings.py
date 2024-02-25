@@ -61,6 +61,7 @@ SECRET_KEY = env('SECRET_KEY', default='123')
 DEBUG = env('DEBUG', default=True)
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', default=["localhost", "127.0.0.1"])
+CSRF_TRUSTED_ORIGINS = list(map(lambda host: f"https://{host}", ALLOWED_HOSTS))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
