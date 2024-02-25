@@ -20,28 +20,28 @@ from band.models import Band
 from .tasks import collect_band_stats
 from django.http import HttpResponse
 
+
 def get_band_stats(the_band):
-    """ return the stats that exist for a band """
+    """return the stats that exist for a band"""
 
     the_stats = []
 
     the_metrics = BandMetric.objects.filter(band=the_band)
     for m in the_metrics:
-        the_stat = m.stats.latest('created')
-        the_stats.append({
-            'name': m.name,
-            'date': the_stat.created,
-            'value': the_stat.value
-        })
+        the_stat = m.stats.latest("created")
+        the_stats.append(
+            {"name": m.name, "date": the_stat.created, "value": the_stat.value}
+        )
     return the_stats
 
+
 def get_gigs_over_time_stats(the_band):
-    the_metric = BandMetric.objects.filter(band=the_band, name='Number of Gigs').first()
+    the_metric = BandMetric.objects.filter(band=the_band, name="Number of Gigs").first()
     if the_metric is None:
         return []
     the_stats = the_metric.stats
-    return [ [s.created, s.value] for s in the_stats.all()]
-    
+    return [[s.created, s.value] for s in the_stats.all()]
+
 
 def test_stats(request):
     collect_band_stats()
@@ -49,22 +49,21 @@ def test_stats(request):
 
 
 def get_all_stats():
-    """ return stats for the whole gig-o """
+    """return stats for the whole gig-o"""
     the_stats = []
 
     the_metrics = BandMetric.objects.filter(band=None)
     for m in the_metrics:
-        the_stat = m.stats.latest('created')
-        the_stats.append({
-            'name': m.name,
-            'date': the_stat.created,
-            'value': the_stat.value
-        })
+        the_stat = m.stats.latest("created")
+        the_stats.append(
+            {"name": m.name, "date": the_stat.created, "value": the_stat.value}
+        )
     return the_stats
 
+
 def get_all_gigs_over_time_stats():
-    the_metric = BandMetric.objects.filter(band=None, name='Number of Gigs').first()
+    the_metric = BandMetric.objects.filter(band=None, name="Number of Gigs").first()
     if the_metric is None:
         return []
     the_stats = the_metric.stats
-    return [ [s.created, s.value] for s in the_stats.all()]
+    return [[s.created, s.value] for s in the_stats.all()]

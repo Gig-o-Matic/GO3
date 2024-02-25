@@ -18,8 +18,9 @@
 from django.apps import AppConfig
 import logging
 
+
 class BandConfig(AppConfig):
-    name = 'band'
+    name = "band"
 
     @staticmethod
     def ready():

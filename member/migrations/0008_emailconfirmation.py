@@ -9,17 +9,49 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0007_auto_20210313_1431'),
+        ("member", "0007_auto_20210313_1431"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EmailConfirmation',
+            name="EmailConfirmation",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('new_email', models.EmailField(max_length=254, verbose_name='new email')),
-                ('language', models.CharField(choices=[('de', 'German'), ('en-us', 'English (US)'), ('en-uk', 'English (UK)'), ('fr', 'French'), ('it', 'Italian')], default='en', max_length=200)),
-                ('member', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='pending_email', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "new_email",
+                    models.EmailField(max_length=254, verbose_name="new email"),
+                ),
+                (
+                    "language",
+                    models.CharField(
+                        choices=[
+                            ("de", "German"),
+                            ("en-us", "English (US)"),
+                            ("en-uk", "English (UK)"),
+                            ("fr", "French"),
+                            ("it", "Italian"),
+                        ],
+                        default="en",
+                        max_length=200,
+                    ),
+                ),
+                (
+                    "member",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pending_email",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

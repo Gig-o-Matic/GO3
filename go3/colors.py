@@ -15,4 +15,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-the_colors = ['#ffffff','#aa4657','#7bb92d','#86a2b7','#ff9507','#f2e77e','#af6fae','#9a9a9a','#000000']
+the_colors = [
+    "#ffffff",
+    "#aa4657",
+    "#7bb92d",
+    "#86a2b7",
+    "#ff9507",
+    "#f2e77e",
+    "#af6fae",
+    "#9a9a9a",
+    "#000000",
+]

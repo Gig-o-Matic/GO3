@@ -14,49 +14,56 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.core.management.base import BaseCommand
 from django_q.models import Schedule
 
 
 class Command(BaseCommand):
-    help = 'Sets up gig-o-matic scheduled commands'
+    help = "Sets up gig-o-matic scheduled commands"
 
     def handle(self, *args, **kwargs):
         # get rid of whatever's there
         Schedule.objects.all().delete()
 
-        Schedule.objects.create(name='collect band stats',
-                                func='stats.tasks.collect_band_stats',
-                                schedule_type=Schedule.DAILY,
-                                repeats=-1
-                                )
+        Schedule.objects.create(
+            name="collect band stats",
+            func="stats.tasks.collect_band_stats",
+            schedule_type=Schedule.DAILY,
+            repeats=-1,
+        )
 
-        Schedule.objects.create(name='update all member calfeeds',
-                                func='member.tasks.update_all_calfeeds',
-                                schedule_type=Schedule.HOURLY,
-                                repeats=-1
-                                )
+        Schedule.objects.create(
+            name="update all member calfeeds",
+            func="member.tasks.update_all_calfeeds",
+            schedule_type=Schedule.HOURLY,
+            repeats=-1,
+        )
 
-        Schedule.objects.create(name='update all band calfeeds',
-                                func='band.tasks.update_all_calfeeds',
-                                schedule_type=Schedule.HOURLY,
-                                repeats=-1
-                                )
+        Schedule.objects.create(
+            name="update all band calfeeds",
+            func="band.tasks.update_all_calfeeds",
+            schedule_type=Schedule.HOURLY,
+            repeats=-1,
+        )
 
-        Schedule.objects.create(name='delete old trashed gigs',
-                                func='gig.tasks.delete_old_trashed_gigs',
-                                schedule_type=Schedule.DAILY,
-                                repeats=-1
-                                )
+        Schedule.objects.create(
+            name="delete old trashed gigs",
+            func="gig.tasks.delete_old_trashed_gigs",
+            schedule_type=Schedule.DAILY,
+            repeats=-1,
+        )
 
-        Schedule.objects.create(name='archive old gigs',
-                                func='gig.tasks.archive_old_gigs',
-                                schedule_type=Schedule.DAILY,
-                                repeats=-1
-                                )
+        Schedule.objects.create(
+            name="archive old gigs",
+            func="gig.tasks.archive_old_gigs",
+            schedule_type=Schedule.DAILY,
+            repeats=-1,
+        )
 
-        Schedule.objects.create(name='send snooze reminders',
-                                func='gig.tasks.send_snooze_reminders',
-                                schedule_type=Schedule.DAILY,
-                                repeats=-1
-                                )
+        Schedule.objects.create(
+            name="send snooze reminders",
+            func="gig.tasks.send_snooze_reminders",
+            schedule_type=Schedule.DAILY,
+            repeats=-1,
+        )

@@ -1,1 +1,1 @@
-TIME_INPUT_FORMATS = ['%I:%M%p']
+TIME_INPUT_FORMATS = ["%I:%M%p"]

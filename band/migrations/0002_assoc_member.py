@@ -10,14 +10,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('band', '0001_initial'),
+        ("band", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='assoc',
-            name='member',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assocs', to=settings.AUTH_USER_MODEL, verbose_name='member'),
+            model_name="assoc",
+            name="member",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="assocs",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="member",
+            ),
         ),
     ]

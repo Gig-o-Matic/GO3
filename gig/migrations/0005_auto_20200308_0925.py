@@ -7,26 +7,26 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gig', '0004_auto_20200307_2307'),
+        ("gig", "0004_auto_20200307_2307"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='gig',
-            name='cal_feed_gig',
+            model_name="gig",
+            name="cal_feed_gig",
         ),
         migrations.RemoveField(
-            model_name='historicalgig',
-            name='cal_feed_gig',
+            model_name="historicalgig",
+            name="cal_feed_gig",
         ),
         migrations.AddField(
-            model_name='gig',
-            name='cal_feed_id',
+            model_name="gig",
+            name="cal_feed_id",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AddField(
-            model_name='historicalgig',
-            name='cal_feed_id',
+            model_name="historicalgig",
+            name="cal_feed_id",
             field=models.UUIDField(db_index=True, default=uuid.uuid4, editable=False),
         ),
     ]

@@ -7,14 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('band', '0013_alter_band_thumbnail_img'),
-        ('stats', '0009_auto_20210316_2201'),
+        ("band", "0013_alter_band_thumbnail_img"),
+        ("stats", "0009_auto_20210316_2201"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='bandmetric',
-            name='band',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='metrics', to='band.band'),
+            model_name="bandmetric",
+            name="band",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="metrics",
+                to="band.band",
+            ),
         ),
     ]

@@ -19,22 +19,26 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.template.response import TemplateResponse
 
+
 def error404(request, exception):
-    data={'error':'404'}
-    return render(request,'base/error.html', data, status=404)
+    data = {"error": "404"}
+    return render(request, "base/error.html", data, status=404)
+
 
 def error500(request):
-    data={'error':'500'}
-    return render(request,'base/error.html', data, status=500)
+    data = {"error": "500"}
+    return render(request, "base/error.html", data, status=500)
+
 
 class TemplateResponse404(TemplateResponse):
     status_code = 404
-    
+
+
 class test404(TemplateView):
     response_class = TemplateResponse404
-    template_name='base/error.html'
+    template_name = "base/error.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['error'] = 404
+        context["error"] = 404
         return context
-

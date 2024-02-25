@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from band.models import Band
 from band.helpers import update_band_calfeed
 from django_q.tasks import async_task
@@ -21,7 +22,7 @@ from django.conf import settings
 
 
 def update_all_calfeeds():
-    """ request handler for updating cached calfeeds - should be called on a schedule """
+    """request handler for updating cached calfeeds - should be called on a schedule"""
 
     if settings.DYNAMIC_CALFEED:
         return

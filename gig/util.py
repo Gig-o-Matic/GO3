@@ -14,8 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
 
 class PlanStatusChoices(models.IntegerChoices):
     NO_PLAN = 0, _("No Plan")
@@ -25,6 +27,7 @@ class PlanStatusChoices(models.IntegerChoices):
     PROBABLY_NOT = 4, _("Probably Not")
     CANT_DO_IT = 5, _("Can't Do It")
     NOT_INTERESTED = 6, _("Not Interested")
+
 
 class GigStatusChoices(models.IntegerChoices):
     UNKNOWN = 0, _("Unknown")

@@ -30,38 +30,39 @@ from lib.email import EmailRecipient
 from lib.caldav import delete_calfeed
 import uuid
 
+
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
         """
         Create and save a user with the given email, and password.
         """
         if not email:
-            raise ValueError('The given email must be set')
+            raise ValueError("The given email must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None,  **extra_fields):
+    def create_user(self, email, password=None, **extra_fields):
         """
         Creates and saves a User with the given email and password.
         """
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password=None,  **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         """
         Creates and saves a superuser with the given email and password.
         """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
 
@@ -74,10 +75,10 @@ class MemberManager(BaseUserManager):
 
 
 class Member(AbstractUser):
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(_("email address"), unique=True)
 
     username = models.CharField(max_length=200)
-    nickname = models.CharField(max_length=100, blank=True )
+    nickname = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=100, blank=True)
     statement = models.CharField(max_length=500, blank=True)
     motd_dirty = models.BooleanField(default=True)
@@ -89,7 +90,9 @@ class Member(AbstractUser):
     cal_feed_dirty = models.BooleanField(default=True)
     cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
 
-    status = models.IntegerField(choices=MemberStatusChoices.choices, default=MemberStatusChoices.ACTIVE)
+    status = models.IntegerField(
+        choices=MemberStatusChoices.choices, default=MemberStatusChoices.ACTIVE
+    )
 
     @property
     def display_name(self):
@@ -106,26 +109,30 @@ class Member(AbstractUser):
 
     @property
     def band_count(self):
-        """ return number of bands for which I'm confirmed """
+        """return number of bands for which I'm confirmed"""
         return Assoc.member_assocs.confirmed_count(self)
 
     @property
     def confirmed_assocs(self):
-        """ return gigs for bands the member is confirmed """
+        """return gigs for bands the member is confirmed"""
         return Assoc.member_assocs.confirmed_assocs(self)
 
     @property
     def add_gig_assocs(self):
-        """ return the assocs for bands the member can create gigs for """
+        """return the assocs for bands the member can create gigs for"""
         return Assoc.member_assocs.add_gig_assocs(self)
 
     @property
     def future_plans(self):
-        return Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).exclude(
+            status=PlanStatusChoices.NO_PLAN
+        )
 
     @property
     def future_noplans(self):
-        return Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        return Plan.member_plans.future_plans(self).filter(
+            status=PlanStatusChoices.NO_PLAN
+        )
 
     @property
     def motd(self):
@@ -136,52 +143,59 @@ class Member(AbstractUser):
         return the_motd.text if the_motd else None
 
     def as_email_recipient(self):
-        return EmailRecipient(name=self.username, email=self.email,
-                              language=self.preferences.language) # pylint: disable=no-member
+        return EmailRecipient(
+            name=self.username, email=self.email, language=self.preferences.language
+        )  # pylint: disable=no-member
 
     def delete(self, *args, **kwargs):
-        """ when we get deleted, remove plans for future gigs and set us to deleted """
+        """when we get deleted, remove plans for future gigs and set us to deleted"""
         Plan.member_plans.future_plans(self).filter(gig__is_archived=False).delete()
         delete_calfeed(self.cal_feed_id)
         self.status = MemberStatusChoices.DELETED
         self.is_active = False
         self.email = "user_{0}@gig-o-matic.com".format(self.id)
         self.username = "deleted user"
-        self.nickname = ''
-        self.phone = ''
-        self.statement = ''
+        self.nickname = ""
+        self.phone = ""
+        self.statement = ""
         self.set_unusable_password()
         self.save()
 
     objects = MemberManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     class Meta:
-        permissions = (
-            ("beta_tester", "Is A Beta Tester"),
-        )
-        verbose_name = _('member')
-        verbose_name_plural = _('members')
+        permissions = (("beta_tester", "Is A Beta Tester"),)
+        verbose_name = _("member")
+        verbose_name_plural = _("members")
 
     def __str__(self):
-        return '{0}{1}'.format(self.display_name, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
+        return "{0}{1}".format(
+            self.display_name,
+            " (deleted)" if self.status == MemberStatusChoices.DELETED else "",
+        )
 
 
 class MemberPreferences(models.Model):
-    """ class to hold user preferences """
-    member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
+    """class to hold user preferences"""
+
+    member = models.OneToOneField(
+        Member, related_name="preferences", on_delete=models.CASCADE
+    )
 
     hide_canceled_gigs = models.BooleanField(default=False)
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
+    language = models.CharField(choices=LANGUAGES, max_length=200, default="en-US")
     share_profile = models.BooleanField(default=True)
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=True)
     calendar_show_only_committed = models.BooleanField(default=True)
     agenda_show_time = models.BooleanField(default=False)
 
-    default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
+    default_view = models.IntegerField(
+        choices=AgendaChoices.choices, default=AgendaChoices.AGENDA
+    )
 
 
 class Invite(models.Model):
@@ -189,10 +203,13 @@ class Invite(models.Model):
     An invitation sent to an email address.  The recipient can sign up with that or
     another email address.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    band = models.ForeignKey(Band, related_name="invites", on_delete=models.CASCADE, null=True)
-    email = models.EmailField(_('email address'))
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
+    band = models.ForeignKey(
+        Band, related_name="invites", on_delete=models.CASCADE, null=True
+    )
+    email = models.EmailField(_("email address"))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default="en-US")
 
     def as_email_recipient(self):
         return EmailRecipient(email=self.email, language=self.language)
@@ -203,10 +220,13 @@ class EmailConfirmation(models.Model):
     When a user wants to change email addresses, send an email to them with a link
     they can use to confirm that they really own it.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    member = models.ForeignKey(Member, related_name="pending_email", on_delete=models.CASCADE, null=True)
-    new_email = models.EmailField(_('new email'))
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
+    member = models.ForeignKey(
+        Member, related_name="pending_email", on_delete=models.CASCADE, null=True
+    )
+    new_email = models.EmailField(_("new email"))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default="en-US")
 
     def as_email_recipient(self):
         return EmailRecipient(email=self.member.email, language=self.language)

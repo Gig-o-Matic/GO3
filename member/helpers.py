@@ -37,20 +37,22 @@ from member.util import MemberStatusChoices
 
 from django.utils.translation import gettext_lazy as _
 
+
 def superuser_required(func):
     def decorated(request, pk, *args, **kw):
         if not request.user.is_superuser:
             return HttpResponseForbidden()
 
         return func(request, pk, *args, **kw)
+
     return decorated
 
 
 @login_required
 def motd_seen(request, pk):
-    """ note that we've seen the motd """
+    """note that we've seen the motd"""
     if request.user.id != pk:
-        raise PermissionError('trying to mark MOTD seen for another user')
+        raise PermissionError("trying to mark MOTD seen for another user")
 
     request.user.motd_dirty = False
     request.user.save()
@@ -60,7 +62,7 @@ def motd_seen(request, pk):
 
 @login_required
 def send_test_email(request):
-    template = 'email/email_test.md'
+    template = "email/email_test.md"
     send_messages_async([prepare_email(request.user.as_email_recipient(), template)])
 
     return HttpResponse(_("test email sent"))
@@ -76,37 +78,40 @@ def delete_member(request, pk):
     member.status = MemberStatusChoices.DELETED
     member.email = "assoc_{0}@gig-o-matic.com".format(member.id)
     member.username = _("former member")
-    member.nickname = ''
-    member.phone = ''
-    member.statement = ''
+    member.nickname = ""
+    member.phone = ""
+    member.statement = ""
     member.set_unusable_password()
     member.save()
 
     the_assocs = member.assocs.all()
     for a in the_assocs:
-        do_delete_assoc(a) # will set to "ALUMNI"
+        do_delete_assoc(a)  # will set to "ALUMNI"
 
     if request.user.is_superuser is False:
         logout(request)
 
-    return redirect('home')
+    return redirect("home")
+
 
 def send_invite(invite):
     context = {
-        'new': (Member.objects.filter(email=invite.email).count() == 0),
-        'invite_id': invite.id,
-        'band_name': invite.band.name if invite.band else None
+        "new": (Member.objects.filter(email=invite.email).count() == 0),
+        "invite_id": invite.id,
+        "band_name": invite.band.name if invite.band else None,
     }
-    template = 'email/invite.md' if invite.band else 'email/signup.md'
+    template = "email/invite.md" if invite.band else "email/signup.md"
     send_messages_async([prepare_email(invite.as_email_recipient(), template, context)])
 
 
 def send_email_conf(confirmation):
     context = {
-        'confirmation_id': confirmation.id,
+        "confirmation_id": confirmation.id,
     }
-    template = 'email/email_confirmation.md'
-    send_messages_async([prepare_email(confirmation.as_email_recipient(), template, context)])
+    template = "email/email_confirmation.md"
+    send_messages_async(
+        [prepare_email(confirmation.as_email_recipient(), template, context)]
+    )
 
 
 def prepare_calfeed(member):
@@ -124,7 +129,9 @@ def prepare_calfeed(member):
 
     if member.preferences.calendar_show_only_committed:
         filter_args["status__in"] = [
-            PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
+            PlanStatusChoices.DEFINITELY,
+            PlanStatusChoices.PROBABLY,
+        ]
 
     the_plans = Plan.objects.filter(**filter_args)
 
@@ -132,8 +139,7 @@ def prepare_calfeed(member):
         the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELLED)
 
     the_gigs = [p.gig for p in the_plans]
-    cf = make_calfeed(member, the_gigs,
-                      member.preferences.language, member.cal_feed_id)
+    cf = make_calfeed(member, the_gigs, member.preferences.language, member.cal_feed_id)
     return cf
 
 
@@ -141,6 +147,7 @@ def update_member_calfeed(id):
     m = Member.objects.get(id=id)
     cf = prepare_calfeed(m)
     save_calfeed(m.cal_feed_id, cf)
+
 
 def calfeed(request, pk):
     try:

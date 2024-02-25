@@ -8,63 +8,145 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Band',
+            name="Band",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('hometown', models.CharField(blank=True, max_length=200, null=True)),
-                ('shortname', models.CharField(blank=True, max_length=200, null=True)),
-                ('condensed_name', models.CharField(blank=True, max_length=200, null=True)),
-                ('website', models.CharField(blank=True, max_length=200, null=True)),
-                ('description', models.TextField(blank=True, max_length=500, null=True)),
-                ('images', models.TextField(blank=True, max_length=500, null=True)),
-                ('member_links', models.TextField(blank=True, max_length=500, null=True)),
-                ('thumbnail_img', models.CharField(blank=True, max_length=200, null=True)),
-                ('timezone', models.CharField(default='UTC', max_length=200)),
-                ('new_member_message', models.TextField(blank=True, max_length=500, null=True)),
-                ('share_gigs', models.BooleanField(default=True)),
-                ('anyone_can_manage_gigs', models.BooleanField(default=True)),
-                ('anyone_can_create_gigs', models.BooleanField(default=True)),
-                ('send_updates_by_default', models.BooleanField(default=True)),
-                ('rss_feed', models.BooleanField(default=False)),
-                ('simple_planning', models.BooleanField(default=False)),
-                ('plan_feedback', models.TextField(blank=True, max_length=500, null=True)),
-                ('status', models.IntegerField(choices=[(0, 'Active'), (1, 'Dormant'), (2, 'Deleted')], default=0)),
-                ('creation_date', models.DateField(auto_now_add=True)),
-                ('last_activity', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("hometown", models.CharField(blank=True, max_length=200, null=True)),
+                ("shortname", models.CharField(blank=True, max_length=200, null=True)),
+                (
+                    "condensed_name",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("website", models.CharField(blank=True, max_length=200, null=True)),
+                (
+                    "description",
+                    models.TextField(blank=True, max_length=500, null=True),
+                ),
+                ("images", models.TextField(blank=True, max_length=500, null=True)),
+                (
+                    "member_links",
+                    models.TextField(blank=True, max_length=500, null=True),
+                ),
+                (
+                    "thumbnail_img",
+                    models.CharField(blank=True, max_length=200, null=True),
+                ),
+                ("timezone", models.CharField(default="UTC", max_length=200)),
+                (
+                    "new_member_message",
+                    models.TextField(blank=True, max_length=500, null=True),
+                ),
+                ("share_gigs", models.BooleanField(default=True)),
+                ("anyone_can_manage_gigs", models.BooleanField(default=True)),
+                ("anyone_can_create_gigs", models.BooleanField(default=True)),
+                ("send_updates_by_default", models.BooleanField(default=True)),
+                ("rss_feed", models.BooleanField(default=False)),
+                ("simple_planning", models.BooleanField(default=False)),
+                (
+                    "plan_feedback",
+                    models.TextField(blank=True, max_length=500, null=True),
+                ),
+                (
+                    "status",
+                    models.IntegerField(
+                        choices=[(0, "Active"), (1, "Dormant"), (2, "Deleted")],
+                        default=0,
+                    ),
+                ),
+                ("creation_date", models.DateField(auto_now_add=True)),
+                ("last_activity", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Section',
+            name="Section",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(blank=True, max_length=100, null=True)),
-                ('order', models.IntegerField(default=0)),
-                ('is_default', models.BooleanField(default=False)),
-                ('band', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sections', to='band.Band')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(blank=True, max_length=100, null=True)),
+                ("order", models.IntegerField(default=0)),
+                ("is_default", models.BooleanField(default=False)),
+                (
+                    "band",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="sections",
+                        to="band.Band",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['order'],
+                "ordering": ["order"],
             },
         ),
         migrations.CreateModel(
-            name='Assoc',
+            name="Assoc",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.IntegerField(choices=[(0, 'Not Confirmed'), (1, 'Confirmed'), (2, 'Invited'), (3, 'Alumni'), (4, 'Pending')], default=0)),
-                ('is_admin', models.BooleanField(default=False)),
-                ('is_multisectional', models.BooleanField(default=False)),
-                ('is_occasional', models.BooleanField(default=False)),
-                ('color', models.IntegerField(default=0)),
-                ('email_me', models.BooleanField(default=True)),
-                ('hide_from_schedule', models.BooleanField(default=False)),
-                ('band', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assocs', to='band.Band')),
-                ('default_section', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='default_assocs', to='band.Section')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.IntegerField(
+                        choices=[
+                            (0, "Not Confirmed"),
+                            (1, "Confirmed"),
+                            (2, "Invited"),
+                            (3, "Alumni"),
+                            (4, "Pending"),
+                        ],
+                        default=0,
+                    ),
+                ),
+                ("is_admin", models.BooleanField(default=False)),
+                ("is_multisectional", models.BooleanField(default=False)),
+                ("is_occasional", models.BooleanField(default=False)),
+                ("color", models.IntegerField(default=0)),
+                ("email_me", models.BooleanField(default=True)),
+                ("hide_from_schedule", models.BooleanField(default=False)),
+                (
+                    "band",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="assocs",
+                        to="band.Band",
+                    ),
+                ),
+                (
+                    "default_section",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="default_assocs",
+                        to="band.Section",
+                    ),
+                ),
             ],
         ),
     ]

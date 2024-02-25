@@ -7,24 +7,37 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stats', '0001_initial'),
+        ("stats", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Metric',
+            name="Metric",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField(max_length=500)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField(max_length=500)),
             ],
         ),
         migrations.RemoveField(
-            model_name='stat',
-            name='name',
+            model_name="stat",
+            name="name",
         ),
         migrations.AddField(
-            model_name='stat',
-            name='metric',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='stats', to='stats.metric'),
+            model_name="stat",
+            name="metric",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="stats",
+                to="stats.metric",
+            ),
         ),
     ]

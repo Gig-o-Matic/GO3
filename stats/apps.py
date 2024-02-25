@@ -14,12 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.apps import AppConfig
+
 # from trackstats.models import Domain, Metric
 
 
 class StatsConfig(AppConfig):
-    name = 'stats'
+    name = "stats"
 
     def ready(self):
         pass

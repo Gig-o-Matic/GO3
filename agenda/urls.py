@@ -19,17 +19,19 @@ from django.urls import path
 from . import views, helpers
 
 urlpatterns = [
-    path('', views.AgendaSelector, name='home'),
-    path('agenda', views.AgendaView.as_view(), name='agenda'),
+    path("", views.AgendaSelector, name="home"),
+    path("agenda", views.AgendaView.as_view(), name="agenda"),
     # path('noplans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-noplans'),
-    path('plans/<path:the_type>/<int:page>', helpers.agenda_gigs, name='agenda-gigs'),
-    path('calendar', views.CalendarView.as_view(), name='calendar'),
-    path('calendar/events/<int:pk>', helpers.calendar_events, name='calendar-events'),
-
-    path('grid', views.GridView.as_view(), name='grid'),
-    path('grid/heatmap', helpers.grid_heatmap, name='grid-heatmap'),
-    path('grid/section-members', helpers.grid_section_members, name='grid-section-members'),
-    path('grid/gigs', helpers.grid_gigs, name='grid-gigs'),
-
-    path('defaultview/<int:val>', helpers.set_default_view, name='set-default-view'),
+    path("plans/<path:the_type>/<int:page>", helpers.agenda_gigs, name="agenda-gigs"),
+    path("calendar", views.CalendarView.as_view(), name="calendar"),
+    path("calendar/events/<int:pk>", helpers.calendar_events, name="calendar-events"),
+    path("grid", views.GridView.as_view(), name="grid"),
+    path("grid/heatmap", helpers.grid_heatmap, name="grid-heatmap"),
+    path(
+        "grid/section-members",
+        helpers.grid_section_members,
+        name="grid-section-members",
+    ),
+    path("grid/gigs", helpers.grid_gigs, name="grid-gigs"),
+    path("defaultview/<int:val>", helpers.set_default_view, name="set-default-view"),
 ]

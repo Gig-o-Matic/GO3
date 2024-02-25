@@ -6,28 +6,62 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('member', '0010_alter_member_statement'),
+        ("member", "0010_alter_member_statement"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='member',
-            name='is_active',
-            field=models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active'),
+            model_name="member",
+            name="is_active",
+            field=models.BooleanField(
+                default=True,
+                help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+                verbose_name="active",
+            ),
         ),
         migrations.AlterField(
-            model_name='emailconfirmation',
-            name='language',
-            field=models.CharField(choices=[('de', 'German'), ('en-US', 'English (US)'), ('en-GB', 'English (UK)'), ('fr', 'French'), ('it', 'Italian')], default='en-US', max_length=200),
+            model_name="emailconfirmation",
+            name="language",
+            field=models.CharField(
+                choices=[
+                    ("de", "German"),
+                    ("en-US", "English (US)"),
+                    ("en-GB", "English (UK)"),
+                    ("fr", "French"),
+                    ("it", "Italian"),
+                ],
+                default="en-US",
+                max_length=200,
+            ),
         ),
         migrations.AlterField(
-            model_name='invite',
-            name='language',
-            field=models.CharField(choices=[('de', 'German'), ('en-US', 'English (US)'), ('en-GB', 'English (UK)'), ('fr', 'French'), ('it', 'Italian')], default='en-US', max_length=200),
+            model_name="invite",
+            name="language",
+            field=models.CharField(
+                choices=[
+                    ("de", "German"),
+                    ("en-US", "English (US)"),
+                    ("en-GB", "English (UK)"),
+                    ("fr", "French"),
+                    ("it", "Italian"),
+                ],
+                default="en-US",
+                max_length=200,
+            ),
         ),
         migrations.AlterField(
-            model_name='memberpreferences',
-            name='language',
-            field=models.CharField(choices=[('de', 'German'), ('en-US', 'English (US)'), ('en-GB', 'English (UK)'), ('fr', 'French'), ('it', 'Italian')], default='en-US', max_length=200),
+            model_name="memberpreferences",
+            name="language",
+            field=models.CharField(
+                choices=[
+                    ("de", "German"),
+                    ("en-US", "English (US)"),
+                    ("en-GB", "English (UK)"),
+                    ("fr", "French"),
+                    ("it", "Italian"),
+                ],
+                default="en-US",
+                max_length=200,
+            ),
         ),
     ]
