@@ -34,3 +34,6 @@ jobs:
 
       - name: Check with Pylint
         run: modules=(*/__init__.py) && poetry run pylint -j0 --load-plugins=pylint_django --django-settings-module=go3.settings ${modules[@]%/*}
+
+      - name: Check for Missing Migrations
+        run: poetry run python manage.py makemigrations --check
