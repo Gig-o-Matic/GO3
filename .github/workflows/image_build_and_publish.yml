@@ -95,7 +95,7 @@ jobs:
           image_name: "${{ fromJSON(steps.publish.outputs.metadata)['image.name'] }}"
           metadata: "${{ steps.meta.outputs.json }}"
         run: |
-          echo "short_sha_tag=$(git rev-parse --short HEAD)" | tee -a $GITHUB_OUTPUT
+          echo "short_sha_tag=$(git rev-parse --short HEAD)" | tee -a "$GITHUB_OUTPUT"
           cat << SUMMARY | tee --append "$GITHUB_STEP_SUMMARY"
           ## Image Build - murga-o-matic-website
 
