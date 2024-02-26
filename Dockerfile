@@ -31,4 +31,4 @@ COPY --from=builder /venv /venv
 
 COPY . .
 
-CMD venv/bin/python manage.py runserver 0.0.0.0:$PORT
+CMD ["./docker-entrypoint.sh"]
