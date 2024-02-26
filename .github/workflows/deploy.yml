@@ -8,9 +8,6 @@ concurrency:
 on:
   push:
     branches: [main]
-  # TODO: just for now... remove later :)
-  pull_request:
-    branches: [main]
   workflow_dispatch: {}
 
 jobs:
