@@ -1,0 +1,4 @@
+# No dealing with dockerfile package pinning at this point
+# DL3018 warning: Pin versions in apk add. Instead of `apk add <package>` use
+# `apk add <package>=<version>`
+ignored: [DL3018]
