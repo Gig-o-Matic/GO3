@@ -42,3 +42,6 @@ jobs:
         run: |
           poetry run python manage.py collectstatic
           poetry run python manage.py test
+
+      - name: Check for Missing Migrations
+        run: poetry run python manage.py makemigrations --check
