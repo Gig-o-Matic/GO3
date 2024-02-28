@@ -146,15 +146,16 @@ WSGI_APPLICATION = "go3.wsgi.application"
 
 DATABASES = {
     # The db() method is an alias for db_url().
-    "default": env.db_url(default='sqlite:////tmp/my-tmp-sqlite.db')
-    #    {
-    #        "ENGINE": "django.db.backends.mysql",
-    #        "NAME": "gig-o-matic",
-    #        "HOST": "127.0.0.1",
-    #        "PORT": 13307,
-    #        "USER": "gig-o-matic",
-    #        "PASSWORD": "gig-o-matic",
-    #    }
+    #"default": env.db_url(default='sqlite:////tmp/my-tmp-sqlite.db')
+    "default":
+        {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_DATABASE", default="gig-o-matic"),
+            "HOST": env("POSTGRES_HOST", default="127.0.0.1"),
+            "PORT": env("POSTGRES_PORT", default=5432),
+            "USER": env("POSTGRES_USER", default="gig-o-matic"),
+            "PASSWORD": env("POSTGRES_PASSWORD", default="gig-o-matic"),
+        }
 }
 
 AUTH_USER_MODEL = "member.Member"
