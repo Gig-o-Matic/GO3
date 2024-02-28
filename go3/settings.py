@@ -37,7 +37,7 @@ from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str)
+                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str)
 
 # reading .env file
 environ.Env.read_env()
@@ -144,19 +144,21 @@ WSGI_APPLICATION = "go3.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    # The db() method is an alias for db_url().
-    #"default": env.db_url(default='sqlite:////tmp/my-tmp-sqlite.db')
-    "default":
-        {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("POSTGRES_DATABASE", default="gig-o-matic"),
-            "HOST": env("POSTGRES_HOST", default="127.0.0.1"),
-            "PORT": env("POSTGRES_PORT", default=5432),
-            "USER": env("POSTGRES_USER", default="gig-o-matic"),
-            "PASSWORD": env("POSTGRES_PASSWORD", default="gig-o-matic"),
-        }
-}
+if env("DATABASE_URL", default=False):
+    # Used mostly for Github actions testing with sqlite
+    DATABASES = { "default": env.db_url() }
+else:
+    DATABASES = {
+        "default":
+            {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": env("POSTGRES_DATABASE", default="gig-o-matic"),
+                "HOST": env("POSTGRES_HOST", default="127.0.0.1"),
+                "PORT": env("POSTGRES_PORT", default=5432),
+                "USER": env("POSTGRES_USER", default="gig-o-matic"),
+                "PASSWORD": env("POSTGRES_PASSWORD", default="gig-o-matic"),
+            }
+    }
 
 AUTH_USER_MODEL = "member.Member"
 
