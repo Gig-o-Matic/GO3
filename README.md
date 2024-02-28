@@ -6,7 +6,7 @@ This project is targeted at Python 3.8.  The required packages can be installed 
 ```
 pip install -r requirements.txt
 ```
-By default, a SQLite database will be used.  To change this, or other settings, create a file `go/settings_local.py`.  Any settings here will override the defaults.  Note that other databases may need additional packages; `requirements.mysql.txt` has the requirements for MySQL.
+By default, a SQLite database will be used.  To change this, or other settings, create a file `go3/settings_local.py`.  Any settings here will override the defaults.  Note that other databases may need additional packages; `requirements.mysql.txt` has the requirements for MySQL.
 
 To create the database, run
 ```

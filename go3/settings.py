@@ -37,7 +37,8 @@ from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int, SENTRY_DSN=str)
+                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str)
+
 # reading .env file
 environ.Env.read_env()
 
@@ -75,6 +76,7 @@ SECRET_KEY = env('SECRET_KEY', default='123')
 DEBUG = env('DEBUG', default=True)
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', default=["localhost", "127.0.0.1"])
+CSRF_TRUSTED_ORIGINS = list(map(lambda host: f"https://{host}", ALLOWED_HOSTS))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -144,11 +146,16 @@ WSGI_APPLICATION = "go3.wsgi.application"
 
 DATABASES = {
     # The db() method is an alias for db_url().
-    'default': env.db(default='sqlite:////tmp/my-tmp-sqlite.db')
-    # "default": {
-    #     "ENGINE": "django.db.backends.sqlite3",
-    #     "NAME": os.path.join(BASE_DIR, "var", "go3.sqlite3"),
-    # }
+    #"default": env.db_url(default='sqlite:////tmp/my-tmp-sqlite.db')
+    "default":
+        {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_DATABASE", default="gig-o-matic"),
+            "HOST": env("POSTGRES_HOST", default="127.0.0.1"),
+            "PORT": env("POSTGRES_PORT", default=5432),
+            "USER": env("POSTGRES_USER", default="gig-o-matic"),
+            "PASSWORD": env("POSTGRES_PASSWORD", default="gig-o-matic"),
+        }
 }
 
 AUTH_USER_MODEL = "member.Member"
@@ -241,7 +248,7 @@ else:
 
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
-DEFAULT_FROM_EMAIL = "superuser@gig-o-matic.com"
+DEFAULT_FROM_EMAIL = env("SENDGRID_SENDER", default="superuser@gig-o-matic.com")
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
