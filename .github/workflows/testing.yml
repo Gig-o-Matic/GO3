@@ -3,7 +3,7 @@ name: Testing
 on: [push]
 
 env:
-  DATABASE_URL: "sqlite://gig-o-matic.sqlite"
+  DATABASE_URL: "sqlite:///gig-o-matic.sqlite"
 
 jobs:
   build:
