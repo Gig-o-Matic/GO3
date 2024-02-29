@@ -26,34 +26,6 @@ import csv
 import logging
 logger = logging.getLogger(__name__)
 
-def find_or_create_band(band_name):
-    try:
-        band = Band.objects.get(name=band_name)
-        logger.info(f"Found band id {band.id} for {band_name}")
-    except Band.DoesNotExist:
-        band = Band(name=band_name)
-        band.save()
-        logger.info(f"Created band id {band.id} for {band_name}")
-    return band
-
-def find_or_create_member(email, name):
-    try:
-        member = Member.objects.get(email=email)
-        logger.info(f"Found member id {member.id} for email {email}")
-    except Member.DoesNotExist:
-        member = Member(email=email)
-        member.save()
-        logger.info(f"Created member id {member.id} for email {email}")
-    return member
-
-def find_or_create_assoc(band, member, is_admin):
-    try:
-        assoc = band.assocs.get(member=member)
-        logger.info(f"Found existing association between member and band; skipping")
-    except Assoc.DoesNotExist:
-        assoc = band.assocs.create(member=member, is_admin=cast_bool(is_admin))
-        logger.info(f"Added member to band as admin({is_admin})")
-
 def cast_bool(bool):
     return bool.lower() == "true"
 
@@ -74,9 +46,9 @@ class MigrationFormView(LoginRequiredMixin, TemplateView):
             reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), fieldnames, dialect='excel-tab')
 
             for row in reader:
-                band = find_or_create_band(row['band_name'])
-                member = find_or_create_member(row['email'], row['name'])
-                find_or_create_assoc(band, member, row['is_admin'])
+                band, _ = Band.objects.get_or_create(name=row['band_name'])
+                member, _ = Member.objects.get_or_create(email=row['email'], defaults={"username": row['name']})
+                band.assocs.get_or_create(member=member, defaults={"is_admin": cast_bool(row['is_admin'])})
             return HttpResponse(status=200)
 
     
