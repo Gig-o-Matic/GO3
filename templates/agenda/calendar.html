@@ -32,7 +32,7 @@
 {% block localscripts %}
     <script src='{% static "fullcalendar/lib/main.js" %}'></script>
     {% if user.preferences.language != "en" %}
-        <script src='{% static "fullcalendar/lib/locales/"|add:user.preferences.language|add:".js" %}'></script>
+        <script src='{% static "fullcalendar/lib/locales/"|add:user.preferences.language|lower|add:".js" %}'></script>
     {% endif %}
     <script>
 
