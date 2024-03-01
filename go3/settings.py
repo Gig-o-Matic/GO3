@@ -50,21 +50,6 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-import sentry_sdk
-SENTRY_DSN = env("SENTRY_DSN", default=False)
-
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        traces_sample_rate=1.0,
-        # Set profiles_sample_rate to 1.0 to profile 100%
-        # of sampled transactions.
-        # We recommend adjusting this value in production.
-        profiles_sample_rate=1.0,
-    )
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -239,6 +224,22 @@ Q_CLUSTER = {
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
 }
 
+
+import sentry_sdk
+SENTRY_DSN = env("SENTRY_DSN", default=False)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        traces_sample_rate=1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100%
+        # of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=1.0,
+    )
+    Q_CLUSTER["error_reporter"] = { "sentry": { "dsn": SENTRY_DSN } }
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
 if env('CACHE_USE_FILEBASED', default=False):
