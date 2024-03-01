@@ -13,6 +13,7 @@ DEFAULT_SUBJECT = 'Message from Gig-O-Matic'
 
 def send_messages_async(messages):
     # Can accept an iterable, so we need to make it a list for serialization
+    # ack_failure=True prevents spamming people with taks retries
     return async_task('lib.email.do_send_messages_async', list(messages), ack_failure=True)
 
 def do_send_messages_async(messages):
