@@ -11,7 +11,7 @@ $ poetry install
 Installing dependencies from lock file
 ```
 
-By default, a SQLite database will be used.  To change this, or other settings, create a file `go/settings_local.py`.  Any settings here will override the defaults.  Note that other databases may need additional packages; `poetry install --with=mysql` has the requirements for MySQL.
+By default, a SQLite database will be used.  To change this, or other settings, create a file `go3/settings_local.py`.  Any settings here will override the defaults.  Note that other databases may need additional packages; `poetry install --with=mysql` has the requirements for MySQL.
 
 To create the database, run
 
