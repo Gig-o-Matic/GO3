@@ -37,7 +37,8 @@ from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str)
+                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
+                  LOG_LEVEL=str)
 
 # reading .env file
 environ.Env.read_env()
@@ -46,6 +47,20 @@ _testing = False
 if len(sys.argv) > 1 and sys.argv[1] == "test":
     _testing = True
     logging.disable(logging.CRITICAL)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": env("LOG_LEVEL", default="WARN"),
+    },
+}
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
