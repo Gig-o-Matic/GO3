@@ -6,6 +6,7 @@ This project is targeted at Python 3.8.  The development environment uses [Docke
 
 1. Create Python sandbox
 	```
+        cd GO3 # the place you checked out the source for Gig-O-Matic 3
 	python3 -mvenv .venv
 	source .venv/bin/activate
 	```
