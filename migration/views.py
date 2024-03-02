@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from lib.mixins import SuperUserRequiredMixin
 from .forms import MigrationForm
 from band.models import Band, Assoc
 from member.models import Member
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 def cast_bool(bool):
     return bool.lower() == "true"
 
-class MigrationFormView(LoginRequiredMixin, TemplateView):
+class MigrationFormView(SuperUserRequiredMixin, TemplateView):
     template_name = 'migration/index.html'
 
     def get_context_data(self, **kwargs):
