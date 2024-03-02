@@ -1,7 +1,7 @@
 {% extends 'base/go3base.html' %}
 {% load i18n %}
 {% block content %}
-  <form action="/migration/" method="post">
+  <form action="{% url "migration_form" %}go" method="post">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Submit">

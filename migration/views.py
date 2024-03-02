@@ -31,28 +31,42 @@ def cast_bool(bool):
     return bool.lower() == "true"
 
 class MigrationFormView(SuperUserRequiredMixin, TemplateView):
-    template_name = 'migration/index.html'
+    template_name = "migration/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = "Migration Form"
         context["form"] = MigrationForm()
         return context
 
+class MigrationResultsView(SuperUserRequiredMixin, TemplateView):
+    template_name = "migration/results.html"
+
     def post(self, request, *args, **kwargs):
         form = MigrationForm(request.POST)
-        # check whether it's valid:
         if form.is_valid():
             fieldnames = ['band_name', 'name', 'email', 'is_admin', 'section1', 'section2', 'section3']
             reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), fieldnames, dialect='excel-tab')
 
+            migration_messages = []
             for row in reader:
-                band, _ = Band.objects.get_or_create(name=row['band_name'])
-                member, _ = Member.objects.get_or_create(email=row['email'], defaults={"username": row['name']})
-                band.assocs.get_or_create(member=member, defaults={"is_admin": cast_bool(row['is_admin'])})
-            return HttpResponse(status=200)
+                band, band_created = Band.objects.get_or_create(name=row["band_name"])
+                if band_created: migration_messages.append(f"Created new band {band.name}")
 
-    
+                member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["name"]})
+                if member_created: migration_messages.append(f"Created new member {member.username} ({member.email})")
+
+                is_admin = cast_bool(row["is_admin"])
+                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin})
+                if assoc_created:
+                    migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} {'as band admin' if is_admin else ''}")
+                else:
+                    migration_messages.append(f"{member.username} ({member.email}) already present in {band.name}; skipping.")
+            
+            context = super().get_context_data(**kwargs)
+            context["migration_messages"] = migration_messages
+            return self.render_to_response(context)
+
+        
 
 
 

@@ -20,5 +20,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.MigrationFormView.as_view(), name='migration'),
+    path('', views.MigrationFormView.as_view(), name='migration_form'),
+    path('go', views.MigrationResultsView.as_view())
 ]
