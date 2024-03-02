@@ -901,7 +901,7 @@ class MemberDeleteTest(TestCase):
             enddate=thedate +
             timedelta(hours=2) if end_date == 'auto' else end_date,
             contact=the_member,
-            status=GigStatusChoices.UNKNOWN
+            status=GigStatusChoices.UNCONFIRMED
         )
 
     def create_gig_form(self, user=None,
@@ -915,7 +915,7 @@ class MemberDeleteTest(TestCase):
                         title='New Gig',
                         **kwargs):
 
-        status = kwargs.pop('status', GigStatusChoices.UNKNOWN)
+        status = kwargs.pop('status', GigStatusChoices.UNCONFIRMED)
         contact = kwargs.pop('contact', self.joeuser).id
         send_update = kwargs.pop('send_update', True)
 
