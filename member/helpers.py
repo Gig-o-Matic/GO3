@@ -91,7 +91,7 @@ def delete_member(request, pk):
 
     return redirect('home')
 
-def send_invite(invite):
+def send_invite_async(invite):
     context = {
         'new': (Member.objects.filter(email=invite.email).count() == 0),
         'invite_id': invite.id,

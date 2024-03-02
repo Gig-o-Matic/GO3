@@ -133,7 +133,7 @@ class GigForm(forms.ModelForm):
         else:
             day_of_month = last_date.day
             
-        set_delta = (the_gig.setdate - the_gig.date) if the_gig.enddate else None
+        set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
         end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
 
         for _ in range(1, number_to_copy):

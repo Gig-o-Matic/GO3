@@ -37,7 +37,8 @@ from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str)
+                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
+                  LOG_LEVEL=str)
 
 # reading .env file
 environ.Env.read_env()
@@ -47,23 +48,22 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
     _testing = True
     logging.disable(logging.CRITICAL)
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": env("LOG_LEVEL", default="WARN"),
+    },
+}
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-import sentry_sdk
-SENTRY_DSN = env("SENTRY_DSN", default=False)
-
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        traces_sample_rate=1.0,
-        # Set profiles_sample_rate to 1.0 to profile 100%
-        # of sampled transactions.
-        # We recommend adjusting this value in production.
-        profiles_sample_rate=1.0,
-    )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -105,7 +105,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -207,12 +207,19 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = "/static/"
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 # for whitenoise
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+
+# Use ManifestStaticFilesStorage when not in debug mode
+if not DEBUG:
+    STORAGES["staticfiles"] =  {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}
+
 
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = "/"
@@ -221,17 +228,32 @@ LOGOUT_REDIRECT_URL = "/accounts/login"
 # Configure Django-q message broker
 Q_CLUSTER = {
     "name": "DjangORM",
-    "workers": 4,
-    "timeout": 90,
-    "retry": 120,
-    "queue_limit": 50,
-    "bulk": 10,
+    "workers": 1,
+    "timeout": 30,
+    "retry": 60,
     "orm": "default",
     "sync": _testing,
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
+    "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
 }
 
+
+import sentry_sdk
+SENTRY_DSN = env("SENTRY_DSN", default=False)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        traces_sample_rate=1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100%
+        # of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=1.0,
+    )
+    Q_CLUSTER["error_reporter"] = { "sentry": { "dsn": SENTRY_DSN } }
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
 if env('CACHE_USE_FILEBASED', default=False):
@@ -258,7 +280,6 @@ SENDGRID_TRACK_CLICKS_HTML = False
 
 # Calfeed settings
 DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache
-DEFAULT_FILE_STORAGE = env('CALFEED_DEFAULT_FILE_STORAGE', default='django.core.files.storage.FileSystemStorage')
 CALFEED_BASEDIR = env('CALFEED_CALFEED_BASEDIR', default='')
 
 MESSAGE_TAGS = {

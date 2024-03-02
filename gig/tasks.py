@@ -22,7 +22,7 @@ from django.db.models import Q
 
 def delete_old_trashed_gigs():
     """
-    Deletes gigs that were tashed more than 30 days ago
+    Deletes gigs that were trashed more than 30 days ago
     """
     cutoff = timezone.now() - timedelta(days=30)
     old_trash = Gig.objects.filter(trashed_date__lt=cutoff)
