@@ -1,8 +1,9 @@
-<html><head><title>{{ title }}</title></head>
-<body>
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% block content %}
   <form action="/migration/" method="post">
     {% csrf_token %}
     {{ form }}
     <input type="submit" value="Submit">
   </form>
-</body>
+{% endblock content %}
