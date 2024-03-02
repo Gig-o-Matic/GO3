@@ -49,6 +49,7 @@ urlpatterns = [
     path('help/', include('help.urls')),
     path('stats/', include('stats.urls')),
     path('admin/', admin.site.urls),
+    path('migration/', include('migration.urls')),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
     path('tasks/hourly',do_hourly_tasks),
     path('tasks/daily',do_daily_tasks),
