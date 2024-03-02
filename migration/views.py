@@ -16,11 +16,9 @@
 """
 from lib.mixins import SuperUserRequiredMixin
 from .forms import MigrationForm
-from band.models import Band, Assoc
+from band.models import Band
 from member.models import Member
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import TemplateView
-from django.http import HttpResponse
 from io import StringIO
 import csv
 
@@ -53,12 +51,19 @@ class MigrationResultsView(SuperUserRequiredMixin, TemplateView):
                 if band_created: migration_messages.append(f"Created new band {band.name}")
 
                 member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["name"]})
-                if member_created: migration_messages.append(f"Created new member {member.username} ({member.email})")
+                # reduce noise
+                #if member_created: migration_messages.append(f"Created new member {member.username} ({member.email})")
 
                 is_admin = cast_bool(row["is_admin"])
-                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin})
+                if row["section1"] and row["section1"] != "None":
+                    imported_section_name = row["section1"]
+                else:
+                    imported_section_name = "No Section"
+                default_section, _section_created = band.sections.get_or_create(name=imported_section_name)
+                is_multisectional = True if (row["section2"] or row["section3"]) else False
+                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_multisectional": is_multisectional})
                 if assoc_created:
-                    migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} {'as band admin' if is_admin else ''}")
+                    migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} - {default_section.name} {'as band admin' if is_admin else ''}")
                 else:
                     migration_messages.append(f"{member.username} ({member.email}) already present in {band.name}; skipping.")
             
