@@ -12,9 +12,6 @@ RUN pip install --upgrade pip
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY requirements.postgres.txt ./
-RUN pip install --no-cache-dir -r requirements.postgres.txt
-
 COPY . .
 
 RUN python manage.py collectstatic --noinput
