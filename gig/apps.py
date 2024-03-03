@@ -22,5 +22,5 @@ class GigConfig(AppConfig):
 
     @staticmethod
     def ready():
-        logging.debug("loaded gig signals")
+        logging.debug("loading gig signals")
         from . import signals

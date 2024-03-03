@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.apps import AppConfig
+import logging
 
 
 class MotdConfig(AppConfig):
@@ -22,5 +23,5 @@ class MotdConfig(AppConfig):
 
     @staticmethod
     def ready():
-        print("loaded motd signals") # todo make debug pring
+        logging.debug("loading motd signals")
         from . import signals
