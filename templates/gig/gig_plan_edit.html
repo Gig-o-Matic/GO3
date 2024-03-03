@@ -52,7 +52,7 @@
         {% endif %}
     </div>
     {% if plan.gig.is_archived == False %}
-        {% if plan_member == user or user.is_superuser or plan.assoc.is_admin %}
+        {% if plan_member == user or user.is_superuser or plan_member.assoc.is_admin %}
             <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
                 {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
                 {% if band.plan_feedback %}
