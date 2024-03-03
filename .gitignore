@@ -14,5 +14,5 @@ db.sqlite3
 staticfiles
 settings_local.py
 .env
-
+.venv
 
