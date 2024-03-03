@@ -16,6 +16,7 @@
 """
 
 from django.apps import AppConfig
+import logging
 
 
 class MemberConfig(AppConfig):
@@ -23,5 +24,5 @@ class MemberConfig(AppConfig):
 
     @staticmethod
     def ready():
-        print("loaded member signals") #todo make debug
+        logging.debug("loading member signals")
         from . import signals
