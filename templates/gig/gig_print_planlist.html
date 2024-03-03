@@ -37,7 +37,7 @@
                 </div>
             {% endif %}
 {% endcomment %}        
-        {% regroup gig.member_plans.all by section as plans_by_section %}
+        {% regroup gig_ordered_member_plans by section as plans_by_section %}
             {% for section in gig.band.sections.all %}
                 <tr>
                 </tr>

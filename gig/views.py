@@ -258,6 +258,7 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
         context['gig'] = gig
+        context['gig_ordered_member_plans'] = gig.member_plans.order_by('section_id')
         context['plan_list'] = PlanStatusChoices.labels
         context['all'] = kwargs.get('all', True)
         return context
