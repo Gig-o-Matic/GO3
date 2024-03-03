@@ -15,16 +15,16 @@ This project is targeted at Python 3.8.  The development environment uses [Docke
 	```
 	pip install -r requirements.txt
 	```
+
+ 1. Use the default environment
+	```
+	ln -s go3/.env.example go3/.env # Optional: copy instead and edit the file to taste
+	```
  
 1. Start the DB engine
 	```
 	docker compose up -d db
 	sleep 30 # wait for DB to finish initializing
-	```
- 
-1. Use the default environment
-	```
-	ln -s go3/.env.example go3/.env # Optional: copy instead and edit the file to taste
 	```
  
 1. Run the migrations
