@@ -96,18 +96,18 @@
                         </div>
                     {% endif %}
                 {% endif %}
-                <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
+                <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default:""}}</a>
             </div>
         {% else %}
             <div class="col-8" style="display:flex; align-items:center;" >
                 <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span>
                 {{ plan.feedback_string }}
-                {{ plan.comment }}
+                {{ plan.comment|default:"" }}
             </div>
         {% endif %}
     {% else %}
         <div class="col-8" style="display:flex; align-items:center;" >
-            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span> {{ plan.feedback_string }} {{ plan.comment }}
+            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span> {{ plan.feedback_string }} {{ plan.comment|default:"" }}
         </div>
     {% endif %}
 </div>
