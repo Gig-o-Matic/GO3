@@ -1,5 +1,4 @@
 {% load i18n %}{% autoescape off %}
-Subject: {{ band.name }} {% trans "is moving to the new Gig-o-Matic!" %}
 
 {% block reset_link %}
 {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}

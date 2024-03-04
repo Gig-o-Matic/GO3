@@ -36,8 +36,9 @@ def send_migrated_user_password_reset(band_id, member_id):
   form.save(
     domain_override = domain,
     use_https=True,
-    from_email=go3.settings.DEFAULT_FROM_EMAIL, 
-    email_template_name='email/migration_password_reset.md',
+    from_email=go3.settings.DEFAULT_FROM_EMAIL,
+    subject_template_name="email/migration_password_reset_subject.txt",
+    email_template_name="email/migration_password_reset_body.md",
     extra_email_context = {
       "band": band,
       "member": member,
