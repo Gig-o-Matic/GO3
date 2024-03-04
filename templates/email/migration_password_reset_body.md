@@ -1,8 +1,5 @@
 {% load i18n %}{% autoescape off %}
 
-{% block reset_link %}
-{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
-{% endblock %}
 
 {% blocktrans %}Hello{% endblocktrans %} {{ member.username }},
 
@@ -12,9 +9,9 @@
 Your band membership is being copied to the new site, but you'll need to set a new password to gain access.
 {% endblocktrans %}
 
-[{% blocktrans %}Click here to set a new password{% endblocktrans %}]({{ reset_link }})
+[{% blocktrans %}Click here to set a new password{% endblocktrans %}]({{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %})
 
-
+Link not working? Copy & paste this into your web browser: {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
 
 {% blocktrans %}Thanks,
 The Gig-o-Matic Administration Council{% endblocktrans %}{% endautoescape %}
