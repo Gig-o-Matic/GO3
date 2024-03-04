@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django_q.tasks import async_task
 from lib.mixins import SuperUserRequiredMixin
 from .forms import MigrationForm
 from band.models import Band
@@ -51,8 +52,8 @@ class MigrationResultsView(SuperUserRequiredMixin, TemplateView):
                 if band_created: migration_messages.append(f"Created new band {band.name}")
 
                 member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["name"]})
-                # reduce noise
-                #if member_created: migration_messages.append(f"Created new member {member.username} ({member.email})")
+                if member_created:
+                    async_task("migration.helpers.send_migrated_user_password_reset", band.id, member.id)
 
                 is_admin = cast_bool(row["is_admin"])
                 if row["section1"] and row["section1"] != "None":
