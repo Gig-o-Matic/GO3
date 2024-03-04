@@ -49,6 +49,23 @@ This project is targeted at Python 3.8.  The development environment uses [Docke
 	```
 	You can log in with the user created above.
 
+
+1. OPTIONAL: Start the task queue
+	Certain actions kick off activities that run in the background, using DjangoQ to manage the queue.
+	This runs concurrently, so kick it off in a separate shell. You should see the tasks come and go
+	in the DjangoQ section of the admin pages.
+	```
+	python manage.py qcluster
+	```
+
+1. OPTIONAL: set up the scheduled tasks
+	Some tasks - like updating calendar feeds, archiving gigs, send snooze reminders - require repeating
+	events to be scheduled in DjangoQ. This should only be done once - check the DjangoQ "scheduled tasks"
+	page to see the events that have been set up.
+	```
+	python manage.py schedule_tasks
+	```
+
 ## Testing
 We use sqlite3 for the test suite for now
 ```
