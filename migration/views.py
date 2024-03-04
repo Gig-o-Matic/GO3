@@ -18,6 +18,7 @@ from django_q.tasks import async_task
 from lib.mixins import SuperUserRequiredMixin
 from .forms import BandMigrationForm, GigMigrationForm
 from band.models import Band
+from band.util import AssocStatusChoices
 from gig.models import Gig
 from member.models import Member
 from django.views.generic.base import TemplateView
@@ -62,7 +63,7 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     imported_section_name = "No Section"
                 default_section, _section_created = band.sections.get_or_create(name=imported_section_name)
                 is_multisectional = bool(row["section2"] or row["section3"])
-                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_multisectional": is_multisectional})
+                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_multisectional": is_multisectional, "status": AssocStatusChoices.CONFIRMED})
                 if assoc_created:
                     migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} - {default_section.name} {'as band admin' if is_admin else ''}")
                 else:
