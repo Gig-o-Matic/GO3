@@ -15,7 +15,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django import forms
+from band.models import Band
 
-
-class MigrationForm(forms.Form):
+class BandMigrationForm(forms.Form):
     paste = forms.CharField(label="Paste", widget=forms.Textarea)
+
+class GigMigrationForm(forms.Form):
+    paste = forms.CharField(label="Paste", widget=forms.Textarea)
+    band_id = forms.ChoiceField(label="Band", choices=(lambda: [[b.id, b.name] for b in Band.objects.all()]))

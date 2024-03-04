@@ -6,5 +6,6 @@
       <li>{{ migration_message }}</li>
     {% endfor %}
   </ul>
-  <a href="{% url "migration_form" %}">Migrate more...</a>
+  <a href="{% url "gig_migration_form" %}">Migrate gigs...</a><br>
+  <a href="{% url "band_migration_form" %}">Migration another band...</a>
 {% endblock content %}
