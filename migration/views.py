@@ -15,32 +15,32 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from lib.mixins import SuperUserRequiredMixin
-from .forms import MigrationForm
+from .forms import BandMigrationForm, GigMigrationForm
 from band.models import Band
+from gig.models import Gig
 from member.models import Member
 from django.views.generic.base import TemplateView
 from io import StringIO
 import csv
+import json
+import dateutil.parser
 
-import logging
-logger = logging.getLogger(__name__)
+def cast_bool(text):
+    return text.lower() == "true"
 
-def cast_bool(bool):
-    return bool.lower() == "true"
-
-class MigrationFormView(SuperUserRequiredMixin, TemplateView):
-    template_name = "migration/index.html"
+class BandMigrationFormView(SuperUserRequiredMixin, TemplateView):
+    template_name = "migration/band_form.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["form"] = MigrationForm()
+        context["form"] = BandMigrationForm()
         return context
 
-class MigrationResultsView(SuperUserRequiredMixin, TemplateView):
+class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
     template_name = "migration/results.html"
 
     def post(self, request, *args, **kwargs):
-        form = MigrationForm(request.POST)
+        form = BandMigrationForm(request.POST)
         if form.is_valid():
             fieldnames = ['band_name', 'name', 'email', 'is_admin', 'section1', 'section2', 'section3']
             reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), fieldnames, dialect='excel-tab')
@@ -60,7 +60,7 @@ class MigrationResultsView(SuperUserRequiredMixin, TemplateView):
                 else:
                     imported_section_name = "No Section"
                 default_section, _section_created = band.sections.get_or_create(name=imported_section_name)
-                is_multisectional = True if (row["section2"] or row["section3"]) else False
+                is_multisectional = bool(row["section2"] or row["section3"])
                 _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_multisectional": is_multisectional})
                 if assoc_created:
                     migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} - {default_section.name} {'as band admin' if is_admin else ''}")
@@ -69,9 +69,54 @@ class MigrationResultsView(SuperUserRequiredMixin, TemplateView):
             
             context = super().get_context_data(**kwargs)
             context["migration_messages"] = migration_messages
+            context["return_to"] = "gig_migration_form"
             return self.render_to_response(context)
 
-        
+class GigMigrationFormView(SuperUserRequiredMixin, TemplateView):
+    template_name = "migration/gig_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = GigMigrationForm()
+        return context
+
+class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
+    template_name = "migration/results.html"
+
+    def post(self, request, *args, **kwargs):
+        form = GigMigrationForm(request.POST)
+        if form.is_valid():
+            data = json.loads(form.cleaned_data["paste"])
+            band = Band.objects.get(id=form.cleaned_data["band_id"])
+            migration_messages = []
+            for record in data:
+                fields = record["fields"]
+                gig = Gig(
+                    band = band,
+                    title = fields["title"],
+                    details = fields["details"],
+                    setlist = fields["setlist"],
+                    address = fields["address"],
+                    dress = fields["dress"],
+                    paid = fields["paid"],
+                    postgig = fields["postgig"],
+                    is_private = fields["is_private"],
+                    is_archived = fields["is_archived"],
+                    invite_occasionals = fields["invite_occasionals"],
+                    was_reminded = fields["was_reminded"],
+                    hide_from_calendar = fields["hide_from_calendar"],
+                    rss_description = fields["rss_description"],
+                    default_to_attending = fields["default_to_attending"],
+                    date = dateutil.parser.isoparse(fields["date"]),
+                    setdate = dateutil.parser.isoparse(fields["setdate"]),
+                    enddate = dateutil.parser.isoparse(fields["enddate"]),
+                    created_date = dateutil.parser.isoparse(fields["created_date"]),
+                )
+                gig.save()
+                migration_messages.append(f"Imported {gig.title}")
 
 
-
+            context = super().get_context_data(**kwargs)
+            context["migration_messages"] = migration_messages
+            context["return_to"] = "gig_migration_form"
+            return self.render_to_response(context)
