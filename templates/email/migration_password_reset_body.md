@@ -9,9 +9,10 @@
 Your band membership is being copied to the new site, but you'll need to set a new password to gain access.
 {% endblocktrans %}
 
-[{% blocktrans %}Click here to set a new password{% endblocktrans %}]({{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %})
+{% blocktrans %}Click here to set a new password:{% endblocktrans %}
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
 
-Link not working? Copy & paste this into your web browser: {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+Link not clickable? Copy & paste it into your web browser
 
 {% blocktrans %}Thanks,
 The Gig-o-Matic Administration Council{% endblocktrans %}{% endautoescape %}
