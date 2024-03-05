@@ -77,6 +77,8 @@ def calendar_events(request, pk):
     events = []
     multiband = len(user_assocs) > 1
     for g in the_gigs:
+        if (g.is_in_trash):
+            continue
         gig = {}
         gig['title'] = f'{g.band.name} - {g.title}' if multiband else g.title
         gig['start'] = str(g.date)
