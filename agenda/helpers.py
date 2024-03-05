@@ -72,6 +72,7 @@ def calendar_events(request, pk):
         date__gte=start,
         band__in=[a.band for a in user_assocs],
         hide_from_calendar=False,
+        trashed_date__isnull=True
     )
 
     events = []
