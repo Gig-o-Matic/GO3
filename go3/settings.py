@@ -187,7 +187,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGES = [
     ("de", _("German")),
     ("en-US", _("English (US)")),
-    ("en-GB", _("English (UK)")),
+    ("en-GB", _("English (UK, AU, NZ, ...)")),
     ("fr", _("French")),
     ("it", _("Italian")),
 ]
@@ -229,14 +229,13 @@ LOGOUT_REDIRECT_URL = "/accounts/login"
 Q_CLUSTER = {
     "name": "DjangORM",
     "workers": 1,
-    "timeout": 90,
-    "retry": 120,
-    "queue_limit": 50,
-    "bulk": 10,
+    "timeout": 30,
+    "retry": 60,
     "orm": "default",
     "sync": _testing,
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
+    "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
 }
 
 

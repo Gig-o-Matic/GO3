@@ -4,71 +4,81 @@
 
 ## Local development
 
-This project is targeted at Python 3.8.  The required packages can be installed with [poetry](python-poetry.org)
+This project is targeted at Python 3.8.  The development environment uses [Docker](https://www.docker.com/products/docker-desktop/) to make installing Postgres easier. Install Docker Desktop before continuing.
 
-```shellsession
-$ poetry install
-Installing dependencies from lock file
-```
+1. Install required Python packages and activate the local virtualenv:
 
-By default, a SQLite database will be used.  To change this, or other settings, create a file `go3/settings_local.py`.  Any settings here will override the defaults.  Note that other databases may need additional packages; `poetry install --with=mysql` has the requirements for MySQL.
+  ```shellsession
+  $ poetry install 
+  Installing dependencies from lock file
+  $ poetry shell
+  Spawning shell within /Users/gigdude/src/Gig-o-Matic/GO3/.venv
+  (go3-py3.10) $
+  ```
 
-To create the database, run
+ 1. Use the default environment
 
-```shellsession
-$ poetry run python manage.py migrate
-Operations to perform:
-  Apply all migrations: admin, auth, band, contenttypes, django_q, gig, member, motd, sessions, stats
-Running migrations:
-  Applying contenttypes.0001_initial... OK
-  Applying contenttypes.0002_remove_content_type_name... OK
-  Applying auth.0001_initial... OK
-  Applying auth.0002_alter_permission_name_max_length... OK
-  Applying auth.0003_alter_user_email_max_length... OK
-  Applying auth.0004_alter_user_username_opts... OK
-```
+ ```shellsession
+ ln -s go3/.env.example go3/.env # Optional: copy instead and edit the file to taste
+ ```
 
-To seed the database with test data, run
+1. Start the DB engine
 
-```shellsession
-$ poetry run python manage.py loaddata fixtures/testdata.json
-Installed 1025 object(s) from 1 fixture(s)
-```
+ ```shellsession
+ docker compose up -d db
+ sleep 30 # wait for DB to finish initializing
+ ```
 
-Then, to create an administrative user, run
+1. Run the migrations
 
-```shellsession
-$ poetry run python manage.py createsuperuser
-Email address: ...
-Password:
-Password (again):
-Superuser created successfully.
-```
+ ```shellsession
+ python manage.py migrate
+ ```
 
-At this point, you should be able to run the project locally:
+1. OPTIONAL: Fill database with sample data
 
-```shellsession
-$ poetry run python manage.py runserver
-# ...
-Performing system checks...
+ ```shellsession
+ python manage.py loaddata fixtures/testdata.json
+ ```
 
-System check identified no issues (0 silenced).
-February 25, 2024 - 12:52:11
-Django version 3.2.6, using settings 'go3.settings'
-Starting development server at http://127.0.0.1:8000/
-Quit the server with CONTROL-C.
-```
+1. Create an administrative user
 
-You can log in with the user created above.
+ ```shellsession
+ python manage.py createsuperuser
+ ```
+
+1. Launch Gig-O!
+ At this point, you should be able to run the project locally:
+
+ ```shellsession
+ python manage.py runserver
+ ```
+
+ You can log in with the user created above.
+
+1. OPTIONAL: Start the task queue
+ Certain actions kick off activities that run in the background, using DjangoQ to manage the queue.
+ This runs concurrently, so kick it off in a separate shell. You should see the tasks come and go
+ in the DjangoQ section of the admin pages.
+
+ ```shellsession
+ python manage.py qcluster
+ ```
+
+1. OPTIONAL: set up the scheduled tasks
+ Some tasks - like updating calendar feeds, archiving gigs, send snooze reminders - require repeating
+ events to be scheduled in DjangoQ. This should only be done once - check the DjangoQ "scheduled tasks"
+ page to see the events that have been set up.
+
+ ```shellsession
+ python manage.py schedule_tasks
+ ```
 
 ## Testing
 
 ```shellsession
-poetry run python manage.py collectstatic
-```
-
-```shellsession
-poetry run python manage.py test
+python manage.py collectstatic
+DATABASE_URL="sqlite:///gig-o-matic-test.sqlite" poetry run python manage.py test
 ```
 
 ## GraphQL API

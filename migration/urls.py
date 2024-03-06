@@ -14,14 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.apps import AppConfig
-import logging
 
+from django.urls import path
 
-class MotdConfig(AppConfig):
-    name = 'motd'
+from . import views
 
-    @staticmethod
-    def ready():
-        logging.debug("loading motd signals")
-        from . import signals
+urlpatterns = [
+    path('band', views.BandMigrationFormView.as_view(), name='band_migration_form'),
+    path('band/go', views.BandMigrationResultsView.as_view()),
+    path('gig', views.GigMigrationFormView.as_view(), name='gig_migration_form'),
+    path('gig/go', views.GigMigrationResultsView.as_view()),
+]

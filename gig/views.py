@@ -35,6 +35,8 @@ from validators import url as url_validate
 def has_comment_permission(user, gig):
     return user and Assoc.objects.filter(member=user, band=gig.band).count() == 1
 
+def has_band_admin(user, band):
+    return user and band.is_admin(user)
 
 def has_manage_permission(user, band):
     return user and (user.is_superuser or band.anyone_can_manage_gigs or band.is_admin(user))
@@ -61,6 +63,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['user_has_band_admin'] = has_band_admin(
+            self.request.user, self.object.band)
         context['user_can_edit'] = has_manage_permission(
             self.request.user, self.object.band)
         context['user_can_create'] = has_create_permission(
@@ -69,6 +73,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['timezone'] = self.object.band.timezone
 
         context['plan_list'] = [x.value for x in PlanStatusChoices]
+
+        context['gig_ordered_member_plans'] = self.object.member_plans.order_by('section_id')
 
         if self.object.address:
             if url_validate(self.object.address):
@@ -256,6 +262,7 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
         context['gig'] = gig
+        context['gig_ordered_member_plans'] = gig.member_plans.order_by('section_id')
         context['plan_list'] = PlanStatusChoices.labels
         context['all'] = kwargs.get('all', True)
         return context

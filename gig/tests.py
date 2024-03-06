@@ -84,7 +84,7 @@ class GigTestBase(TestCase):
             enddate=thedate +
             timedelta(hours=2) if end_date == "auto" else end_date,
             contact=the_member,
-            status=GigStatusChoices.UNKNOWN,
+            status=GigStatusChoices.UNCONFIRMED,
         )
 
     def create_gig_form(
@@ -101,7 +101,7 @@ class GigTestBase(TestCase):
         **kwargs,
     ):
 
-        status = kwargs.pop("status", GigStatusChoices.UNKNOWN)
+        status = kwargs.pop("status", GigStatusChoices.UNCONFIRMED)
         contact = kwargs.pop("contact", self.joeuser).id
         send_update = kwargs.pop("send_update", True)
 
@@ -590,6 +590,8 @@ class GigTest(GigTestBase):
     def test_gig_edit_contact(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
+        # Jane needs to be in the band to be a contact for this gig
+        self.assoc_user(self.janeuser)
         self.update_gig_form(g, contact=self.janeuser.id)
 
         message = mail.outbox[0]
@@ -870,7 +872,7 @@ class GigTest(GigTestBase):
                 "set_time": set_time,
                 "end_time": end_time,
                 "contact": kwargs.get("contact", self.joeuser).id,
-                "status": GigStatusChoices.UNKNOWN,
+                "status": GigStatusChoices.UNCONFIRMED,
                 "send_update": True,
             },
         )
