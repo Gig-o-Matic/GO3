@@ -75,7 +75,7 @@ class Band(models.Model):
         unique=True, default=uuid.uuid4, editable=False)
 
     default_language = models.CharField(
-        choices=LANGUAGES, max_length=200, default='en-us')
+        choices=LANGUAGES, max_length=200, default='en-US')
 
     def has_member(self, member):
         return member and not member.is_anonymous and self.assocs.filter(member=member, status=AssocStatusChoices.CONFIRMED).count() == 1

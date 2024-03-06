@@ -23,5 +23,5 @@ class BandConfig(AppConfig):
 
     @staticmethod
     def ready():
-        logging.debug("loaded band signals")
+        logging.debug("loading band signals")
         from . import signals

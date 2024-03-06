@@ -14,14 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.apps import AppConfig
-import logging
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
+class SuperUserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 
-class MotdConfig(AppConfig):
-    name = 'motd'
-
-    @staticmethod
-    def ready():
-        logging.debug("loading motd signals")
-        from . import signals
+    def test_func(self):
+        return self.request.user.is_superuser

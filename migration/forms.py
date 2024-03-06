@@ -14,14 +14,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.apps import AppConfig
-import logging
+from django import forms
+from band.models import Band
 
+class BandMigrationForm(forms.Form):
+    paste = forms.CharField(label="Paste", widget=forms.Textarea)
 
-class MotdConfig(AppConfig):
-    name = 'motd'
-
-    @staticmethod
-    def ready():
-        logging.debug("loading motd signals")
-        from . import signals
+class GigMigrationForm(forms.Form):
+    paste = forms.CharField(label="Paste", widget=forms.Textarea)
+    band_id = forms.ChoiceField(label="Band", choices=(lambda: [[b.id, b.name] for b in Band.objects.all()]))

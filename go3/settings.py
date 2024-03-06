@@ -187,7 +187,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGES = [
     ("de", _("German")),
     ("en-US", _("English (US)")),
-    ("en-GB", _("English (UK)")),
+    ("en-GB", _("English (UK, AU, NZ, ...)")),
     ("fr", _("French")),
     ("it", _("Italian")),
 ]

@@ -590,6 +590,8 @@ class GigTest(GigTestBase):
     def test_gig_edit_contact(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
+        # Jane needs to be in the band to be a contact for this gig
+        self.assoc_user(self.janeuser)
         self.update_gig_form(g, contact=self.janeuser.id)
 
         message = mail.outbox[0]

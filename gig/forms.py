@@ -36,6 +36,10 @@ class GigForm(forms.ModelForm):
             label_suffix='',
             **kwargs
         )
+        
+        if band is None and self.instance.band_id is not None:
+            # TODO more robust checking, this form without a band doesn't make sense
+            band = self.instance.band
 
         if kwargs.get('instance',None) is None:
             self.fields['send_update'].label = _('Email members about this new gig')
@@ -50,7 +54,7 @@ class GigForm(forms.ModelForm):
         if band:
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
-        
+
         if band:
             self.fields['timezone'].initial = band.timezone
         elif self.instance:

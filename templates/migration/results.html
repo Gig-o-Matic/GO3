@@ -1,0 +1,11 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% block content %}
+  <ul>
+    {% for migration_message in migration_messages %}
+      <li>{{ migration_message }}</li>
+    {% endfor %}
+  </ul>
+  <a href="{% url "gig_migration_form" %}">Migrate gigs...</a><br>
+  <a href="{% url "band_migration_form" %}">Migration another band...</a>
+{% endblock content %}
