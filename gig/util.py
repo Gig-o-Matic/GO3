@@ -27,7 +27,7 @@ class PlanStatusChoices(models.IntegerChoices):
     NOT_INTERESTED = 6, _("Not Interested")
 
 class GigStatusChoices(models.IntegerChoices):
-    UNKNOWN = 0, _("Unknown")
+    UNCONFIRMED = 0, _("Unconfirmed")
     CONFIRMED = 1, _("Confirmed")
     CANCELLED = 2, _("Cancelled")
     ASKING = 3, _("Asking")

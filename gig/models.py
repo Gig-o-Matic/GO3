@@ -114,7 +114,7 @@ class AbstractEvent(models.Model):
     datenotes = models.TextField(null=True, blank=True)
 
     address = models.TextField(null=True, blank=True)
-    status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNKNOWN)
+    status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNCONFIRMED)
 
     @property
     def is_canceled(self):
