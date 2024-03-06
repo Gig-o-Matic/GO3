@@ -69,12 +69,17 @@ code {
 }
 
 #landingpage_content {
-    margin-top: 200px;
     padding: 20px;
     border: 1px solid;
     border-color: black;
     background-color: white;
     opacity: .95;
+}
+
+@media screen and (min-width: 992px) { /* bootstrap breakpoint */
+    #landingpage_content {
+        margin-top: 200px;
+    }
 }
 
 #landingpage_bigcontent {
