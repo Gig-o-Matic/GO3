@@ -36,7 +36,6 @@ from django.contrib import admin
 from django.urls import include, path
 from graphene_django.views import GraphQLView
 from .views import error404, error500, test404
-from .tasks import do_daily_tasks, do_hourly_tasks
 from go3.schema import schema
 from agenda.views import PrivateGraphQLView
 urlpatterns = [
@@ -51,8 +50,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('migration/', include('migration.urls')),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
-    path('tasks/hourly',do_hourly_tasks),
-    path('tasks/daily',do_daily_tasks),
     path('404',test404.as_view()),
 ]
 
