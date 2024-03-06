@@ -95,6 +95,12 @@ code {
   -webkit-font-smoothing: antialiased;
 }
 
+.lang-input{
+    appearance: none;
+    background: transparent;
+    border: none;
+}
+
 /* Custom page CSS
 -------------------------------------------------- */
 
