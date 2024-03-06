@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-02 18:01-0500\n"
+"POT-Creation-Date: 2024-03-06 15:00-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,176 +21,176 @@ msgstr ""
 msgid "not ever!"
 msgstr ""
 
-#: gig/forms.py:41
+#: gig/forms.py:45
 msgid "Email members about this new gig"
 msgstr ""
 
-#: gig/forms.py:42 gig/forms.py:234 templates/gig/gig_form.html:240
+#: gig/forms.py:46 gig/forms.py:238 templates/gig/gig_form.html:240
 msgid "Invite occasional members"
 msgstr ""
 
-#: gig/forms.py:44 gig/forms.py:177
+#: gig/forms.py:48 gig/forms.py:181
 msgid "Email members about change"
 msgstr ""
 
-#: gig/forms.py:45 templates/gig/gig_form.html:242
+#: gig/forms.py:49 templates/gig/gig_form.html:242
 msgid "Also send update to occasional members"
 msgstr ""
 
-#: gig/forms.py:85
+#: gig/forms.py:89
 msgid "Date is not valid"
 msgstr ""
 
-#: gig/forms.py:104
+#: gig/forms.py:108
 msgid "Gig call time must be in the future"
 msgstr ""
 
-#: gig/forms.py:106
+#: gig/forms.py:110
 msgid "Set time must not be earlier than the call time"
 msgstr ""
 
-#: gig/forms.py:110
+#: gig/forms.py:114
 msgid "Gig end must not be earlier than the start"
 msgstr ""
 
-#: gig/forms.py:112
+#: gig/forms.py:116
 msgid "Gig end must not be earlier than the call time"
 msgstr ""
 
-#: gig/forms.py:114
+#: gig/forms.py:118
 msgid "Gig end must not be earlier than the set time"
 msgstr ""
 
-#: gig/forms.py:178 gig/forms.py:221
+#: gig/forms.py:182 gig/forms.py:225
 msgid "Date"
 msgstr ""
 
-#: gig/forms.py:179 gig/helpers.py:112 templates/gig/gig_detail.html:95
+#: gig/forms.py:183 gig/helpers.py:112 templates/gig/gig_detail.html:95
 #: templates/gig/gig_detail_archived.html:72
 msgid "Call Time"
 msgstr ""
 
-#: gig/forms.py:180 gig/helpers.py:114 templates/gig/gig_detail.html:99
+#: gig/forms.py:184 gig/helpers.py:114 templates/gig/gig_detail.html:99
 #: templates/gig/gig_detail_archived.html:76
 msgid "Set Time"
 msgstr ""
 
-#: gig/forms.py:181 gig/helpers.py:116 templates/gig/gig_detail.html:102
+#: gig/forms.py:185 gig/helpers.py:116 templates/gig/gig_detail.html:102
 #: templates/gig/gig_detail_archived.html:79
 msgid "End Time"
 msgstr ""
 
-#: gig/forms.py:182 gig/forms.py:222
+#: gig/forms.py:186 gig/forms.py:226
 msgid "End Date"
 msgstr ""
 
-#: gig/forms.py:184
+#: gig/forms.py:188
 msgid "Date Notes"
 msgstr ""
 
-#: gig/forms.py:186
+#: gig/forms.py:190
 msgid "Hide From Public Gig Feed"
 msgstr ""
 
-#: gig/forms.py:188
+#: gig/forms.py:192
 msgid "Add A Series Of Copies"
 msgstr ""
 
-#: gig/forms.py:189
+#: gig/forms.py:193
 msgid "Total Number Of Gigs"
 msgstr ""
 
-#: gig/forms.py:190
+#: gig/forms.py:194
 msgid "Repeat Every"
 msgstr ""
 
-#: gig/forms.py:192
+#: gig/forms.py:196
 msgid "day"
 msgstr ""
 
-#: gig/forms.py:193
+#: gig/forms.py:197
 msgid "week"
 msgstr ""
 
-#: gig/forms.py:194
+#: gig/forms.py:198
 msgid "month (on same day of the month)"
 msgstr ""
 
-#: gig/forms.py:207
+#: gig/forms.py:211
 msgid "required"
 msgstr ""
 
-#: gig/forms.py:208
+#: gig/forms.py:212
 msgid "Cloudcuckooland"
 msgstr ""
 
-#: gig/forms.py:209
+#: gig/forms.py:213
 msgid "Pants Optional"
 msgstr ""
 
-#: gig/forms.py:210
+#: gig/forms.py:214
 msgid "As If"
 msgstr ""
 
-#: gig/forms.py:211
+#: gig/forms.py:215
 msgid "Hit the streets!"
 msgstr ""
 
-#: gig/forms.py:212
+#: gig/forms.py:216
 msgid "who? what? where? when? why?"
 msgstr ""
 
-#: gig/forms.py:213
+#: gig/forms.py:217
 msgid "setlist here"
 msgstr ""
 
-#: gig/forms.py:217
+#: gig/forms.py:221
 msgid "Gig Title"
 msgstr ""
 
-#: gig/forms.py:218 gig/helpers.py:118 templates/gig/gig_detail.html:76
+#: gig/forms.py:222 gig/helpers.py:118 templates/gig/gig_detail.html:76
 #: templates/gig/gig_detail_archived.html:53
 msgid "Contact"
 msgstr ""
 
-#: gig/forms.py:219 gig/helpers.py:110
+#: gig/forms.py:223 gig/helpers.py:110
 msgid "Status"
 msgstr ""
 
-#: gig/forms.py:224
+#: gig/forms.py:228
 msgid "Address or URL"
 msgstr ""
 
-#: gig/forms.py:225 templates/gig/gig_detail.html:126
+#: gig/forms.py:229 templates/gig/gig_detail.html:126
 #: templates/gig/gig_detail_archived.html:93
 msgid "What to Wear"
 msgstr ""
 
-#: gig/forms.py:226 templates/gig/gig_detail.html:133
+#: gig/forms.py:230 templates/gig/gig_detail.html:133
 #: templates/gig/gig_detail_archived.html:100
 msgid "Pay Deal"
 msgstr ""
 
-#: gig/forms.py:228 templates/gig/gig_detail.html:140
+#: gig/forms.py:232 templates/gig/gig_detail.html:140
 #: templates/gig/gig_detail_archived.html:107
 msgid "Leader"
 msgstr ""
 
-#: gig/forms.py:229 templates/gig/gig_detail.html:147
+#: gig/forms.py:233 templates/gig/gig_detail.html:147
 #: templates/gig/gig_detail_archived.html:114
 msgid "Post-gig Plans"
 msgstr ""
 
-#: gig/forms.py:230 gig/helpers.py:122
+#: gig/forms.py:234 gig/helpers.py:122
 msgid "Details"
 msgstr ""
 
-#: gig/forms.py:231 templates/gig/gig_detail.html:179
+#: gig/forms.py:235 templates/gig/gig_detail.html:179
 #: templates/gig/gig_detail_archived.html:140
 msgid "Setlist"
 msgstr ""
 
-#: gig/forms.py:233 templates/member/member_assocs.html:80
+#: gig/forms.py:237 templates/member/member_assocs.html:80
 msgid "hide from calendar"
 msgstr ""
 
@@ -207,7 +207,7 @@ msgstr ""
 msgid ", "
 msgstr ""
 
-#: gig/models.py:128 templates/gig/gig_detail.html:51
+#: gig/models.py:128 gig/util.py:30 templates/gig/gig_detail.html:51
 #: templates/gig/gig_detail_archived.html:41
 msgid "Unconfirmed"
 msgstr ""
@@ -254,10 +254,6 @@ msgstr ""
 msgid "Not Interested"
 msgstr ""
 
-#: gig/util.py:30
-msgid "Unknown"
-msgstr ""
-
 #: gig/util.py:31
 msgid "Confirmed"
 msgstr ""
@@ -275,7 +271,7 @@ msgid "English (US)"
 msgstr ""
 
 #: go3/settings.py:190
-msgid "English (UK)"
+msgid "English (UK, AU, NZ, ...)"
 msgstr ""
 
 #: go3/settings.py:191
@@ -379,7 +375,7 @@ msgid ""
 "account via the \"Forgot Password?\" link below."
 msgstr ""
 
-#: templates/agenda/agenda.html:14 templates/agenda/calendar.html:20
+#: templates/agenda/agenda.html:14 templates/agenda/calendar.html:19
 #: templates/agenda/grid.html:23
 msgid "Make this my default view!"
 msgstr ""
@@ -393,11 +389,11 @@ msgid "Upcoming Gigs"
 msgstr ""
 
 #: templates/agenda/agenda_plan_edit.html:57
-#: templates/gig/gig_plan_edit.html:69
+#: templates/gig/gig_plan_edit.html:68
 msgid "section"
 msgstr ""
 
-#: templates/agenda/calendar.html:12 templates/agenda/calendar.html:17
+#: templates/agenda/calendar.html:11 templates/agenda/calendar.html:16
 #: templates/base/navbar.html:17
 msgid "Calendar"
 msgstr ""
@@ -709,6 +705,10 @@ msgstr ""
 
 #: templates/base/welcome.html:13
 msgid "dismiss"
+msgstr ""
+
+#: templates/email/migration_password_reset_subject.txt:2
+msgid "is moving to the new Gig-o-Matic!"
 msgstr ""
 
 #: templates/gig/answer.html:4
@@ -1548,13 +1548,17 @@ msgstr ""
 msgid "Sign Up!"
 msgstr ""
 
-#: templates/registration/login.html:80
+#: templates/registration/login.html:49
+msgid "Language"
+msgstr ""
+
+#: templates/registration/login.html:67
 #, python-format
 msgid ""
 "Want your band on the Gig-o? Click <a href=\"%(band_request_url)s\">here</a>."
 msgstr ""
 
-#: templates/registration/login.html:82
+#: templates/registration/login.html:69
 #, python-format
 msgid ""
 "What is the Gig-o-Matic, anyway? Click <a href=\"%(whatis_url)s\">here</a>!"
