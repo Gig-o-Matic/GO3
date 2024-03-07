@@ -26,6 +26,8 @@ from io import StringIO
 import csv
 import json
 import dateutil.parser
+import pytz
+import re
 
 def cast_bool(text):
     return text.lower() == "true"
@@ -109,10 +111,10 @@ class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     hide_from_calendar = fields["hide_from_calendar"],
                     rss_description = fields["rss_description"],
                     default_to_attending = fields["default_to_attending"],
-                    date = dateutil.parser.isoparse(fields["date"]),
-                    setdate = dateutil.parser.isoparse(fields["setdate"]),
-                    enddate = dateutil.parser.isoparse(fields["enddate"]),
-                    created_date = dateutil.parser.isoparse(fields["created_date"]),
+                    date = self.mangle_time(fields["date"], band.timezone),
+                    setdate = self.mangle_time(fields["setdate"], band.timezone),
+                    enddate = self.mangle_time(fields["enddate"], band.timezone),
+                    created_date = self.mangle_time(fields["created_date"], band.timezone),
                 )
                 gig.save()
                 migration_messages.append(f"Imported {gig.title}")
@@ -122,3 +124,14 @@ class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
             context["migration_messages"] = migration_messages
             context["return_to"] = "gig_migration_form"
             return self.render_to_response(context)
+        
+    def mangle_time(self, timestr, tzstr):
+        # Necessary because GO2 was not tz-aware
+        # Interpret the time in the band's zone
+        tz = pytz.timezone(tzstr)
+        stripped = re.sub("\\+00:00", "", timestr)
+        parsed = dateutil.parser.isoparse(stripped)
+        return tz.localize(parsed)
+
+
+
