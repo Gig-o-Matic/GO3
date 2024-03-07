@@ -4,7 +4,7 @@ services:
   web:
     build: .
     image: go3
-    command: python manage.py runserver 0.0.0.0:8000
+    command: /venv/bin/python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     env_file: ./go3/.env
@@ -15,7 +15,7 @@ services:
         condition: service_healthy
   worker:
     image: go3
-    command: python manage.py qcluster
+    command: /venv/bin/python manage.py qcluster
     env_file: ./go3/.env
     depends_on:
       migration:
@@ -37,11 +37,10 @@ services:
       - "15432:5432"
   migration:
     image: go3
-    command: python manage.py migrate --noinput
+    command: /venv/bin/python manage.py migrate --noinput
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db_data:
-
