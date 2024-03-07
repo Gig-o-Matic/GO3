@@ -42,37 +42,24 @@
 
 {% get_current_language as current_code %}
 {% get_available_languages as languages %}
-<style>
-    #langs {
-        display: flex;
-    }
-    #langs > form:not(:first-child)::before {
-        content: '|';
-        display: inline;
-    }
-    #langs [type=submit] {
-        border: none;
-        background: none;
-        color: #428bca;
-    }
-    #langs [type=submit]:hover {
-        color: #0056b3;
-        text-decoration: underline;
-    }
-    #langs > form:first-child [type=submit] {
-        padding-left: 0;
-    }
-</style>
-<div id="langs">
-    {% for code, _ in LANGUAGES %}
-        {% if code != current_code %}
-            <form action="{% url 'set_language' %}" method="post" class="form-inline">
+
+<div class="mb-3 text-center">
+    <div class="dropdown" >
+        <button class="btn btn-outline-secondary dropdown-toggle" style="min-width: 160px;" type="button" data-toggle="dropdown" aria-expanded="false">
+            {% trans "Language" %} <i class="fas fa-language fa-lg ml-1"></i>
+        </button>
+        <div class="dropdown-menu">
+            {% for code, _ in LANGUAGES %}
+            {% if code != current_code %}
+            <form action="{% url 'set_language' %}" method="post" class="dropdown-item">
                 {% csrf_token %}
                 <input name="language" type="hidden" value="{{ code }}">
-                <input type="submit" value="{{ code | language_name_local }}{% if '-' in code %} ({{ code | slice:'3:' | upper }}){% endif %}">
+                <input type="submit" class="lang-input" value="{{ code | language_name_local }}{% if '-' in code %} ({{ code | slice:'3:' | upper }}){% endif %}">
             </form>
-        {% endif %}
-    {% endfor %}
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
 <div>
