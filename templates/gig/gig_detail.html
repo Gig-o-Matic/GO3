@@ -204,10 +204,10 @@
                         <span id="printall"><a href="{% url 'gig-print-all-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
                         {% trans "Print" %}
                         </a></span>
-                    <span id="printcomm" style="display:none">
-                        <a href="{% url 'gig-print-confirmed-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
-                        {% trans "Print" %}
-                        </a></span>
+                        <span id="printcomm" style="display:none">
+                            <a href="{% url 'gig-print-confirmed-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
+                            {% trans "Print" %}
+                            </a></span>
                         <a href="#" onclick="simpleswitch(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-sync fs-lg"></i>
                         <span id="simpleoff" style="display:none">{% trans "Show All" %}</span>
                         <span id="simpleon">{% trans "Show Committed" %}</span>
@@ -256,7 +256,7 @@
                             </div>
                             <div class="col-lg-10 col-md-10 col-sm-12 col-12">
                         {% else %}
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-12">
                         {% endif %}
                             {% for plan in plans_by_section|lookup_plans:section %}
                                 {% include "gig/gig_plan_edit.html" with plan=plan %}
