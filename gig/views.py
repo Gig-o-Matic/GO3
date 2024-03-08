@@ -21,14 +21,13 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
-from django.http import Http404, HttpResponseForbidden
+from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-import urllib.parse
 from validators import url as url_validate
 
 
@@ -70,7 +69,6 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['user_can_create'] = has_create_permission(
             self.request.user, self.object.band)
 
-        context['timezone'] = self.object.band.timezone
 
         context['plan_list'] = [x.value for x in PlanStatusChoices]
 
