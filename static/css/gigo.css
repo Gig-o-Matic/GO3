@@ -126,6 +126,11 @@ a {
   z-index:9999;
 }
 
+.dropdown-menu .lang-input {
+  /* Needed for Safari on iOS 17 */
+  color: #09121c;
+}
+
 .h5, h5 {
     font-size: 1.2rem;
 }
