@@ -29,6 +29,7 @@ from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from validators import url as url_validate
+import pytz
 
 
 def has_comment_permission(user, gig):
@@ -69,6 +70,15 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['user_can_create'] = has_create_permission(
             self.request.user, self.object.band)
 
+        tz = pytz.timezone(self.object.band.timezone)
+        start_time = self.object.date.astimezone(tz).strftime("%H:%M")
+        context['gig_has_start_time'] = (start_time != "00:00")
+
+        context['multi_day_gig'] = False
+        if self.object.enddate:
+            start_date = self.object.date.astimezone(tz).strftime("%j")
+            end_date = self.object.enddate.astimezone(tz).strftime("%j")
+            context['multi_day_gig'] = (start_date != end_date)
 
         context['plan_list'] = [x.value for x in PlanStatusChoices]
 
