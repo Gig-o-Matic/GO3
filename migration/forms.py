@@ -19,7 +19,15 @@ from band.models import Band
 
 class BandMigrationForm(forms.Form):
     paste = forms.CharField(label="Paste", widget=forms.Textarea)
+    tzlist = [
+        "America/New_York",
+        "America/Chicago",
+        "America/Denver",
+        "America/Los_Angeles",
+        "UTC",
+    ]
+    timezone = forms.ChoiceField(label="Timezone", choices=[[tz, tz] for tz in tzlist])
 
 class GigMigrationForm(forms.Form):
     paste = forms.CharField(label="Paste", widget=forms.Textarea)
-    band_id = forms.ChoiceField(label="Band", choices=(lambda: [[b.id, b.name] for b in Band.objects.all()]))
+    band_id = forms.ChoiceField(label="Band", choices=(lambda: [[b.id, b.name] for b in Band.objects.filter(gigs__isnull=True)]))
