@@ -46,15 +46,14 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         form = BandMigrationForm(request.POST)
         if form.is_valid():
-            fieldnames = ['band_name', 'name', 'email', 'is_admin', 'section', 'is_occasional', 'old_member_id']
-            reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), fieldnames, dialect='excel-tab')
+            reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), dialect='excel-tab')
 
             migration_messages = []
             for row in reader:
-                band, band_created = Band.objects.get_or_create(name=row["band_name"], defaults={"timezone": form.cleaned_data["timezone"]})
+                band, band_created = Band.objects.get_or_create(name=row["band"], defaults={"timezone": form.cleaned_data["timezone"]})
                 if band_created: migration_messages.append(f"Created new band {band.name}")
 
-                member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["name"]})
+                member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["member"], "go2_id": row["object ID"]})
                 if member_created:
                     async_task("migration.helpers.send_migrated_user_password_reset", band.id, member.id)
 

@@ -91,6 +91,10 @@ class Member(AbstractUser):
 
     status = models.IntegerField(choices=MemberStatusChoices.choices, default=MemberStatusChoices.ACTIVE)
 
+    # The old Gig-O-Matic v2 (Google App Engine) member ID
+    # Used to map old calendar subscription URLs
+    go2_id = models.CharField(max_length=100, blank=True)
+
     @property
     def display_name(self):
         if self.nickname:
