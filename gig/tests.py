@@ -356,18 +356,18 @@ class GigTest(GigTestBase):
         joe_a = self.assoc_user(self.joeuser)
         joe_a.is_occasional = False
         joe_a.save()
-        g = self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
+        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
         self.assertEqual(len(mail.outbox),2)  # both should get email
         joe_a.is_occasional = True
         joe_a.save()
         mail.outbox.clear()
-        g = self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
+        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
         self.assertEqual(len(mail.outbox),2) # both should get email
         mail.outbox.clear()
-        g = self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=False)
+        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=False)
         self.assertEqual(len(mail.outbox),1) # only superuser gets email
         mail.outbox.clear()
-        g = self.create_gig_form(contact=self.joeuser, email_changes = False, invite_occasionals=True)
+        self.create_gig_form(contact=self.joeuser, email_changes = False, invite_occasionals=True)
         self.assertEqual(len(mail.outbox),0) # nobody gets email
 
 
