@@ -46,26 +46,25 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         form = BandMigrationForm(request.POST)
         if form.is_valid():
-            fieldnames = ['band_name', 'name', 'email', 'is_admin', 'section1', 'section2', 'section3']
-            reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), fieldnames, dialect='excel-tab')
+            reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), dialect='excel-tab')
 
             migration_messages = []
             for row in reader:
-                band, band_created = Band.objects.get_or_create(name=row["band_name"])
+                band, band_created = Band.objects.get_or_create(name=row["band"], defaults={"timezone": form.cleaned_data["timezone"]})
                 if band_created: migration_messages.append(f"Created new band {band.name}")
 
-                member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["name"]})
+                member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["member"], "go2_id": row["object ID"]})
                 if member_created:
                     async_task("migration.helpers.send_migrated_user_password_reset", band.id, member.id)
 
                 is_admin = cast_bool(row["is_admin"])
-                if row["section1"] and row["section1"] != "None":
-                    imported_section_name = row["section1"]
+                is_occasional = cast_bool(row["is_occasional"])
+                if row["section"] and row["section"] != "None":
+                    imported_section_name = row["section"]
                 else:
                     imported_section_name = "No Section"
                 default_section, _section_created = band.sections.get_or_create(name=imported_section_name)
-                is_multisectional = bool(row["section2"] or row["section3"])
-                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_multisectional": is_multisectional, "status": AssocStatusChoices.CONFIRMED})
+                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_occasional": is_occasional, "status": AssocStatusChoices.CONFIRMED})
                 if assoc_created:
                     migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} - {default_section.name} {'as band admin' if is_admin else ''}")
                 else:
