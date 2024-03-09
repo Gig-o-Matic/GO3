@@ -85,6 +85,7 @@ class GigTestBase(TestCase):
             timedelta(hours=2) if end_date == "auto" else end_date,
             contact=the_member,
             status=GigStatusChoices.UNCONFIRMED,
+            email_changes=True,
         )
 
     def create_gig_form(
@@ -98,6 +99,7 @@ class GigTestBase(TestCase):
         set_time="",
         end_time="",
         title="New Gig",
+        email_changes=True,
         **kwargs,
     ):
 
@@ -120,6 +122,7 @@ class GigTestBase(TestCase):
                 "contact": contact,
                 "status": status,
                 "send_update": send_update,
+                "email_changes": email_changes,
                 **kwargs,
             },
         )
@@ -153,7 +156,7 @@ class GigTestBase(TestCase):
             "end_time": end_time,
             "contact": the_gig.contact.id,
             "status": the_gig.status,
-            "send_update": True,
+            "email_changes": True,
         }
         for x in kwargs.keys():
             data[x] = kwargs[x]
