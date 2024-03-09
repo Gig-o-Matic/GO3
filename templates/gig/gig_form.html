@@ -219,7 +219,7 @@
             <div class="form-group">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="newgig_notifymembers" name="gig_notifymembers" 
-                    {% if band.send_updates_by_default %}checked{% endif %}>
+                    {% if email_members %}checked{% endif %}>
                     <label class="form-check-label" for="newgig_notifymembers"> 
                         {% if is_new or is_dupe %}
                             {% trans "Email members about this new gig" %}

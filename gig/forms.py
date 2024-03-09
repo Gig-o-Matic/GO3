@@ -41,8 +41,11 @@ class GigForm(forms.ModelForm):
             # TODO more robust checking, this form without a band doesn't make sense
             band = self.instance.band
 
-        if kwargs.get('instance',None) is None:
+        instance = kwargs.get('instance',None)
+        if instance is None:
+            """ this is a new gig """
             self.fields['send_update'].label = _('Email members about this new gig')
+            self.fields['send_update'].initial = band.send_updates_by_default
             self.fields['invite_occasionals'].label = _('Invite occasional members')
         else:
             self.fields['send_update'].label = _('Email members about change')
@@ -51,6 +54,7 @@ class GigForm(forms.ModelForm):
         if user:
             self.fields['contact'].initial = user
             self.fields['contact'].empty_label = None
+
         if band:
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
