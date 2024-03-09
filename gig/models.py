@@ -116,6 +116,8 @@ class AbstractEvent(models.Model):
     address = models.TextField(null=True, blank=True)
     status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNCONFIRMED)
 
+    email_changes = models.BooleanField(default=True)
+
     @property
     def is_canceled(self):
         self.status=GigStatusChoices.CANCELLED

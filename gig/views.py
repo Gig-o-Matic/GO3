@@ -152,7 +152,7 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
         result = super().form_valid(form)
 
         # call the super before sending notifications, so the object is saved
-        if form.cleaned_data['send_update']:
+        if form.cleaned_data['email_changes']:
             notify_new_gig(form.instance, created=True)
 
         return result
@@ -193,7 +193,7 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         result = super(UpdateView, self).form_valid(form)
 
         # call the super before sending notifications, so the object is saved
-        if form.cleaned_data['send_update']:
+        if form.cleaned_data['email_changes']:
             notify_new_gig(form.instance, created=False)
 
         return result
