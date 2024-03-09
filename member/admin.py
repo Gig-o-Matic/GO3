@@ -48,7 +48,7 @@ class MemberAdmin(BaseUserAdmin):
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Other stuff', {'classes': ('collapse',),
                          'fields': ('statement', 'motd_dirty', 'seen_welcome', 
-                                    'images', 'cal_feed_dirty','status'
+                                    'images', 'cal_feed_dirty','status', 'go2_id'
                                     )}),
     )
 
