@@ -347,6 +347,30 @@ class GigTest(GigTestBase):
             mail.outbox[0].body,
         )
 
+    def test_gig_occasionals(self):
+        a = self.band.all_assocs
+        self.assertEqual(len(a),1)
+        super_a = a[0]
+        super_a.email_me = True
+        super_a.save()
+        joe_a = self.assoc_user(self.joeuser)
+        joe_a.is_occasional = False
+        joe_a.save()
+        g = self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox),2)  # both should get email
+        joe_a.is_occasional = True
+        joe_a.save()
+        mail.outbox.clear()
+        g = self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox),2) # both should get email
+        mail.outbox.clear()
+        g = self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=False)
+        self.assertEqual(len(mail.outbox),1) # only superuser gets email
+        mail.outbox.clear()
+        g = self.create_gig_form(contact=self.joeuser, email_changes = False, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox),0) # nobody gets email
+
+
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_time="", end_date="", end_time="")
         self.assertIn("Time: noon (Call Time)\nContact", mail.outbox[0].body)
