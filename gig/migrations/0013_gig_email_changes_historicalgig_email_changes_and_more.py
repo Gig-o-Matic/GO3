@@ -17,10 +17,11 @@ class Migration(migrations.Migration):
             old_name='send_update',
             new_name='email_changes',
         ),
-        migrations.AddField(
+```suggestion
+        migrations.RenameField(
             model_name='historicalgig',
-            name='email_changes',
-            field=models.BooleanField(default=True),
+            old_name='send_update',
+            new_name='email_changes',
         ),
         migrations.AlterField(
             model_name='gig',
