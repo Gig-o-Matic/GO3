@@ -31,7 +31,6 @@ Markdown==3.5.2
 MarkupSafe==2.0.1
 mccabe==0.6.1
 packaging==23.2
-pipupgrade==1.9.0
 promise==2.3
 protobuf==3.18.3
 psycopg==3.1.18
