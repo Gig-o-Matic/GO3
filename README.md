@@ -2,7 +2,7 @@ Porting www.gig-o-matic.com to Django
 
 ## Local development
 
-This project is targeted at Python 3.8.  The development environment uses [Docker](https://www.docker.com/products/docker-desktop/) to make installing Postgres easier. Install Docker Desktop before continuing.
+This project is targeted at Python 3.10.  The development environment uses [Docker](https://www.docker.com/products/docker-desktop/) to make installing Postgres easier. Install Docker Desktop before continuing.
 
 1. Create Python sandbox
 	```
