@@ -41,16 +41,21 @@ class GigForm(forms.ModelForm):
             # TODO more robust checking, this form without a band doesn't make sense
             band = self.instance.band
 
-        if kwargs.get('instance',None) is None:
-            self.fields['send_update'].label = _('Email members about this new gig')
+        instance = kwargs.get('instance',None)
+        if instance is None:
+            """ this is a new gig """
+            self.fields['email_changes'].label = _('Email members about this new gig')
+            self.fields['email_changes'].initial = band.send_updates_by_default
+
             self.fields['invite_occasionals'].label = _('Invite occasional members')
         else:
-            self.fields['send_update'].label = _('Email members about change')
+            self.fields['email_changes'].label = _('Email members about change')
             self.fields['invite_occasionals'].label = _('Also send update to occasional members')
 
         if user:
             self.fields['contact'].initial = user
             self.fields['contact'].empty_label = None
+
         if band:
             self.fields['contact'].queryset = band.confirmed_members
             self.fields['leader'].queryset = band.confirmed_members
@@ -178,7 +183,7 @@ class GigForm(forms.ModelForm):
             self.instance.id = save_id
         return newgig
 
-    send_update = forms.BooleanField(required=False, label=_('Email members about change'))
+    email_changes = forms.BooleanField(required=False, label=_('Email members about change'))
     call_date = forms.Field(required=True, label=_('Date'))
     call_time = forms.Field(required=False, label=_('Call Time'))
     set_time = forms.Field(required=False, label=_('Set Time'))
@@ -186,6 +191,7 @@ class GigForm(forms.ModelForm):
     end_date = forms.Field(required=False, label=_('End Date'))
     timezone = forms.Field(required=False, widget=forms.HiddenInput())
     datenotes = forms.Field(required=False, label=_('Date Notes'))
+
 
     is_private = forms.BooleanField(required=False, label=_('Hide From Public Gig Feed'))
 
@@ -205,7 +211,7 @@ class GigForm(forms.ModelForm):
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
                 'address','dress','paid','leader', 'postgig', 'details','setlist','rss_description','invite_occasionals',
-                'hide_from_calendar','send_update','add_series','total_gigs','datenotes']
+                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
@@ -235,5 +241,6 @@ class GigForm(forms.ModelForm):
             'setlist': _('Setlist'),
 
             'hide_from_calendar': _('hide from calendar'),
-            'invite_occasionals': _('Invite occasional members')
+            'invite_occasionals': _('Invite occasional members'),
+            'email_changes': _('Email members about this new gig')
         }

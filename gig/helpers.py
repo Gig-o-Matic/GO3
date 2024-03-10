@@ -23,6 +23,7 @@ from django.utils import timezone
 from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import template_localtime, now
+from django.db.models import Q
 from .models import Gig, Plan
 from .util import PlanStatusChoices
 from band.models import Section, Assoc, AssocStatusChoices
@@ -152,6 +153,9 @@ def email_from_plan(plan, template):
 def send_emails_from_plans(plans_query, template):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,
                                      assoc__email_me=True)
+    # if the plan is for a gig that did not invite occasionals, select only members that are not
+    # occasional
+    contactable = contactable.filter(Q(gig__invite_occasionals=True) | Q(assoc__is_occasional=False))
     send_messages_async(email_from_plan(p, template) for p in contactable)
 
 def send_email_from_gig(gig, template):

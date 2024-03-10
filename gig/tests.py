@@ -85,6 +85,7 @@ class GigTestBase(TestCase):
             timedelta(hours=2) if end_date == "auto" else end_date,
             contact=the_member,
             status=GigStatusChoices.UNCONFIRMED,
+            email_changes=True,
         )
 
     def create_gig_form(
@@ -98,6 +99,7 @@ class GigTestBase(TestCase):
         set_time="",
         end_time="",
         title="New Gig",
+        email_changes=True,
         **kwargs,
     ):
 
@@ -120,6 +122,7 @@ class GigTestBase(TestCase):
                 "contact": contact,
                 "status": status,
                 "send_update": send_update,
+                "email_changes": email_changes,
                 **kwargs,
             },
         )
@@ -153,7 +156,7 @@ class GigTestBase(TestCase):
             "end_time": end_time,
             "contact": the_gig.contact.id,
             "status": the_gig.status,
-            "send_update": True,
+            "email_changes": True,
         }
         for x in kwargs.keys():
             data[x] = kwargs[x]
@@ -343,6 +346,30 @@ class GigTest(GigTestBase):
             "Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact",
             mail.outbox[0].body,
         )
+
+    def test_gig_occasionals(self):
+        a = self.band.all_assocs
+        self.assertEqual(len(a),1)
+        super_a = a[0]
+        super_a.email_me = True
+        super_a.save()
+        joe_a = self.assoc_user(self.joeuser)
+        joe_a.is_occasional = False
+        joe_a.save()
+        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox),2)  # both should get email
+        joe_a.is_occasional = True
+        joe_a.save()
+        mail.outbox.clear()
+        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox),2) # both should get email
+        mail.outbox.clear()
+        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=False)
+        self.assertEqual(len(mail.outbox),1) # only superuser gets email
+        mail.outbox.clear()
+        self.create_gig_form(contact=self.joeuser, email_changes = False, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox),0) # nobody gets email
+
 
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_time="", end_date="", end_time="")
