@@ -46,7 +46,7 @@ python_http_client==3.3.2
 pytz==2024.1
 redis==3.5.3
 Rx==1.6.1
-sendgrid==6.8.0
+sendgrid==6.11.0
 sentry-sdk==1.41.0
 setuptools==69.1.1
 singledispatch==3.6.2
