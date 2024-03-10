@@ -72,7 +72,7 @@ def calendar_events(request, pk):
         date__gte=start,
         band__in=[a.band for a in user_assocs],
         hide_from_calendar=False,
-        trashed_date__isnull=True
+        trashed_date__isnull=True,
     )
 
     events = []
@@ -111,7 +111,10 @@ def grid_heatmap(request, *args, **kw):
     band_id = int(request.POST['band'])
 
     the_gigs = Gig.objects.filter(
-        date__year=year, band=band_id).order_by('date').values('date')
+        date__year=year,
+        band=band_id,
+        trashed_date__isnull=True,
+        ).order_by('date').values('date')
 
     uncooked_data = {}
     for g in the_gigs:
@@ -163,7 +166,13 @@ def grid_gigs(request, *args, **kw):
     band = Band.objects.get(id=band_id)
     start = datetime.datetime(year=year, month=month+1, day=1, tzinfo=pytz_timezone(band.timezone))
     end = start + relativedelta(months=1)
-    gigs = Gig.objects.filter(date__gte=start, date__lt=end, band=band_id, hide_from_calendar=False)
+    gigs = Gig.objects.filter(
+        date__gte=start,
+        date__lt=end,
+        band=band_id,
+        trashed_date__isnull=True,
+        hide_from_calendar=False,
+        )
 
     data = []
     for g in gigs:
