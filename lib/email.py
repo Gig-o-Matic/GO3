@@ -7,7 +7,7 @@ from django_q.tasks import async_task
 from markdown import markdown
 import logging
 
-from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE, EMAIL_DISABLE
+from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE, EMAIL_ENABLE
 
 SUBJECT = 'Subject:'
 DEFAULT_SUBJECT = 'Message from Gig-O-Matic'
