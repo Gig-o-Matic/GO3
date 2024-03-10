@@ -38,7 +38,7 @@ from multiprocessing import set_start_method  # for task q
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
                   ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
-                  LOG_LEVEL=str)
+                  LOG_LEVEL=str, EMAIL_ENABLE=bool)
 
 # reading .env file
 environ.Env.read_env()
