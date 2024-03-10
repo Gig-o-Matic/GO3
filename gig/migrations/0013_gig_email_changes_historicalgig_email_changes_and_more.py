@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
             old_name='send_update',
             new_name='email_changes',
         ),
-```suggestion
         migrations.RenameField(
             model_name='historicalgig',
             old_name='send_update',
