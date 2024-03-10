@@ -38,7 +38,7 @@ from multiprocessing import set_start_method  # for task q
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
                   ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
-                  LOG_LEVEL=str)
+                  LOG_LEVEL=str, EMAIL_ENABLE=bool)
 
 # reading .env file
 environ.Env.read_env()
@@ -278,6 +278,7 @@ EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
 SENDGRID_TRACK_CLICKS_HTML = False
+EMAIL_ENABLE = env("EMAIL_ENABLE", default=True)
 
 # Calfeed settings
 DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache

@@ -20,6 +20,7 @@ from django.views import generic
 from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
+from django.db.models import Q
 from django import forms
 from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
@@ -82,7 +83,11 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 
         context['plan_list'] = [x.value for x in PlanStatusChoices]
 
-        context['gig_ordered_member_plans'] = self.object.member_plans.order_by('section_id')
+        # filter the plans so we only see plans for regular users, or occasionals who have registered,
+        # or the current user
+        context['gig_ordered_member_plans'] = self.object.member_plans.filter(
+            Q(assoc__is_occasional=False) | Q(assoc__member=self.request.user) | ~Q(status=PlanStatusChoices.NO_PLAN)
+            ).order_by('section_id')
 
         if self.object.address:
             if url_validate(self.object.address):
@@ -147,7 +152,7 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
         result = super().form_valid(form)
 
         # call the super before sending notifications, so the object is saved
-        if form.cleaned_data['send_update']:
+        if form.cleaned_data['email_changes']:
             notify_new_gig(form.instance, created=True)
 
         return result
@@ -188,7 +193,7 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         result = super(UpdateView, self).form_valid(form)
 
         # call the super before sending notifications, so the object is saved
-        if form.cleaned_data['send_update']:
+        if form.cleaned_data['email_changes']:
             notify_new_gig(form.instance, created=False)
 
         return result

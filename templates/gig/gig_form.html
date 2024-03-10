@@ -209,27 +209,6 @@
                     {% render_field form.setlist class="form-control" %}
                 </div>
             </div>
-{% comment %}
-            {% if band.rss_feed %}
-                <div class="form-group">
-                    <label for="gigrssdescriptioninput" class="col-form-label">{% trans "Description for RSS feed" %}</label>
-                    <textarea class="form-control" rows="10" id="gigrssdescriptioninput" placeholder="{% trans "description here" %}" name="gig_rssdescription">{{gig.rss_description}}</textarea>
-                </div>
-            {% endif %}
-            <div class="form-group">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="newgig_notifymembers" name="gig_notifymembers" 
-                    {% if band.send_updates_by_default %}checked{% endif %}>
-                    <label class="form-check-label" for="newgig_notifymembers"> 
-                        {% if is_new or is_dupe %}
-                            {% trans "Email members about this new gig" %}
-                        {% else %}
-                            {% trans "Email members about change" %}  
-                        {% endif %}
-                    </label>
-                </div>
-            </div>
-{% endcomment %}
             <div class="row">
                 <div class="col-12">
                     {{ form.invite_occasionals.errors }}
@@ -253,24 +232,12 @@
             </div>
             <div class="row">
                 <div class="form-group col-12">
-                    {{ form.send_update.errors }}
-                    {{ form.send_update }}
-                    {{ form.send_update.label_tag }}
+                    {{ form.email_changes.errors }}
+                    {{ form.email_changes }}
+                    {{ form.email_changes.label_tag }}
                 </div>
             </div>
 
-{% comment %}
-            {% if is_new %}
-                <div class="form-group">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="default_to_attend" name="default_to_attend">
-                        <label class="form-check-label" for="default_to_attend">
-                            {% trans "Default to definitely attending" %}
-                        </label>
-                    </div>
-                </div>
-            {% endif %}
-{% endcomment %}
             <div class="row">
                 <div class="form-group col-md-6 col-12 ml-auto text-left">
                     {% if gig and not is_dupe%}
@@ -287,13 +254,6 @@
                         <button type="submit" id="savebutton" class="btn btn-primary">{% trans "Save" %}</button>
                 </div>
             </div>
-{% comment %}            
-            {% if not gig or is_dupe %}
-                <input type="hidden" name="gk" value="0">
-            {% else %}
-                <input type="hidden" name="gk" value="{{gig.id}}">
-            {% endif %}
-{% endcomment %}            
         </form>
     </div>
 </div>

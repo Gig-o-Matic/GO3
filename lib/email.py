@@ -5,8 +5,9 @@ from django.template.loader import render_to_string
 from django.utils import translation
 from django_q.tasks import async_task
 from markdown import markdown
+import logging
 
-from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE
+from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE, EMAIL_ENABLE
 
 SUBJECT = 'Subject:'
 DEFAULT_SUBJECT = 'Message from Gig-O-Matic'
@@ -17,8 +18,16 @@ def send_messages_async(messages):
     return async_task('lib.email.do_send_messages_async', list(messages), ack_failure=True)
 
 def do_send_messages_async(messages):
-    mail.get_connection().send_messages(messages)
+    if EMAIL_ENABLE:
+        mail.get_connection().send_messages(messages)
+    else:
+        log_messages(messages)
 
+
+def log_messages(messages):
+    """ if emailing is disabled, just log the messages """
+    for m in messages:
+        logging.info(f"to: {m.to}  subject: {m.subject}")
 
 @dataclass
 class EmailRecipient:
