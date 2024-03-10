@@ -12,10 +12,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.RenameField(
             model_name='gig',
-            name='email_changes',
-            field=models.BooleanField(default=True),
+            old_name='send_update',
+            new_name='email_changes',
         ),
         migrations.AddField(
             model_name='historicalgig',
