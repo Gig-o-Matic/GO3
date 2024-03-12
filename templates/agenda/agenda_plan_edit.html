@@ -11,7 +11,11 @@
 {% endcomment %}
 
 {% with assoc=plan.assoc gig=plan.gig band=plan.assoc.band section=plan.section%}
-<div class="row" style="border-left:solid thick {{ assoc.colorval }};">
+{% if assoc.colorval != "#ffffff" %}
+    <div class="row" style="border-left:solid 5px {{ assoc.colorval }};">
+{% else %}
+    <div class="row" style="position:relative; left:5px;">
+{% endif %}
     <div class="col-sm-12 col-md-3">
         {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }} {{ gig.date|date:"D" }}
 {% comment %}
