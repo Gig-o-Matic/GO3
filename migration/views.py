@@ -91,11 +91,13 @@ class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
         if form.is_valid():
             data = json.loads(form.cleaned_data["paste"])
             band = Band.objects.get(id=form.cleaned_data["band_id"])
+            admin = band.assocs.filter(is_admin=True).first()
             migration_messages = []
             for record in data:
                 fields = record["fields"]
                 gig = Gig(
                     band = band,
+                    contact = admin,
                     title = fields["title"],
                     details = fields["details"],
                     setlist = fields["setlist"],
