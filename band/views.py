@@ -5,7 +5,7 @@ from django.views.generic.edit import UpdateView as BaseUpdateView
 from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from .models import Band, Assoc, Section
@@ -13,6 +13,7 @@ from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
 from member.models import Invite
 from member.util import MemberStatusChoices
+from member.helpers import has_manage_band_permission
 from stats.helpers import get_band_stats, get_gigs_over_time_stats
 import json
 from django.utils.safestring import SafeString
@@ -20,17 +21,13 @@ from datetime import datetime
 from django.utils.translation import gettext_lazy as _
 from go3.settings import URL_BASE
 
-class BandMemberRequiredMixin(AccessMixin):
+class BandMemberRequiredMixin(UserPassesTestMixin):
     """Verify that the current user is authenticated."""
 
-    def dispatch(self, request, *args, **kwargs):
-        band = get_object_or_404(Band, pk=kwargs['pk'])
-        is_band_member = Assoc.objects.filter(
-            member=request.user, band=band, status=AssocStatusChoices.CONFIRMED).count() == 1
-        if not (is_band_member or request.user.is_superuser):
-            return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
-
+    def test_func(self):
+        # can only edit the band if you're logged in and an admin or superuser
+        band = get_object_or_404(Band, id=self.kwargs['pk'])
+        return self.request.user and band.has_member(self.request.user)
 
 class BandList(LoginRequiredMixin, generic.ListView):
     queryset = Band.objects.filter(
@@ -88,9 +85,14 @@ class DetailView(generic.DetailView):
         return reverse('member-detail', kwargs={'pk': self.object.id})
 
 
-class UpdateView(LoginRequiredMixin, BandMemberRequiredMixin, BaseUpdateView):
+class UpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseUpdateView):
     model = Band
     form_class = BandForm
+
+    def test_func(self):
+        # can only edit the band if you're logged in and an admin or superuser
+        band = get_object_or_404(Band, id=self.kwargs['pk'])
+        return has_manage_band_permission(self.request.user, band)
 
     def get_success_url(self):
         return reverse('band-detail', kwargs={'pk': self.object.id})

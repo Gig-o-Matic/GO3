@@ -156,3 +156,25 @@ def calfeed(request, pk):
         return hr
 
     return HttpResponse(tf)
+
+
+# helpers to define member permissions for various things
+def has_band_admin(user, band):
+    return user and user.is_superuser or band.is_admin(user)
+
+def has_manage_gig_permission(user, band):
+    return user and (
+        has_band_admin(user, band) or
+        (band.has_member(user) and band.anyone_can_manage_gigs))
+
+def has_create_gig_permission(user, band):
+    return user and (
+        has_band_admin(user, band) or
+        (band.has_member(user) and band.anyone_can_create_gigs))
+
+def has_comment_permission(user, gig):
+    return user and (
+        user.is_superuser or gig.band.has_member(user))
+
+def has_manage_band_permission(user, band):
+    return user and has_band_admin(user,band)

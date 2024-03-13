@@ -28,26 +28,10 @@ from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
+from member.helpers import has_band_admin, has_manage_gig_permission, has_create_gig_permission, has_comment_permission
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from validators import url as url_validate
 import pytz
-
-def has_band_admin(user, band):
-    return user and user.is_superuser or band.is_admin(user)
-
-def has_manage_gig_permission(user, band):
-    return user and (
-        has_band_admin(user, band) or
-        (band.has_member(user) and band.anyone_can_manage_gigs))
-
-def has_create_gig_permission(user, band):
-    return user and (
-        has_band_admin(user, band) or
-        (band.has_member(user) and band.anyone_can_create_gigs))
-
-def has_comment_permission(user, gig):
-    return user and (
-        user.is_superuser or gig.band.has_member(user))
 
 
 class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
