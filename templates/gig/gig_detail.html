@@ -22,16 +22,12 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if user_can_edit and gig.is_in_trash == False and gig.is_archived == False %}
+                    {% if user_has_manage_gig_permission and gig.is_in_trash == False and gig.is_archived == False %}
                         <div class="ml-auto">
-                            {% if user_can_edit %}
-                                <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
-                            {% endif %}
-                            {% if user_can_create %}
-                                <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
-                            {% endif %}
+                            <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
+                            <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
                         </div>
-                {% endif %}
+                    {% endif %}
                 </div>
             </div>
             <div class="card-body">
@@ -213,7 +209,7 @@
                         <span id="simpleon">{% trans "Show Committed" %}</span>
                         </a>
 
-                        {% if user_can_edit %}
+                        {% if user_has_manage_gig_permission %}
                             {% if not gig.was_reminded %}
                             <span id="showremind"><a href="#" onclick="sendreminder(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-envelope"></i>
                             	{% trans "Remind" %}
@@ -316,7 +312,7 @@ function simpleswitch() {
     setsimple()
 }
 
-{% if user_can_edit %}
+{% if user_has_manage_gig_permission %}
 function sendreminder() {
 	$('#showremind').hide();
 	$('#hideremind').show();
@@ -349,7 +345,7 @@ $(document).ready(function() {
 
     updatecounts();
     setsimple();
-    {% if user_can_edit %}
+    {% if user_has_manage_gig_permission %}
         {% if not gig.was_reminded %}
         	$('#showremind').show();
         	$('#hideremind').hide();
