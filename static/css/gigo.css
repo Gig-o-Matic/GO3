@@ -260,3 +260,13 @@ ul.errorlist {
   border-color:#999;
   text-align: center;
 }
+
+/* x-editable interface
+-------------------------------------------------- */
+.editable-input input[type="text"], .editable-input textarea {
+    width: 100%;
+}
+
+.editable-container.editable-inline {
+    width: 100%
+}

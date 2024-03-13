@@ -83,7 +83,7 @@
                                 hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
                                 hx-ext="update-dropdown"
                                 hx-target="#sel-{{ plan.id }} span"
-                                hx-indicator="#sel-{{ plan.id }}"">
+                                hx-indicator="#sel-{{ plan.id }}">
                                     {{ section.name }}
                                 </a>
                     {% comment %}

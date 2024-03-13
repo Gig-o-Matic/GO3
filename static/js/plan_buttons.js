@@ -29,3 +29,17 @@ function init_plan_comments(token) {
 $(document).ready(function() {
 });
 
+$.fn.editableform.template = `\
+<form class="form-inline editableform">
+    <div class="control-group w-100">
+         <div class="d-md-flex justify-content-end align-items-stretch">
+            <div class="editable-input d-block flex-shrink-1 w-100 mb-1 mb-md-0"></div>
+            <div class="editable-buttons d-block text-right"></div>
+        </div>
+         <div class="editable-error-block"></div>
+    </div> 
+</form>`
+
+$.fn.editableform.buttons = `\
+<button type="submit" class="editable-submit btn btn-sm btn-primary h-100">ok</button>
+<button type="button" class="editable-cancel btn btn-sm btn-secondary h-100 ml-0">cancel</button>`
