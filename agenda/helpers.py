@@ -37,8 +37,10 @@ from go3.colors import the_colors
 from django.shortcuts import render
 from django.core.paginator import Paginator
 
-
-PAGE_LENGTH = 10
+# This controls the pagination of gigs on the agenda page. There was strong pushback against the paging
+# mechanism, so this basically defeats it. But I still think the paginator is a good idea, and it may be worth
+# putting it back in as an option. For now, though, instead of ripping it out, it's disabled.
+PAGE_LENGTH = 10000
 
 
 @login_required

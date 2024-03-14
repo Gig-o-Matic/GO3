@@ -28,13 +28,18 @@ class AgendaTest(GigTestBase):
         c = Client()
         c.force_login(self.joeuser)
 
-        # first 'page' of gigs should have 10
+        # first 'page' of gigs should have 19 (because pagination is very long)
         response = c.get(f'/plans/noplans/1')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 10)
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 19)
 
-        # second 'page' of gigs should have 9
-        response = c.get(f'/plans/noplans/2')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
+        # tests that pass if pagination is set to 10        
+        # # first 'page' of gigs should have 10
+        # response = c.get(f'/plans/noplans/1')
+        # self.assertEqual(response.content.decode('ascii').count("xyzzy"), 10)
+
+        # # second 'page' of gigs should have 9
+        # response = c.get(f'/plans/noplans/2')
+        # self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
 
 
 class GridTest(GigTestBase):
