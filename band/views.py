@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
+from django.db.models.functions import Lower
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
@@ -161,7 +162,7 @@ class SectionMembersView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateVi
         context['has_sections'] = True if len(b.sections.all()) > 0 else False
         context['the_section'] = s
         context['the_assocs'] = b.assocs.filter(status=AssocStatusChoices.CONFIRMED, default_section=s,
-                                                member__status=MemberStatusChoices.ACTIVE).all()
+                                                member__status=MemberStatusChoices.ACTIVE).order_by(Lower('member__display_name'))
         return context
 
 
