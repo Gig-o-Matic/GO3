@@ -22,12 +22,15 @@ from django.utils.translation import gettext_lazy as _
 from go3.settings import URL_BASE
 
 class BandMemberRequiredMixin(UserPassesTestMixin):
-    """Verify that the current user is authenticated."""
+    """Verify that the current user is authenticated and is a member of this band (or is the superuser)."""
 
     def test_func(self):
         # can only edit the band if you're logged in and an admin or superuser
         band = get_object_or_404(Band, id=self.kwargs['pk'])
-        return self.request.user and band.has_member(self.request.user)
+        return self.request.user and (
+            self.request.user.is_superuser or
+            band.has_member(self.request.user)
+        )
 
 class BandList(LoginRequiredMixin, generic.ListView):
     queryset = Band.objects.filter(
