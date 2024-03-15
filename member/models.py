@@ -121,13 +121,13 @@ class Member(AbstractUser):
     @property
     def future_plans(self):
         plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
-        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
         return self.hide_cancelled_gigs(plans)
 
     @property
     def future_noplans(self):
         plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
-        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
         return self.hide_cancelled_gigs(plans)
     
     @property
@@ -151,8 +151,10 @@ class Member(AbstractUser):
                 PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
 
         # get the plans but exclude gigs for which occasionals are not invited if we're occasional in the band
-        plans = Plan.objects.filter(**filter_args).filter(gig__trashed_date=None)
-        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
+        plans = Plan.objects.filter(**filter_args)
+
+
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
         if self.preferences.hide_canceled_gigs:
             plans = plans.exclude(gig__status=GigStatusChoices.CANCELLED)
 
