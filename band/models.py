@@ -17,6 +17,7 @@
 
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from go3.colors import the_colors
 from .util import BandStatusChoices, AssocStatusChoices
 from member.util import MemberStatusChoices, AgendaChoices
@@ -91,15 +92,18 @@ class Band(models.Model):
 
     @property
     def all_assocs(self):
-        return self.assocs.filter(member__status=MemberStatusChoices.ACTIVE)
+        return self.assocs.filter(member__status=MemberStatusChoices.ACTIVE).order_by(Lower('member__display_name'))
 
     @property
     def confirmed_assocs(self):
-        return self.assocs.filter(status=AssocStatusChoices.CONFIRMED, member__status=MemberStatusChoices.ACTIVE)
+        return self.assocs.filter(status=AssocStatusChoices.CONFIRMED, 
+                                  member__status=MemberStatusChoices.ACTIVE).order_by(Lower('member__display_name'))
 
     @property
     def confirmed_members(self):
-        return apps.get_model('member', 'Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, assocs__band=self, status=MemberStatusChoices.ACTIVE)
+        return apps.get_model('member', 'Member').objects.filter(assocs__status=AssocStatusChoices.CONFIRMED, 
+                                                                 assocs__band=self, 
+                                                                 status=MemberStatusChoices.ACTIVE).order_by(Lower('display_name'))
 
     @property
     def band_admins(self):

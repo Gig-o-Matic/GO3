@@ -95,14 +95,7 @@ class Member(AbstractUser):
     # Used to map old calendar subscription URLs
     go2_id = models.CharField(max_length=100, blank=True)
 
-    @property
-    def display_name(self):
-        if self.nickname:
-            return self.nickname
-        elif self.username:
-            return self.username
-        else:
-            return self.email
+    display_name = models.CharField(max_length=200, blank=True)
 
     @property
     def member_name(self):

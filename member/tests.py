@@ -1131,7 +1131,6 @@ class MemberEditTest(TemplateTestCase):
             reverse('member-prefs-update', args=[self.jilluser.id]), follow=True)
         self.assertPermissionDenied(response)
 
-
     def test_change_email(self):
         self.client.force_login(self.joeuser)
         response = self.client.post(reverse('member-update', args=[self.joeuser.id]),
@@ -1155,6 +1154,27 @@ class MemberEditTest(TemplateTestCase):
             'member-confirm-email', args=[self.joeuser.pending_email.first().id]), follow=True)
         self.joeuser.refresh_from_db()
         self.assertTrue(self.joeuser.email == 'foo@bar.com')
+
+    def test_display_name(self):
+        """ show that the display_name gets set properly when a member is saved based on values """
+        """ of email, username, and nickname """
+        m = self.joeuser
+        self.assertEqual(m.username,'')
+        self.assertEqual(m.nickname,'')
+        self.assertEqual(m.display_name, 'a@b.com')
+        m.username='joe'
+        m.save()
+        self.assertEqual(m.display_name, 'joe')
+        m.nickname='jj'
+        m.save()
+        self.assertEqual(m.display_name, 'jj')
+        m.nickname=''
+        m.save()
+        self.assertEqual(m.display_name, 'joe')
+        m.username=''
+        m.save()
+        self.assertEqual(m.display_name, 'a@b.com')
+
 
           
 class GraphQLTest(TestCase):
