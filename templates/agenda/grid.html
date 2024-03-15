@@ -77,7 +77,7 @@
 var data = [];
 var year = {{year}};
 var month = {{month}};
-var bands = {{band_data_json|safe}};
+var bands = JSON.parse('{{band_data|safe}}');
 var current_band = 0;
 
 

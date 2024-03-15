@@ -77,7 +77,7 @@ class GridView(LoginRequiredMixin, TemplateView):
         m = self.request.user
         assocs = Assoc.objects.filter(
             member=m, status=AssocStatusChoices.CONFIRMED)
-        context['band_data_json'] = json.dumps(
+        context['band_data'] = json.dumps(
             [{'id': a.band.id, 'name': a.band.name} for a in assocs])
 
         return context
