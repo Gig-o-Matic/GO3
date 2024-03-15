@@ -18,9 +18,10 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from motd.models import MOTD
-from gig.models import Plan
+from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
 import datetime
 from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
@@ -118,11 +119,20 @@ class Member(AbstractUser):
 
     @property
     def future_plans(self):
-        return Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
+        plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
+        return self.hide_cancelled_gigs(plans)
 
     @property
     def future_noplans(self):
-        return Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
+        return self.hide_cancelled_gigs(plans)
+    
+    def hide_cancelled_gigs(self, plans):
+        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
+            plans = plans.filter(gig__status=GigStatusChoices.UNCONFIRMED)
+        return plans
 
     @property
     def motd(self):
