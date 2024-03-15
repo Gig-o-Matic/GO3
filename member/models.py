@@ -140,6 +140,7 @@ class Member(AbstractUser):
             "assoc__member": self, # my plan
             "assoc__status": AssocStatusChoices.CONFIRMED, # is a usual member
             "gig__hide_from_calendar": False, # not hidden from calendars
+            "gig__trashed_date__isnull": True, # not trashed
         }
 
         if self.preferences.calendar_show_only_confirmed:
