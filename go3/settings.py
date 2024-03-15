@@ -180,6 +180,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Increase the password reset token expiration. Default is 3 days, increase to 30
+# Since we are using this feature to onboard users, many people are not expecting
+# the email, and so not taking action fast enough. Let's give them more grace,
+# at least until the migration is completed.
+PASSWORD_RESET_TIMEOUT = 2592000 # 30 days
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
