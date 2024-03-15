@@ -53,7 +53,12 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                 band, band_created = Band.objects.get_or_create(name=row["band"], defaults={"timezone": form.cleaned_data["timezone"]})
                 if band_created: migration_messages.append(f"Created new band {band.name}")
 
-                member, member_created = Member.objects.get_or_create(email=row["email"], defaults={"username": row["member"], "go2_id": row["object ID"]})
+                default_member_info = {
+                    "username": row["member"],
+                    "nickname": row["nickname"],
+                    "go2_id": row["object ID"],
+                }
+                member, member_created = Member.objects.get_or_create(email=row["email"], defaults=default_member_info)
                 if member_created:
                     async_task("migration.helpers.send_migrated_user_password_reset", band.id, member.id)
 
@@ -116,6 +121,7 @@ class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     setdate = self.mangle_time(fields["setdate"], band.timezone),
                     enddate = self.mangle_time(fields["enddate"], band.timezone),
                     created_date = self.mangle_time(fields["created_date"], band.timezone),
+                    datenotes = fields["time_notes"],
                 )
                 gig.save()
                 migration_messages.append(f"Imported {gig.title}")
