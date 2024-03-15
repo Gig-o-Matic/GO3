@@ -42,7 +42,7 @@ class AgendaTest(GigTestBase):
         # self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
 
     def test_agenda_occasionals(self):
-        joeassoc = self.assoc_user(self.joeuser)
+        _ = self.assoc_user(self.joeuser)
         janeassoc = self.assoc_user(self.janeuser)
         janeassoc.is_occasional = True
         janeassoc.save()
