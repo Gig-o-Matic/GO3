@@ -28,23 +28,10 @@ from .forms import GigForm
 from .util import PlanStatusChoices
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
+from member.helpers import has_band_admin, has_manage_gig_permission, has_create_gig_permission, has_comment_permission
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from validators import url as url_validate
 import pytz
-
-
-def has_comment_permission(user, gig):
-    return user and Assoc.objects.filter(member=user, band=gig.band).count() == 1
-
-def has_band_admin(user, band):
-    return user and band.is_admin(user)
-
-def has_manage_permission(user, band):
-    return user and (user.is_superuser or band.anyone_can_manage_gigs or band.is_admin(user))
-
-
-def has_create_permission(user, band):
-    return user and (user.is_superuser or band.anyone_can_create_gigs or band.is_admin(user))
 
 
 class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
@@ -66,9 +53,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['user_has_band_admin'] = has_band_admin(
             self.request.user, self.object.band)
-        context['user_can_edit'] = has_manage_permission(
-            self.request.user, self.object.band)
-        context['user_can_create'] = has_create_permission(
+        context['user_has_manage_gig_permission'] = has_manage_gig_permission(
             self.request.user, self.object.band)
 
         tz = pytz.timezone(self.object.band.timezone)
@@ -103,24 +88,17 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         return context
 
 
-class CreateView(LoginRequiredMixin, generic.CreateView):
+class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Gig
     form_class = GigForm
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    # cribbed from UserPassesTestMixin
-    def dispatch(self, request, *args, **kwargs):
-        user_test_result = self.test_func()
-        if not user_test_result:
-            return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
-
     def test_func(self):
         # can only create the gig if you're logged in and in the band        
         band = get_object_or_404(Band, id=self.kwargs['bk'])
-        return band.has_member(self.request.user) and has_create_permission(self.request.user, band)
+        return has_create_gig_permission(self.request.user, band)
 
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
@@ -143,7 +121,7 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         band = Band.objects.get(id=self.kwargs['bk'])
-        if not has_create_permission(self.request.user, band):
+        if not has_manage_gig_permission(self.request.user, band):
             return HttpResponseForbidden()
 
         # there's a new gig; link it to the band
@@ -158,21 +136,14 @@ class CreateView(LoginRequiredMixin, generic.CreateView):
         return result
 
 
-class UpdateView(LoginRequiredMixin, generic.UpdateView):
+class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Gig
     form_class = GigForm
-
-    # cribbed from UserPassesTestMixin
-    def dispatch(self, request, *args, **kwargs):
-        user_test_result = self.test_func()
-        if not user_test_result:
-            return self.handle_no_permission()
-        return super().dispatch(request, *args, **kwargs)
 
     def test_func(self):
         # can only edit the gig if you're logged in and in the band        
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user) and has_manage_permission(self.request.user, gig.band)
+        return has_manage_gig_permission(self.request.user, gig.band)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -186,8 +157,7 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         pass
 
     def form_valid(self, form):
-
-        if not has_manage_permission(self.request.user, self.object.band):
+        if not has_manage_gig_permission(self.request.user, self.object.band):
             return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
@@ -199,7 +169,7 @@ class UpdateView(LoginRequiredMixin, generic.UpdateView):
         return result
 
 
-class DuplicateView(UserPassesTestMixin, CreateView):
+class DuplicateView(CreateView):
 
     def test_func(self):
         if not self.request.user.is_authenticated:
@@ -230,10 +200,11 @@ class CommentsView(UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_comments.html'
 
     def test_func(self):
-        if not self.request.user.is_authenticated:
+        user = self.request.user
+        if not user.is_authenticated:
             return self.handle_no_permission()
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user)
+        return gig.band.has_member(user) or user.is_superuser
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
