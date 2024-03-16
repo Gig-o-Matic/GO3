@@ -155,14 +155,13 @@ class Member(AbstractUser):
 
 
         plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
-        if self.preferences.hide_canceled_gigs:  # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELLED)
+        plans = self.hide_cancelled_gigs(plans)
 
         return plans
 
     def hide_cancelled_gigs(self, plans):
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.filter(gig__status=GigStatusChoices.UNCONFIRMED)
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELLED)
         return plans
 
     @property
