@@ -17,6 +17,7 @@
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.db.models import Q
 from motd.models import MOTD
 from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
@@ -118,15 +119,24 @@ class Member(AbstractUser):
 
     @property
     def future_plans(self):
-        return self.hide_canceled_gigs(Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN))
+        plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
+        return self.filter_plans_on_rules_and_preferences(plans)
 
     @property
     def future_noplans(self):
-        return self.hide_canceled_gigs(Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN))
-
-    def hide_canceled_gigs(self, plans):
+        plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        return self.filter_plans_on_rules_and_preferences(plans)
+    
+    def filter_plans_on_rules_and_preferences(self, plans):
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
             plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+        return plans.filter(
+            Q(gig__invite_occasionals=True) |
+            (
+                Q(gig__invite_occasionals=False) &
+                Q(assoc__is_occasional=False)
+            )
+        )
         return plans
 
     @property
