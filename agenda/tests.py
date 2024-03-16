@@ -54,7 +54,6 @@ class AgendaTest(GigTestBase):
         c.force_login(self.joeuser)
         # first 'page' of gigs should not show the canceled gig
         response = c.get(f'/plans/noplans/1')
-        # breakpoint()
         self.assertEqual(response.content.decode('ascii').count("Canceled Gig-xyzzy"), 0)
 
 
