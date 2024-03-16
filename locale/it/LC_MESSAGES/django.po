@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-15 21:52-0400\n"
+"POT-Creation-Date: 2024-03-16 13:41-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: it <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgstr "segnala suonata ai membri via e-mail"
 msgid "Invite occasional members"
 msgstr "Invita membri saltuari"
 
-#: gig/forms.py:52 gig/forms.py:186
+#: gig/forms.py:52 gig/forms.py:185
 msgid "Email members about change"
 msgstr "Segnala i cambiamenti ai membri via e-mail"
 
@@ -35,118 +35,118 @@ msgstr "Segnala i cambiamenti ai membri via e-mail"
 msgid "Also send update to occasional members"
 msgstr "Invia aggiornamento anche ai membri saltuari"
 
-#: gig/forms.py:94
+#: gig/forms.py:93
 msgid "Date is not valid"
 msgstr ""
 
-#: gig/forms.py:113
+#: gig/forms.py:112
 #, fuzzy
 #| msgid "Must be in the future!"
 msgid "Gig call time must be in the future"
 msgstr "Deve essere una data futura!"
 
-#: gig/forms.py:115
+#: gig/forms.py:114
 msgid "Set time must not be earlier than the call time"
 msgstr ""
 
-#: gig/forms.py:119
+#: gig/forms.py:118
 msgid "Gig end must not be earlier than the start"
 msgstr ""
 
-#: gig/forms.py:121
+#: gig/forms.py:120
 msgid "Gig end must not be earlier than the call time"
 msgstr ""
 
-#: gig/forms.py:123
+#: gig/forms.py:122
 msgid "Gig end must not be earlier than the set time"
 msgstr ""
 
-#: gig/forms.py:187 gig/forms.py:231
+#: gig/forms.py:186 gig/forms.py:231
 msgid "Date"
 msgstr "Data"
 
-#: gig/forms.py:188 gig/helpers.py:113 templates/gig/gig_detail.html:91
+#: gig/forms.py:187 gig/helpers.py:113 templates/gig/gig_detail.html:91
 #: templates/gig/gig_detail_archived.html:72
 #, fuzzy
 msgid "Call Time"
 msgstr "Appuntamento"
 
-#: gig/forms.py:189 gig/helpers.py:115 templates/gig/gig_detail.html:95
+#: gig/forms.py:188 gig/helpers.py:115 templates/gig/gig_detail.html:95
 #: templates/gig/gig_detail_archived.html:76
 msgid "Set Time"
 msgstr "Inizio suonata"
 
-#: gig/forms.py:190 gig/helpers.py:117 templates/gig/gig_detail.html:98
+#: gig/forms.py:189 gig/helpers.py:117 templates/gig/gig_detail.html:98
 #: templates/gig/gig_detail_archived.html:79
 msgid "End Time"
 msgstr "Fine suonata"
 
-#: gig/forms.py:191 gig/forms.py:232
+#: gig/forms.py:190 gig/forms.py:232
 msgid "End Date"
 msgstr "Data fine"
 
-#: gig/forms.py:193
+#: gig/forms.py:192
 msgid "Date Notes"
 msgstr ""
 
-#: gig/forms.py:196
+#: gig/forms.py:195
 #, fuzzy
 #| msgid "Hide From Public Page"
 msgid "Hide From Public Gig Feed"
 msgstr "Non mostrare sulla pagina pubblica"
 
-#: gig/forms.py:198
+#: gig/forms.py:197
 msgid "Add A Series Of Copies"
 msgstr "Aggiungi Una Serie Di Copie"
 
-#: gig/forms.py:199
+#: gig/forms.py:198
 msgid "Total Number Of Gigs"
 msgstr "Numero Totale Di Suonate"
 
-#: gig/forms.py:200
+#: gig/forms.py:199
 msgid "Repeat Every"
 msgstr "Ripeti Ogni"
 
-#: gig/forms.py:202
+#: gig/forms.py:201
 msgid "day"
 msgstr "Giorno"
 
-#: gig/forms.py:203
+#: gig/forms.py:202
 msgid "week"
 msgstr "Settimana"
 
-#: gig/forms.py:204
+#: gig/forms.py:203
 #, fuzzy
 #| msgid "month (on same day of month)"
 msgid "month (on same day of the month)"
 msgstr "Mese (stesso giorno della settimana)"
 
-#: gig/forms.py:217
+#: gig/forms.py:216
 #, fuzzy
 msgid "required"
 msgstr "obbligatorio"
 
-#: gig/forms.py:218
+#: gig/forms.py:217
 msgid "Cloudcuckooland"
 msgstr ""
 
-#: gig/forms.py:219
+#: gig/forms.py:218
 msgid "Pants Optional"
 msgstr "Mutande opzionali"
 
-#: gig/forms.py:220
+#: gig/forms.py:219
 msgid "As If"
 msgstr "Sì, magari"
 
-#: gig/forms.py:221
+#: gig/forms.py:220
 msgid "Hit the streets!"
 msgstr ""
 
-#: gig/forms.py:222
+#: gig/forms.py:221
 msgid "who? what? where? when? why?"
 msgstr "chi? cosa? dove? quando? perché?"
 
-#: gig/forms.py:223
+#: gig/forms.py:222
 #, fuzzy
 msgid "setlist here"
 msgstr "i pezzi in scaletta"
@@ -334,34 +334,34 @@ msgstr ""
 msgid "This email address is already in use."
 msgstr "e-mail già in uso"
 
-#: member/helpers.py:66
+#: member/helpers.py:67
 msgid "test email sent"
 msgstr ""
 
-#: member/helpers.py:78
+#: member/helpers.py:79
 #, fuzzy
 #| msgid "Members"
 msgid "former member"
 msgstr "Membri"
 
-#: member/models.py:77 member/models.py:191
+#: member/models.py:79 member/models.py:231
 #, fuzzy
 msgid "email address"
 msgstr "Indirizzo e-mail"
 
-#: member/models.py:162
+#: member/models.py:202
 #, fuzzy
 #| msgid "Members"
 msgid "member"
 msgstr "Membri"
 
-#: member/models.py:163
+#: member/models.py:203
 #, fuzzy
 #| msgid "Members"
 msgid "members"
 msgstr "Membri"
 
-#: member/models.py:205
+#: member/models.py:245
 #, fuzzy
 #| msgid "new_gig_email"
 msgid "new email"
@@ -441,6 +441,16 @@ msgstr "sezione"
 #: templates/base/navbar.html:17
 msgid "Calendar"
 msgstr "Calendario"
+
+#: templates/agenda/calendar.html:28
+msgid "Showing only your committed gigs"
+msgstr ""
+
+#: templates/agenda/calendar.html:30
+#, fuzzy
+#| msgid "Calendar shows only confirmed gigs"
+msgid "Showing only confirmed gigs"
+msgstr "Sul Calendario solo suonate confermate"
 
 #: templates/agenda/grid.html:15 templates/base/navbar.html:18
 msgid "Grid"
