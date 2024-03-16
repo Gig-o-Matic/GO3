@@ -1072,7 +1072,7 @@ class GigSecurityTest(GigTestBase):
         self.assertEqual(response.status_code, 403) # fail if we can't create gigs
 
         c = Client()
-        response = c.get(reverse("gig-detail", args=[self.band.id]))
+        response = c.get(reverse("gig-create", args=[self.band.id]))
         self.assertEqual(response.status_code, 302) # fail if we're logged out
 
     def test_gig_edit_access(self):
