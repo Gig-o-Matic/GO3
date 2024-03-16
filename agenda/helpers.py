@@ -69,13 +69,14 @@ def calendar_events(request, pk):
 
     band_colors = {a.band.id: a.colorval for a in user_assocs}
 
-    the_gigs = Gig.objects.filter(
-        (Q(enddate__lte=end) | Q(enddate=None)),
-        date__gte=start,
-        band__in=[a.band for a in user_assocs],
-        hide_from_calendar=False,
-        trashed_date__isnull=True,
+    plans = request.user.calendar_plans
+
+    plans = plans.filter(
+        (Q(gig__enddate__lte=end) | Q(gig__enddate=None)),
+        gig__date__gte=start,
     )
+
+    the_gigs = [p.gig for p in plans]
 
     events = []
     multiband = len(user_assocs) > 1
