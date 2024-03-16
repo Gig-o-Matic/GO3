@@ -175,7 +175,7 @@ def grid_gigs(request, *args, **kw):
         band=band_id,
         trashed_date__isnull=True,
         hide_from_calendar=False,
-        )
+        ).order_by('date')
 
     data = []
     for g in gigs:
