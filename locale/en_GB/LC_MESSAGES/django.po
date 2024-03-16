@@ -220,7 +220,7 @@ msgstr ""
 #: gig/models.py:128 templates/agenda/agenda_plan_edit.html:88
 #: templates/gig/gig_detail.html:49 templates/gig/gig_detail_archived.html:39
 msgid "Canceled!"
-msgstr ""
+msgstr "Cancelled!"
 
 #: gig/models.py:128 gig/util.py:33
 msgid "Asking"
@@ -260,7 +260,7 @@ msgstr ""
 
 #: gig/util.py:32
 msgid "Canceled"
-msgstr ""
+msgstr "Cancelled"
 
 #: go3/settings.py:188
 msgid "German"
@@ -1416,7 +1416,7 @@ msgstr ""
 #: templates/member/member_detail.html:189
 #: templates/member/member_detail.html:191
 msgid "Hide canceled gigs"
-msgstr ""
+msgstr "Hide cancelled gigs"
 
 #: templates/member/member_detail.html:195
 #: templates/member/member_detail.html:197
