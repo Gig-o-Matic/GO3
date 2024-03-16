@@ -21,6 +21,17 @@
             {% endif %}
         </div>
     </div>
+    {% if user.preferences.calendar_show_only_committed or user.preferences.calendar_show_only_confirmed %}
+        <div class="row">
+            <div class="page-header page-header mx-auto col-md-10 col-12">
+                {% if user.preferences.calendar_show_only_committed %}
+                    {% trans "Showing only your committed gigs" %}
+                {% elif user.preferences.calendar_show_only_confirmed %}
+                    {% trans "Showing only confirmed gigs" %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="mx-auto col-md-10 col-12">
             <div id='calendar'></div>
