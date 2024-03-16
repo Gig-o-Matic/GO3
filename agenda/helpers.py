@@ -78,9 +78,9 @@ def calendar_events(request, pk):
         gig__date__gte=start,
     )
     if hide_canceled_gigs:
-        the_gigs = the_gigs.exclude(status=GigStatusChoices.CANCELED)
+        plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
     if show_only_confirmed:
-        the_gigs = the_gigs.filter(status=GigStatusChoices.CONFIRMED)
+        plans = plans.filter(gig__status=GigStatusChoices.CONFIRMED)
 
     the_gigs = [p.gig for p in plans]
 
