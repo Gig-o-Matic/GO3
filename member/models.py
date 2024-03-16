@@ -125,13 +125,13 @@ class Member(AbstractUser):
 
     @property
     def future_plans(self):
-        return self.hide_cancelled_gigs(Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN))
+        return self.hide_canceled_gigs(Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN))
 
     @property
     def future_noplans(self):
-        return self.hide_cancelled_gigs(Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN))
-    
-    def hide_cancelled_gigs(self, plans):
+        return self.hide_canceled_gigs(Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN))
+
+    def hide_canceled_gigs(self, plans):
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
             plans = plans.filter(gig__status=GigStatusChoices.UNCONFIRMED)
         return plans

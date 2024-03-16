@@ -221,7 +221,7 @@ msgstr ""
 
 #: gig/models.py:128 templates/agenda/agenda_plan_edit.html:88
 #: templates/gig/gig_detail.html:49 templates/gig/gig_detail_archived.html:39
-msgid "Cancelled!"
+msgid "Canceled!"
 msgstr ""
 
 #: gig/models.py:128 gig/util.py:33
@@ -261,7 +261,7 @@ msgid "Confirmed"
 msgstr ""
 
 #: gig/util.py:32
-msgid "Cancelled"
+msgid "Canceled"
 msgstr ""
 
 #: go3/settings.py:188

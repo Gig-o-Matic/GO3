@@ -586,7 +586,7 @@ class BandCalfeedTest(FSTestCase):
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
-            status=GigStatusChoices.CANCELLED
+            status=GigStatusChoices.CANCELED
         )
 
     def test_band_caldav_stream(self):

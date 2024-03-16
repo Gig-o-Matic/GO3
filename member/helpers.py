@@ -129,7 +129,7 @@ def prepare_calfeed(member):
     the_plans = Plan.objects.filter(**filter_args)
 
     if member.preferences.hide_canceled_gigs:
-        the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELLED)
+        the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
 
     the_gigs = [p.gig for p in the_plans]
     cf = make_calfeed(member, the_gigs,
