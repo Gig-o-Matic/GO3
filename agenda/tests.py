@@ -43,6 +43,34 @@ class AgendaTest(GigTestBase):
         # response = c.get(f'/plans/noplans/2')
         # self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
 
+    def test_agenda_occasionals(self):
+        _ = self.assoc_user(self.joeuser)
+        janeassoc = self.assoc_user(self.janeuser)
+        janeassoc.is_occasional = True
+        janeassoc.save()
+
+        gig1 = self.create_gig_form(contact=self.joeuser, title=f"xyzzy")
+        gig1.invite_occasionals = False
+        gig1.save()
+        gig2 = self.create_gig_form(contact=self.joeuser, title=f"xyzzy")
+        gig2.invite_occasionals = True
+        gig2.save()
+
+        joeplans = self.joeuser.future_noplans
+        self.assertEqual(len(joeplans),2)
+
+        janeplans = self.janeuser.future_noplans
+        self.assertEqual(len(janeplans),1)
+
+        gig1.invite_occasionals = True
+        gig1.save()
+
+        joeplans = self.joeuser.future_noplans
+        self.assertEqual(len(joeplans),2)
+
+        janeplans = self.janeuser.future_noplans
+        self.assertEqual(len(janeplans),2)
+
     def test_hide_canceled_gigs(self):
         self.assoc_user(self.joeuser)
         self.joeuser.preferences.hide_canceled_gigs = True

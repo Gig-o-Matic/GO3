@@ -22,10 +22,12 @@ from motd.models import MOTD
 from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
 import datetime
 from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices
 from band.models import Assoc, Band
+from band.util import AssocStatusChoices
 from go3.settings import LANGUAGES
 from lib.email import EmailRecipient
 from lib.caldav import delete_calfeed
@@ -120,23 +122,45 @@ class Member(AbstractUser):
     @property
     def future_plans(self):
         plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
-        return self.filter_plans_on_rules_and_preferences(plans)
+        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
 
     @property
     def future_noplans(self):
         plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
-        return self.filter_plans_on_rules_and_preferences(plans)
-    
-    def filter_plans_on_rules_and_preferences(self, plans):
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
             plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
-        return plans.filter(
-            Q(gig__invite_occasionals=True) |
-            (
-                Q(gig__invite_occasionals=False) &
-                Q(assoc__is_occasional=False)
-            )
-        )
+        return plans
+    
+    @property
+    def calendar_plans(self):
+        """ pick the gigs that should go on the calendar """
+        """ returns plans, not gigs, in case they need to be further filtered """
+
+        # first get all of the plans which meet the criteria
+        filter_args = {
+            "assoc__member": self, # my plan
+            "assoc__status": AssocStatusChoices.CONFIRMED, # is a usual member
+            "gig__hide_from_calendar": False, # not hidden from calendars
+            "gig__trashed_date__isnull": True, # not trashed
+        }
+
+        if self.preferences.calendar_show_only_confirmed:  # pylint: disable=no-member
+            filter_args["gig__status"] = GigStatusChoices.CONFIRMED
+
+        if self.preferences.calendar_show_only_committed:  # pylint: disable=no-member
+            filter_args["status__in"] = [
+                PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
+
+        # get the plans but exclude gigs for which occasionals are not invited if we're occasional in the band
+        plans = Plan.objects.filter(**filter_args)
+
+
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
+        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+
         return plans
 
     @property
