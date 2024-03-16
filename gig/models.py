@@ -168,6 +168,7 @@ class Gig(AbstractEvent):
     postgig = models.TextField(null=True, blank=True)
 
     leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
+    leader_text = models.TextField(null=True, blank=True)
 
     # todo manage these
     # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
