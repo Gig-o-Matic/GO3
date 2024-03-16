@@ -133,7 +133,7 @@ class Member(AbstractUser):
 
     def hide_canceled_gigs(self, plans):
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.filter(gig__status=GigStatusChoices.UNCONFIRMED)
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
         return plans
 
     @property
