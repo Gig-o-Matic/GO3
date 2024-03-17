@@ -124,6 +124,7 @@ class Member(AbstractUser):
         plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
             plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+        return plans
 
     @property
     def future_noplans(self):
