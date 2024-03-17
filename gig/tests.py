@@ -87,6 +87,12 @@ class GigTestBase(TestCase):
             status=GigStatusChoices.UNCONFIRMED,
             email_changes=True,
         )
+    
+    def create_one_gig_of_each_status(self):
+        self.create_gig_form(contact=self.joeuser, title=f"Unconfirmed Gig-xyzzy", status=GigStatusChoices.UNCONFIRMED)
+        self.create_gig_form(contact=self.joeuser, title=f"Canceled Gig-xyzzy", status=GigStatusChoices.CANCELED)
+        self.create_gig_form(contact=self.joeuser, title=f"Confirmed Gig-xyzzy", status=GigStatusChoices.CONFIRMED)
+        self.create_gig_form(contact=self.joeuser, title=f"Asking Gig-xyzzy", status=GigStatusChoices.ASKING)
 
     def create_gig_form(
         self,

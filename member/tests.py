@@ -274,7 +274,7 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=True,
             calendar_show_only_confirmed=False,
             calendar_show_only_committed=False,
-            gig_status=GigStatusChoices.CANCELLED,
+            gig_status=GigStatusChoices.CANCELED,
             plan_answer=PlanStatusChoices.DEFINITELY
         )
         self.assertEqual(cf.find(b'EVENT'), -1)
@@ -285,7 +285,7 @@ class MemberCalfeedTest(FSTestCase):
             hide_canceled_gigs=False,
             calendar_show_only_confirmed=True,
             calendar_show_only_committed=False,
-            gig_status=GigStatusChoices.CANCELLED,
+            gig_status=GigStatusChoices.CANCELED,
             plan_answer=PlanStatusChoices.DEFINITELY
         )
         self.assertEqual(cf.find(b'EVENT'), -1)

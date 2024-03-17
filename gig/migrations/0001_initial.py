@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('last_update', models.DateTimeField(auto_now=True)),
                 ('date', models.DateTimeField()),
                 ('address', models.TextField(blank=True, null=True)),
-                ('status', models.IntegerField(choices=[(0, 'Unknown'), (1, 'Confirmed'), (2, 'Cancelled'), (3, 'Asking')], default=0)),
+                ('status', models.IntegerField(choices=[(0, 'Unknown'), (1, 'Confirmed'), (2, 'Canceled'), (3, 'Asking')], default=0)),
                 ('is_private', models.BooleanField(default=False)),
                 ('invite_occasionals', models.BooleanField(default=True)),
                 ('was_reminded', models.BooleanField(default=False)),

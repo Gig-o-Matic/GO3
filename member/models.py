@@ -17,6 +17,7 @@
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.db.models import Q
 from motd.models import MOTD
 from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
@@ -121,14 +122,17 @@ class Member(AbstractUser):
     @property
     def future_plans(self):
         plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
-        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
-        return self.hide_cancelled_gigs(plans)
+        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+        return plans
 
     @property
     def future_noplans(self):
         plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
-        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
-        return self.hide_cancelled_gigs(plans)
+        plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
+        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+        return plans
     
     @property
     def calendar_plans(self):
@@ -155,13 +159,9 @@ class Member(AbstractUser):
 
 
         plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False) & Q(status=PlanStatusChoices.NO_PLAN))
-        plans = self.hide_cancelled_gigs(plans)
-
-        return plans
-
-    def hide_cancelled_gigs(self, plans):
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELLED)
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+
         return plans
 
     @property

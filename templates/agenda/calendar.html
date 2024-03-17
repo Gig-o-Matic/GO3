@@ -38,9 +38,9 @@
     var calendar=null;
 
     function calCallback(rawEvents, xhr) {
+        // Updates the browser address bar to reflect the current date view
         mo = calendar.getDate();
-        var stateObj = { foo: "bar" };
-        window.history.replaceState(stateObj, "", window.location.origin+window.location.pathname+"?y="+mo.getYear()+"&m="+mo.getMonth());
+        window.history.replaceState({}, "", window.location.origin+window.location.pathname+"?y="+mo.getYear()+"&m="+mo.getMonth());
     }
 
     $(document).ready(function() {

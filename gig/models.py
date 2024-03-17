@@ -120,14 +120,14 @@ class AbstractEvent(models.Model):
 
     @property
     def is_canceled(self):
-        self.status=GigStatusChoices.CANCELLED
+        self.status=GigStatusChoices.CANCELED
 
     @property
     def is_confirmed(self):
         self.status=GigStatusChoices.CONFIRMED
 
     def status_string(self):
-        return [_('Unconfirmed'), _('Confirmed!'), _('Cancelled!'), _('Asking')][self.status] # pylint: disable=invalid-sequence-index
+        return [_('Unconfirmed'), _('Confirmed!'), _('Canceled!'), _('Asking')][self.status] # pylint: disable=invalid-sequence-index
 
     is_archived = models.BooleanField( default=False )
 

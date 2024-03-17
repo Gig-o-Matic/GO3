@@ -226,9 +226,9 @@ msgstr "Da confermare"
 msgid "Confirmed!"
 msgstr "Confermata!"
 
-#: gig/models.py:130 templates/agenda/agenda_plan_edit.html:92
-#: templates/gig/gig_detail.html:45 templates/gig/gig_detail_archived.html:39
-msgid "Cancelled!"
+#: gig/models.py:128 templates/agenda/agenda_plan_edit.html:88
+#: templates/gig/gig_detail.html:49 templates/gig/gig_detail_archived.html:39
+msgid "Canceled!"
 msgstr "Annullata!"
 
 #: gig/models.py:130 gig/util.py:33
@@ -271,8 +271,8 @@ msgstr "Confermata!"
 
 #: gig/util.py:32
 #, fuzzy
-#| msgid "Cancelled!"
-msgid "Cancelled"
+#| msgid "Canceled!"
+msgid "Canceled"
 msgstr "Annullata!"
 
 #: go3/settings.py:194
