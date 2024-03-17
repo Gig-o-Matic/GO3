@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 from .models import Member, MemberPreferences, Invite, EmailConfirmation
@@ -40,12 +40,3 @@ def send_invite(sender, instance, created, **kwargs):
 def send_email_conf(sender, instance, created, **kwargs):
     if created:
         async_task('member.helpers.send_email_conf', instance)
-
-@receiver(pre_save, sender=Member)
-def update_user_display_name(sender, instance, **kwargs):
-    if instance.nickname:
-        instance.display_name = instance.nickname
-    elif instance.username:
-         instance.display_name = instance.username
-    else:
-        instance.display_name = instance.email
