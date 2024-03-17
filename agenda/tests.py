@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from gig.tests import GigTestBase
-from gig.util import GigStatusChoices
+from gig.util import GigStatusChoices, PlanStatusChoices
 from django.test import Client
 from django.urls import reverse
 from json import loads
@@ -25,14 +25,24 @@ from pytz import timezone
 class AgendaTest(GigTestBase):
     def test_agenda(self):
         self.assoc_user(self.joeuser)
+        gigs = []
         for i in range(0, 19):
-            self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}")
+            gigs.append(self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}"))
         c = Client()
         c.force_login(self.joeuser)
 
         # first 'page' of gigs should have 19 (because pagination is very long)
         response = c.get(f'/plans/noplans/1')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 19)
+
+        first_gig = gigs[0]
+        plan = first_gig.plans.get(assoc__member=self.joeuser)
+        plan.status = PlanStatusChoices.DEFINITELY
+        plan.save()
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
+        response = c.get(f'/plans/plans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
 
         # tests that pass if pagination is set to 10        
         # # first 'page' of gigs should have 10
