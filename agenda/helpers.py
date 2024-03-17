@@ -181,7 +181,7 @@ def grid_gigs(request, *args, **kw):
         band=band_id,
         trashed_date__isnull=True,
         hide_from_calendar=False,
-        )
+        ).order_by('date')
     if request.user.preferences.hide_canceled_gigs:
         gigs = gigs.exclude(status=GigStatusChoices.CANCELED)
 
