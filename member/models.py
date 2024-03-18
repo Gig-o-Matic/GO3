@@ -17,7 +17,6 @@
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.db.models import Q
 from motd.models import MOTD
 from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
