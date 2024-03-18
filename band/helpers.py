@@ -216,9 +216,10 @@ def set_sections(request, *args, **kw):
     list = json.loads(request.POST['sectionInfo'])
     for i, s in enumerate(list):
         new_name, id, _old_name = s
+        new_name = html.unescape(new_name)
         if id:
             the_section = get_object_or_404(Section, id=id)
-            the_section.name = html.unescape(new_name)
+            the_section.name = new_name
             the_section.order = i
             the_section.save()
         else:
