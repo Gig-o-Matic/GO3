@@ -214,8 +214,8 @@ class MemberPreferences(models.Model):
     language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
     share_profile = models.BooleanField(default=True)
     share_email = models.BooleanField(default=False)
-    calendar_show_only_confirmed = models.BooleanField(default=True)
-    calendar_show_only_committed = models.BooleanField(default=True)
+    calendar_show_only_confirmed = models.BooleanField(default=False)
+    calendar_show_only_committed = models.BooleanField(default=False)
     agenda_show_time = models.BooleanField(default=False)
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
