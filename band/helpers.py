@@ -214,15 +214,16 @@ def set_sections(request, *args, **kw):
     # handle the sections as we have them now
     list = json.loads(request.POST['sectionInfo'])
     for i, s in enumerate(list):
-        if s[1]:
-            the_section = get_object_or_404(Section, pk=s[1])
+        new_name, id, _old_name = s
+        if id:
+            the_section = get_object_or_404(Section, id=id)
             the_section.name = s[0]
             the_section.order = i
             the_section.save()
         else:
             # this is a new section
             the_section = Section.objects.create(
-                name=s[0], order=i, band=band, is_default=False)
+                name=new_name, order=i, band=band, is_default=False)
             the_section.save()
 
     # handle the deleted sections
