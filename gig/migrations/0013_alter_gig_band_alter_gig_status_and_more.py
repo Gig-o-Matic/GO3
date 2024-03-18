@@ -20,11 +20,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='gig',
             name='status',
-            field=models.IntegerField(choices=[(0, 'Unconfirmed'), (1, 'Confirmed'), (2, 'Cancelled'), (3, 'Asking')], default=0),
+            field=models.IntegerField(choices=[(0, 'Unconfirmed'), (1, 'Confirmed'), (2, 'Canceled'), (3, 'Asking')], default=0),
         ),
         migrations.AlterField(
             model_name='historicalgig',
             name='status',
-            field=models.IntegerField(choices=[(0, 'Unconfirmed'), (1, 'Confirmed'), (2, 'Cancelled'), (3, 'Asking')], default=0),
+            field=models.IntegerField(choices=[(0, 'Unconfirmed'), (1, 'Confirmed'), (2, 'Canceled'), (3, 'Asking')], default=0),
         ),
     ]

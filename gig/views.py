@@ -71,6 +71,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 
         # filter the plans so we only see plans for regular users, or occasionals who have registered,
         # or the current user
+        # VERY IMPORTANT! The order of these results MUST be group by section, or the template breaks.
+        # See https://github.com/Gig-o-Matic/GO3/pull/251
         context['gig_ordered_member_plans'] = self.object.member_plans.filter(
             Q(assoc__is_occasional=False) | Q(assoc__member=self.request.user) | ~Q(status=PlanStatusChoices.NO_PLAN)
             ).order_by('section',Lower('assoc__member__display_name'))

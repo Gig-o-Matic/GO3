@@ -25,7 +25,7 @@ from pytz import timezone as pytz_timezone
 
 from django.db.models import Q
 
-from gig.models import Gig, Plan
+from gig.models import Gig, Plan, GigStatusChoices
 from band.models import Band, Assoc, Section
 from band.util import AssocStatusChoices
 from member.util import AgendaChoices
@@ -66,6 +66,8 @@ def calendar_events(request, pk):
     end = parse(endstr)
 
     user_assocs = request.user.confirmed_assocs
+    hide_canceled_gigs = request.user.preferences.hide_canceled_gigs
+    show_only_confirmed = request.user.preferences.calendar_show_only_confirmed
 
     band_colors = {a.band.id: a.colorval for a in user_assocs}
 
@@ -75,6 +77,10 @@ def calendar_events(request, pk):
         (Q(gig__enddate__lte=end) | Q(gig__enddate=None)),
         gig__date__gte=start,
     )
+    if hide_canceled_gigs:
+        plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+    if show_only_confirmed:
+        plans = plans.filter(gig__status=GigStatusChoices.CONFIRMED)
 
     the_gigs = [p.gig for p in plans]
 
@@ -175,7 +181,9 @@ def grid_gigs(request, *args, **kw):
         band=band_id,
         trashed_date__isnull=True,
         hide_from_calendar=False,
-        )
+        ).order_by('date')
+    if request.user.preferences.hide_canceled_gigs:
+        gigs = gigs.exclude(status=GigStatusChoices.CANCELED)
 
     data = []
     for g in gigs:

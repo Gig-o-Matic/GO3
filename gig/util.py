@@ -29,5 +29,5 @@ class PlanStatusChoices(models.IntegerChoices):
 class GigStatusChoices(models.IntegerChoices):
     UNCONFIRMED = 0, _("Unconfirmed")
     CONFIRMED = 1, _("Confirmed")
-    CANCELLED = 2, _("Cancelled")
+    CANCELED = 2, _("Canceled")
     ASKING = 3, _("Asking")

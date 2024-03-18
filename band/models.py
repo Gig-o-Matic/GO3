@@ -133,7 +133,7 @@ class SectionManager(models.Manager):
 
 class Section(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
-    order = models.IntegerField(default=0)
+    order = models.IntegerField(default=None)
     band = models.ForeignKey(
         Band, related_name="sections", on_delete=models.CASCADE)
 
@@ -141,11 +141,27 @@ class Section(models.Model):
 
     objects = SectionManager()
 
+    def save(self, *args, **kwargs):
+        if self.order is None:
+            band_sections = Section.objects.filter(band=self.band, is_default=False)
+            if band_sections.count() == 0:
+                self.order = 0
+            else:
+                self.order = band_sections.aggregate(models.Max('order'))['order__max']+1
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return '{0} in {1}'.format(self.name if self.name else 'No Section', self.band.name)
 
     class Meta:
         ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['band_id', 'order'],
+                name="%(app_label)s_%(class)s_unique",
+                deferrable=models.Deferrable.DEFERRED,
+            )
+        ]
 
 
 class MemberAssocManager(models.Manager):
