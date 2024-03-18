@@ -21,6 +21,7 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django import forms
 from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
@@ -70,9 +71,11 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 
         # filter the plans so we only see plans for regular users, or occasionals who have registered,
         # or the current user
+        # VERY IMPORTANT! The order of these results MUST be group by section, or the template breaks.
+        # See https://github.com/Gig-o-Matic/GO3/pull/251
         context['gig_ordered_member_plans'] = self.object.member_plans.filter(
             Q(assoc__is_occasional=False) | Q(assoc__member=self.request.user) | ~Q(status=PlanStatusChoices.NO_PLAN)
-            ).order_by('section_id')
+            ).order_by('section',Lower('assoc__member__display_name'))
 
         if self.object.address:
             if url_validate(self.object.address):
@@ -246,7 +249,7 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         gig = Gig.objects.get(id=self.kwargs['pk'])
         context['gig'] = gig
-        context['gig_ordered_member_plans'] = gig.member_plans.order_by('section_id')
+        context['gig_ordered_member_plans'] = gig.member_plans.order_by('section_id', Lower('assoc__member__display_name'))
         context['plan_list'] = PlanStatusChoices.labels
         context['all'] = kwargs.get('all', True)
         return context
