@@ -34,6 +34,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
+from django.db import transaction
 
 
 def assoc_editor_required(func):
@@ -206,6 +207,7 @@ def confirm_assoc(request, ak):
 
 @login_required
 @band_admin_required
+@transaction.atomic
 def set_sections(request, *args, **kw):
     band = get_object_or_404(Band, pk=kw['pk'])
 

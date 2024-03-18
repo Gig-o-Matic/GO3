@@ -146,6 +146,13 @@ class Section(models.Model):
 
     class Meta:
         ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['band_id', 'order'],
+                name="%(app_label)s_%(class)s_unique",
+                deferrable=models.Deferrable.DEFERRED,
+            )
+        ]
 
 
 class MemberAssocManager(models.Manager):
