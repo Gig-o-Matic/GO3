@@ -143,6 +143,7 @@ class Member(AbstractUser):
         filter_args = {
             "assoc__member": self, # my plan
             "assoc__status": AssocStatusChoices.CONFIRMED, # is a usual member
+            "assoc__hide_from_schedule": False, # gigs are not hidden from calendar
             "gig__hide_from_calendar": False, # not hidden from calendars
             "gig__trashed_date__isnull": True, # not trashed
         }

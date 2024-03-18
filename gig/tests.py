@@ -376,6 +376,25 @@ class GigTest(GigTestBase):
         self.create_gig_form(contact=self.joeuser, email_changes = False, invite_occasionals=True)
         self.assertEqual(len(mail.outbox),0) # nobody gets email
 
+    def test_hide_gig_for_user(self):
+        a = self.band.all_assocs
+        self.assertEqual(len(a),1)
+        super_a = a[0]
+        self.assertTrue(super_a.is_admin)
+        super_a.email_me = True
+        super_a.save()
+        joe_a = self.assoc_user(self.joeuser)
+        joe_a.hide_from_schedule = False
+        joe_a.save()
+        self.create_gig_form(contact=self.band_admin, email_changes = True, invite_occasionals=True)
+        plans = self.joeuser.calendar_plans
+        self.assertEqual(len(plans),1)  # should see the gig in the calendar_plans
+        joe_a.hide_from_schedule = True
+        joe_a.save()
+        plans = self.joeuser.calendar_plans
+        self.assertEqual(len(plans),0)  # should not see the gig in the calendar_plans
+
+
 
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_time="", end_date="", end_time="")
