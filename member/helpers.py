@@ -113,16 +113,16 @@ def send_email_conf(confirmation):
 def prepare_calfeed(member):
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
-
-    #if member.preferences.calendar_show_only_confirmed:
-    #    filter_args["gig__status"] = GigStatusChoices.CONFIRMED
-
-    #if member.preferences.calendar_show_only_committed:
-    #    filter_args["status__in"] = [
-    #        PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
-    #if member.preferences.hide_canceled_gigs:
-    #    the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
     the_plans = member.calendar_plans.filter(gig__date__gt=date_earliest)
+    if member.preferences.hide_canceled_gigs:
+       the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
+    if member.preferences.calendar_show_only_committed:
+       the_plans = the_plans.filter(status__in = [
+           PlanStatusChoices.DEFINITELY,
+           PlanStatusChoices.PROBABLY
+       ])
+    if member.preferences.calendar_show_only_confirmed:
+       the_plans = the_plans.filter(gig__status=GigStatusChoices.CONFIRMED)
     the_gigs = [p.gig for p in the_plans]
     cf = make_calfeed(member, the_gigs,
                       member.preferences.language, member.cal_feed_id)
