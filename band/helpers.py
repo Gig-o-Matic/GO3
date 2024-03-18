@@ -35,6 +35,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
+import html
 
 
 def assoc_editor_required(func):
@@ -217,7 +218,7 @@ def set_sections(request, *args, **kw):
         new_name, id, _old_name = s
         if id:
             the_section = get_object_or_404(Section, id=id)
-            the_section.name = s[0]
+            the_section.name = html.unescape(new_name)
             the_section.order = i
             the_section.save()
         else:
