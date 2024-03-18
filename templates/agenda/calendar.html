@@ -21,6 +21,19 @@
             {% endif %}
         </div>
     </div>
+    {% if user.preferences.calendar_show_only_committed or user.preferences.calendar_show_only_confirmed %}
+        <div class="row">
+            <div class="page-header page-header mx-auto col-md-10 col-12">
+                <a href="{% url 'member-prefs-update' pk=user.id %}">Filtered</a> to only:
+                {% if user.preferences.calendar_show_only_committed %}
+                    &#x2713; {% trans "committed gigs" %}
+                {% endif %}
+                {% if user.preferences.calendar_show_only_confirmed %}
+                    &#x2713; {% trans "confirmed gigs" %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="mx-auto col-md-10 col-12">
             <div id='calendar'></div>
