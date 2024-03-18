@@ -534,6 +534,12 @@ class BandTests(GigTestBase):
         plans = g2.plans.filter(assoc__member=self.joeuser)
         self.assertEqual(plans.count(),0) # future plan should be gone
 
+class SectionTest(TestCase):
+    def test_auto_assign_section_order(self):
+        band = Band.objects.create(name="Example")
+        section1 = band.sections.create(name="Section 1")
+        section2 = band.sections.create(name="Section 2")
+        self.assertGreater(section2.order, section1.order)
 
 class BandCalfeedTest(FSTestCase):
     def setUp(self):
