@@ -94,6 +94,24 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/noplans/1')
         self.assertEqual(response.content.decode('ascii').count("Canceled Gig-xyzzy"), 0)
 
+    def test_hide_band_from_calendar_preference(self):
+        a = self.assoc_user(self.joeuser)
+        a.hide_from_schedule = False
+        a.save()
+        self.create_gig_form(contact=self.joeuser, title=f"xyzzy")
+
+        c = Client()
+        c.force_login(self.joeuser)
+        # first 'page' of gigs should show the gig
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+
+        a.hide_from_schedule = True
+        a.save()
+        # first 'page' of gigs should not show the gig
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 0)
+
 
 class CalendarTest(GigTestBase):
     def test_calendar(self):
