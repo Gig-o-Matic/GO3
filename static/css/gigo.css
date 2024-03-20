@@ -116,11 +116,11 @@ a {
 .navbar {
   padding-top: 0px;
   padding-bottom: 0px;
-  background-color: #5dc642;
+  background-color: #008000;
 }
 
 .navbar a {
-  color: #000;
+  color: #fff;
 }
 
 .dropdown-menu {
