@@ -232,6 +232,16 @@ if not DEBUG:
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login"
 
+ROLLBAR_ACCESS_TOKEN = env("ROLLBAR_ACCESS_TOKEN", default=False)
+
+if ROLLBAR_ACCESS_TOKEN:
+    ROLLBAR = {
+        'access_token': ROLLBAR_ACCESS_TOKEN,
+        'environment': 'development' if DEBUG else 'production',
+        'code_version': '1.0',
+        'root': BASE_DIR,
+    }
+
 # Configure Django-q message broker
 Q_CLUSTER = {
     "name": "DjangORM",
@@ -244,16 +254,10 @@ Q_CLUSTER = {
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
     "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
 }
-
-
-ROLLBAR_ACCESS_TOKEN = env("ROLLBAR_ACCESS_TOKEN", default=False)
-
 if ROLLBAR_ACCESS_TOKEN:
-    ROLLBAR = {
-        'access_token': ROLLBAR_ACCESS_TOKEN,
-        'environment': 'development' if DEBUG else 'production',
-        'code_version': '1.0',
-        'root': BASE_DIR,
+    Q_CLUSTER["error_reporter"] = {
+        "access_token": ROLLBAR_ACCESS_TOKEN,
+        "environment": "development" if DEBUG else "production",
     }
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
