@@ -37,7 +37,7 @@ from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
+                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, ROLLBAR_ACCESS_TOKEN=str, DATABASE_URL=str,
                   LOG_LEVEL=str, EMAIL_ENABLE=bool)
 
 # reading .env file
@@ -113,6 +113,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "go3.rollbar_middleware.GigORollbarNotifierMiddleware",
 ]
 
 ROOT_URLCONF = "go3.urls"
@@ -231,6 +232,16 @@ if not DEBUG:
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login"
 
+ROLLBAR_ACCESS_TOKEN = env("ROLLBAR_ACCESS_TOKEN", default=False)
+
+if ROLLBAR_ACCESS_TOKEN:
+    ROLLBAR = {
+        'access_token': ROLLBAR_ACCESS_TOKEN,
+        'environment': 'development' if DEBUG else 'production',
+        'code_version': '1.0',
+        'root': BASE_DIR,
+    }
+
 # Configure Django-q message broker
 Q_CLUSTER = {
     "name": "DjangORM",
@@ -243,24 +254,11 @@ Q_CLUSTER = {
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
     "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
 }
-
-
-import sentry_sdk
-SENTRY_DSN = env("SENTRY_DSN", default=False)
-
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        traces_sample_rate=1.0,
-        enable_tracing=True,
-        # Set profiles_sample_rate to 1.0 to profile 100%
-        # of sampled transactions.
-        # We recommend adjusting this value in production.
-        profiles_sample_rate=0.01,
-    )
-    Q_CLUSTER["error_reporter"] = { "sentry": { "dsn": SENTRY_DSN } }
+if ROLLBAR_ACCESS_TOKEN:
+    Q_CLUSTER["error_reporter"] = {
+        "access_token": ROLLBAR_ACCESS_TOKEN,
+        "environment": "development" if DEBUG else "production",
+    }
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
 if env('CACHE_USE_FILEBASED', default=False):
