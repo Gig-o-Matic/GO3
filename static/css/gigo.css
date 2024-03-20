@@ -123,6 +123,10 @@ a {
   color: #fff;
 }
 
+.navbar a.dropdown-item {
+  color: #000;
+}
+
 .dropdown-menu {
   margin-top: 0px;
   border-top-left-radius: 0;
