@@ -113,7 +113,10 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             context['invites'] = Invite.objects.filter(email=the_user.email, band__isnull=False)
         else:
             context['invites'] = None
-        context['member_images'] = the_member.images.split()
+        if the_member.images:
+            context['member_images'] = the_member.images.split()
+        else:
+            context['member_images'] = []
 
         return context
 
