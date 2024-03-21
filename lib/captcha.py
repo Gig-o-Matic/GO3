@@ -26,6 +26,9 @@ def get_captcha_site_key():
 
 def verify_captcha(request):
 
+    if not env('CAPTCHA_ENABLE',default=True):
+        return True
+
     captcha_token = request.POST.get('g-recaptcha-response','')
     
     if captcha_token:

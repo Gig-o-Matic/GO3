@@ -56,6 +56,14 @@ class MemberTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
 
+    def test_member_email(self):
+        m = Member.objects.create_user('tEsTmEmBeR@FoO.CoM', password='abc')
+        self.assertEqual(m.email,"testmember@foo.com")
+        m.email = "TESTING@TEST.COM"
+        m.save()
+        self.assertEqual(m.email,"testing@test.com")
+
+
     def test_member_bands(self):
         """ test some basics of member creation """
         m = Member.objects.all()

@@ -28,6 +28,7 @@ def log_messages(messages):
     """ if emailing is disabled, just log the messages """
     for m in messages:
         logging.info(f"to: {m.to}  subject: {m.subject}")
+        logging.info(f"{m.body}\n")
 
 @dataclass
 class EmailRecipient:

@@ -38,12 +38,12 @@ from multiprocessing import set_start_method  # for task q
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
                   ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, ROLLBAR_ACCESS_TOKEN=str, DATABASE_URL=str,
-                  LOG_LEVEL=str, EMAIL_ENABLE=bool)
+                  LOG_LEVEL=str, EMAIL_ENABLE=bool, CAPTCHA_ENABLE=bool)
 
 # reading .env file
 environ.Env.read_env()
 
-_testing = False
+_testing = env("TESTING", default=False)
 if len(sys.argv) > 1 and sys.argv[1] == "test":
     _testing = True
     logging.disable(logging.CRITICAL)
@@ -162,6 +162,14 @@ else:
     }
 
 AUTH_USER_MODEL = "member.Member"
+
+# Password matching with case insensitive
+# https://pythonhint.com/post/2149716530424105/removing-case-sensitivity-from-email-in-django-login-form
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'go3.backends.CaseInsensitiveEmailBackend',
+]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

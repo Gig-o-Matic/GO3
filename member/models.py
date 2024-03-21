@@ -40,7 +40,7 @@ class MemberManager(BaseUserManager):
         """
         if not email:
             raise ValueError('The given email must be set')
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).lower()
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -181,6 +181,12 @@ class Member(AbstractUser):
         return EmailRecipient(name=self.username, email=self.email,
                               language=self.preferences.language) # pylint: disable=no-member
 
+    def save(self, *args, **kwargs):
+        """ when creating members with a form, the usermanager isn't used so we have to override save """
+        self.email = self.email.lower()
+        # then super
+        super().save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         """ when we get deleted, remove plans for future gigs and set us to deleted """
         Plan.member_plans.future_plans(self).filter(gig__is_archived=False).delete()
@@ -251,4 +257,4 @@ class EmailConfirmation(models.Model):
     language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
 
     def as_email_recipient(self):
-        return EmailRecipient(email=self.member.email, language=self.language)
+        return EmailRecipient(email=self.new_email, language=self.language)

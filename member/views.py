@@ -235,6 +235,8 @@ class InviteView(LoginRequiredMixin, FormView):
 
         invited, in_band, invalid = [], [], []
         for email in emails:
+            email=email.lower()
+            
             try:
                 validate_email(email)
             except ValidationError:
