@@ -246,11 +246,22 @@ class InviteView(LoginRequiredMixin, FormView):
                 invalid.append(email)
                 continue
 
-            if Assoc.objects.filter(member__email=email, band=band).count() > 0:
+            assocs = Assoc.objects.filter(member__email=email, band=band)
+            in_the_band = False
+            the_assoc = None
+            if assocs.count() > 0:
+                the_assoc = assocs.first()
+                if the_assoc.status == AssocStatusChoices.CONFIRMED:
+                    in_the_band = True
+
+            if in_the_band:
                 in_band.append(email)
             else:
                 Invite.objects.create(band=band, email=email, language=self.request.user.preferences.language)
                 invited.append(email)
+                if the_assoc is not None:
+                    the_assoc.status = AssocStatusChoices.INVITED
+                    the_assoc.save()
 
         self.return_to_form = False
         if invalid:
@@ -299,9 +310,16 @@ def accept_invite(request, pk):
     if (member and                             # Won't need to create a Member
         (not request.user.is_authenticated or  # They're probably just not logged in
          request.user == member)):             # They are logged in
-        if invite.band and Assoc.objects.filter(band=invite.band, member=member).count() == 0:
-            Assoc.objects.create(band=invite.band, member=member,
-                                 status=AssocStatusChoices.CONFIRMED)
+        if invite.band:
+            assocs = Assoc.objects.filter(band=invite.band, member=member)
+            if assocs.count() == 0:
+                Assoc.objects.create(band=invite.band, member=member,
+                                     status=AssocStatusChoices.CONFIRMED)
+            else:
+                assoc = assocs.first()
+                assoc.status = AssocStatusChoices.CONFIRMED
+                assoc.save()
+                
             if request.user.is_authenticated:
                 # We'll be redirecting them to their profile page, and we want to display:
                 messages.success(request,
