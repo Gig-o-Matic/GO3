@@ -9,7 +9,7 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 decorator==5.0.9
 dill==0.3.8
-Django==4.2.10
+Django==4.2.11
 django-crispy-forms==1.12.0
 django-environ==0.11.2
 django-extensions==3.1.3
