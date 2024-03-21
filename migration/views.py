@@ -73,7 +73,12 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
             for member_data in data['members']:   
                 is_admin = member_data.pop('is_admin')
                 is_occasional = member_data.pop('is_occasional')
-                section = band.sections.get(name=member_data.pop('section'))
+                section_name=member_data.pop('section')
+                if section_name:
+                    section = band.sections.get(name=section_name)
+                else:
+                    section = band.sections.get(name="No Section")
+
                 member_data['go2_id'] = member_data.pop('old ID')
 
                 member, member_created = Member.objects.get_or_create(email=member_data["email"], defaults=member_data)
@@ -114,7 +119,7 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     datenotes = fields["time_notes"],
                 )
                 gig.save()
-                migration_messages.append(f"Imported {gig.title}")
+                migration_messages.append(f"Added gig {gig.title}")
             context = super().get_context_data(**kwargs)
             context["migration_messages"] = migration_messages
             context["return_to"] = "gig_migration_form"
