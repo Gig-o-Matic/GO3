@@ -80,13 +80,13 @@ class Member(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
 
     username = models.CharField(max_length=200)
-    nickname = models.CharField(max_length=100, blank=True )
-    phone = models.CharField(max_length=100, blank=True)
-    statement = models.CharField(max_length=500, blank=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=100, blank=True, null=True)
+    statement = models.CharField(max_length=500, blank=True, null=True)
     motd_dirty = models.BooleanField(default=True)
     seen_welcome = models.BooleanField(default=False)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
-    images = models.TextField(max_length=500, blank=True)
+    images = models.TextField(max_length=500, blank=True, null=True)
 
     # flag to determine whether to recompute calendar feed
     cal_feed_dirty = models.BooleanField(default=True)
@@ -98,7 +98,7 @@ class Member(AbstractUser):
     # Used to map old calendar subscription URLs
     go2_id = models.CharField(max_length=100, blank=True)
 
-    display_name = models.CharField(max_length=200, blank=True)
+    display_name = models.CharField(max_length=200, blank=True, null=True)
 
     @property
     def member_name(self):

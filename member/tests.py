@@ -1168,7 +1168,7 @@ class MemberEditTest(TemplateTestCase):
         """ of email, username, and nickname """
         m = self.joeuser
         self.assertEqual(m.username,'')
-        self.assertEqual(m.nickname,'')
+        self.assertEqual(m.nickname, None)
         self.assertEqual(m.display_name, 'a@b.com')
         m.username='joe'
         m.save()

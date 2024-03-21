@@ -16,7 +16,7 @@
 """
 from django_q.tasks import async_task
 from lib.mixins import SuperUserRequiredMixin
-from .forms import BandMigrationForm, GigMigrationForm
+from .forms import BandMigrationForm
 from band.models import Band
 from band.util import AssocStatusChoices
 from gig.models import Gig
@@ -28,9 +28,6 @@ import json
 import dateutil.parser
 import pytz
 import re
-
-def cast_bool(text):
-    return text.lower() == "true"
 
 class BandMigrationFormView(SuperUserRequiredMixin, TemplateView):
     template_name = "migration/band_form.html"
@@ -46,60 +43,58 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         form = BandMigrationForm(request.POST)
         if form.is_valid():
-            reader = csv.DictReader(StringIO(form.cleaned_data["paste"]), dialect='excel-tab')
-
+            data = json.loads(form.cleaned_data["paste"])
+            
             migration_messages = []
-            for row in reader:
-                band, band_created = Band.objects.get_or_create(name=row["band"], defaults={"timezone": form.cleaned_data["timezone"]})
-                if band_created: migration_messages.append(f"Created new band {band.name}")
 
-                default_member_info = {
-                    "username": row["member"],
-                    "nickname": row["nickname"],
-                    "go2_id": row["object ID"],
-                }
-                member, member_created = Member.objects.get_or_create(email=row["email"], defaults=default_member_info)
+            # Extract sections, we'll associate these in a sec
+            section_list = data['band'].pop('sections')
+
+            # Transform the list of images into how they are stored
+            data['band']['images'] = "\n".join(data['band'].pop('images'))
+
+            # Delete internal and unimplemented attributes
+            del data['band']['band_cal_feed_dirty']
+            del data['band']['pub_cal_feed_dirty']
+            del data['band']['show_in_nav']
+
+            band, band_created = Band.objects.get_or_create(name=data['band']['name'], defaults=data['band'])
+            if band_created:
+                migration_messages.append(f"Created new band {band.name}")
+            else:
+                migration_messages.append(f"Band {data['band']['name']} already in DB")
+            for section_name in section_list:
+                section, section_created = band.sections.get_or_create(name=section_name)
+                if section_created:
+                    migration_messages.append(f"Created new section {section.name}")
+                else:
+                    migration_messages.append(f"Section {section.name} already in DB")
+                
+            for member_data in data['members']:   
+                is_admin = member_data.pop('is_admin')
+                is_occasional = member_data.pop('is_occasional')
+                section_name=member_data.pop('section')
+                if section_name:
+                    section = band.sections.get(name=section_name)
+                else:
+                    section = band.sections.get(name="No Section")
+
+                member_data['go2_id'] = member_data.pop('old ID')
+
+                member, member_created = Member.objects.get_or_create(email=member_data["email"], defaults=member_data)
                 if member_created:
                     async_task("migration.helpers.send_migrated_user_password_reset", band.id, member.id)
+                    migration_messages.append(f"Created new member {member.email}")
 
-                is_admin = cast_bool(row["is_admin"])
-                is_occasional = cast_bool(row["is_occasional"])
-                if row["section"] and row["section"] != "None":
-                    imported_section_name = row["section"]
-                else:
-                    imported_section_name = "No Section"
-                default_section, _section_created = band.sections.get_or_create(name=imported_section_name)
-                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": default_section, "is_occasional": is_occasional, "status": AssocStatusChoices.CONFIRMED})
+                _assoc, assoc_created = band.assocs.get_or_create(member=member, defaults={"is_admin": is_admin, "default_section": section, "is_occasional": is_occasional, "status": AssocStatusChoices.CONFIRMED})
                 if assoc_created:
-                    migration_messages.append(f"Associated {member.username} ({member.email}) with {band.name} - {default_section.name} {'as band admin' if is_admin else ''}")
+                    migration_messages.append(f"Associated {member.email} with {band.name} - {section.name} {'as band admin' if is_admin else ''}")
                 else:
                     migration_messages.append(f"{member.username} ({member.email}) already present in {band.name}; skipping.")
             
-            context = super().get_context_data(**kwargs)
-            context["migration_messages"] = migration_messages
-            context["return_to"] = "gig_migration_form"
-            return self.render_to_response(context)
-
-class GigMigrationFormView(SuperUserRequiredMixin, TemplateView):
-    template_name = "migration/gig_form.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = GigMigrationForm()
-        return context
-
-class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
-    template_name = "migration/results.html"
-
-    def post(self, request, *args, **kwargs):
-        form = GigMigrationForm(request.POST)
-        if form.is_valid():
-            data = json.loads(form.cleaned_data["paste"])
-            band = Band.objects.get(id=form.cleaned_data["band_id"])
             admin = band.assocs.filter(is_admin=True).first().member
-            migration_messages = []
-            for record in data:
-                fields = record["fields"]
+            for gig_data in data['gigs']:
+                fields = gig_data['fields']
                 gig = Gig(
                     band = band,
                     contact = admin,
@@ -124,14 +119,12 @@ class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     datenotes = fields["time_notes"],
                 )
                 gig.save()
-                migration_messages.append(f"Imported {gig.title}")
-
-
+                migration_messages.append(f"Added gig {gig.title}")
             context = super().get_context_data(**kwargs)
             context["migration_messages"] = migration_messages
             context["return_to"] = "gig_migration_form"
             return self.render_to_response(context)
-        
+
     def mangle_time(self, timestr, tzstr):
         # Necessary because GO2 was not tz-aware
         # Interpret the time in the band's zone
@@ -139,6 +132,4 @@ class GigMigrationResultsView(SuperUserRequiredMixin, TemplateView):
         stripped = re.sub("\\+00:00", "", timestr)
         parsed = dateutil.parser.isoparse(stripped)
         return tz.localize(parsed)
-
-
 
