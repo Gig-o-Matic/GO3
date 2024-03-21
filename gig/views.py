@@ -52,7 +52,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_has_band_admin'] = has_band_admin(
+        context['the_user_is_band_admin'] = has_band_admin(
             self.request.user, self.object.band)
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
             self.request.user, self.object.band)
