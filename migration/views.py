@@ -46,7 +46,12 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
             data = json.loads(form.cleaned_data["paste"])
             
             migration_messages = []
+
+            # Extract sections, we'll associate these in a sec
             section_list = data['band'].pop('sections')
+
+            # Transform the list of images into how they are stored
+            data['band']['images'] = "\n".join(data['band'].pop('images'))
 
             # Delete internal and unimplemented attributes
             del data['band']['band_cal_feed_dirty']
