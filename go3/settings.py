@@ -38,12 +38,12 @@ from multiprocessing import set_start_method  # for task q
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
                   ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
-                  LOG_LEVEL=str, EMAIL_ENABLE=bool)
+                  LOG_LEVEL=str, EMAIL_ENABLE=bool,CAPTCHA_ENABLE=bool)
 
 # reading .env file
 environ.Env.read_env()
 
-_testing = False
+_testing = env("TESTING", default=False)
 if len(sys.argv) > 1 and sys.argv[1] == "test":
     _testing = True
     logging.disable(logging.CRITICAL)
