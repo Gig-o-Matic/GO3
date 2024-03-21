@@ -59,6 +59,9 @@ class MemberTest(TestCase):
     def test_member_email(self):
         m = Member.objects.create_user('tEsTmEmBeR@FoO.CoM', password='abc')
         self.assertEqual(m.email,"testmember@foo.com")
+        m.email = "TESTING@TEST.COM"
+        m.save()
+        self.assertEqual(m.email,"testing@test.com")
 
 
     def test_member_bands(self):
