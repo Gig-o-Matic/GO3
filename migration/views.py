@@ -117,6 +117,7 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     enddate = self.mangle_time(fields["enddate"], band.timezone),
                     created_date = self.mangle_time(fields["created_date"], band.timezone),
                     datenotes = fields["time_notes"],
+                    status = fields["status"],
                 )
                 gig.save()
                 migration_messages.append(f"Added gig {gig.title}")
