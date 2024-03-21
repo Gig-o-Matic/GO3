@@ -253,4 +253,4 @@ class EmailConfirmation(models.Model):
     language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
 
     def as_email_recipient(self):
-        return EmailRecipient(email=self.member.email, language=self.language)
+        return EmailRecipient(email=self.new_email, language=self.language)
