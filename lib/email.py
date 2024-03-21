@@ -5,9 +5,8 @@ from django.template.loader import render_to_string
 from django.utils import translation
 from django_q.tasks import async_task
 from markdown import markdown
-import logging
 
-from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE, EMAIL_ENABLE
+from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE
 
 SUBJECT = 'Subject:'
 DEFAULT_SUBJECT = 'Message from Gig-O-Matic'

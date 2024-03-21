@@ -28,7 +28,7 @@ def send_migrated_user_password_reset(band_id, member_id):
 
   assert member.email
 
-  logging.info("Sending password reset email to", member.email)
+  logging.info(f"Sending password reset email to {member.email}")
   form = PasswordResetForm({"email": member.email})
   
   assert form.is_valid()
