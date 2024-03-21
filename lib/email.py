@@ -17,17 +17,7 @@ def send_messages_async(messages):
     return async_task('lib.email.do_send_messages_async', list(messages), ack_failure=True)
 
 def do_send_messages_async(messages):
-    if EMAIL_ENABLE:
-        mail.get_connection().send_messages(messages)
-    else:
-        log_messages(messages)
-
-
-def log_messages(messages):
-    """ if emailing is disabled, just log the messages """
-    for m in messages:
-        logging.info(f"to: {m.to}  subject: {m.subject}")
-        logging.info(f"{m.body}\n")
+    mail.get_connection().send_messages(messages)
 
 @dataclass
 class EmailRecipient:
