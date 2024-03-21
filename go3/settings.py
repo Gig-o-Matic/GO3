@@ -162,6 +162,14 @@ else:
 
 AUTH_USER_MODEL = "member.Member"
 
+# Password matching with case insensitive
+# https://pythonhint.com/post/2149716530424105/removing-case-sensitivity-from-email-in-django-login-form
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'go3.backends.CaseInsensitiveEmailBackend',
+]
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
