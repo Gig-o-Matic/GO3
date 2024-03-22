@@ -213,10 +213,13 @@ a {
     cursor: pointer;
 }
 .card-header[data-toggle="collapse"]:after {
-    font-family: 'Font Awesome 5 Pro';
-    font-weight: 900;
+    /* font-family: 'Font Awesome 5 Pro'; */
+    /* font-weight: 900; */
+    font: var(--fa-font-solid);
+    font-size: .75em;
     content: "\f068";
-    padding-right: .5rem;
+    padding-top: .4em;
+    padding-right: .1em;
     float: left;
 }
 .card-header[data-toggle="collapse"].collapsed:after {
