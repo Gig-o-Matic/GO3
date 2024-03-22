@@ -80,8 +80,8 @@ class DetailView(generic.DetailView):
                         links.append([parts[0],':'.join(parts[1:])])
                 context['the_member_links'] = links
 
-            if the_band.images:
-                context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
+        if the_band.images:
+            context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
 
         return context
 
