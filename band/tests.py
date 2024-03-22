@@ -319,6 +319,17 @@ class MemberTests(TestCase):
         a.refresh_from_db()
         self.assertEqual(a.status, AssocStatusChoices.PENDING)
 
+    def test_alum_flag(self):
+        a = self.assoc_joe(AssocStatusChoices.PENDING)
+        self.assertFalse(a.is_alum)
+        a.status = AssocStatusChoices.CONFIRMED
+        a.save()
+        self.assertTrue(a.is_alum)
+        a.status = AssocStatusChoices.NOT_CONFIRMED
+        a.save()
+        self.assertTrue(a.is_alum)
+
+
 
 class BandTests(GigTestBase):
 
