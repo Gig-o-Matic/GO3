@@ -119,6 +119,10 @@ a {
   background-color: #008000;
 }
 
+.navbar.dev {
+  background-color: #800000;
+}
+
 .navbar a {
   color: #fff;
 }
