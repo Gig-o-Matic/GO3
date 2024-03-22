@@ -286,11 +286,15 @@ else:
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = env("SENDGRID_SENDER", default="superuser@gig-o-matic.com")
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
-SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
-SENDGRID_TRACK_CLICKS_HTML = False
 EMAIL_ENABLE = env("EMAIL_ENABLE", default=True)
+if EMAIL_ENABLE:
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
+    SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
+    SENDGRID_TRACK_CLICKS_HTML = False
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = BASE_DIR + "/tmp"
 
 # Calfeed settings
 DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache
