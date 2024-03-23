@@ -114,6 +114,12 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['date'] = date
             self.cleaned_data['setdate'] = None
             self.cleaned_data['enddate'] = end_date
+
+            if date < timezone.now():
+                self.add_error('call_date', ValidationError(_('Gig date must be in the future'), code='invalid date'))
+            if end_date and end_date < date:
+                self.add_error('end_date', ValidationError(_('Gig end date must be later than the start date'), code='invalid date'))
+
         else:
             # we're not full-day, so ignore the end date in the form
             call_time = _parse(self.cleaned_data.get('call_time',None), 'TIME_INPUT_FORMATS')
@@ -141,10 +147,7 @@ class GigForm(forms.ModelForm):
                 self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
             if enddate:
                 if enddate < date:
-                    if end_date:
-                        self.add_error('end_date', ValidationError(_('Gig end must not be earlier than the start'), code='invalid end time'))
-                    else:
-                        self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
                 elif setdate and enddate < setdate:
                     self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
 

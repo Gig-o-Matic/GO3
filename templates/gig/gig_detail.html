@@ -85,17 +85,17 @@
                     {% endif %}
                     </div>
                 </div>
-                {% if gig_has_start_time %}
                     <div class="row">
                         <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
+                        {% if call_time %}
                         <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
-                            {{ gig.date|time:"TIME_FORMAT" }}
+                            {{ call_time|time:"TIME_FORMAT" }}
                         </div>
-                        {% if gig.setdate %}
-                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ gig.setdate|time:"TIME_FORMAT" }}</div>
+                        {% if set_time %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ set_time|time:"TIME_FORMAT" }}</div>
                         {% endif %}
-                        {% if gig.enddate %}
-                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ gig.enddate|time:"TIME_FORMAT" }}</div>
+                        {% if end_time %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ end_time|time:"TIME_FORMAT" }}</div>
                         {% endif %}
                     </div>
                 {% endif %}
@@ -104,7 +104,7 @@
                         <div class="col-md-2 col-sm-2 col-4">
                         </div>
                         <div class="col-md-10 col-sm-10 col-8">
-                            {{ gig.datenotes }}
+                            {% trans "Note" %}: {{ gig.datenotes }}
                         </div>
                     </div>
                 {% endif %}
