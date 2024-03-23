@@ -20,7 +20,7 @@ from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.core import mail
 from .models import Band, Assoc, Section
-from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, delete_assoc
+from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, do_delete_assoc
 from member.models import Member
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
@@ -329,7 +329,15 @@ class MemberTests(TestCase):
         a.save()
         self.assertTrue(a.is_alum)
 
-
+    def test_revert_alum_status(self):
+        a = self.assoc_joe(AssocStatusChoices.CONFIRMED)
+        a.is_alum = True
+        a.save()
+        self.assertIsNotNone(do_delete_assoc(a))
+        self.assertEqual(a.status, AssocStatusChoices.NOT_CONFIRMED)
+        a.is_alum = False
+        a.save()
+        self.assertIsNone(do_delete_assoc(a))
 
 class BandTests(GigTestBase):
 
