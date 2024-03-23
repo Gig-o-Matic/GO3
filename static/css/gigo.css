@@ -119,8 +119,8 @@ a {
   background-color: #008000;
 }
 
-.navbar a {
-  color: #fff;
+.navbar.dev {
+  background-color: #800000;
 }
 
 .navbar a.dropdown-item {

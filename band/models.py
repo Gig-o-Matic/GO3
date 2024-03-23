@@ -35,9 +35,9 @@ class Band(models.Model):
     condensed_name = models.CharField(max_length=200, null=True, blank=True)
 
     website = models.CharField(max_length=200, null=True, blank=True)
-    description = models.TextField(max_length=500, null=True, blank=True)
-    images = models.TextField(max_length=500, null=True, blank=True)
-    member_links = models.TextField(max_length=500, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    images = models.TextField(null=True, blank=True)
+    member_links = models.TextField(null=True, blank=True)
     thumbnail_img = models.CharField(max_length=500, null=True, blank=True)
 
     timezone = models.CharField(max_length=200, default='UTC', choices=[
