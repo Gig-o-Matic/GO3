@@ -74,19 +74,19 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
         cal.add('X-WR-CALDESC',
                 '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_title))
         for e in the_events:
-            with timezone.override(e.band.timezone):
-                event = Event()
-                event.add('dtstamp', timezone.now())
-                event.add('uid', e.cal_feed_id)
-                event.add('summary', _make_summary(e))
-                event.add('dtstart', e.date)
-                event.add(
-                    'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
-                event.add('description', _make_description(e))
-                event.add('location', e.address)
-                event.add(
-                    'url', 'http://{0}/gig/{1}'.format(URL_BASE, e.id))
-                # todo don't hardwire the URL
-                # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
-                cal.add_component(event)
+            # with timezone.override(e.band.timezone):
+            event = Event()
+            event.add('dtstamp', timezone.now())
+            event.add('uid', e.cal_feed_id)
+            event.add('summary', _make_summary(e))
+            event.add('dtstart', e.date)
+            event.add(
+                'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
+            event.add('description', _make_description(e))
+            event.add('location', e.address)
+            event.add(
+                'url', 'http://{0}/gig/{1}'.format(URL_BASE, e.id))
+            # todo don't hardwire the URL
+            # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
+            cal.add_component(event)
     return cal.to_ical()
