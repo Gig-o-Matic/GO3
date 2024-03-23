@@ -25,5 +25,5 @@ class AssocStatusChoices(models.IntegerChoices):
     NOT_CONFIRMED = 0, "Not Confirmed"
     CONFIRMED = 1, "Confirmed"
     INVITED = 2, "Invited"
-    # 3 used to mean "alumni" but that has been deprecated
+    deprecated_alumni = 3,  # used to mean "alumni" but that has been deprecated
     PENDING = 4, "Pending"
