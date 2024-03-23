@@ -75,7 +75,16 @@ This project is targeted at Python 3.12, and the minimum supported version is Py
 	python manage.py schedule_tasks
 	```
 
-## Testing
+## Development
+
+The live site uses various third party services to function correctly. In local development, these are all bypassed, though they can be enabled as needed by putting appropriate configuration into `go3/.env`.
+* [SendGrid](https://www.sendgrid.com) - Used to send the various emails to users: signup confirmation, password resets, gig reminders, etc.
+* [reCAPTCHA](https://www.google.com/recaptcha/about) - Reduce spammers hitting the signup and password reset URLs
+* [Rollbar](https://rollbar.com) - Used to capture errors that happen in production for us to investigate
+
+When testing emails in the local development environment, we usually do not want to actually send the email. Instead, they are written out as separate files in the `tmp/` directory within the GO3 root directory.
+
+## Test Suite
 We use sqlite3 for the test suite for now
 ```
 python manage.py collectstatic

@@ -38,7 +38,7 @@ from multiprocessing import set_start_method  # for task q
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
                   ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, ROLLBAR_ACCESS_TOKEN=str, DATABASE_URL=str,
-                  LOG_LEVEL=str, EMAIL_ENABLE=bool, CAPTCHA_ENABLE=bool)
+                  LOG_LEVEL=str, CAPTCHA_ENABLE=bool)
 
 # reading .env file
 environ.Env.read_env()
@@ -287,11 +287,12 @@ else:
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = env("SENDGRID_SENDER", default="superuser@gig-o-matic.com")
-EMAIL_ENABLE = env("EMAIL_ENABLE", default=True)
-if EMAIL_ENABLE:
-    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-    SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
+SENDGRID_API_KEY = env('SENDGRID_API_KEY', default=None)
+if SENDGRID_API_KEY:
     SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
+    if DEBUG and not SENDGRID_SANDBOX_MODE_IN_DEBUG:
+        logging.warning("SendGrid API key detected. EMAIL IS HOT!")
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
     SENDGRID_TRACK_CLICKS_HTML = False
 else:
     EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
