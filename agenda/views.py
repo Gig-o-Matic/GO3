@@ -53,19 +53,12 @@ class CalendarView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Assume the timezone for the current user's first band
-        # TODO: What do we do for a user who has bands in more than one timezone?
-        if self.request.user.assocs.first():
-            context['timezone'] = self.request.user.assocs.first().band.timezone
-        else:
-            context['timezone'] = None
-
         m = self.request.GET.get('m', None)
         y = self.request.GET.get('y', None)
 
         if m and y:
-            m = int(m)
-            y = int(y)
+            m = int(m)+1
+            y = int(y)+1900
             context['initialDate'] = f'{y}-{m:02d}-01'
 
         return context
