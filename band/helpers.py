@@ -188,6 +188,8 @@ def do_delete_assoc(a):
             a.save()
         else:
             a.delete()
+            return None  # this is for testing - to know it's really gone
+    return a  # this is for testing - to know it's not really gone, just NOT_CONFIRMED
 
 
 @login_required
