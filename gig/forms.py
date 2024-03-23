@@ -183,6 +183,7 @@ class GigForm(forms.ModelForm):
         return newgig
 
     email_changes = forms.BooleanField(required=False, label=_('Email members about change'))
+    is_full_day = forms.BooleanField(required=False, label=_('Full- or multi-day event'))
     call_date = forms.Field(required=True, label=_('Date'))
     call_time = forms.Field(required=False, label=_('Call Time'))
     set_time = forms.Field(required=False, label=_('Set Time'))

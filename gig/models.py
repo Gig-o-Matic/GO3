@@ -163,6 +163,11 @@ class Gig(AbstractEvent):
     setdate = models.DateTimeField(null=True, blank=True)
     enddate = models.DateTimeField(null=True, blank=True)
 
+    is_full_day = models.BooleanField(default=False)
+    has_call_time = models.BooleanField(default=False)
+    has_set_time = models.BooleanField(default=False)
+    has_end_time = models.BooleanField(default=False)
+
     dress = models.TextField(null=True, blank=True)
     paid = models.TextField(null=True, blank=True)
     postgig = models.TextField(null=True, blank=True)

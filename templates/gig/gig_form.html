@@ -57,6 +57,8 @@
              
             <div class="row">
                 <div class="col-4">
+                </div>
+                <div class="col-4">
                     {{ form.call_date.label_tag }}
                     {{ form.call_date.errors }}
                 </div>
@@ -67,6 +69,10 @@
             </div>
 
             <div class="row">
+                <div class="form-group col-4">
+                    {{ form.is_full_day }}
+                    {{ form.is_full_day.label_tag }}
+                </div>
                 <div class="form-group col-4">
                     <div class="form-group">
                         <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
