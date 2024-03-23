@@ -178,13 +178,16 @@ def do_delete_assoc(a):
         Plan.member_plans.future_plans(a.member).filter(gig__is_archived=False).delete()
         a.member.cal_feed_dirty = True
 
-        # and now make this member an "alum"
-        a.status=AssocStatusChoices.ALUMNI
+        # and now turn this member "not confirmed" - but they're still an alum
+        a.status=AssocStatusChoices.NOT_CONFIRMED
         a.save()
     else:
-        # well, if it's not a confirmed member we can delete the assoc
-        a.delete()
-
+        # well, if it's not a confirmed member we can delete the assoc unless it's an alum
+        if a.is_alum:
+            a.status=AssocStatusChoices.NOT_CONFIRMED
+            a.save()
+        else:
+            a.delete()
 
 
 @login_required
