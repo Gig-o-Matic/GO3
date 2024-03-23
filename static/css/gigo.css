@@ -123,10 +123,6 @@ a {
   background-color: #800000;
 }
 
-.navbar a {
-  color: #fff;
-}
-
 .navbar a.dropdown-item {
   color: #000;
 }
