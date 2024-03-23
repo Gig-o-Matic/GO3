@@ -50,13 +50,10 @@
 
     var calendar=null;
 
-    // Updates the browser address bar to reflect the current date view
-    function calCallback(rawEvents, xhr) { 
-        // The initial date is interpreted as UTC, so reference that timezone
-        // when determining the currentStart for the calendar in view
-        year = calendar.view.currentStart.getUTCFullYear()
-        month = calendar.view.currentStart.getUTCMonth() + 1 // Javascript zero-indexes months
-        window.history.replaceState({}, "", window.location.origin+window.location.pathname+"?y="+year+"&m="+month);
+    function calCallback(rawEvents, xhr) {
+        // Updates the browser address bar to reflect the current date view
+        mo = calendar.getDate();
+        window.history.replaceState({}, "", window.location.origin+window.location.pathname+"?y="+mo.getYear()+"&m="+mo.getMonth());
     }
 
     $(document).ready(function() {
@@ -67,7 +64,6 @@
             // put your options and callbacks here
             themeSystem: 'bootstrap',
             locale: '{{ user.preferences.language }}',
-            timeZone: '{{ timezone }}',
             eventSources : [{
                 url: '/calendar/events/{{ user.id }}',
                 method: 'GET',
