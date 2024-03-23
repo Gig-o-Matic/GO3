@@ -39,7 +39,7 @@ def delete_band_parts(sender, instance, **kwargs):
     l.delete()
 
 @receiver(pre_save, sender=Assoc)
-def set_initial_default_section(sender, instance, **kwargs):
+def set_initial_default_section_and_alum_status(sender, instance, **kwargs):
     if instance.default_section is None:
         instance.default_section = instance.band.sections.get(is_default=True)
 
