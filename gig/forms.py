@@ -66,12 +66,16 @@ class GigForm(forms.ModelForm):
         else:
             raise(ValueError('issue with band'))
 
-        # self.fields['datenotes'].widget.attrs['style'] = 'width:100%;'
 
     def clean(self):
         """
-        Checks to make sure the dates are valid. If there is an end-date set, it is assumed that the gig is "all day" events,
-        so the times are not used. Otherwise the times are used and the enddate is just the same as the start date.
+        Checks to make sure the dates and times are valid.
+         
+        if the gig is a full-or-multi-day event, the times are ignored.
+        if the gig is not full-or-multi-day,
+            if the times are there, they must be parsable
+            if the times are good, they are merged into the datetime for date, set, calltime
+            the appropriate flags are set to note which times are "real" in the datetimes.
         """
         def _parse(val,format_type):
             x = None
@@ -93,37 +97,60 @@ class GigForm(forms.ModelForm):
             self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
+        
+        # first, check to see if this is full-day or not
+        if self.cleaned_data.get('is_full_day'):
+            # we're full day, so see if there's an end date
+            end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
 
-        end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
-        if end_date is None or end_date==date:
+            # since we are full day, ignore the times completely
+            self.cleaned_data['has_call_time'] = False
+            self.cleaned_data['has_set_time'] = False
+            self.cleaned_data['has_end_time'] = False
+
+            date=date.replace(tzinfo=tzone(self.fields['timezone'].initial))
+            if end_date:
+                end_date=end_date.replace(tzinfo=tzone(self.fields['timezone'].initial))
+            self.cleaned_data['date'] = date
+            self.cleaned_data['setdate'] = None
+            self.cleaned_data['enddate'] = end_date
+        else:
+            # we're not full-day, so ignore the end date in the form
             call_time = _parse(self.cleaned_data.get('call_time',None), 'TIME_INPUT_FORMATS')
             set_time = _parse(self.cleaned_data.get('set_time',None), 'TIME_INPUT_FORMATS')
             end_time = _parse(self.cleaned_data.get('end_time',None), 'TIME_INPUT_FORMATS')
 
-            date = _mergetime(date, call_time, tzone(self.fields['timezone'].initial))
+            self.cleaned_data['has_call_time'] = not call_time is None
+            self.cleaned_data['has_set_time'] = not set_time is None
+            self.cleaned_data['has_end_time'] = not end_time is None
+
+            zone = tzone(self.fields['timezone'].initial)
+            date = _mergetime(date, call_time, zone)
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
-        else:
-            date=date.replace(tzinfo=tzone(self.fields['timezone'].initial))
-            enddate=end_date.replace(tzinfo=tzone(self.fields['timezone'].initial))
-            setdate = None
 
-        if date < timezone.now():
-            self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
-        if setdate and setdate < date:
-            self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
-        if enddate:
-            if enddate < date:
-                if end_date:
-                    self.add_error('end_date', ValidationError(_('Gig end must not be earlier than the start'), code='invalid end time'))
-                else:
-                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
-            elif setdate and enddate < setdate:
-                self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
 
-        self.cleaned_data['date'] = date
-        self.cleaned_data['setdate'] = setdate
-        self.cleaned_data['enddate'] = enddate
+            # date = _mergetime(date, call_time, tzone(self.fields['timezone'].initial))
+            # setdate = _mergetime(date, set_time) if set_time else None
+            # enddate = _mergetime(date, end_time) if end_time else None
+
+
+            if date < timezone.now():
+                self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
+            if setdate and setdate < date:
+                self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
+            if enddate:
+                if enddate < date:
+                    if end_date:
+                        self.add_error('end_date', ValidationError(_('Gig end must not be earlier than the start'), code='invalid end time'))
+                    else:
+                        self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+                elif setdate and enddate < setdate:
+                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+
+            self.cleaned_data['date'] = date
+            self.cleaned_data['setdate'] = setdate
+            self.cleaned_data['enddate'] = enddate
 
         super().clean()
 
@@ -211,7 +238,8 @@ class GigForm(forms.ModelForm):
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','rss_description','invite_occasionals',
-                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes']
+                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','is_full_day','has_set_time',
+                'has_call_time','has_end_time']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
@@ -228,6 +256,8 @@ class GigForm(forms.ModelForm):
             'title': _('Gig Title'),
             'contact': _('Contact'),
             'status': _('Status'),
+
+            'is_full_day':('Full- or Multi-day'),
 
             'call_date': _('Date'),
             'end_date': _('End Date'),

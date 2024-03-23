@@ -326,7 +326,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.date %}
+        {% if object.date and object.has_call_time %}
             defaultDate: '{{ object.date.isoformat }}',
         {% endif %}
     });
@@ -338,7 +338,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.setdate %}
+        {% if object.setdate and object.has_set_time %}
             defaultDate: '{{ object.setdate.isoformat }}',
         {% endif %}
     });
@@ -350,7 +350,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.enddate %}
+        {% if object.enddate and object.has_end_time %}
             defaultDate: '{{ object.enddate.isoformat }}',
         {% endif %}
     });
