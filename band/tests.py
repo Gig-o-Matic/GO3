@@ -278,7 +278,7 @@ class MemberTests(TestCase):
         resp = self.client.post(reverse('assoc-delete', args=[a.id]))
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
-        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.ALUMNI)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.NOT_CONFIRMED)
 
     def test_delete_admin(self):
         a = self.assoc_joe()
@@ -286,7 +286,7 @@ class MemberTests(TestCase):
         resp = self.client.post(reverse('assoc-delete', args=[a.id]))
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
-        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.ALUMNI)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.NOT_CONFIRMED)
 
     def test_delete_other(self):
         a = self.assoc_joe()
@@ -547,7 +547,7 @@ class BandTests(GigTestBase):
 
         plans = g1.plans.exclude(assoc__member=self.band_admin)
         self.assertEqual(plans.count(),1)
-        self.assertEqual(plans.first().assoc.status, AssocStatusChoices.ALUMNI)
+        self.assertEqual(plans.first().assoc.status, AssocStatusChoices.NOT_CONFIRMED)
 
         # make sure the future gig plan got deleted
         plans = g2.plans.filter(assoc__member=self.joeuser)
