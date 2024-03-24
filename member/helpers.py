@@ -147,7 +147,7 @@ def calfeed(request, pk):
         hr.status_code = 404
         return hr
 
-    return HttpResponse(tf)
+    return HttpResponse(tf,content_type='text/calendar')
 
 
 # helpers to define member permissions for various things
