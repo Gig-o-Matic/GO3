@@ -198,6 +198,7 @@ class Assoc(models.Model):
 
     is_admin = models.BooleanField(default=False)
     is_occasional = models.BooleanField(default=False)
+    is_alum = models.BooleanField(default=False)
 
     join_date = models.DateField(auto_now_add=True)
 
@@ -208,10 +209,6 @@ class Assoc(models.Model):
     @property
     def is_pending(self):
         return self.status == AssocStatusChoices.PENDING
-
-    @property
-    def is_alum(self):
-        return self.status == AssocStatusChoices.ALUMNI
 
     @property
     def section(self):

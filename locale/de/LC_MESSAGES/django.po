@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-17 22:54-0400\n"
+"POT-Creation-Date: 2024-03-24 14:55-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: Christian Neumayer <christian.m.neumayer@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -200,7 +200,7 @@ msgstr ""
 msgid "Setlist"
 msgstr "Programm"
 
-#: gig/forms.py:243 templates/member/member_assocs.html:80
+#: gig/forms.py:243
 msgid "hide from calendar"
 msgstr "nicht in meinem Kalender anzeigen"
 
@@ -212,8 +212,8 @@ msgstr ""
 msgid "(See below.)"
 msgstr ""
 
-#: gig/helpers.py:143 member/views.py:254 member/views.py:259
-#: member/views.py:263
+#: gig/helpers.py:143 member/views.py:270 member/views.py:275
+#: member/views.py:279
 msgid ", "
 msgstr ""
 
@@ -276,23 +276,23 @@ msgstr "Fixiert!"
 msgid "Canceled"
 msgstr "Abgesagt!"
 
-#: go3/settings.py:194
+#: go3/settings.py:204
 msgid "German"
 msgstr ""
 
-#: go3/settings.py:195
+#: go3/settings.py:205
 msgid "English (US)"
 msgstr ""
 
-#: go3/settings.py:196
+#: go3/settings.py:206
 msgid "English (UK, AU, NZ, ...)"
 msgstr ""
 
-#: go3/settings.py:197
+#: go3/settings.py:207
 msgid "French"
 msgstr ""
 
-#: go3/settings.py:198
+#: go3/settings.py:208
 msgid "Italian"
 msgstr ""
 
@@ -345,24 +345,24 @@ msgstr ""
 msgid "former member"
 msgstr "Mitglieder"
 
-#: member/models.py:80 member/models.py:231
+#: member/models.py:80 member/models.py:242
 #, fuzzy
 msgid "email address"
 msgstr "Emailadresse"
 
-#: member/models.py:202
+#: member/models.py:213
 #, fuzzy
 #| msgid "Members"
 msgid "member"
 msgstr "Mitglieder"
 
-#: member/models.py:203
+#: member/models.py:214
 #, fuzzy
 #| msgid "Members"
 msgid "members"
 msgstr "Mitglieder"
 
-#: member/models.py:245
+#: member/models.py:256
 #, fuzzy
 #| msgid "new_gig_email"
 msgid "new email"
@@ -387,33 +387,33 @@ msgstr ""
 msgid "You have selected a new email address - check your inbox to verify!"
 msgstr ""
 
-#: member/views.py:253
+#: member/views.py:269
 #, fuzzy, python-brace-format
 #| msgid "Please enter a valid email address!"
 msgid "Invalid email addresses: {e}"
 msgstr "Bitte gib eine gültige Emailadresse an!"
 
-#: member/views.py:258
+#: member/views.py:274
 #, python-brace-format
 msgid "Invitations sent to {e}"
 msgstr ""
 
-#: member/views.py:262
+#: member/views.py:278
 #, python-brace-format
 msgid "These users are already in the band: {e}"
 msgstr ""
 
-#: member/views.py:303
+#: member/views.py:326
 #, python-brace-format
 msgid "You are now a member of {band}."
 msgstr ""
 
-#: member/views.py:360
+#: member/views.py:383
 #, python-brace-format
 msgid "Your invitation to join {band} has been deleted."
 msgstr ""
 
-#: member/views.py:382
+#: member/views.py:405
 #, python-brace-format
 msgid ""
 "An account associated with {email} already exists.  You can recover this "
@@ -425,11 +425,11 @@ msgstr ""
 msgid "Make this my default view!"
 msgstr "Mach dies zu meiner Standartansicht!"
 
-#: templates/agenda/agenda.html:22
+#: templates/agenda/agenda.html:23
 msgid "Future Gigs: Weigh In!"
 msgstr "Zukünftige Termine: Sag Bescheid!"
 
-#: templates/agenda/agenda.html:34
+#: templates/agenda/agenda.html:35
 msgid "Upcoming Gigs"
 msgstr "Kommende Termine"
 
@@ -443,11 +443,11 @@ msgstr "Register"
 msgid "Calendar"
 msgstr "Kalender"
 
-#: templates/agenda/calendar.html:29
+#: templates/agenda/calendar.html:30
 msgid "committed gigs"
 msgstr ""
 
-#: templates/agenda/calendar.html:32
+#: templates/agenda/calendar.html:33
 #, fuzzy
 #| msgid "Unconfirmed"
 msgid "confirmed gigs"
@@ -468,6 +468,10 @@ msgstr "Terminraster"
 #| msgid "No Gigs!"
 msgid "No Gigs"
 msgstr "Keine Termine!"
+
+#: templates/agenda/hidden_bands_info.html:5
+msgid "Bands hidden from view:"
+msgstr ""
 
 #: templates/band/band_all_members.html:22
 #: templates/band/band_section_members.html:22
@@ -612,20 +616,13 @@ msgstr ""
 msgid "Edit Band"
 msgstr "Bearbeite Band"
 
-#: templates/band/band_form.html:87
-msgid "thumbnail_instructions"
-msgstr ""
-"Benötigt eine Bild-URL. Um ein Bild von Facebook zu verwenden kannst du via "
-"Rechtsklick die Bild-URL kopieren und hier einfügen. Funktioniert momentan "
-"noch besser mit Bildern, die höher als breit sind."
-
-#: templates/band/band_form.html:97
+#: templates/band/band_form.html:101
 msgid "imagelink_instructions"
 msgstr ""
 "Benötigt Bild-URLs. Um ein Bild von Facebook zu verwenden kannst du via "
 "Rechtsklick die Bild-URL kopieren und hier einfügen."
 
-#: templates/band/band_form.html:167 templates/band/band_section_setup.html:49
+#: templates/band/band_form.html:171 templates/band/band_section_setup.html:49
 #: templates/gig/gig_form.html:250 templates/gig/gig_form.html:252
 #: templates/help/band_request.html:29 templates/member/band_invite.html:36
 #: templates/member/member_assocs.html:18 templates/member/member_form.html:69
@@ -636,7 +633,7 @@ msgstr ""
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: templates/band/band_form.html:168 templates/band/band_section_setup.html:50
+#: templates/band/band_form.html:172 templates/band/band_section_setup.html:50
 #: templates/gig/gig_form.html:254 templates/member/member_form.html:70
 #: templates/member/memberpreferences_form.html:21
 msgid "Save"
@@ -1464,6 +1461,10 @@ msgstr "auch andere Register"
 msgid "occasional member"
 msgstr "Lade hin-und-wieder-Mitglieder ein"
 
+#: templates/member/member_assocs.html:80
+msgid "hide this band's gigs"
+msgstr ""
+
 #: templates/member/member_assocs.html:94
 msgid "email notifications"
 msgstr ""
@@ -1658,7 +1659,7 @@ msgid ""
 "registration process."
 msgstr ""
 
-#: templates/member/signup.html:24
+#: templates/member/signup.html:30
 msgid "Sign me up!"
 msgstr "Melde mich an!"
 
@@ -1836,6 +1837,12 @@ msgstr "Statistiken!"
 #| msgid "Gig-O-Matic Credits"
 msgid "Gig-O-Matic Stats"
 msgstr "Gig-O-Matic Mitwirkende"
+
+#~ msgid "thumbnail_instructions"
+#~ msgstr ""
+#~ "Benötigt eine Bild-URL. Um ein Bild von Facebook zu verwenden kannst du "
+#~ "via Rechtsklick die Bild-URL kopieren und hier einfügen. Funktioniert "
+#~ "momentan noch besser mit Bildern, die höher als breit sind."
 
 #, fuzzy
 #~| msgid "Calendar shows only confirmed gigs"

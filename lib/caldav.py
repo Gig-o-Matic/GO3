@@ -85,7 +85,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
                 event.add(
-                    'url', 'http://{0}/gig/{1}'.format(URL_BASE, e.id))
+                    'url', f'{URL_BASE}/gig/{e.id}')
                 # todo don't hardwire the URL
                 # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
                 cal.add_component(event)

@@ -25,7 +25,7 @@ graphene-django==3.2.0
 graphql-core==3.2.3
 graphql-relay==3.2.0
 gunicorn==21.2.0
-icalendar==4.0.7
+icalendar==5.0.12
 idna==3.6
 isort==5.9.3
 Jinja2==3.1.3

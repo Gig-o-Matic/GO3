@@ -17,6 +17,7 @@
 from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 from .models import Band, Assoc, Section
+from .util import AssocStatusChoices
 from gig.models import Plan
 from gig.helpers import update_plan_default_section
 
@@ -38,9 +39,12 @@ def delete_band_parts(sender, instance, **kwargs):
     l.delete()
 
 @receiver(pre_save, sender=Assoc)
-def set_initial_default_section(sender, instance, **kwargs):
+def set_initial_default_section_and_alum_status(sender, instance, **kwargs):
     if instance.default_section is None:
         instance.default_section = instance.band.sections.get(is_default=True)
+
+    if instance.status == AssocStatusChoices.CONFIRMED:
+        instance.is_alum = True
 
 @receiver(post_save, sender=Assoc)
 def set_plan_sections(sender, instance, created, **kwargs):

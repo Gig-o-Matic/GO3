@@ -1,0 +1,11 @@
+{% load i18n %}
+{% if hidden_bands %}
+<div class="row">
+    <div class="mx-auto col-md-10 col-12 hidden-bands-list">
+        {% trans "Bands hidden from view:" %}
+        {% for hidden_band in hidden_bands %}
+            <a href="{% url 'member-detail' %}#band-{{ hidden_band.id }}">{{ hidden_band.name }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

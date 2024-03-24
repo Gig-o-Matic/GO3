@@ -39,7 +39,7 @@ def get_gigs_over_time_stats(the_band):
     the_metric = BandMetric.objects.filter(band=the_band, name='Number of Gigs').first()
     if the_metric is None:
         return []
-    the_stats = the_metric.stats
+    the_stats = the_metric.stats.order_by("created")
     return [ [s.created, s.value] for s in the_stats.all()]
     
 
