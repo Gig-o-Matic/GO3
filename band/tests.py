@@ -20,7 +20,7 @@ from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.core import mail
 from .models import Band, Assoc, Section
-from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, delete_assoc
+from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, do_delete_assoc
 from member.models import Member
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
@@ -278,7 +278,7 @@ class MemberTests(TestCase):
         resp = self.client.post(reverse('assoc-delete', args=[a.id]))
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
-        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.ALUMNI)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.NOT_CONFIRMED)
 
     def test_delete_admin(self):
         a = self.assoc_joe()
@@ -286,7 +286,7 @@ class MemberTests(TestCase):
         resp = self.client.post(reverse('assoc-delete', args=[a.id]))
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(Assoc.objects.filter(member=self.joeuser).count(), 1)
-        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.ALUMNI)
+        self.assertEqual(Assoc.objects.filter(member=self.joeuser).first().status, AssocStatusChoices.NOT_CONFIRMED)
 
     def test_delete_other(self):
         a = self.assoc_joe()
@@ -319,6 +319,25 @@ class MemberTests(TestCase):
         a.refresh_from_db()
         self.assertEqual(a.status, AssocStatusChoices.PENDING)
 
+    def test_alum_flag(self):
+        a = self.assoc_joe(AssocStatusChoices.PENDING)
+        self.assertFalse(a.is_alum)
+        a.status = AssocStatusChoices.CONFIRMED
+        a.save()
+        self.assertTrue(a.is_alum)
+        a.status = AssocStatusChoices.NOT_CONFIRMED
+        a.save()
+        self.assertTrue(a.is_alum)
+
+    def test_revert_alum_status(self):
+        a = self.assoc_joe(AssocStatusChoices.CONFIRMED)
+        a.is_alum = True
+        a.save()
+        self.assertIsNotNone(do_delete_assoc(a))
+        self.assertEqual(a.status, AssocStatusChoices.NOT_CONFIRMED)
+        a.is_alum = False
+        a.save()
+        self.assertIsNone(do_delete_assoc(a))
 
 class BandTests(GigTestBase):
 
@@ -528,7 +547,7 @@ class BandTests(GigTestBase):
 
         plans = g1.plans.exclude(assoc__member=self.band_admin)
         self.assertEqual(plans.count(),1)
-        self.assertEqual(plans.first().assoc.status, AssocStatusChoices.ALUMNI)
+        self.assertEqual(plans.first().assoc.status, AssocStatusChoices.NOT_CONFIRMED)
 
         # make sure the future gig plan got deleted
         plans = g2.plans.filter(assoc__member=self.joeuser)
