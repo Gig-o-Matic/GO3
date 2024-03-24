@@ -85,6 +85,7 @@
                     {% endif %}
                     </div>
                 </div>
+                    {% if call_time or set_time or end_time %}
                     <div class="row">
                         <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
                         {% if call_time %}
@@ -99,12 +100,12 @@
                             <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ end_time|time:"TIME_FORMAT" }}</div>
                         {% endif %}
                     </div>
+                    {% endif %}
                     {% if gig.datenotes %}
                     <div class="row">
-                        <div class="col-md-2 col-sm-2 col-4">
-                        </div>
+                        <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fa-solid fa-triangle-exclamation"></i></div>
                         <div class="col-md-10 col-sm-10 col-8">
-                            {% trans "Note" %}: {{ gig.datenotes }}
+                            {{ gig.datenotes }}
                         </div>
                     </div>
                     {% endif %}
