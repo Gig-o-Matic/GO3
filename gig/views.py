@@ -61,7 +61,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         # start_time = self.object.date.astimezone(tz).strftime("%H:%M")
         # context['gig_has_start_time'] = (start_time != "00:00")
 
-        context['multi_day_gig'] = (self.object.enddate is not None) and (self.object.date != self.object.enddate)
+        context['multi_day_gig'] = (self.object.enddate is not None) and \
+                                    (self.object.date.date() != self.object.enddate.date())
 
         if not self.object.is_full_day:
             context['call_time'] = self.object.date if self.object.has_call_time else None
