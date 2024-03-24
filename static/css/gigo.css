@@ -282,3 +282,20 @@ ul.errorlist {
 .editable-container.editable-inline {
     width: 100%
 }
+
+/* member profile page
+-------------------------------------------------- */
+.assoc-band-row {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  scroll-margin-top: 40px;
+}
+
+/* agenda pages
+-------------------------------------------------- */
+.hidden-bands-list {
+  font-style: italic;
+}
+.calendar-preferences-info {
+  font-style: italic;
+}
