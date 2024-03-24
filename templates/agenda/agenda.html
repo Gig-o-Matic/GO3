@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="row">
-    <div class="mx-auto col-lg-8 col-md-10 col-12">
+    <div class="mx-auto col-md-10 col-12">
         <div class="page-header">
             {% trans "Schedule" %}: {% if user.nickname %}{{user.nickname}}{%else%}{{user.name}}{% endif %}
             {% if user.preferences.default_view != 0 %}
@@ -15,6 +15,11 @@
                 </span>
             {% endif %}
         </div>
+    </div>
+</div>
+{% include 'agenda/hidden_bands_info.html' %}
+<div class="row">
+    <div class="mx-auto col-md-10 col-12">
         <div class="card mb-4">
             <div class="card-header">
                 <div class="row titlerow">
