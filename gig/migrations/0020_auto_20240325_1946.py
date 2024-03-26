@@ -19,11 +19,11 @@ class Migration(migrations.Migration):
 
             # if it's full day, strip any time out of the dates
             if is_full_day:
-                g.date = g.date.replace(hour=0, minute=0)
+                g.date = g.date.replace(hour=0, minute=0,tzinfo=pytz.utc)
                 if g.setdate:
-                    g.setdate = g.setdate.replace(hour=0, minute=0)
+                    g.setdate = g.setdate.replace(hour=0, minute=0, tzinfo=pytz.utc)
                 if g.enddate:
-                    g.enddate = g.enddate.replace(hour=0, minute=0)
+                    g.enddate = g.enddate.replace(hour=0, minute=0, tzinfo=pytz.utc)
 
             g.save()
             return
