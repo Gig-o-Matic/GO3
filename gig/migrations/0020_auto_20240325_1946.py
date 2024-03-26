@@ -16,6 +16,15 @@ class Migration(migrations.Migration):
             g.has_call_time = has_call_time
             g.has_set_time = has_set_time
             g.has_end_time = has_end_time
+
+            # if it's full day, strip any time out of the dates
+            if is_full_day:
+                g.date = g.date.replace(hour=0, minute=0)
+                if g.setdate:
+                    g.setdate = g.setdate.replace(hour=0, minute=0)
+                if g.enddate:
+                    g.enddate = g.enddate.replace(hour=0, minute=0)
+
             g.save()
             return
 
