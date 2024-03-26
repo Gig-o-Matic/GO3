@@ -19,11 +19,14 @@ class Migration(migrations.Migration):
 
             # if it's full day, strip any time out of the dates
             if is_full_day:
-                g.date = g.date.replace(hour=0, minute=0,tzinfo=pytz.utc)
+                zone = pytz.timezone(g.band.timezone)
+                print(f'date was {g.date}')
+                g.date = g.date.astimezone(zone).replace(hour=0, minute=0)
+                print(f'date is {g.date}')
                 if g.setdate:
-                    g.setdate = g.setdate.replace(hour=0, minute=0, tzinfo=pytz.utc)
+                    g.setdate = g.setdate.astimezone(zone).replace(hour=0, minute=0)
                 if g.enddate:
-                    g.enddate = g.enddate.replace(hour=0, minute=0, tzinfo=pytz.utc)
+                    g.enddate = g.enddate.astimezone(zone).replace(hour=0, minute=0)
 
             g.save()
             return
