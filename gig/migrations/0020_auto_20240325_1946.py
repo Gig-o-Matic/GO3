@@ -9,7 +9,6 @@ import datetime
 def update_dates(apps, schema_editor):
 
     def _update(g,is_full_day,has_call_time,has_set_time,has_end_time):
-        print(f'{is_full_day}, {has_call_time}, {has_set_time}, {has_end_time}')
         g.is_full_day = is_full_day
         g.has_call_time = has_call_time
         g.has_set_time = has_set_time
@@ -18,9 +17,7 @@ def update_dates(apps, schema_editor):
         # if it's full day, strip any time out of the dates
         if is_full_day:
             zone = pytz.timezone(g.band.timezone)
-            print(f'date was {g.date}')
             g.date = g.date.astimezone(zone).replace(hour=0, minute=0)
-            print(f'date is {g.date}')
             if g.setdate:
                 g.setdate = g.setdate.astimezone(zone).replace(hour=0, minute=0)
             if g.enddate:
@@ -38,26 +35,20 @@ def update_dates(apps, schema_editor):
         setdate = g.setdate.astimezone(zone) if g.setdate else None
         enddate = g.enddate.astimezone(zone) if g.enddate else None
 
-        print("-----")
-        print(f'{date}, {setdate}, {enddate}')
-
         # this is this a full-day gig?
 
         # if it has an end date that isn't the date, it is
         if enddate and date.date() != enddate.date():
-            print('full day 1')
             _update(g,True,False,False,False)
             continue
 
         # if it doen't have an end date at all and the "date" time is midnight,
         # it was probably saved without a time so it's full-day
         if enddate is None and setdate is None and date.time() == datetime.time(0,0):
-            print('full day 2')
             _update(g,True,False,False,False)
             continue
 
         # if it has believable times for date, settime, endtime, mark them as such
-        print('not full')
         _update(g,
                 False,
                 False if date.time() == datetime.time(0,0) else True,
