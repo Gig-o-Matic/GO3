@@ -57,16 +57,22 @@
              
             <div class="row">
                 <div class="col-4">
+                </div>
+                <div class="col-4">
                     {{ form.call_date.label_tag }}
                     {{ form.call_date.errors }}
                 </div>
-                <div class="col-4">
+                <div class="col-4 enddate{% if not object.is_full_day %} style="display:none;{% endif %}">
                     {{ form.end_date.label_tag }}
                     {{ form.end_date.errors }}                    
                 </div>
             </div>
 
             <div class="row">
+                <div class="form-group col-4">
+                    {{ form.is_full_day }}
+                    {{ form.is_full_day.label_tag }}
+                </div>
                 <div class="form-group col-4">
                     <div class="form-group">
                         <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
@@ -77,7 +83,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group col-4">
+                <div class="form-group col-4 enddate{% if not object.is_full_day %} style="display:none;{% endif %}">
                     <div class="form-group">
                         <div class="input-group date" id="id_end_date_widget" data-target-input="nearest">
                             <input type="text" name="end_date" class="form-control datetimepicker-input" id="id_end_date" data-target="#id_end_date_widget"/>
@@ -89,7 +95,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row gigtimes{% if object.is_full_day %} style="display:none;{% endif %}">
                 <div class="col-4">
                     {{ form.call_time.label_tag }}
                     {{ form.call_time.errors }}
@@ -103,7 +109,7 @@
                     {{ form.end_time.errors }}
                 </div>
             </div>
-            <div class="row">
+            <div class="row gigtimes{% if object.is_full_day %} style="display:none;{% endif %}">
                 <div class="form-group col-4">
                     <div class="form-group">
                         <div class="input-group date" id="id_call_time_widget" data-target-input="nearest">
@@ -279,6 +285,17 @@
 
 <script type="text/javascript">
 
+function setfullday() {
+    if ($("#id_is_full_day").is(":checked")) {
+        $('.gigtimes').hide();
+        $('.enddate').show();
+    } else {
+        $('.gigtimes').show();
+        $('.enddate').hide();
+    }
+}
+
+
 {% if is_new %}
 $('#id_add_series').click(function() {
     $(".add_series_options").toggle();
@@ -286,6 +303,10 @@ $('#id_add_series').click(function() {
 {% endif %}
 
 $(document).ready(function () {
+
+    $("#id_is_full_day").click(setfullday);
+    setfullday();
+
     $('#id_call_date_widget').datetimepicker({
         format: 'L',
         timeZone: '{{ timezone }}',
@@ -320,7 +341,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.date %}
+        {% if object.date and object.has_call_time %}
             defaultDate: '{{ object.date.isoformat }}',
         {% endif %}
     });
@@ -332,7 +353,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.setdate %}
+        {% if object.setdate and object.has_set_time %}
             defaultDate: '{{ object.setdate.isoformat }}',
         {% endif %}
     });
@@ -344,7 +365,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.enddate %}
+        {% if object.enddate and object.has_end_time %}
             defaultDate: '{{ object.enddate.isoformat }}',
         {% endif %}
     });
