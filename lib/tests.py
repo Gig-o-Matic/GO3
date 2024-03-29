@@ -93,6 +93,13 @@ class CaldavTest(TestCase):
         self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
         self.assertTrue(cf.find(b'DTEND:20200229T163000Z')>0)
 
+    def test_calfeed_event_full_day(self):
+        self.testgig.is_full_day = True
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200301')>0)
+
     def test_calfeed_description(self):
         self.testgig.details = 'test desc'
         self.testgig.save()
