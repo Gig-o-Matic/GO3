@@ -126,10 +126,6 @@ class GigForm(forms.ModelForm):
             set_time = _parse(self.cleaned_data.get('set_time',None), 'TIME_INPUT_FORMATS')
             end_time = _parse(self.cleaned_data.get('end_time',None), 'TIME_INPUT_FORMATS')
 
-            self.cleaned_data['has_call_time'] = not call_time is None
-            self.cleaned_data['has_set_time'] = not set_time is None
-            self.cleaned_data['has_end_time'] = not end_time is None
-
             if not call_time:
                 if set_time:
                     # if set time is set, but call time is not, default call time to match set time
@@ -137,6 +133,10 @@ class GigForm(forms.ModelForm):
                 else:
                     # If call time and set time are both unset, treat this as a full-day gig (a gig without times)
                     self.cleaned_data['is_full_day'] = True
+
+            self.cleaned_data['has_call_time'] = not call_time is None
+            self.cleaned_data['has_set_time'] = not set_time is None
+            self.cleaned_data['has_end_time'] = not end_time is None
 
             zone = tzone(self.fields['timezone'].initial)
             date = _mergetime(date, call_time, zone)

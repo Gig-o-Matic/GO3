@@ -1062,6 +1062,7 @@ class GigTest(GigTestBase):
             is_full_day=False,
         )
         self.assertEqual(g.date, g.setdate)
+        self.assertEqual(g.has_call_time, True)
     def test_gig_default_full_day_without_times(self):
         future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
