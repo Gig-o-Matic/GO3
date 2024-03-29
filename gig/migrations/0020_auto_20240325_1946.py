@@ -13,16 +13,6 @@ def update_dates(apps, schema_editor):
         g.has_call_time = has_call_time
         g.has_set_time = has_set_time
         g.has_end_time = has_end_time
-
-        # if it's full day, strip any time out of the dates
-        if is_full_day:
-            zone = pytz.timezone(g.band.timezone)
-            g.date = g.date.astimezone(zone).replace(hour=0, minute=0)
-            if g.setdate:
-                g.setdate = g.setdate.astimezone(zone).replace(hour=0, minute=0)
-            if g.enddate:
-                g.enddate = g.enddate.astimezone(zone).replace(hour=0, minute=0)
-
         g.save()
         return
 
