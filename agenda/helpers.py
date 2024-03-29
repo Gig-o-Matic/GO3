@@ -22,6 +22,7 @@ import datetime
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 from pytz import timezone as pytz_timezone
+from datetime import timedelta
 
 from django.db.models import Q
 
@@ -89,9 +90,16 @@ def calendar_events(request, pk):
     for g in the_gigs:
         gig = {}
         gig['title'] = f'{g.band.name} - {g.title}' if multiband else g.title
-        gig['start'] = str(g.date)
-        if g.enddate:
+
+        enddate = g.enddate if g.enddate else g.date
+        if g.is_full_day:
+            gig['start'] = str(g.date.date())
+            # Like icalendar, the end date is expected to be non-inclusive
+            gig['end'] = str(enddate.date() + timedelta(days=1))
+        else:
+            gig['start'] = str(g.date)
             gig['end'] = str(g.enddate)
+
         gig['url'] = f'/gig/{g.id}'
         gig['backgroundColor'] = band_colors[g.band.id]
         if band_colors[g.band.id] == 'white':
