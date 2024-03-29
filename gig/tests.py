@@ -1054,6 +1054,22 @@ class GigTest(GigTestBase):
         archive_old_gigs()
         g.refresh_from_db()
         self.assertTrue(g.is_archived)
+    def test_gig_default_call_date_to_set_date(self):
+        future_date = datetime.now() + timedelta(days=7)
+        g, _, _ = self.assoc_joe_and_create_gig(
+            call_date=future_date.strftime("%m/%d/%Y"), call_time="",
+            set_date=future_date.strftime("%m/%d/%Y"), set_time="1:00 pm",
+            is_full_day=False,
+        )
+        self.assertEqual(g.date, g.setdate)
+    def test_gig_default_full_day_without_times(self):
+        future_date = datetime.now() + timedelta(days=7)
+        g, _, _ = self.assoc_joe_and_create_gig(
+            call_date=future_date.strftime("%m/%d/%Y"), call_time="",
+            set_date=future_date.strftime("%m/%d/%Y"), set_time="",
+            is_full_day=False,
+        )
+        self.assertEqual(g.is_full_day, True)
 
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):
