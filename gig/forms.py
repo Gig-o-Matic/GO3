@@ -135,12 +135,6 @@ class GigForm(forms.ModelForm):
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
 
-
-            # date = _mergetime(date, call_time, tzone(self.fields['timezone'].initial))
-            # setdate = _mergetime(date, set_time) if set_time else None
-            # enddate = _mergetime(date, end_time) if end_time else None
-
-
             if date < timezone.now():
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
             if setdate and setdate < date:

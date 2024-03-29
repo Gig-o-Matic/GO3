@@ -57,9 +57,6 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
             self.request.user, self.object.band)
 
-        # tz = pytz.timezone(self.object.band.timezone)
-        # start_time = self.object.date.astimezone(tz).strftime("%H:%M")
-        # context['gig_has_start_time'] = (start_time != "00:00")
 
         context['multi_day_gig'] = (self.object.enddate is not None) and \
                                     (self.object.date.date() != self.object.enddate.date())
@@ -158,8 +155,6 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
-    # def clean_date(self):
-    #     pass
 
     def form_valid(self, form):
         if not has_manage_gig_permission(self.request.user, self.object.band):
