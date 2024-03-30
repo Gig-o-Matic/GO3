@@ -187,6 +187,10 @@ a {
 	border: 0;
 }
 
+.fc-h-event .fc-event-time {
+  overflow: visible;
+}
+
 .fc-h-event .fc-event-main-frame {
   padding: 0 5px;
 }
