@@ -115,6 +115,13 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(CreateView, self).get_form_kwargs(*args, **kwargs)
+
+        # we need to do this because there are some form fields that do not exist in the object,
+        # so we need all of the initial values from the object so we can get at them
+        # from the template.
+        if (self.object):
+            kwargs['initial'] = forms.models.model_to_dict(self.object)
+
         kwargs['band'] = self.get_band_from_kwargs(**kwargs)
         kwargs['user'] = self.request.user
         return kwargs
@@ -150,6 +157,15 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         context['timezone'] = self.object.band.timezone
         return context
 
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super().get_form_kwargs(*args, **kwargs)
+
+        # we need to do this because there are some form fields that do not exist in the object,
+        # so we need all of the initial values from the object so we can get at them
+        # from the template.
+        kwargs['initial'] = forms.models.model_to_dict(self.object)
+        return kwargs
+
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
@@ -183,8 +199,7 @@ class DuplicateView(CreateView):
         self.kwargs['bk'] = gig_orig.band.id
 
         # populate the initial data from the original gig
-        kwargs['initial'] = forms.models.model_to_dict(gig_orig,
-                                                       exclude=['calldate', 'setdate', 'enddate'])
+        kwargs['initial'] = forms.models.model_to_dict(gig_orig)
         # ...but replace the title with a 'copy of'
         kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
         return kwargs
