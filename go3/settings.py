@@ -313,9 +313,6 @@ MESSAGE_TAGS = {
 # Graphene GraphQL settings
 GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 
-# if we're doing ETL from Go2, set this True
-IN_ETL = False
-
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 
