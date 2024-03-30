@@ -98,6 +98,7 @@ class GigTestBase(TestCase):
         self,
         user=None,
         expect_code=302,
+        is_full_day=False,
         call_date="01/02/2100",
         set_date="",
         end_date="",
@@ -119,6 +120,7 @@ class GigTestBase(TestCase):
             f"/gig/create/{self.band.id}",
             {
                 "title": title,
+                "is_full_day": is_full_day,
                 "call_date": call_date,
                 "call_time": call_time,
                 "set_date": set_date,
@@ -413,7 +415,7 @@ class GigTest(GigTestBase):
             end_time=self._timeformat(enddate),
         )
         self.assertIn(
-            "Call Time: 01/02/2100 midnight (Sat)\nEnd Time: 01/03/2100 midnight (Sun)\nContact",
+            "Date: 01/02/2100 (Sat)\nTime: noon (Call Time), noon (End Time)",
             mail.outbox[0].body,
         )
 
@@ -804,9 +806,7 @@ class GigTest(GigTestBase):
             g.date, datetime(month=future_start_date.month, day=future_start_date.day, year=future_start_date.year, hour=0, minute=0)
         )
         self.assertIsNone(g.setdate)
-        self.assertDateEqual(
-            g.enddate, datetime(month=future_end_date.month, day=future_end_date.day, year=future_end_date.year, hour=0, minute=0)
-        )
+        self.assertIsNone(g.enddate)
 
     def test_times(self):
         future_date = datetime.now() + timedelta(days=7)
@@ -1054,6 +1054,23 @@ class GigTest(GigTestBase):
         archive_old_gigs()
         g.refresh_from_db()
         self.assertTrue(g.is_archived)
+    def test_gig_default_call_date_to_set_date(self):
+        future_date = datetime.now() + timedelta(days=7)
+        g, _, _ = self.assoc_joe_and_create_gig(
+            call_date=future_date.strftime("%m/%d/%Y"), call_time="",
+            set_date=future_date.strftime("%m/%d/%Y"), set_time="1:00 pm",
+            is_full_day=False,
+        )
+        self.assertEqual(g.date, g.setdate)
+        self.assertEqual(g.has_call_time, True)
+    def test_gig_default_full_day_without_times(self):
+        future_date = datetime.now() + timedelta(days=7)
+        g, _, _ = self.assoc_joe_and_create_gig(
+            call_date=future_date.strftime("%m/%d/%Y"), call_time="",
+            set_date=future_date.strftime("%m/%d/%Y"), set_time="",
+            is_full_day=False,
+        )
+        self.assertEqual(g.is_full_day, True)
 
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):

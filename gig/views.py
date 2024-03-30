@@ -57,15 +57,15 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
             self.request.user, self.object.band)
 
-        tz = pytz.timezone(self.object.band.timezone)
-        start_time = self.object.date.astimezone(tz).strftime("%H:%M")
-        context['gig_has_start_time'] = (start_time != "00:00")
-
-        context['multi_day_gig'] = False
         if self.object.enddate:
-            start_date = self.object.date.astimezone(tz).strftime("%j")
-            end_date = self.object.enddate.astimezone(tz).strftime("%j")
-            context['multi_day_gig'] = (start_date != end_date)
+            context['multi_day_gig'] = self.object.date.date() != self.object.enddate.date()
+        else:
+            context['multi_day_gig'] = False
+
+        if not self.object.is_full_day:
+            context['call_time'] = self.object.date if self.object.has_call_time else None
+            context['set_time'] = self.object.setdate if self.object.has_set_time else None
+            context['end_time'] = self.object.enddate if self.object.has_end_time else None
 
         context['plan_list'] = [x.value for x in PlanStatusChoices]
 
@@ -156,8 +156,6 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     def get_success_url(self):
         return reverse('gig-detail', kwargs={'pk': self.object.id})
 
-    def clean_date(self):
-        pass
 
     def form_valid(self, form):
         if not has_manage_gig_permission(self.request.user, self.object.band):

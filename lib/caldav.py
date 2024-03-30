@@ -79,9 +79,19 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                 event.add('dtstamp', timezone.now())
                 event.add('uid', e.cal_feed_id)
                 event.add('summary', _make_summary(e))
-                event.add('dtstart', e.date)
-                event.add(
-                    'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
+                if e.is_full_day:
+                    event.add('dtstart', e.date.date(), {'value': 'DATE'})
+                    # To make the event use the full final day, icalendar clients expect the end date
+                    # to be the date after the event ends. So we add 1 day.
+                    # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
+                    # "The "DTEND" property for a "VEVENT" calendar component specifies
+                    # the non-inclusive end of the event."
+                    enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
+                    event.add('dtend', enddate, {'value': 'DATE'})
+                else:
+                    event.add('dtstart', e.date)
+                    event.add(
+                        'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
                 event.add('description', _make_description(e))
                 event.add('location', e.address)
                 event.add(
