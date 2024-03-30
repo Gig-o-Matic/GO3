@@ -164,6 +164,13 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         # so we need all of the initial values from the object so we can get at them
         # from the template.
         kwargs['initial'] = forms.models.model_to_dict(self.object)
+        
+        # if this is not a full day event, or the date and enddate are the same,
+        # make the enddate widget on the form blank
+        if not self.object.is_full_day or \
+            self.object.enddate and self.object.date.date() == self.object.enddate.date():
+            kwargs['initial']['enddate'] = None
+        
         return kwargs
 
     def get_success_url(self):
