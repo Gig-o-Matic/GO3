@@ -57,8 +57,11 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
             self.request.user, self.object.band)
 
+        if self.object.enddate:
+            context['multi_day_gig'] = self.object.date.date() != self.object.enddate.date()
+        else:
+            context['multi_day_gig'] = False
 
-        context['full_day_gig'] = self.object.is_full_day
         if not self.object.is_full_day:
             context['call_time'] = self.object.date if self.object.has_call_time else None
             context['set_time'] = self.object.setdate if self.object.has_set_time else None

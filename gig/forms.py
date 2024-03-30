@@ -262,7 +262,7 @@ class GigForm(forms.ModelForm):
             'contact': _('Contact'),
             'status': _('Status'),
 
-            'is_full_day':('Full- or Multi-day'),
+            'is_full_day': _('Full- or Multi-day'),
 
             'call_date': _('Date'),
             'end_date': _('End Date'),
