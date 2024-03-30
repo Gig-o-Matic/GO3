@@ -102,9 +102,10 @@ def calendar_events(request, pk):
 
         gig['url'] = f'/gig/{g.id}'
         gig['backgroundColor'] = band_colors[g.band.id]
-        if band_colors[g.band.id] == 'white':
-            gig['borderColor'] = 'blue'
-            gig['textColor'] = 'blue'
+        if band_colors[g.band.id] == 'white' or band_colors[g.band.id] == '#ffffff':
+            # Matches the link color defined in gigo.css
+            gig['borderColor'] = '#428bca'
+            gig['textColor'] = '#428bca'
         else:
             gig['borderColor'] = band_colors[g.band.id]
         events.append(gig)
