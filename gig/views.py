@@ -109,11 +109,12 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_new'] = True
-        context['band'] = self.get_band_from_kwargs(**kwargs)
+        context['band'] = self.get_band()
         context['timezone'] = context['band'].timezone
         return context
 
-    def get_band_from_kwargs(self, **kwargs):
+    def get_band(self):
+        """ for a createview where we have a band passed into the view as a key, use it """
         return Band.objects.get(id=self.kwargs['bk'])
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -125,7 +126,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
         if (self.object):
             kwargs['initial'] = forms.models.model_to_dict(self.object)
 
-        kwargs['band'] = self.get_band_from_kwargs(**kwargs)
+        kwargs['band'] = self.get_band()
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -240,7 +241,9 @@ class DuplicateView(CreateView):
         kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
         return kwargs
 
-    def get_band_from_kwargs(self, **kwargs):
+    def get_band(self):
+        """ for a duplicate where we don't have the band passed in but we have the """
+        """ original gig, return the band from it """
         return self.original_gig.band
 
 
