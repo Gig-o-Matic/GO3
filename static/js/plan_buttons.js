@@ -21,7 +21,7 @@ function init_plan_comments(token) {
         mode: 'inline',
         ajaxOptions: { headers: {"X-CSRFToken": token }},
         tpl: '<input type="text" maxlength="200">',
-        placeholder: '200 characters'
+        placeholder: gettext('200 characters'),
     }).on('hidden', function(e, reason) {
         closed_comment(e.target.getAttribute('data-pk'));
     })

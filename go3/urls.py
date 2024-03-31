@@ -38,6 +38,8 @@ from graphene_django.views import GraphQLView
 from .views import error404, error500, test404
 from go3.schema import schema
 from agenda.views import PrivateGraphQLView
+from django.views.i18n import JavaScriptCatalog
+
 urlpatterns = [
     path('', include('agenda.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
@@ -51,6 +53,7 @@ urlpatterns = [
     path('migration/', include('migration.urls')),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
     path('404',test404.as_view()),
+    path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 ]
 
 handler404 = error404
