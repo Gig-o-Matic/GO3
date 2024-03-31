@@ -224,7 +224,7 @@ class DuplicateView(CreateView):
         self.original_gig = Gig.objects.get(id=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
 
-        SetupFormTimes(context, self.original_gig)
+        setup_form_times(context, self.original_gig)
         return context
 
     def get_form_kwargs(self, *args, **kwargs):
