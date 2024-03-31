@@ -146,6 +146,24 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
         return result
 
 
+def SetupFormTimes(context,object):
+    context['date'] = object.date
+    if object.is_full_day:
+        if object.enddate and object.enddate.date() != object.date.date():
+            context['enddate'] = object.enddate
+        else:
+            context['enddate'] = None
+        context['calltime'] = None
+        context['settime'] = None
+        context['endtime'] = None
+    else:
+        context['enddate'] = None
+        context['calltime'] = object.date if object.has_call_time else None
+        context['settime'] = object.setdate if object.has_set_time else None
+        context['endtime'] = object.enddate if object.has_end_time else None
+    context['is_full_day'] = object.is_full_day
+
+
 class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Gig
     form_class = GigForm
@@ -158,6 +176,9 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['timezone'] = self.object.band.timezone
+
+        SetupFormTimes(context,self.object)
+
         return context
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -166,14 +187,9 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         # we need to do this because there are some form fields that do not exist in the object,
         # so we need all of the initial values from the object so we can get at them
         # from the template.
-        kwargs['initial'] = forms.models.model_to_dict(self.object)
-        
-        # if this is not a full day event, or the date and enddate are the same,
-        # make the enddate widget on the form blank
-        if not self.object.is_full_day or \
-            self.object.enddate and self.object.date.date() == self.object.enddate.date():
-            kwargs['initial']['enddate'] = None
-        
+        # XXX
+        # kwargs['initial'] = forms.models.model_to_dict(self.object)
+ 
         return kwargs
 
     def get_success_url(self):
@@ -195,28 +211,40 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
 
 class DuplicateView(CreateView):
 
+    original_gig = None
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.original_gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+
     def test_func(self):
         if not self.request.user.is_authenticated:
             return self.handle_no_permission()
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.is_editor(self.request.user)
 
+    def get_context_data(self, **kwargs):
+        self.original_gig = Gig.objects.get(id=self.kwargs['pk'])
+        context = super().get_context_data(**kwargs)
+
+        SetupFormTimes(context, self.original_gig)
+        return context
+
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super().get_form_kwargs(*args, **kwargs)
-        gig_orig = Gig.objects.get(id=self.kwargs['pk'])
         # we didn't originally get a band in the request, we got a gig pk - so get the band from that
         # and stash it among the args from the request
-        self.kwargs['bk'] = gig_orig.band.id
+        self.kwargs['bk'] = self.original_gig.band.id
+
 
         # populate the initial data from the original gig
-        kwargs['initial'] = forms.models.model_to_dict(gig_orig)
+        kwargs['initial'] = forms.models.model_to_dict(self.original_gig)
         # ...but replace the title with a 'copy of'
         kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
         return kwargs
 
     def get_band_from_kwargs(self, **kwargs):
-        # didn't have the band from the request args, so pull it from the gig
-        return get_object_or_404(Gig, id=self.kwargs['pk']).band
+        return self.original_gig.band
 
 
 class CommentsView(UserPassesTestMixin, TemplateView):
