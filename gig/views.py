@@ -177,7 +177,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         context = super().get_context_data(**kwargs)
         context['timezone'] = self.object.band.timezone
 
-        SetupFormTimes(context,self.object)
+        setup_form_times(context,self.object)
 
         return context
 
