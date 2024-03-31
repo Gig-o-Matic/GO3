@@ -146,7 +146,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
         return result
 
 
-def SetupFormTimes(context,object):
+def setup_form_times(context,object):
     context['date'] = object.date
     if object.is_full_day:
         if object.enddate and object.enddate.date() != object.date.date():
