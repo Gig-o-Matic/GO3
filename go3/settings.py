@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "django_q",
     "simple_history",
     "graphene_django",
+    "fontawesomefree",
 ]
 
 MIDDLEWARE = [

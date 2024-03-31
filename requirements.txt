@@ -19,6 +19,7 @@ django-q2==1.6.2
 django-sendgrid-v5==1.2.3
 django-simple-history==3.5.0
 django-widget-tweaks==1.4.8
+fontawesomefree==6
 future==0.18.3
 graphene==3.3
 graphene-django==3.2.0
