@@ -187,9 +187,6 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         # we need to do this because there are some form fields that do not exist in the object,
         # so we need all of the initial values from the object so we can get at them
         # from the template.
-        # XXX
-        # kwargs['initial'] = forms.models.model_to_dict(self.object)
- 
         return kwargs
 
     def get_success_url(self):
