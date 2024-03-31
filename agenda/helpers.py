@@ -89,25 +89,28 @@ def calendar_events(request, pk):
     multiband = len(user_assocs) > 1
     for g in the_gigs:
         gig = {}
-        gig['title'] = f'{g.band.name} - {g.title}' if multiband else g.title
+        gig['title'] = f'{g.band.shortname or g.band.name}: {g.title}' if multiband else g.title
 
         enddate = g.enddate if g.enddate else g.date
         if g.is_full_day:
             gig['start'] = str(g.date.date())
             # Like icalendar, the end date is expected to be non-inclusive
             gig['end'] = str(enddate.date() + timedelta(days=1))
+            gig['allDay'] = True
         else:
             gig['start'] = str(g.date)
             gig['end'] = str(g.enddate)
 
         gig['url'] = f'/gig/{g.id}'
+
+        # Gig styling
+        gig['display'] = 'block'
         gig['backgroundColor'] = band_colors[g.band.id]
         if band_colors[g.band.id] == 'white' or band_colors[g.band.id] == '#ffffff':
-            # Matches the link color defined in gigo.css
-            gig['borderColor'] = '#428bca'
-            gig['textColor'] = '#428bca'
+            gig['textColor'] = '#000'
         else:
-            gig['borderColor'] = band_colors[g.band.id]
+            gig['textColor'] = '#fff'
+
         events.append(gig)
 
     return HttpResponse(json.dumps(events))
