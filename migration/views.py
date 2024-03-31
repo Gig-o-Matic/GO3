@@ -118,7 +118,29 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     created_date = self.mangle_time(fields["created_date"], band.timezone),
                     datenotes = fields["time_notes"],
                     status = fields["status"],
+                    # Assume we have all times, will fix below:
+                    has_call_time = True,
+                    has_end_time = True,
+                    has_set_time = True,
+                    is_full_day = False,
                 )
+
+                if not gig.date and gig.setdate:
+                    # Ensure we always have a primary date for the gig
+                    migration_messages.append(f"Defaulting call time to set time for {gig.title}")
+                    gig.date = gig.setdate
+
+                if gig.date.hour == 0 and gig.date.minute == 0:
+                    gig.has_call_time = False
+                if gig.setdate.hour == 0 and gig.setdate.minute == 0:
+                    gig.has_set_time = False
+                if gig.enddate.hour == 0 and gig.enddate.minute == 0:
+                    gig.has_end_time = False
+                if not gig.has_call_time and not gig.has_set_time and not gig.has_end_time:
+                    gig.is_full_day = True
+                if gig.date.date() != gig.enddate.date():
+                    gig.is_full_day = True
+                
                 gig.save()
                 migration_messages.append(f"Added gig {gig.title}")
             context = super().get_context_data(**kwargs)
