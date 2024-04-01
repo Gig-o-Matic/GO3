@@ -221,12 +221,12 @@ class MemberPreferences(models.Model):
     """ class to hold user preferences """
     member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
 
-    hide_canceled_gigs = models.BooleanField(default=False)
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
-    share_profile = models.BooleanField(default=True)
-    share_email = models.BooleanField(default=False)
-    calendar_show_only_confirmed = models.BooleanField(default=False)
-    calendar_show_only_committed = models.BooleanField(default=False)
+    hide_canceled_gigs = models.BooleanField(default=False, verbose_name=_('Hide canceled gigs'))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US', verbose_name=_('Language'))
+    share_profile = models.BooleanField(default=True, verbose_name=_('Share my profile'))
+    share_email = models.BooleanField(default=False, verbose_name=_('Share my email'))
+    calendar_show_only_confirmed = models.BooleanField(default=False, verbose_name=_('Calendar shows only confirmed gigs'))
+    calendar_show_only_committed = models.BooleanField(default=False, verbose_name=_('Calendar shows only gigs I can do (or maybe can do)'))
     agenda_show_time = models.BooleanField(default=True, verbose_name=_('Show gig time on schedule'))
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
