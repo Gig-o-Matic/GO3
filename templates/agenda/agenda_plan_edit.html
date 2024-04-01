@@ -22,8 +22,8 @@
 Add the day of week to the short_date_format - can just append D?
 {% endcomment %}
 
-        {% if user.preferences.agenda_show_time and gig.schedule_time %}
-            {{ gig.schedule_time }}
+        {% if user.preferences.agenda_show_time and gig.has_call_time %}
+            {{ gig.date|time:"TIME_FORMAT" }}
         {% endif %}
         <span style="display: inline-block; vertical-align: middle;">
         {% if gig.status == 1 %}

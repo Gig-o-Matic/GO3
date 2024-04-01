@@ -186,6 +186,12 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Show gig time on agenda" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=member.preferences.agenda_show_time %}</div>
+                        <div class="col-12 d-sm-none">{% trans "Show gig time on agenda page" %}: {% include "base/tf.html" with value=member.preferences.agenda_show_time %}</div>
+                    </div>
+                    <br>
+                    <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Hide canceled gigs" %}:</div>
                         <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                         <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>

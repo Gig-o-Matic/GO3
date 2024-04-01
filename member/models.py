@@ -227,7 +227,7 @@ class MemberPreferences(models.Model):
     share_email = models.BooleanField(default=False)
     calendar_show_only_confirmed = models.BooleanField(default=False)
     calendar_show_only_committed = models.BooleanField(default=False)
-    agenda_show_time = models.BooleanField(default=False)
+    agenda_show_time = models.BooleanField(default=False, verbose_name=_('Show gig time on agenda'))
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 
