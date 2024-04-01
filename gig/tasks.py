@@ -37,15 +37,14 @@ def archive_old_gigs():
     archive_date = timezone.now() - timedelta(days=5)
     
     # find the gigs that:
-    # - are not multiday and the date has passed
-    # - are multiday and the enddate is None and the date has passed
-    # - are multiday and have an enddate and the enddate has passed
+    # - the enddate is None and the date has passed
+    # - have an enddate and the enddate has passed
 
     over_gigs = Gig.objects.filter(
-        (Q(is_full_day=False) & Q(date__lt=archive_date)) |
-        (Q(is_full_day=True) & Q(enddate=None) & Q(date__lt=archive_date)) |
-        (Q(is_full_day=True) & ~Q(enddate=None) & Q(enddate__lt=archive_date)),
+        (Q(enddate=None) & Q(date__lt=archive_date)) |
+        (~Q(enddate=None) & Q(enddate__lt=archive_date)),
         is_archived=False)
+
     num = over_gigs.count()
     over_gigs.update(is_archived=True)
     return f'archived {num} gigs'
