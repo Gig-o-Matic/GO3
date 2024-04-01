@@ -25,7 +25,7 @@ class LanguageTest(TestCase):
         translation.activate("en-us")
         self.assertEqual(_("Schedule"), "Schedule")
         translation.activate("fr")
-        self.assertEqual(_("Schedule"), "Liste des concerts ")
+        self.assertEqual(_("Schedule"), "Liste des concerts")
 
 class ErrorTest(TestCase):
     def setUp(self):
