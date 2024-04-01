@@ -22,6 +22,7 @@ from go3.colors import the_colors
 from .util import BandStatusChoices, AssocStatusChoices
 from member.util import MemberStatusChoices, AgendaChoices
 from django.apps import apps
+from django.utils import timezone
 import pytz
 import uuid
 from go3.settings import LANGUAGES
@@ -116,6 +117,15 @@ class Band(models.Model):
     @property
     def archive_gigs(self):
         return self.gigs.filter(is_archived=True)
+
+    @property
+    def past_gigs(self):
+        the_date = timezone.now()
+        return self.gigs.filter(
+            (Q(enddate=None) & Q(date__lt=the_date)) |
+            (~Q(enddate=None) & Q(enddate__lt=the_date))
+        ).order_by('date')
+
 
     def __str__(self):
         return self.name
