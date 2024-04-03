@@ -22,6 +22,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import BandRequestForm
 from lib import email
+from go3.settings import URL_BASE
 
 @login_required
 def help(request):
@@ -46,6 +47,7 @@ class CalfeedView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         member = Member.objects.get(id=self.kwargs['pk'])
         context['member'] = member
+        context['url_base'] = URL_BASE
         return context
 
 
