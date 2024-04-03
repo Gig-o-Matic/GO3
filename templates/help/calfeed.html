@@ -15,7 +15,7 @@
         <br><br>
         {% trans "calhelp_2" %}
         <br><br>
-        {% url 'member-calfeed' pk=member.cal_feed_id %}
+        {{ url_base }}{% url 'member-calfeed' pk=member.cal_feed_id %}
         <br><br>
         <strong>{% trans "Subscribing in Google Calendar" %}</strong>: {% trans "calhelp_3" %}
         <br><br>
