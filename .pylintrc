@@ -1,5 +1,6 @@
 [MASTER]
 load-plugins=pylint_django
+django-settings-module=go3.settings
 
 [MESSAGES CONTROL]
 disable=all
