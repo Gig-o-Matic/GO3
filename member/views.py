@@ -156,7 +156,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
-    fields = ['agenda_show_time', 'hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
+    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
         'calendar_show_only_committed']
 
     def get_object(self, queryset=None):
