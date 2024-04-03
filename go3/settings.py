@@ -191,6 +191,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Session timeout - default is 2 weeks but can be longer
+SESSION_COOKIE_AGE = 31536000 # one year
+
 # Increase the password reset token expiration. Default is 3 days, increase to 30
 # Since we are using this feature to onboard users, many people are not expecting
 # the email, and so not taking action fast enough. Let's give them more grace,

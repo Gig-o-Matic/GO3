@@ -28,7 +28,6 @@ def set_condensed_name(sender, instance, **kwargs):
 @receiver(post_save, sender=Band)
 def set_default_section(sender, instance, created, **kwargs):
     if created:
-    # if created or True: # for ETL from go2, always do this
         _ = Section.objects.create(name='No Section', band=instance, is_default=True, order=999)
 
 @receiver(pre_delete, sender=Band)

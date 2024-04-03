@@ -20,7 +20,8 @@ from .models import Gig, Plan
 
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
-    search_fields=['assoc__member__username', 'assoc__member__nickname', 'gig__band__name', 'gig__title']
+    search_fields=['assoc__member__username', 'assoc__member__nickname', 'assoc__member__email', 'gig__band__name', 'gig__title']
 
-admin.site.register(Gig)
-# admin.site.register(Plan, PlanAdmin)
+@admin.register(Gig)
+class GigAdmin(admin.ModelAdmin):
+    search_fields=['title', 'band__name']
