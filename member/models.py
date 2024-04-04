@@ -122,20 +122,25 @@ class Member(AbstractUser):
     @property
     def future_plans(self):
         """ used by the agenda page to decide what gigs to show """
-        plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
-        plans = plans.exclude(assoc__hide_from_schedule=True)
+        plans = Plan.member_plans.future_plans(self)
+        
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+            # hide all canceled gigs and gigs without plans
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED).exclude(status=PlanStatusChoices.NO_PLAN)
+        else:
+            # filter out gigs without plans unless they are canceled
+            plans = plans.exclude(Q(status=PlanStatusChoices.NO_PLAN)&~Q(gig__status=GigStatusChoices.CANCELED))
+
+        plans = plans.exclude(assoc__hide_from_schedule=True)
         return plans
 
     @property
     def future_noplans(self):
         """ used by the agenda page to decide what gigs to show """
         plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)        
         plans = plans.exclude(assoc__hide_from_schedule=True)
         plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
-        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
         return plans
     
     @property
