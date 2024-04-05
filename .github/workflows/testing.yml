@@ -4,6 +4,7 @@ on: [push]
 
 env:
   DATABASE_URL: "sqlite:///gig-o-matic.sqlite"
+  CAPTCHA_ENABLE: False
 
 jobs:
   build:
