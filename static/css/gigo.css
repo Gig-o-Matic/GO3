@@ -180,9 +180,23 @@ a {
     color: firebrick;
 }
 
-/* override calendar event border thickness */
-.fc-event { /* non-theme */
-	border: 2px solid;
+/*
+ FullCalendar customizations
+ ----------------------------- */
+.fc-event {
+	border: 0;
+}
+
+.fc-h-event .fc-event-time {
+  overflow: visible;
+}
+
+.fc-h-event .fc-event-main-frame {
+  padding: 0 5px;
+}
+
+.fc-daygrid-block-event:hover {
+  background-color: #ccc !important;
 }
 
 .card-header {

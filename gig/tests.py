@@ -1057,16 +1057,34 @@ class GigTest(GigTestBase):
         self.assertEqual(resp.status_code, 302)  # should redirect
 
     def test_gig_autoarchive(self):
+
+        def _check_gig(g,is_full_day,date,setdate,enddate):
+            g.is_archived = False
+            g.is_full_day = is_full_day
+            g.date = date
+            g.startdate = setdate
+            g.enddate = enddate
+            g.save()
+            archive_old_gigs()
+            g.refresh_from_db()
+            return g.is_archived
+
         g, _, _ = self.assoc_joe_and_create_gig()
-        self.assertFalse(g.is_archived)
-        archive_old_gigs()
-        g.refresh_from_db()
-        self.assertFalse(g.is_archived)
-        g.date = timezone.datetime(2000, 1, 2, 12, tzinfo=pytz_timezone("UTC"))
-        g.save()
-        archive_old_gigs()
-        g.refresh_from_db()
-        self.assertTrue(g.is_archived)
+
+        # test an all-day gig with no end date
+        self.assertFalse(_check_gig(g, True, timezone.now(), None, None))
+        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=10), None, None))
+
+        # test an all-day gig with an end date
+        self.assertFalse(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()))
+        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()-timedelta(days=10)))
+
+        # test non-all-day gig with no end date
+        self.assertFalse(_check_gig(g, False, timezone.now(), None, None))
+        self.assertTrue(_check_gig(g, False, timezone.now()-timedelta(days=10), None, None))
+
+
+
     def test_gig_default_call_date_to_set_date(self):
         future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(

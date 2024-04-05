@@ -62,7 +62,7 @@
                     {{ form.call_date.label_tag }}
                     {{ form.call_date.errors }}
                 </div>
-                <div class="col-4 enddate{% if not object.is_full_day %} style="display:none;{% endif %}">
+                <div class="col-4 enddate{% if not is_full_day %} style="display:none;{% endif %}">
                     {{ form.end_date.label_tag }}
                     {{ form.end_date.errors }}                    
                 </div>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group col-4 enddate{% if not object.is_full_day %} style="display:none;{% endif %}">
+                <div class="form-group col-4 enddate{% if not is_full_day %} style="display:none;{% endif %}">
                     <div class="form-group">
                         <div class="input-group date" id="id_end_date_widget" data-target-input="nearest">
                             <input type="text" name="end_date" class="form-control datetimepicker-input" id="id_end_date" data-target="#id_end_date_widget"/>
@@ -95,7 +95,7 @@
                 </div>
             </div>
 
-            <div class="row gigtimes{% if object.is_full_day %} style="display:none;{% endif %}">
+            <div class="row gigtimes{% if is_full_day %} style="display:none;{% endif %}">
                 <div class="col-4">
                     {{ form.call_time.label_tag }}
                     {{ form.call_time.errors }}
@@ -109,7 +109,7 @@
                     {{ form.end_time.errors }}
                 </div>
             </div>
-            <div class="row gigtimes{% if object.is_full_day %} style="display:none;{% endif %}">
+            <div class="row gigtimes{% if is_full_day %} style="display:none;{% endif %}">
                 <div class="form-group col-4">
                     <div class="form-group">
                         <div class="input-group date" id="id_call_time_widget" data-target-input="nearest">
@@ -316,8 +316,8 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.date %}
-            defaultDate: '{{ object.date.isoformat }}',
+        {% if date %}
+            defaultDate: '{{ date.isoformat }}',
         {% endif %}
     });
     $('#id_end_date_widget').datetimepicker({
@@ -329,8 +329,8 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.enddate %}
-            defaultDate: '{{ object.enddate.isoformat }}',
+        {% if enddate %}
+            defaultDate: '{{ enddate.isoformat }}',
         {% endif %}
     });
     $('#id_call_time_widget').datetimepicker({
@@ -341,8 +341,8 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.date and object.has_call_time %}
-            defaultDate: '{{ object.date.isoformat }}',
+        {% if calltime %}
+            defaultDate: '{{ calltime.isoformat }}',
         {% endif %}
     });
     $('#id_set_time_widget').datetimepicker({
@@ -353,8 +353,8 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.setdate and object.has_set_time %}
-            defaultDate: '{{ object.setdate.isoformat }}',
+        {% if settime %}
+            defaultDate: '{{ settime.isoformat }}',
         {% endif %}
     });
     $('#id_end_time_widget').datetimepicker({
@@ -365,8 +365,8 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if object.enddate and object.has_end_time %}
-            defaultDate: '{{ object.enddate.isoformat }}',
+        {% if endtime %}
+            defaultDate: '{{ endtime.isoformat }}',
         {% endif %}
     });
 

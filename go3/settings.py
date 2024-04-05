@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "django_q",
     "simple_history",
     "graphene_django",
+    "fontawesomefree",
 ]
 
 MIDDLEWARE = [
@@ -189,6 +190,9 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+# Session timeout - default is 2 weeks but can be longer
+SESSION_COOKIE_AGE = 31536000 # one year
 
 # Increase the password reset token expiration. Default is 3 days, increase to 30
 # Since we are using this feature to onboard users, many people are not expecting
@@ -312,9 +316,6 @@ MESSAGE_TAGS = {
 
 # Graphene GraphQL settings
 GRAPHENE = {"SCHEMA": "go3.schema.schema"}
-
-# if we're doing ETL from Go2, set this True
-IN_ETL = False
 
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
