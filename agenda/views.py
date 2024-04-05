@@ -38,8 +38,13 @@ def AgendaSelector(request):
 
     return view_selector[request.user.preferences.default_view].as_view()(request)
 
+class AgendaBaseView(LoginRequiredMixin, TemplateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["hidden_bands"] = [assoc.band for assoc in self.request.user.assocs.filter(hide_from_schedule=True)]
+        return context
 
-class AgendaView(LoginRequiredMixin, TemplateView):
+class AgendaView(AgendaBaseView):
     template_name = 'agenda/agenda.html'
 
     def get_context_data(self, **kwargs):
@@ -47,7 +52,7 @@ class AgendaView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class CalendarView(LoginRequiredMixin, TemplateView):
+class CalendarView(AgendaBaseView):
     template_name = 'agenda/calendar.html'
 
     def get_context_data(self, **kwargs):
@@ -57,8 +62,8 @@ class CalendarView(LoginRequiredMixin, TemplateView):
         y = self.request.GET.get('y', None)
 
         if m and y:
-            m = int(m)+1
-            y = int(y)+1900
+            m = int(m)
+            y = int(y)
             context['initialDate'] = f'{y}-{m:02d}-01'
 
         return context

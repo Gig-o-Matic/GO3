@@ -116,6 +116,15 @@ a {
 .navbar {
   padding-top: 0px;
   padding-bottom: 0px;
+  background-color: #008000;
+}
+
+.navbar.dev {
+  background-color: #800000;
+}
+
+.navbar a.dropdown-item {
+  color: #000;
 }
 
 .dropdown-menu {
@@ -171,9 +180,23 @@ a {
     color: firebrick;
 }
 
-/* override calendar event border thickness */
-.fc-event { /* non-theme */
-	border: 2px solid;
+/*
+ FullCalendar customizations
+ ----------------------------- */
+.fc-event {
+	border: 0;
+}
+
+.fc-h-event .fc-event-time {
+  overflow: visible;
+}
+
+.fc-h-event .fc-event-main-frame {
+  padding: 0 5px;
+}
+
+.fc-daygrid-block-event:hover {
+  background-color: #ccc !important;
 }
 
 .card-header {
@@ -204,10 +227,13 @@ a {
     cursor: pointer;
 }
 .card-header[data-toggle="collapse"]:after {
-    font-family: 'Font Awesome 5 Pro';
-    font-weight: 900;
+    /* font-family: 'Font Awesome 5 Pro'; */
+    /* font-weight: 900; */
+    font: var(--fa-font-solid);
+    font-size: .75em;
     content: "\f068";
-    padding-right: .5rem;
+    padding-top: .4em;
+    padding-right: .1em;
     float: left;
 }
 .card-header[data-toggle="collapse"].collapsed:after {
@@ -269,4 +295,21 @@ ul.errorlist {
 
 .editable-container.editable-inline {
     width: 100%
+}
+
+/* member profile page
+-------------------------------------------------- */
+.assoc-band-row {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  scroll-margin-top: 40px;
+}
+
+/* agenda pages
+-------------------------------------------------- */
+.hidden-bands-list {
+  font-style: italic;
+}
+.calendar-preferences-info {
+  font-style: italic;
 }

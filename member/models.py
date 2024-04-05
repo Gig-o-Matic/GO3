@@ -39,7 +39,7 @@ class MemberManager(BaseUserManager):
         """
         if not email:
             raise ValueError('The given email must be set')
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).lower()
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -79,13 +79,13 @@ class Member(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
 
     username = models.CharField(max_length=200)
-    nickname = models.CharField(max_length=100, blank=True )
-    phone = models.CharField(max_length=100, blank=True)
-    statement = models.CharField(max_length=500, blank=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=100, blank=True, null=True)
+    statement = models.CharField(max_length=500, blank=True, null=True)
     motd_dirty = models.BooleanField(default=True)
     seen_welcome = models.BooleanField(default=False)
     # pending_change_email = ndb.TextProperty(default='', indexed=False)
-    images = models.TextField(max_length=500, blank=True)
+    images = models.TextField(max_length=500, blank=True, null=True)
 
     # flag to determine whether to recompute calendar feed
     cal_feed_dirty = models.BooleanField(default=True)
@@ -97,7 +97,7 @@ class Member(AbstractUser):
     # Used to map old calendar subscription URLs
     go2_id = models.CharField(max_length=100, blank=True)
 
-    display_name = models.CharField(max_length=200, blank=True)
+    display_name = models.CharField(max_length=200, blank=True, null=True)
 
     @property
     def member_name(self):
@@ -120,17 +120,26 @@ class Member(AbstractUser):
 
     @property
     def future_plans(self):
-        plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
+        """ used by the agenda page to decide what gigs to show """
+        plans = Plan.member_plans.future_plans(self)
+        
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+            # hide all canceled gigs and gigs without plans
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED).exclude(status=PlanStatusChoices.NO_PLAN)
+        else:
+            # filter out gigs without plans unless they are canceled
+            plans = plans.exclude(Q(status=PlanStatusChoices.NO_PLAN)&~Q(gig__status=GigStatusChoices.CANCELED))
+
+        plans = plans.exclude(assoc__hide_from_schedule=True)
         return plans
 
     @property
     def future_noplans(self):
+        """ used by the agenda page to decide what gigs to show """
         plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)        
+        plans = plans.exclude(assoc__hide_from_schedule=True)
         plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
-        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
         return plans
     
     @property
@@ -142,6 +151,7 @@ class Member(AbstractUser):
         filter_args = {
             "assoc__member": self, # my plan
             "assoc__status": AssocStatusChoices.CONFIRMED, # is a usual member
+            "assoc__hide_from_schedule": False, # gigs are not hidden from calendar
             "gig__hide_from_calendar": False, # not hidden from calendars
             "gig__trashed_date__isnull": True, # not trashed
         }
@@ -174,6 +184,12 @@ class Member(AbstractUser):
     def as_email_recipient(self):
         return EmailRecipient(name=self.username, email=self.email,
                               language=self.preferences.language) # pylint: disable=no-member
+
+    def save(self, *args, **kwargs):
+        """ when creating members with a form, the usermanager isn't used so we have to override save """
+        self.email = self.email.lower()
+        # then super
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         """ when we get deleted, remove plans for future gigs and set us to deleted """
@@ -245,4 +261,4 @@ class EmailConfirmation(models.Model):
     language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
 
     def as_email_recipient(self):
-        return EmailRecipient(email=self.member.email, language=self.language)
+        return EmailRecipient(email=self.new_email, language=self.language)

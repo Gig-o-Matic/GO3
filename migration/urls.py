@@ -20,8 +20,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('band', views.BandMigrationFormView.as_view(), name='band_migration_form'),
-    path('band/go', views.BandMigrationResultsView.as_view()),
-    path('gig', views.GigMigrationFormView.as_view(), name='gig_migration_form'),
-    path('gig/go', views.GigMigrationResultsView.as_view()),
+    path('', views.BandMigrationFormView.as_view(), name='band_migration_form'),
+    path('go', views.BandMigrationResultsView.as_view()),
 ]

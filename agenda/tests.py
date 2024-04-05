@@ -44,6 +44,16 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/plans/1')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
 
+        # now make sure that a gig that is canceled is moved to the "plans" set even
+        # though it has no plans...
+        gigs[1].status = GigStatusChoices.CANCELED
+        gigs[1].save()
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 17)
+        response = c.get(f'/plans/plans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 2)
+
+
         # tests that pass if pagination is set to 10        
         # # first 'page' of gigs should have 10
         # response = c.get(f'/plans/noplans/1')
@@ -93,6 +103,24 @@ class AgendaTest(GigTestBase):
         # first 'page' of gigs should not show the canceled gig
         response = c.get(f'/plans/noplans/1')
         self.assertEqual(response.content.decode('ascii').count("Canceled Gig-xyzzy"), 0)
+
+    def test_hide_band_from_calendar_preference(self):
+        a = self.assoc_user(self.joeuser)
+        a.hide_from_schedule = False
+        a.save()
+        self.create_gig_form(contact=self.joeuser, title=f"xyzzy")
+
+        c = Client()
+        c.force_login(self.joeuser)
+        # first 'page' of gigs should show the gig
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+
+        a.hide_from_schedule = True
+        a.save()
+        # first 'page' of gigs should not show the gig
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 0)
 
 
 class CalendarTest(GigTestBase):

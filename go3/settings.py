@@ -37,13 +37,13 @@ from multiprocessing import set_start_method  # for task q
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
-                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, SENTRY_DSN=str, DATABASE_URL=str,
-                  LOG_LEVEL=str, EMAIL_ENABLE=bool)
+                  ROUTINE_TASK_KEY=int, SENDGRID_SENDER=str, ROLLBAR_ACCESS_TOKEN=str, DATABASE_URL=str,
+                  LOG_LEVEL=str, CAPTCHA_ENABLE=bool)
 
 # reading .env file
 environ.Env.read_env()
 
-_testing = False
+_testing = env("TESTING", default=False)
 if len(sys.argv) > 1 and sys.argv[1] == "test":
     _testing = True
     logging.disable(logging.CRITICAL)
@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "django_q",
     "simple_history",
     "graphene_django",
+    "fontawesomefree",
 ]
 
 MIDDLEWARE = [
@@ -113,6 +114,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "go3.rollbar_middleware.GigORollbarNotifierMiddleware",
 ]
 
 ROOT_URLCONF = "go3.urls"
@@ -131,6 +133,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.i18n",
+                "go3.template_globals.template_globals",
             ],
         },
     },
@@ -162,6 +165,14 @@ else:
 
 AUTH_USER_MODEL = "member.Member"
 
+# Password matching with case insensitive
+# https://pythonhint.com/post/2149716530424105/removing-case-sensitivity-from-email-in-django-login-form
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'go3.backends.CaseInsensitiveEmailBackend',
+]
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -179,6 +190,9 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+# Session timeout - default is 2 weeks but can be longer
+SESSION_COOKIE_AGE = 31536000 # one year
 
 # Increase the password reset token expiration. Default is 3 days, increase to 30
 # Since we are using this feature to onboard users, many people are not expecting
@@ -231,6 +245,16 @@ if not DEBUG:
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login"
 
+ROLLBAR_ACCESS_TOKEN = env("ROLLBAR_ACCESS_TOKEN", default=False)
+
+if ROLLBAR_ACCESS_TOKEN:
+    ROLLBAR = {
+        'access_token': ROLLBAR_ACCESS_TOKEN,
+        'environment': 'development' if DEBUG else 'production',
+        'code_version': '1.0',
+        'root': BASE_DIR,
+    }
+
 # Configure Django-q message broker
 Q_CLUSTER = {
     "name": "DjangORM",
@@ -243,24 +267,11 @@ Q_CLUSTER = {
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
     "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
 }
-
-
-import sentry_sdk
-SENTRY_DSN = env("SENTRY_DSN", default=False)
-
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        traces_sample_rate=1.0,
-        enable_tracing=True,
-        # Set profiles_sample_rate to 1.0 to profile 100%
-        # of sampled transactions.
-        # We recommend adjusting this value in production.
-        profiles_sample_rate=0.01,
-    )
-    Q_CLUSTER["error_reporter"] = { "sentry": { "dsn": SENTRY_DSN } }
+if ROLLBAR_ACCESS_TOKEN:
+    Q_CLUSTER["error_reporter"] = {
+        "access_token": ROLLBAR_ACCESS_TOKEN,
+        "environment": "development" if DEBUG else "production",
+    }
 
 # Local memory cache. To monitor djanqo-q, need to use filesystem or database
 if env('CACHE_USE_FILEBASED', default=False):
@@ -280,11 +291,16 @@ else:
 # Email settings
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = env("SENDGRID_SENDER", default="superuser@gig-o-matic.com")
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = env('SENDGRID_API_KEY', default='456')
-SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
-SENDGRID_TRACK_CLICKS_HTML = False
-EMAIL_ENABLE = env("EMAIL_ENABLE", default=True)
+SENDGRID_API_KEY = env('SENDGRID_API_KEY', default=None)
+if SENDGRID_API_KEY:
+    SENDGRID_SANDBOX_MODE_IN_DEBUG = env('SENDGRID_SANDBOX_MODE_IN_DEBUG', default=True)
+    if DEBUG and not SENDGRID_SANDBOX_MODE_IN_DEBUG:
+        logging.warning("SendGrid API key detected. EMAIL IS HOT!")
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    SENDGRID_TRACK_CLICKS_HTML = False
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = BASE_DIR + "/tmp"
 
 # Calfeed settings
 DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache
@@ -300,9 +316,6 @@ MESSAGE_TAGS = {
 
 # Graphene GraphQL settings
 GRAPHENE = {"SCHEMA": "go3.schema.schema"}
-
-# if we're doing ETL from Go2, set this True
-IN_ETL = False
 
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')

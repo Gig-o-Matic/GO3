@@ -81,17 +81,24 @@ class CaldavTest(TestCase):
 
     def test_calfeed_event_no_enddate(self):
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART;TZID=UTC;VALUE=DATE-TIME:20200229T143000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
         # with no end date set, caldeef should show an end date of an hour after start
-        self.assertTrue(cf.find(b'DTEND;TZID=UTC;VALUE=DATE-TIME:20200229T153000Z')>0)
+        self.assertTrue(cf.find(b'DTEND:20200229T153000Z')>0)
 
     def test_calfeed_event_enddate(self):
         # set the end date and make sure the calfeed is updated
         self.testgig.enddate = self.testgig.date + timedelta(hours=2)
         self.testgig.save()
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART;TZID=UTC;VALUE=DATE-TIME:20200229T143000Z')>0)
-        self.assertTrue(cf.find(b'DTEND;TZID=UTC;VALUE=DATE-TIME:20200229T163000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
+        self.assertTrue(cf.find(b'DTEND:20200229T163000Z')>0)
+
+    def test_calfeed_event_full_day(self):
+        self.testgig.is_full_day = True
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200301')>0)
 
     def test_calfeed_description(self):
         self.testgig.details = 'test desc'

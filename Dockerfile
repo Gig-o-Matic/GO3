@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV DEBUG=False
 
-RUN apk add --no-cache tini gcc musl-dev libpq-dev
+RUN apk add --no-cache tini gcc musl-dev libpq-dev git
 
 RUN pip install --upgrade pip
 COPY requirements.txt ./
