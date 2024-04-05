@@ -3,14 +3,17 @@ Subject: {% block subject %}{% endblock %}
 
 {% block opening %}{% endblock %}
 
-{{ gig.title }}{% if single_day %}
-{% trans "Date" %}: {{ gig.date|date:"SHORT_DATE_FORMAT" }} ({{ gig.date|date:"D" }})
-{% trans "Time" %}: {{ gig.date|time:"TIME_FORMAT" }} ({% trans "Call Time" %}){% if gig.setdate or gig.enddate %}, {% endif %}{% if gig.setdate %}{{ gig.setdate|time:"TIME_FORMAT" }} ({% trans "Set Time" %}){% if gig.enddate %}, {% endif %}{% endif %}{% if gig.enddate %}{{ gig.enddate|time:"TIME_FORMAT" }} ({% trans "End Time" %}){% endif %}
+{{ gig.title }}
+
+{% if gig.is_full_day %}
+{% trans "Date" %}: {{ gig.date|date:"SHORT_DATE_FORMAT" }} ({{ gig.date|date:"D" }}){% if gig.enddate %} - {{ gig.enddate|date:"SHORT_DATE_FORMAT" }} ({{ gig.enddate|date:"D" }}){% endif %}
 {% else %}
-{% trans "Call Time" %}: {{ gig.date|date:"SHORT_DATETIME_FORMAT" }} ({{ gig.date|date:"D" }}){% if gig.setdate %}
-{% trans "Set Time" %}: {{ gig.setdate|date:"SHORT_DATETIME_FORMAT" }} ({{ gig.setdate|date:"D" }}){% endif %}{% if gig.enddate %}
-{% trans "End Time" %}: {{ gig.enddate|date:"SHORT_DATETIME_FORMAT" }} ({{ gig.enddate|date:"D" }}){% endif %}
-{% endif %}{% trans "Contact" %}: {{ contact_name }}
+{% trans "Date" %}: {{ gig.date|date:"SHORT_DATE_FORMAT" }} ({{ gig.date|date:"D" }})
+{% trans "Call Time" %}: {{ gig.date|date:"TIME_FORMAT" }}{% if gig.setdate %}
+{% trans "Set Time" %}: {{ gig.setdate|date:"TIME_FORMAT" }}{% endif %}{% if gig.enddate %}
+{% trans "End Time" %}: {{ gig.enddate|date:"TIME_FORMAT" }}{% endif %}
+{% endif %}
+{% trans "Contact" %}: {{ contact_name }}
 {% trans "Status" %}: {{ gig.status_string }}
 {% if gig.details %}
 {{ gig.details }}
