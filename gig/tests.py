@@ -1023,6 +1023,19 @@ class GigTest(GigTestBase):
         p.refresh_from_db()
         self.assertEqual(p.comment, "Plan comment")
 
+    def test_long_plan_comment_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(
+            reverse("plan-update-comment",
+                    args=[p.id]), {"value": "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 \
+                                   123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 \
+                                   123456789 123456789 123456789 xxxxxxxxx"}  # 210 characters
+        )
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(len(p.comment), 200)
+
     def test_plan_section_user(self):
         _, _, p = self.assoc_joe_and_create_gig()
         s = Section.objects.create(name="s1", band=self.band)
