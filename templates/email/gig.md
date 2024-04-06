@@ -12,7 +12,8 @@ Subject: {% block subject %}{% endblock %}
 {% trans "Call Time" %}: {{ gig.date|date:"TIME_FORMAT" }}{% if gig.setdate %}
 {% trans "Set Time" %}: {{ gig.setdate|date:"TIME_FORMAT" }}{% endif %}{% if gig.enddate %}
 {% trans "End Time" %}: {{ gig.enddate|date:"TIME_FORMAT" }}{% endif %}
-{% endif %}
+{% endif %}{% if gig.datenotes %}{% trans "Notes" %}: {{ gig.datenotes }}{% endif %}
+
 {% trans "Contact" %}: {{ contact_name }}
 {% trans "Status" %}: {{ gig.status_string }}
 {% if gig.details %}
