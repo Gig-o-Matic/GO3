@@ -1056,6 +1056,34 @@ class GigTest(GigTestBase):
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         self.assertEqual(resp.status_code, 302)  # should redirect
 
+
+    def test_gig_shown(self):
+        """
+            assure that a gig that happened in the past day still shows up as a 'future plan' 
+            so it's on the schedule page
+        """
+        g, _, _ = self.assoc_joe_and_create_gig()
+        g.date = timezone.now() + timedelta(days=1)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now()
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now() - timedelta(hours=23)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now() - timedelta(days=1, hours=1)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertFalse(g in gigs)
+
+
     def test_gig_autoarchive(self):
 
         def _check_gig(g,is_full_day,date,setdate,enddate):
