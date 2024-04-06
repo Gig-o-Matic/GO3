@@ -95,10 +95,10 @@ def date_format_func(dt, fmt):
 
 def date_diff(latest, previous):
     if latest and previous and latest.date() == previous.date():
-        return (date_format_func(latest, 'TIME_FORMAT'),
-                date_format_func(previous, 'TIME_FORMAT'))
-    return (date_format_func(latest, 'SHORT_DATETIME_FORMAT'),
-            date_format_func(previous, 'SHORT_DATETIME_FORMAT'))
+        return (date_format_func(latest, 'TIME_FORMAT')(),
+                date_format_func(previous, 'TIME_FORMAT')())
+    return (date_format_func(latest, 'SHORT_DATETIME_FORMAT')(),
+            date_format_func(previous, 'SHORT_DATETIME_FORMAT')())
 
 def generate_changes(latest, previous):
     if not previous:
