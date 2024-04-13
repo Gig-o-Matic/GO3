@@ -44,6 +44,16 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/plans/1')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
 
+        # now make sure that a gig that is canceled is moved to the "plans" set even
+        # though it has no plans...
+        gigs[1].status = GigStatusChoices.CANCELED
+        gigs[1].save()
+        response = c.get(f'/plans/noplans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 17)
+        response = c.get(f'/plans/plans/1')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 2)
+
+
         # tests that pass if pagination is set to 10        
         # # first 'page' of gigs should have 10
         # response = c.get(f'/plans/noplans/1')

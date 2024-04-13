@@ -1082,6 +1082,19 @@ class GigTest(GigTestBase):
         p.refresh_from_db()
         self.assertEqual(p.comment, "Plan comment")
 
+    def test_long_plan_comment_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(
+            reverse("plan-update-comment",
+                    args=[p.id]), {"value": "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 \
+                                   123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 \
+                                   123456789 123456789 123456789 xxxxxxxxx"}  # 210 characters
+        )
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(len(p.comment), 200)
+
     def test_plan_section_user(self):
         _, _, p = self.assoc_joe_and_create_gig()
         s = Section.objects.create(name="s1", band=self.band)
@@ -1102,17 +1115,60 @@ class GigTest(GigTestBase):
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         self.assertEqual(resp.status_code, 302)  # should redirect
 
-    def test_gig_autoarchive(self):
+
+    def test_gig_shown(self):
+        """
+            assure that a gig that happened in the past day still shows up as a 'future plan' 
+            so it's on the schedule page
+        """
         g, _, _ = self.assoc_joe_and_create_gig()
-        self.assertFalse(g.is_archived)
-        archive_old_gigs()
-        g.refresh_from_db()
-        self.assertFalse(g.is_archived)
-        g.date = timezone.datetime(2000, 1, 2, 12, tzinfo=pytz_timezone("UTC"))
+        g.date = timezone.now() + timedelta(days=1)
         g.save()
-        archive_old_gigs()
-        g.refresh_from_db()
-        self.assertTrue(g.is_archived)
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now()
+        g.save()
+
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now() - timedelta(hours=23)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now() - timedelta(days=1, hours=1)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertFalse(g in gigs)
+
+    def test_gig_autoarchive(self):
+
+        def _check_gig(g,is_full_day,date,setdate,enddate):
+            g.is_archived = False
+            g.is_full_day = is_full_day
+            g.date = date
+            g.startdate = setdate
+            g.enddate = enddate
+            g.save()
+            archive_old_gigs()
+            g.refresh_from_db()
+            return g.is_archived
+
+        g, _, _ = self.assoc_joe_and_create_gig()
+
+        # test an all-day gig with no end date
+        self.assertFalse(_check_gig(g, True, timezone.now(), None, None))
+        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=10), None, None))
+
+        # test an all-day gig with an end date
+        self.assertFalse(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()))
+        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()-timedelta(days=10)))
+
+        # test non-all-day gig with no end date
+        self.assertFalse(_check_gig(g, False, timezone.now(), None, None))
+        self.assertTrue(_check_gig(g, False, timezone.now()-timedelta(days=10), None, None))
 
     def test_gig_default_call_date_to_set_date(self):
         future_date = datetime.now() + timedelta(days=7)

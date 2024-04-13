@@ -72,7 +72,7 @@ def update_plan_feedback(request, plan, val):
 @login_required
 @plan_editor_required
 def update_plan_comment(request, plan):
-    plan.comment = request.POST['value']
+    plan.comment = request.POST['value'][:200]
     plan.save()
     return HttpResponse()
 

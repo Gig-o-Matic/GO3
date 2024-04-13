@@ -83,9 +83,8 @@ TODO the section name had a 'shorten' filter
                     </div>
                 {% endif %}
             {% endif %}
-            {% if not plan.comment %}
-                <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;" href="#" id="comment-init-{{plan.id}}" onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
-            {% endif %}
+            <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}display:none;{% endif %}" href="#" id="comment-init-{{plan.id}}" 
+                onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
         </div>
     {% else %}
         <div class="col-12 col-md-4">
