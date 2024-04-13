@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-31 15:24-0400\n"
+"POT-Creation-Date: 2024-04-01 17:45-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -216,8 +216,8 @@ msgstr ""
 msgid "(See below.)"
 msgstr ""
 
-#: gig/helpers.py:143 member/views.py:270 member/views.py:275
-#: member/views.py:279
+#: gig/helpers.py:143 member/views.py:271 member/views.py:276
+#: member/views.py:280
 msgid ", "
 msgstr ""
 
@@ -276,23 +276,23 @@ msgstr ""
 msgid "Canceled"
 msgstr ""
 
-#: go3/settings.py:204
+#: go3/settings.py:205
 msgid "German"
 msgstr ""
 
-#: go3/settings.py:205
+#: go3/settings.py:206
 msgid "English (US)"
 msgstr ""
 
-#: go3/settings.py:206
+#: go3/settings.py:207
 msgid "English (UK, AU, NZ, ...)"
 msgstr ""
 
-#: go3/settings.py:207
+#: go3/settings.py:208
 msgid "French"
 msgstr ""
 
-#: go3/settings.py:208
+#: go3/settings.py:209
 msgid "Italian"
 msgstr ""
 
@@ -365,6 +365,11 @@ msgstr ""
 msgid "members"
 msgstr "Plans"
 
+#: member/models.py:230 templates/member/member_detail.html:189
+#: templates/member/member_detail.html:191
+msgid "Show gig time on schedule"
+msgstr ""
+
 #: member/models.py:256
 #, fuzzy
 #| msgid "new_gig_email"
@@ -389,32 +394,32 @@ msgstr ""
 msgid "You have selected a new email address - check your inbox to verify!"
 msgstr ""
 
-#: member/views.py:269
+#: member/views.py:270
 #, python-brace-format
 msgid "Invalid email addresses: {e}"
 msgstr ""
 
-#: member/views.py:274
+#: member/views.py:275
 #, python-brace-format
 msgid "Invitations sent to {e}"
 msgstr ""
 
-#: member/views.py:278
+#: member/views.py:279
 #, python-brace-format
 msgid "These users are already in the band: {e}"
 msgstr ""
 
-#: member/views.py:326
+#: member/views.py:327
 #, python-brace-format
 msgid "You are now a member of {band}."
 msgstr ""
 
-#: member/views.py:383
+#: member/views.py:384
 #, python-brace-format
 msgid "Your invitation to join {band} has been deleted."
 msgstr ""
 
-#: member/views.py:405
+#: member/views.py:406
 #, python-brace-format
 msgid ""
 "An account associated with {email} already exists.  You can recover this "
@@ -539,7 +544,7 @@ msgstr ""
 msgid "Public Gig Calendar Feed"
 msgstr ""
 
-#: templates/band/band_detail.html:97 templates/member/member_detail.html:212
+#: templates/band/band_detail.html:97 templates/member/member_detail.html:218
 msgid "Subscribe using this link's URL"
 msgstr ""
 
@@ -906,11 +911,11 @@ msgstr ""
 msgid "Archive"
 msgstr ""
 
-#: templates/gig/gig_form.html:473
+#: templates/gig/gig_form.html:472
 msgid "Are you sure you want to trash this gig?"
 msgstr ""
 
-#: templates/gig/gig_form.html:484
+#: templates/gig/gig_form.html:483
 msgid "Are you sure you want to archive this gig?"
 msgstr ""
 
@@ -1493,72 +1498,72 @@ msgstr ""
 msgid "Preferences"
 msgstr ""
 
-#: templates/member/member_detail.html:189
-#: templates/member/member_detail.html:191
+#: templates/member/member_detail.html:195
+#: templates/member/member_detail.html:197
 msgid "Hide canceled gigs"
 msgstr ""
 
-#: templates/member/member_detail.html:195
-#: templates/member/member_detail.html:197
+#: templates/member/member_detail.html:201
+#: templates/member/member_detail.html:203
 msgid "Share my profile"
 msgstr ""
 
-#: templates/member/member_detail.html:200
-#: templates/member/member_detail.html:202
+#: templates/member/member_detail.html:206
+#: templates/member/member_detail.html:208
 msgid "Share my email"
 msgstr ""
 
-#: templates/member/member_detail.html:210
+#: templates/member/member_detail.html:216
 msgid "Calendar URL for My Bands"
 msgstr ""
 
-#: templates/member/member_detail.html:212
+#: templates/member/member_detail.html:218
 msgid "click here for help"
 msgstr ""
 
-#: templates/member/member_detail.html:217
-#: templates/member/member_detail.html:219
+#: templates/member/member_detail.html:223
+#: templates/member/member_detail.html:225
 msgid "Calendar shows only confirmed gigs"
 msgstr ""
 
-#: templates/member/member_detail.html:222
-#: templates/member/member_detail.html:224
+#: templates/member/member_detail.html:228
+#: templates/member/member_detail.html:230
 msgid "Calendar shows only gigs I can do (or maybe can do)"
 msgstr ""
 
-#: templates/member/member_detail.html:239
+#: templates/member/member_detail.html:245
 msgid "Last Activity:"
 msgstr ""
 
-#: templates/member/member_detail.html:261
+#: templates/member/member_detail.html:267
 msgid "Confirm Delete"
 msgstr ""
 
-#: templates/member/member_detail.html:265
+#: templates/member/member_detail.html:271
 msgid "Do you really want to leave"
 msgstr ""
 
-#: templates/member/member_detail.html:268
+#: templates/member/member_detail.html:274
 msgid "Don't Leave"
 msgstr ""
 
-#: templates/member/member_detail.html:269
+#: templates/member/member_detail.html:275
 msgid "Yes, Leave"
 msgstr ""
 
-#: templates/member/member_detail.html:279
+#: templates/member/member_detail.html:285
 msgid "Confirm Rejoin"
 msgstr ""
 
-#: templates/member/member_detail.html:283
+#: templates/member/member_detail.html:289
 msgid "Do you really want to rejoin"
 msgstr ""
 
-#: templates/member/member_detail.html:286
+#: templates/member/member_detail.html:292
 msgid "Don't Rejoin"
 msgstr ""
 
-#: templates/member/member_detail.html:287
+#: templates/member/member_detail.html:293
 msgid "Yes, Rejoin"
 msgstr ""
 

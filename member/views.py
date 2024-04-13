@@ -158,7 +158,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-              'calendar_show_only_committed']
+        'calendar_show_only_committed']
 
     def get_object(self, queryset=None):
             m = Member.objects.get(id=self.kwargs['pk'])
@@ -187,6 +187,7 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
            self.object.member.save()
 
         return response
+
 
 
 class AssocsView(LoginRequiredMixin, TemplateView):
