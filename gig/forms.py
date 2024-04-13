@@ -21,11 +21,9 @@ from band.models import Band
 from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime, timedelta
+from datetime import datetime
 from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
-import uuid
-import calendar
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -159,59 +157,12 @@ class GigForm(forms.ModelForm):
 
         super().clean()
 
-    def create_gig_series(self, the_gig, number_to_copy, period):
-        """ create a series of copies of a gig spaced out over time """
-
-        if not number_to_copy:
-            return
-
-        last_date = the_gig.date
-        if period == 'day':
-            delta = timedelta(days=1)
-        elif period == 'week':
-            delta = timedelta(weeks=1)
-        else:
-            day_of_month = last_date.day
-            
-        set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
-        end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
-
-        for _ in range(1, number_to_copy):
-            if period == 'day' or period == 'week':
-                last_date = last_date + delta
-            else:
-                yr = last_date.year
-                mo = last_date.month+1
-                if mo > 12:
-                    mo = 1
-                    yr += 1
-                # figure out last day of next month
-                last_date = last_date.replace(month=mo, day=min(calendar.monthrange(yr,mo)[1], day_of_month), year=yr)
-
-            the_gig.date = last_date
-            
-            if set_delta is not None:
-                the_gig.setdate += set_delta
-
-            if end_delta is not None:
-                the_gig.enddate += end_delta
-
-            the_gig.id = None
-            the_gig.pk = None
-            the_gig.cal_feed_id = uuid.uuid4()
-            the_gig.save()
-
     def save(self, commit=True):
         """ save our date, setdate, and enddate into the instance """
         self.instance.date = self.cleaned_data['date']
         self.instance.setdate = self.cleaned_data['setdate']
         self.instance.enddate = self.cleaned_data['enddate']
         newgig = super().save(commit)
-
-        if self.cleaned_data['add_series']==True:
-            save_id = self.instance.id
-            self.create_gig_series(newgig, self.cleaned_data['total_gigs'], self.cleaned_data['repeat'])
-            self.instance.id = save_id
         return newgig
 
     email_changes = forms.BooleanField(required=False, label=_('Email members about change'))

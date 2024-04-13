@@ -15,13 +15,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from member.models import Member
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic.edit import FormView
 from django.views.generic.base import TemplateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import BandRequestForm
 from lib import email
+from lib.captcha import verify_captcha, get_captcha_site_key
+from go3.settings import env, URL_BASE
 
 @login_required
 def help(request):
@@ -46,6 +48,7 @@ class CalfeedView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         member = Member.objects.get(id=self.kwargs['pk'])
         context['member'] = member
+        context['url_base'] = URL_BASE
         return context
 
 
@@ -56,7 +59,17 @@ class BandRequestView(FormView):
     template_name = 'help/band_request.html'
     form_class = BandRequestForm
 
+    def get_context_data(self, **kw):
+        context = super().get_context_data(**kw)
+        context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
+        return context
+
     def form_valid(self, form):
+        # first check the captcha
+        if not verify_captcha(self.request):
+            return redirect('home')
+
         recipient = email.EmailRecipient(email='gigomatic.superuser@gmail.com')
         message = email.prepare_email(recipient, 'email/band_request.md', form.cleaned_data)
         email.send_messages_async([message])

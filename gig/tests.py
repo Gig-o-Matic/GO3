@@ -22,7 +22,7 @@ from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email
+from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .forms import GigForm
 from .views import CreateView, UpdateView
@@ -947,6 +947,65 @@ class GigTest(GigTestBase):
         _ = self.duplicate_gig_form(g1, 1, user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 2)
 
+    def test_series_of_simple_gigs(self):
+        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(Gig.objects.count(), 1)
+
+        create_gig_series(g1, 2, "day")
+        self.assertEqual(Gig.objects.count(), 2)
+
+        gigs = list(Gig.objects.all())
+        gigs.sort(key=lambda x: x.date)
+
+        g1 = gigs[0]
+        g2 = gigs[1]
+        self.assertEqual(g2.date - g1.date, timedelta(days=1))
+
+    def test_series_of_full_day_gigs(self):
+        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(Gig.objects.count(), 1)
+        g1.is_full_day = True
+        g1.enddate = g1.date + timedelta(days=1)
+        g1.save()
+
+        create_gig_series(g1, 2, "week")
+        self.assertEqual(Gig.objects.count(), 2)
+
+        gigs = list(Gig.objects.all())
+        gigs.sort(key=lambda x: x.date)
+
+        g1 = gigs[0]
+        g2 = gigs[1]
+        self.assertEqual(g2.date - g1.date, timedelta(days=7))
+        self.assertEqual(g2.enddate - g1.enddate, timedelta(days=7))
+
+    def test_series_of_time_gigs(self):
+        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(Gig.objects.count(), 1)
+        g1.is_full_day = False
+        g1.setdate = g1.date + timedelta(hours=1)
+        g1.enddate = g1.date + timedelta(hours=2)
+        g1.has_call_time = True
+        g1.has_set_time = True
+        g1.has_end_time = True
+        g1.save()
+
+        create_gig_series(g1, 3, "week")
+        self.assertEqual(Gig.objects.count(), 3)
+
+        gigs = list(Gig.objects.all())
+        gigs.sort(key=lambda x: x.date)
+
+        g1 = gigs[0]
+        g2 = gigs[1]
+        g3 = gigs[2]
+        self.assertEqual(g2.date - g1.date, timedelta(days=7))
+        self.assertEqual(g2.setdate - g1.setdate, timedelta(days=7))
+        self.assertEqual(g2.enddate - g1.enddate, timedelta(days=7))
+        self.assertEqual(g3.date - g2.date, timedelta(days=7))
+        self.assertEqual(g3.setdate - g2.setdate, timedelta(days=7))
+        self.assertEqual(g3.enddate - g2.enddate, timedelta(days=7))
+
     def test_address_url(self):
         g, _, _ = self.assoc_joe_and_create_gig(address="http://pbs.org")
         c = Client()
@@ -1023,6 +1082,19 @@ class GigTest(GigTestBase):
         p.refresh_from_db()
         self.assertEqual(p.comment, "Plan comment")
 
+    def test_long_plan_comment_user(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(
+            reverse("plan-update-comment",
+                    args=[p.id]), {"value": "123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 \
+                                   123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 \
+                                   123456789 123456789 123456789 xxxxxxxxx"}  # 210 characters
+        )
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertEqual(len(p.comment), 200)
+
     def test_plan_section_user(self):
         _, _, p = self.assoc_joe_and_create_gig()
         s = Section.objects.create(name="s1", band=self.band)
@@ -1043,17 +1115,61 @@ class GigTest(GigTestBase):
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         self.assertEqual(resp.status_code, 302)  # should redirect
 
-    def test_gig_autoarchive(self):
+
+    def test_gig_shown(self):
+        """
+            assure that a gig that happened in the past day still shows up as a 'future plan' 
+            so it's on the schedule page
+        """
         g, _, _ = self.assoc_joe_and_create_gig()
-        self.assertFalse(g.is_archived)
-        archive_old_gigs()
-        g.refresh_from_db()
-        self.assertFalse(g.is_archived)
-        g.date = timezone.datetime(2000, 1, 2, 12, tzinfo=pytz_timezone("UTC"))
+        g.date = timezone.now() + timedelta(days=1)
         g.save()
-        archive_old_gigs()
-        g.refresh_from_db()
-        self.assertTrue(g.is_archived)
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now()
+        g.save()
+
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now() - timedelta(hours=23)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        g.date = timezone.now() - timedelta(days=1, hours=1)
+        g.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertFalse(g in gigs)
+
+    def test_gig_autoarchive(self):
+
+        def _check_gig(g,is_full_day,date,setdate,enddate):
+            g.is_archived = False
+            g.is_full_day = is_full_day
+            g.date = date
+            g.startdate = setdate
+            g.enddate = enddate
+            g.save()
+            archive_old_gigs()
+            g.refresh_from_db()
+            return g.is_archived
+
+        g, _, _ = self.assoc_joe_and_create_gig()
+
+        # test an all-day gig with no end date
+        self.assertFalse(_check_gig(g, True, timezone.now(), None, None))
+        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=10), None, None))
+
+        # test an all-day gig with an end date
+        self.assertFalse(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()))
+        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()-timedelta(days=10)))
+
+        # test non-all-day gig with no end date
+        self.assertFalse(_check_gig(g, False, timezone.now(), None, None))
+        self.assertTrue(_check_gig(g, False, timezone.now()-timedelta(days=10), None, None))
+
     def test_gig_default_call_date_to_set_date(self):
         future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
@@ -1063,6 +1179,7 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.date, g.setdate)
         self.assertEqual(g.has_call_time, True)
+    
     def test_gig_default_full_day_without_times(self):
         future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(

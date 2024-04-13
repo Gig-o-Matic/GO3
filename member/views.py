@@ -32,6 +32,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, 
 from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
 from django.contrib import messages
 from go3.colors import the_colors
+from go3.settings import env
 from django.utils import translation
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
@@ -394,6 +395,7 @@ class SignupView(FormView):
     def get_context_data(self, **kw):
         context = super().get_context_data(**kw)
         context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
         return context
 
     def form_valid(self, form):
@@ -415,6 +417,7 @@ class CaptchaPasswordResetView(PasswordResetView):
     def get_context_data(self, **kw):
         context = super().get_context_data(**kw)
         context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
         return context
 
     def form_valid(self, form):

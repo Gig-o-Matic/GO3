@@ -30,6 +30,9 @@ from band.models import Section, Assoc, AssocStatusChoices
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
+from datetime import timedelta
+import uuid
+import calendar
 
 def band_editor_required(func):
     def decorated(request, pk, *args, **kw):
@@ -69,7 +72,7 @@ def update_plan_feedback(request, plan, val):
 @login_required
 @plan_editor_required
 def update_plan_comment(request, plan):
-    plan.comment = request.POST['value']
+    plan.comment = request.POST['value'][:200]
     plan.save()
     return HttpResponse()
 
@@ -198,3 +201,47 @@ def gig_remind(request, gig):
     gig.save()
     send_reminder_email(gig)
     return HttpResponse()
+
+
+def create_gig_series(the_gig, number_to_copy, period):
+    """ create a series of copies of a gig spaced out over time """
+
+    if not number_to_copy:
+        return
+
+    last_date = the_gig.date
+    if period == 'day':
+        delta = timedelta(days=1)
+    elif period == 'week':
+        delta = timedelta(weeks=1)
+    else:
+        day_of_month = last_date.day
+        
+    set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
+    end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
+
+    for _ in range(1, number_to_copy):
+        if period == 'day' or period == 'week':
+            last_date = last_date + delta
+        else:
+            yr = last_date.year
+            mo = last_date.month+1
+            if mo > 12:
+                mo = 1
+                yr += 1
+            # figure out last day of next month
+            last_date = last_date.replace(month=mo, day=min(calendar.monthrange(yr,mo)[1], day_of_month), year=yr)
+
+        the_gig.date = last_date
+        
+        if set_delta is not None:
+            the_gig.setdate = the_gig.date + set_delta
+
+        if end_delta is not None:
+            the_gig.enddate = the_gig.date + end_delta
+
+        the_gig.id = None
+        the_gig.pk = None
+        the_gig._state.adding = True
+        the_gig.cal_feed_id = uuid.uuid4()
+        the_gig.save()
