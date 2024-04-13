@@ -235,12 +235,13 @@ def create_gig_series(the_gig, number_to_copy, period):
         the_gig.date = last_date
         
         if set_delta is not None:
-            the_gig.setdate += set_delta
+            the_gig.setdate = the_gig.date + set_delta
 
         if end_delta is not None:
-            the_gig.enddate += end_delta
+            the_gig.enddate = the_gig.date + end_delta
 
         the_gig.id = None
         the_gig.pk = None
+        the_gig._state.adding = True
         the_gig.cal_feed_id = uuid.uuid4()
         the_gig.save()
