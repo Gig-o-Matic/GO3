@@ -44,7 +44,7 @@ class MemberPlanManager(models.Manager):
         return super().order_by('section')
 
     def future_plans(self, member):
-        threshold_date = timezone.now() - datetime.timedelta(days=1)
+        threshold_date = timezone.now() - datetime.timedelta(hours=4)
         return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=threshold_date)) | Q(gig__enddate__gt=threshold_date),
                                              assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
