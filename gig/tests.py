@@ -1133,12 +1133,12 @@ class GigTest(GigTestBase):
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
-        g.date = timezone.now() - timedelta(hours=23)
+        g.date = timezone.now() - timedelta(hours=3, minutes=59)
         g.save()
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
-        g.date = timezone.now() - timedelta(days=1, hours=1)
+        g.date = timezone.now() - timedelta(hours=4, minutes=1)
         g.save()
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertFalse(g in gigs)
