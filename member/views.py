@@ -365,7 +365,7 @@ class MemberCreateView(CreateView):
         retval = super().form_valid(form)
         member = authenticate(username=self.invite.email, password=form.cleaned_data['password1'])
         member.preferences.language = self.invite.language
-        member.preferences.save()  # Why isn't this necessary?
+        #member.preferences.save()  # Why isn't this necessary?
         login(self.request, member)
         return retval
 
@@ -409,6 +409,7 @@ class SignupView(FormView):
             messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
             return redirect('home')
 
+        # put the language in the invitation - this will end up in the users's preferences
         Invite.objects.create(band=None, email=email, language=get_language_from_request(self.request))
         return render(self.request, 'member/signup_pending.html', {'email': email})
 
