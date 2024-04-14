@@ -779,7 +779,7 @@ class InviteTest(TemplateTestCase):
         new = Member.objects.filter(email='new@example.com').get()
         self.assertEqual(new.username, 'New')
         self.assertEqual(new.nickname, 'new')
-        self.assertEqual(new.preferences.language,'en')
+        self.assertEqual(new.preferences.language,'fr')
 
     def test_create_member_no_band(self):
         invite = Invite.objects.create(email='new@example.com', band=None)
