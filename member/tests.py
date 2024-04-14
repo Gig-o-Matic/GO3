@@ -766,7 +766,7 @@ class InviteTest(TemplateTestCase):
         self.assertTemplateUsed(response, 'member/invite_expired.html')
 
     def test_create_member(self):
-        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        invite = Invite.objects.create(email='new@example.com', band=self.band, language='fr')
         response = self.client.post(reverse('member-create', args=[invite.id]),
                                     {'username': 'New',
                                      'nickname': 'new',
@@ -779,6 +779,7 @@ class InviteTest(TemplateTestCase):
         new = Member.objects.filter(email='new@example.com').get()
         self.assertEqual(new.username, 'New')
         self.assertEqual(new.nickname, 'new')
+        self.assertEqual(new.preferences.language,'en')
 
     def test_create_member_no_band(self):
         invite = Invite.objects.create(email='new@example.com', band=None)

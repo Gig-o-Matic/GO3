@@ -36,6 +36,7 @@ from go3.settings import env
 from django.utils import translation
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language_from_request
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
@@ -364,7 +365,7 @@ class MemberCreateView(CreateView):
         retval = super().form_valid(form)
         member = authenticate(username=self.invite.email, password=form.cleaned_data['password1'])
         member.preferences.language = self.invite.language
-        #member.preferences.save()  # Why isn't this necessary?
+        member.preferences.save()  # Why isn't this necessary?
         login(self.request, member)
         return retval
 
@@ -408,7 +409,7 @@ class SignupView(FormView):
             messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
             return redirect('home')
 
-        Invite.objects.create(band=None, email=email)
+        Invite.objects.create(band=None, email=email, language=get_language_from_request(self.request))
         return render(self.request, 'member/signup_pending.html', {'email': email})
 
 
