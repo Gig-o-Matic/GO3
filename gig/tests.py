@@ -113,11 +113,12 @@ class GigTestBase(TestCase):
         status = kwargs.pop("status", GigStatusChoices.UNCONFIRMED)
         contact = kwargs.pop("contact", self.joeuser).id
         send_update = kwargs.pop("send_update", True)
+        the_band = kwargs.pop("band",self.band)
 
         c = Client()
         c.force_login(user if user else self.joeuser)
         response = c.post(
-            f"/gig/create/{self.band.id}",
+            f"/gig/create/{the_band.id}",
             {
                 "title": title,
                 "is_full_day": is_full_day,
