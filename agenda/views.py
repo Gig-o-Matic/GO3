@@ -50,7 +50,7 @@ class AgendaView(AgendaBaseView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Default to the first band's timezone, if an association exists
-        if self.request.user.assocs:
+        if self.request.user.assocs.count() > 0:
             b = self.request.user.assocs.first().band
             timezone.activate(b.timezone)
 
