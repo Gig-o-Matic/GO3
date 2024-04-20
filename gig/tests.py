@@ -342,6 +342,11 @@ class GigTest(GigTestBase):
         self.create_gig_form(contact=self.joeuser)
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_gig_creator_set(self):
+        g,_,_ = self.assoc_joe_and_create_gig(set_time="", end_time="02:00 pm")
+        self.assertEqual(g.creator, self.joeuser)
+
+
     def test_gig_time_no_set(self):
         self.assoc_joe_and_create_gig(set_time="", end_time="02:00 pm")
         self.assertIn(

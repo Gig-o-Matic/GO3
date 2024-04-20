@@ -138,6 +138,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
 
         # there's a new gig; link it to the band
         form.instance.band = band
+        form.instance.creator = self.request.user
 
         result = super().form_valid(form)
 
