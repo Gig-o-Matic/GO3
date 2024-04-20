@@ -27,6 +27,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from band.helpers import do_delete_assoc
 from member.util import MemberStatusChoices
+from member.models import Member
 
 from django.utils.translation import gettext_lazy as _
 
@@ -132,6 +133,14 @@ def calfeed(request, pk):
 
     return HttpResponse(tf,content_type='text/calendar')
 
+def go2_id_calfeed(request, go2_id):
+    try:
+        member = Member.objects.get(go2_id=go2_id)
+        return calfeed(request, member.cal_feed_id)
+    except(Member.DoesNotExist):
+        hr = HttpResponse()
+        hr.status_code = 404
+        return hr
 
 # helpers to define member permissions for various things
 def has_band_admin(user, band):
