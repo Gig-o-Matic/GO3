@@ -21,6 +21,7 @@ from .models import Gig, Plan
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
     search_fields=['assoc__member__username', 'assoc__member__nickname', 'assoc__member__email', 'gig__band__name', 'gig__title']
+    list_filter=['assoc__member','assoc__band']
 
 @admin.register(Gig)
 class GigAdmin(admin.ModelAdmin):
