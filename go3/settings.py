@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     "simple_history",
     "graphene_django",
     "fontawesomefree",
+    "markdownify.apps.MarkdownifyConfig",
 ]
 
 MIDDLEWARE = [
