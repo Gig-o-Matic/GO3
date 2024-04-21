@@ -218,7 +218,7 @@ class Member(AbstractUser):
         verbose_name_plural = _('members')
 
     def __str__(self):
-        return '{0}{1}'.format(self.display_name, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
+        return '{0} ({1}) {2}'.format(self.display_name, self.email, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
 
 
 class MemberPreferences(models.Model):
