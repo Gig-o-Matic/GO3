@@ -3,7 +3,7 @@ Subject: {% block subject %}{% endblock %}
 
 {% block opening %}{% endblock %}
 
-{{ gig.title }}
+{% trans "Gig"%}: {{ gig.title }}
 
 {% if gig.is_full_day %}
 {% trans "Date" %}: {{ gig.date|date:"SHORT_DATE_FORMAT" }} ({{ gig.date|date:"D" }}){% if gig.enddate %} - {{ gig.enddate|date:"SHORT_DATE_FORMAT" }} ({{ gig.enddate|date:"D" }}){% endif %}
