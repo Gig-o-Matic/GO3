@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-21 16:15-0400\n"
+"POT-Creation-Date: 2024-04-21 17:07-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -274,23 +274,23 @@ msgstr ""
 msgid "Canceled"
 msgstr "Cancelled"
 
-#: go3/settings.py:208
+#: go3/settings.py:209
 msgid "German"
 msgstr ""
 
-#: go3/settings.py:209
+#: go3/settings.py:210
 msgid "English (US)"
 msgstr ""
 
-#: go3/settings.py:210
+#: go3/settings.py:211
 msgid "English (UK, AU, NZ, ...)"
 msgstr ""
 
-#: go3/settings.py:211
+#: go3/settings.py:212
 msgid "French"
 msgstr ""
 
-#: go3/settings.py:212
+#: go3/settings.py:213
 msgid "Italian"
 msgstr ""
 
@@ -696,11 +696,11 @@ msgstr ""
 msgid "Ruh-roh!"
 msgstr ""
 
-#: templates/base/go3base.html:98
+#: templates/base/go3base.html:95
 msgid "Privacy & Security"
 msgstr ""
 
-#: templates/base/go3base.html:101
+#: templates/base/go3base.html:98
 msgid "Who made this thing?"
 msgstr ""
 
@@ -1004,15 +1004,19 @@ msgstr ""
 
 #: templates/help/credits.html:18
 msgid ""
-"Originally Written by Aaron Oppenheimer, with (lots and lots of) help from "
-"Robert Schroll and Mark Kleinhaus. Now under the\n"
-"            stewardship of Ben Klang. Volunteers welcome!"
+"\n"
+"            Originally Written by Aaron Oppenheimer, with (lots and lots of) "
+"help from Robert Schroll and Mark Kleinhaus.<br>\n"
+"            Now under the stewardship of Ben Klang.<br>\n"
+"            <a href=\"https://github.com/gig-o-matic/GO3\">Volunteers "
+"welcome!</a>\n"
+"            "
 msgstr ""
 
-#: templates/help/credits.html:27
+#: templates/help/credits.html:32
 msgid ""
-"The project is on <a href=\"https://github.com/SecondLiners/GO3\">Github</"
-"a>&mdash;Feel free to contribute..."
+"The project is on <a href=\"https://github.com/gig-o-matic/GO3\">Github</"
+"a>&mdash;We ❤️ Contributions!"
 msgstr ""
 
 #: templates/help/help.html:4 templates/help/help.html:9
@@ -1054,7 +1058,7 @@ msgstr ""
 #: templates/help/help.html:21
 msgid ""
 "I want to <a href=\"mailto:gigomatic.superuser@gmail.com\">hear about it</"
-"a>. Also, you can check the <a href=\"https://github.com/SecondLiners/GO3/"
+"a>. Also, you can check the <a href=\"https://github.com/gig-o-matic/GO3/"
 "issues?state=open\">issues list in github</a>&mdash;what you're wishing for "
 "may already be on it."
 msgstr ""
