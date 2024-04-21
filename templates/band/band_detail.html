@@ -168,7 +168,7 @@
             {% if the_user_is_band_admin and the_pending_members %}
                 <div class="card mt-4">
                     <div class="card-header">
-                        <div class="row titlerow"><div class="col-12">
+                        <div class="row titlerow" id="pending-members"><div class="col-12">
                             {% trans "Pending Members" %} <span class="badge badge-pill badge-secondary">{{the_pending_members.all|length}}</span>
                         </div></div>
                     </div>
