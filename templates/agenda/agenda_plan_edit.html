@@ -22,8 +22,8 @@
 Add the day of week to the short_date_format - can just append D?
 {% endcomment %}
 
-        {% if user.preferences.agenda_show_time and gig.schedule_time %}
-            {{ gig.schedule_time }}
+        {% if gig.has_call_time %}
+            {{ gig.date|time:"TIME_FORMAT" }}
         {% endif %}
         <span style="display: inline-block; vertical-align: middle;">
         {% if gig.status == 1 %}
@@ -83,9 +83,8 @@ TODO the section name had a 'shorten' filter
                     </div>
                 {% endif %}
             {% endif %}
-            {% if not plan.comment %}
-                <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;" href="#" id="comment-init-{{plan.id}}" onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
-            {% endif %}
+            <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}display:none;{% endif %}" href="#" id="comment-init-{{plan.id}}" 
+                onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
         </div>
     {% else %}
         <div class="col-12 col-md-4">

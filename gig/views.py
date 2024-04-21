@@ -27,6 +27,7 @@ from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
 from .forms import GigForm
 from .util import PlanStatusChoices
+from .helpers import create_gig_series
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
 from member.helpers import has_band_admin, has_manage_gig_permission, has_create_gig_permission, has_comment_permission
@@ -137,12 +138,16 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
 
         # there's a new gig; link it to the band
         form.instance.band = band
+        form.instance.creator = self.request.user
 
         result = super().form_valid(form)
 
         # call the super before sending notifications, so the object is saved
         if form.cleaned_data['email_changes']:
             notify_new_gig(form.instance, created=True)
+
+        if form.cleaned_data['add_series']:
+            create_gig_series(form.instance, form.cleaned_data['total_gigs'], form.cleaned_data['repeat'])
 
         return result
 

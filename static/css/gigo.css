@@ -305,6 +305,12 @@ ul.errorlist {
   scroll-margin-top: 40px;
 }
 
+/* band detail page
+-------------------------------------------------- */
+#pending-members {
+  scroll-margin-top: 40px;
+}
+
 /* agenda pages
 -------------------------------------------------- */
 .hidden-bands-list {

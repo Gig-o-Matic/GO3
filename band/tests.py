@@ -553,6 +553,42 @@ class BandTests(GigTestBase):
         plans = g2.plans.filter(assoc__member=self.joeuser)
         self.assertEqual(plans.count(),0) # future plan should be gone
 
+
+    def test_delete_assoc_multiband(self):
+        band1 = self.band
+        a1 = Assoc.objects.create(
+            member=self.joeuser, band=band1, status=AssocStatusChoices.CONFIRMED
+        )
+        g1 = self.create_gig_form(contact=self.joeuser)
+        p1 = g1.member_plans.filter(assoc=a1).get()
+        self.assertIsNotNone(p1)
+
+        band2 = Band.objects.create(
+                name="test band 2",
+                timezone="UTC",
+                anyone_can_create_gigs=True,
+                hometown="Seattle",
+            )
+        a2 = Assoc.objects.create(
+            member=self.joeuser, band=band2, status=AssocStatusChoices.CONFIRMED
+        )
+        g2 = self.create_gig_form(contact=self.joeuser, band=band2)
+        p2 = g2.member_plans.filter(assoc=a2).get()
+        self.assertIsNotNone(p2)
+
+        # now delete the assoc for band 1
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse('assoc-delete', args=[a1.id]))
+        self.assertEqual(resp.status_code, 204)
+
+        # make sure the future gig plan got deleted
+        plans = g1.plans.filter(assoc__member=self.joeuser)
+        self.assertEqual(plans.count(),0) # future plan should be gone
+
+        # now show that we still have a plan for the other band
+        plans = g2.plans.filter(assoc__member=self.joeuser)
+        self.assertEqual(plans.count(),1) # future plan should be gone
+
 class SectionTest(TestCase):
     def test_auto_assign_section_order(self):
         band = Band.objects.create(name="Example")

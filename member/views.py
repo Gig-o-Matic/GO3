@@ -32,9 +32,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, 
 from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
 from django.contrib import messages
 from go3.colors import the_colors
+from go3.settings import env
 from django.utils import translation
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language_from_request
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
@@ -157,7 +159,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-              'calendar_show_only_committed']
+        'calendar_show_only_committed']
 
     def get_object(self, queryset=None):
             m = Member.objects.get(id=self.kwargs['pk'])
@@ -186,6 +188,7 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
            self.object.member.save()
 
         return response
+
 
 
 class AssocsView(LoginRequiredMixin, TemplateView):
@@ -393,6 +396,7 @@ class SignupView(FormView):
     def get_context_data(self, **kw):
         context = super().get_context_data(**kw)
         context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
         return context
 
     def form_valid(self, form):
@@ -405,7 +409,8 @@ class SignupView(FormView):
             messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
             return redirect('home')
 
-        Invite.objects.create(band=None, email=email)
+        # put the language in the invitation - this will end up in the users's preferences
+        Invite.objects.create(band=None, email=email, language=get_language_from_request(self.request))
         return render(self.request, 'member/signup_pending.html', {'email': email})
 
 
@@ -414,6 +419,7 @@ class CaptchaPasswordResetView(PasswordResetView):
     def get_context_data(self, **kw):
         context = super().get_context_data(**kw)
         context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
         return context
 
     def form_valid(self, form):
