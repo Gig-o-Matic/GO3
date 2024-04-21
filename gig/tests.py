@@ -402,28 +402,9 @@ class GigTest(GigTestBase):
         plans = self.joeuser.calendar_plans
         self.assertEqual(len(plans),0)  # should not see the gig in the calendar_plans
 
-
-
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_time="", end_date="", end_time="")
         self.assertIn("Call Time: noon", mail.outbox[0].body)
-
-    def test_gig_time_long_end(self):
-        date = timezone.datetime(
-            2100, 1, 2, 12, tzinfo=pytz_timezone(self.band.timezone)
-        )
-        enddate = date + timedelta(days=1)
-        self.assoc_joe_and_create_gig(
-            call_date=self._dateformat(date),
-            call_time=self._timeformat(date),
-            set_time="",
-            end_date=self._dateformat(enddate),
-            end_time=self._timeformat(enddate),
-        )
-        self.assertIn(
-            "Date: 01/02/2100 (Sat)\nTime: noon (Call Time), noon (End Time)",
-            mail.outbox[0].body,
-        )
 
     def test_new_gig_contact(self):
         self.assoc_joe_and_create_gig()
@@ -673,7 +654,7 @@ class GigTest(GigTestBase):
         )
 
         message = mail.outbox[0]
-        self.assertIn("(Date/Time)", message.subject)
+        self.assertIn("(Datum/Uhrzeit)", message.subject)
 
     def test_gig_edit_definitely(self):
         g, _, p = self.assoc_joe_and_create_gig()

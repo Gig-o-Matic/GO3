@@ -19,7 +19,7 @@ import datetime
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import template_localtime, now
@@ -153,6 +153,7 @@ def is_single_day(gig):
 def email_from_plan(plan, template):
     gig = plan.gig
     with timezone.override(gig.band.timezone):
+        translation.activate(plan.assoc.member.preferences.language)
         latest_record = gig.history.latest()
         changes = generate_changes(latest_record, latest_record.prev_record)
         member = plan.assoc.member
