@@ -33,7 +33,7 @@ import sys
 import environ
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
-from multiprocessing import set_start_method  # for task q
+from bleach import sanitizer
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
@@ -324,7 +324,16 @@ URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 # for calling routine tasks in go3.tasks
 ROUTINE_TASK_KEY = env('ROUTINE_TASK_KEY',default=1)
 
-# try:
-#     from .settings_local import *
-# except ImportError:
-#     pass
+MARKDOWNIFY = {
+    "default": {
+        "WHITELIST_TAGS": sanitizer.ALLOWED_TAGS | frozenset([
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "br",
+        ]),
+    }
+}

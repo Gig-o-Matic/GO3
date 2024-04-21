@@ -1131,15 +1131,19 @@ msgstr "Gig-O-Matic, version 2 !"
 
 #: templates/help/credits.html:18
 msgid ""
-"Originally Written by Aaron Oppenheimer, with (lots and lots of) help from "
-"Robert Schroll and Mark Kleinhaus. Now under the\n"
-"            stewardship of Ben Klang. Volunteers welcome!"
+"\n"
+"            Originally Written by Aaron Oppenheimer, with (lots and lots of) "
+"help from Robert Schroll and Mark Kleinhaus.<br>\n"
+"            Now under the stewardship of Ben Klang.<br>\n"
+"            <a href=\"https://github.com/gig-o-matic/GO3\">Volunteers "
+"welcome!</a>\n"
+"            "
 msgstr ""
 
-#: templates/help/credits.html:27
+#: templates/help/credits.html:32
 msgid ""
-"The project is on <a href=\"https://github.com/SecondLiners/GO3\">Github</"
-"a>&mdash;Feel free to contribute..."
+"The project is on <a href=\"https://github.com/gig-o-matic/GO3\">Github</"
+"a>&mdash;We ❤️ Contributions!"
 msgstr ""
 
 #: templates/help/help.html:4 templates/help/help.html:9
@@ -1183,7 +1187,7 @@ msgstr ""
 #: templates/help/help.html:21
 msgid ""
 "I want to <a href=\"mailto:gigomatic.superuser@gmail.com\">hear about it</"
-"a>. Also, you can check the <a href=\"https://github.com/SecondLiners/GO3/"
+"a>. Also, you can check the <a href=\"https://github.com/gig-o-matic/GO3/"
 "issues?state=open\">issues list in github</a>&mdash;what you're wishing for "
 "may already be on it."
 msgstr ""
