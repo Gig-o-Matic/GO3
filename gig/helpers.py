@@ -97,11 +97,11 @@ def date_format_func(dt, fmt):
     return lambda: date_format(template_localtime(dt), fmt) if dt else _('not set')
 
 def date_diff(latest, previous):
-    if latest and previous and latest.date() == previous.date():
-        return (date_format_func(latest, 'TIME_FORMAT'),
-                date_format_func(previous, 'TIME_FORMAT'))
-    return (date_format_func(latest, 'SHORT_DATETIME_FORMAT'),
-            date_format_func(previous, 'SHORT_DATETIME_FORMAT'))
+    if latest and previous and latest.date == previous.date:
+        return (date_format_func(latest, 'TIME_FORMAT')(),
+                date_format_func(previous, 'TIME_FORMAT')())
+    return (date_format_func(latest, 'SHORT_DATETIME_FORMAT')(),
+            date_format_func(previous, 'SHORT_DATETIME_FORMAT')())
 
 def generate_changes(latest, previous):
     if not previous:
@@ -112,18 +112,36 @@ def generate_changes(latest, previous):
     if 'status' in diff.changed_fields:
         # The historical copy only gets properties, it appears
         changes.append((_('Status'), Gig.status_string(latest), Gig.status_string(previous)))
-    if 'date' in diff.changed_fields:
-        changes.append((_('Call Time'), *date_diff(latest.date, previous.date)))
-    if 'setdate' in diff.changed_fields:
-        changes.append((_('Set Time'), *date_diff(latest.setdate, previous.setdate)))
-    if 'enddate' in diff.changed_fields:
-        changes.append((_('End Time'), *date_diff(latest.enddate, previous.enddate)))
     if 'contact' in diff.changed_fields:
         changes.append((_('Contact'),
                        latest.contact.display_name if latest.contact else '??',
                        previous.contact.display_name if previous.contact else '??'))
-    if set(diff.changed_fields) - {'status', 'date', 'setdate', 'enddate'}:
+
+    # when dates were simpler this code used to put text into the email saying what the times had changed to. But since
+    # we have full-day events and all kinds of permutations, let's just skip this and readdress another time
+    # if 'date' in diff.changed_fields:
+    #     changes.append((_('Call Time'), *date_diff(latest.date, previous.date)))
+    # if 'setdate' in diff.changed_fields:
+    #     changes.append((_('Set Time'), *date_diff(latest.setdate, previous.setdate)))
+    # if 'enddate' in diff.changed_fields:
+    #     changes.append((_('End Time'), *date_diff(latest.enddate, previous.enddate)))
+        
+    check = [x in diff.changed_fields for x in ['is_full_day', 'date', 'setdate', 'senddate', 'datenotes']]
+    if True in check:
+        changes.append((_('Date/Time'), _('(See below.)'), None))
+
+    if 'address' in diff.changed_fields:
+        changes.append((_('Address'), _('(See below.)'), None))
+
+    if 'postgig' in diff.changed_fields:
+        changes.append((_('Post-gig Plans'), _('(See below.)'), None))
+
+    if 'details' in diff.changed_fields:
         changes.append((_('Details'), _('(See below.)'), None))
+    
+    if 'dress' in diff.changed_fields:
+        changes.append((_('What To Wear'), _('(See below.)'), None))
+
     return changes
 
 def is_single_day(gig):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-21 17:07-0400\n"
+"POT-Creation-Date: 2024-04-21 18:38-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: Christian Neumayer <christian.m.neumayer@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -81,17 +81,17 @@ msgstr ""
 msgid "Date"
 msgstr "Datum"
 
-#: gig/forms.py:171 gig/helpers.py:116 templates/gig/gig_detail.html:92
+#: gig/forms.py:171 templates/gig/gig_detail.html:92
 #: templates/gig/gig_detail_archived.html:73
 msgid "Call Time"
 msgstr "Beginn"
 
-#: gig/forms.py:172 gig/helpers.py:118 templates/gig/gig_detail.html:97
+#: gig/forms.py:172 templates/gig/gig_detail.html:97
 #: templates/gig/gig_detail_archived.html:78
 msgid "Set Time"
 msgstr "Termin"
 
-#: gig/forms.py:173 gig/helpers.py:120 templates/gig/gig_detail.html:100
+#: gig/forms.py:173 templates/gig/gig_detail.html:100
 #: templates/gig/gig_detail_archived.html:81
 msgid "End Time"
 msgstr "Ende"
@@ -168,7 +168,7 @@ msgstr "Änderungen vorbehalten"
 msgid "Gig Title"
 msgstr "Terminname"
 
-#: gig/forms.py:213 gig/helpers.py:122 templates/gig/gig_detail.html:72
+#: gig/forms.py:213 gig/helpers.py:116 templates/gig/gig_detail.html:72
 #: templates/gig/gig_detail_archived.html:53
 msgid "Contact"
 msgstr "Kontakt"
@@ -202,12 +202,12 @@ msgstr "Bezahlung"
 msgid "Leader"
 msgstr "Dirigent"
 
-#: gig/forms.py:226 templates/gig/gig_detail.html:144
+#: gig/forms.py:226 gig/helpers.py:137 templates/gig/gig_detail.html:144
 #: templates/gig/gig_detail_archived.html:124
 msgid "Post-gig Plans"
 msgstr "Nach dem Auftritt"
 
-#: gig/forms.py:227 gig/helpers.py:126
+#: gig/forms.py:227 gig/helpers.py:140
 msgid "Details"
 msgstr ""
 
@@ -224,11 +224,27 @@ msgstr "nicht in meinem Kalender anzeigen"
 msgid "not set"
 msgstr ""
 
-#: gig/helpers.py:126
+#: gig/helpers.py:131
+msgid "Date/Time"
+msgstr "Datum/Uhrzeit"
+
+#: gig/helpers.py:131 gig/helpers.py:134 gig/helpers.py:137 gig/helpers.py:140
+#: gig/helpers.py:143
 msgid "(See below.)"
 msgstr ""
 
-#: gig/helpers.py:146 member/views.py:273 member/views.py:278
+#: gig/helpers.py:134 templates/gig/gig_detail.html:116
+#: templates/gig/gig_detail_archived.html:96
+msgid "Address"
+msgstr "Adresse"
+
+#: gig/helpers.py:143
+#, fuzzy
+#| msgid "What to Wear"
+msgid "What To Wear"
+msgstr "Adjustierung"
+
+#: gig/helpers.py:164 member/views.py:273 member/views.py:278
 #: member/views.py:282
 msgid ", "
 msgstr ""
@@ -908,10 +924,6 @@ msgstr ""
 #: templates/gig/gig_detail.html:68 templates/gig/gig_detail_archived.html:49
 msgid "Band"
 msgstr "Band"
-
-#: templates/gig/gig_detail.html:116 templates/gig/gig_detail_archived.html:96
-msgid "Address"
-msgstr "Adresse"
 
 #: templates/gig/gig_detail.html:151 templates/gig/gig_detail_archived.html:131
 msgid "More Details"
