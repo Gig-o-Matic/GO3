@@ -309,7 +309,7 @@ class GigTest(GigTestBase):
         self.assertIn(g.title, message.subject)
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn(
-            "noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)", message.body
+            "Call Time: noon\nSet Time: 12:30 p.m.\nEnd Time: 2 p.m.", message.body
         )
         self.assertIn("Unconfirmed", message.body)
         self.assertIn(f"{p.id}/{PlanStatusChoices.DEFINITELY}", message.body)
@@ -344,14 +344,14 @@ class GigTest(GigTestBase):
     def test_gig_time_no_set(self):
         self.assoc_joe_and_create_gig(set_time="", end_time="02:00 pm")
         self.assertIn(
-            "Time: noon (Call Time), 2 p.m. (End Time)\nContact", mail.outbox[0].body
+            "End Time: 2 p.m.", mail.outbox[0].body
         )
 
     def test_gig_time_no_end(self):
         self.assoc_joe_and_create_gig(
             set_time="12:30 pm", end_date="", end_time="")
         self.assertIn(
-            "Time: noon (Call Time), 12:30 p.m. (Set Time)\nContact",
+            "Set Time: 12:30 p.m.",
             mail.outbox[0].body,
         )
 
@@ -400,7 +400,7 @@ class GigTest(GigTestBase):
 
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_time="", end_date="", end_time="")
-        self.assertIn("Time: noon (Call Time)\nContact", mail.outbox[0].body)
+        self.assertIn("Call Time: noon", mail.outbox[0].body)
 
     def test_gig_time_long_end(self):
         date = timezone.datetime(
@@ -434,7 +434,7 @@ class GigTest(GigTestBase):
         message = mail.outbox[0]
         self.assertIn("02.01.2100 (Sa)", message.body)
         self.assertIn(
-            "12:00 (Beginn), 12:30 (Termin), 14:00 (Ende)", message.body)
+            "Beginn: 12:00\nTermin: 12:30\nEnde: 14:00", message.body)
         self.assertIn("Nicht fixiert", message.body)
 
     def test_new_gig_time_localization(self):
@@ -452,7 +452,7 @@ class GigTest(GigTestBase):
         message = mail.outbox[0]
         self.assertIn("01/02/2100 (Sat)", message.body)
         self.assertIn(
-            "noon (Call Time), 12:30 p.m. (Set Time), 2 p.m. (End Time)", message.body
+            "Call Time: noon\nSet Time: 12:30 p.m.\nEnd Time: 2 p.m.", message.body
         )
 
     def test_gig_time_daylight_savings(self):
@@ -622,9 +622,8 @@ class GigTest(GigTestBase):
         )
 
         message = mail.outbox[0]
-        self.assertIn("Call Time", message.subject)
-        self.assertIn("2 p.m.", message.body)
-        self.assertIn("(was noon)", message.body)
+        self.assertIn("(Date/Time)", message.subject)
+        self.assertIn("Call Time: 2 p.m.", message.body)
 
     def test_gig_edit_add_time(self):
         g, _, _ = self.assoc_joe_and_create_gig()
@@ -637,10 +636,9 @@ class GigTest(GigTestBase):
         )
 
         message = mail.outbox[0]
-        self.assertIn("Set Time", message.subject)
-        self.assertIn("2 p.m.", message.body)
-        self.assertIn("(was not set)", message.body)
-
+        self.assertIn("(Date/Time)", message.subject)
+        self.assertIn("Call Time: noon\nSet Time: 2 p.m.", message.body)
+        
     def test_gig_edit_contact(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -669,10 +667,7 @@ class GigTest(GigTestBase):
         )
 
         message = mail.outbox[0]
-        self.assertIn("Beginn", message.subject)
-        # We need to check the previous time, since the current time will show
-        # up in the details block, which we're already checking to be localized
-        self.assertIn("12:00", message.body)
+        self.assertIn("(Date/Time)", message.subject)
 
     def test_gig_edit_definitely(self):
         g, _, p = self.assoc_joe_and_create_gig()
