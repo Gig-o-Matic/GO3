@@ -260,13 +260,15 @@ if ROLLBAR_ACCESS_TOKEN:
 Q_CLUSTER = {
     "name": "DjangORM",
     "workers": 1,
-    "timeout": 30,
-    "retry": 60,
+    # Set timeout ridiculously high until we have a solution: https://github.com/Gig-o-Matic/GO3/pull/450#issuecomment-2072130002
+    "timeout": 600, # Allow for longer task runs, particularly emails to large bands
+    "retry": 660, # Always ensure this is larger than timeout, or tasks will duplicate!
+    "max_attempts": 1, # Prevent duplicate task runs in the case of a timeout or error
     "orm": "default",
     "sync": _testing,
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
-    "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
+    "ack_failures": True, # Do not auto-retry tasks, prevent storms or spam
 }
 if ROLLBAR_ACCESS_TOKEN:
     Q_CLUSTER["error_reporter"] = {
