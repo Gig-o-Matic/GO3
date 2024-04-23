@@ -33,6 +33,7 @@ Including another URLconf
 
 
 from django.contrib import admin
+from django.views.generic.base import RedirectView
 from django.urls import include, path
 from graphene_django.views import GraphQLView
 from .views import error404, error500, test404
@@ -57,6 +58,7 @@ urlpatterns = [
     path('jsi18n/', JavaScriptCatalog.as_view(), name="javascript-catalog"),
     # Backward compatibility with old GO2 cal feed
     path('cal/m/<slug:go2_id>', go2_id_calfeed),
+    path('login', RedirectView.as_view(url='accounts/login', permanent=True)),
 ]
 
 handler404 = error404
