@@ -260,8 +260,9 @@ if ROLLBAR_ACCESS_TOKEN:
 Q_CLUSTER = {
     "name": "DjangORM",
     "workers": 1,
-    "timeout": 120, # Allow for longer task runs, particularly emails to large bands
-    "retry": 180, # Always ensure this is larger than timeout, or tasks will duplicate!
+    # Set timeout ridiculously high until we have a solution: https://github.com/Gig-o-Matic/GO3/pull/450#issuecomment-2072130002
+    "timeout": 600, # Allow for longer task runs, particularly emails to large bands
+    "retry": 660, # Always ensure this is larger than timeout, or tasks will duplicate!
     "max_attempts": 1, # Prevent duplicate task runs in the case of a timeout or error
     "orm": "default",
     "sync": _testing,
