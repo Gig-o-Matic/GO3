@@ -303,6 +303,8 @@ else:
     EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
     EMAIL_FILE_PATH = BASE_DIR + "/tmp"
 
+MAX_EMAIL_BATCH = 20
+
 # Calfeed settings
 DYNAMIC_CALFEED = env('CALFEED_DYNAMIC_CALFEED', default=False) # True to generate calfeed on demand; False for disk cache
 CALFEED_BASEDIR = env('CALFEED_CALFEED_BASEDIR', default='')

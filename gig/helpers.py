@@ -31,8 +31,10 @@ from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
 from datetime import timedelta
+from itertools import batched
 import uuid
 import calendar
+from go3.settings import MAX_EMAIL_BATCH
 
 def band_editor_required(func):
     def decorated(request, pk, *args, **kw):
@@ -177,7 +179,10 @@ def send_emails_from_plans(plans_query, template):
     # if the plan is for a gig that did not invite occasionals, select only members that are not
     # occasional
     contactable = contactable.filter(Q(gig__invite_occasionals=True) | Q(assoc__is_occasional=False))
-    send_messages_async(email_from_plan(p, template) for p in contactable)
+
+    # send no more than 20 emails in a single async task
+    for batch in batched(contactable,MAX_EMAIL_BATCH):
+        send_messages_async(email_from_plan(p, template) for p in batch)
 
 def send_email_from_gig(gig, template):
     send_emails_from_plans(gig.member_plans, template)
