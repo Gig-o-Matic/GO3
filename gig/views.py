@@ -133,7 +133,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
 
     def form_valid(self, form):
         band = Band.objects.get(id=self.kwargs['bk'])
-        if not has_manage_gig_permission(self.request.user, band):
+        if not has_create_gig_permission(self.request.user, band):
             return HttpResponseForbidden()
 
         # there's a new gig; link it to the band
