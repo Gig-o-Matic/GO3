@@ -148,7 +148,7 @@ class GigTestBase(TestCase):
     def _timeformat(self, x):
         return x.strftime("%I:%M %p") if x else ""
 
-    def update_gig_form(self, the_gig, expect_code=302, **kwargs):
+    def update_gig_form(self, the_gig,  user=None, expect_code=302, **kwargs):
 
         call_date = kwargs.pop("call_date", self._dateformat(the_gig.date))
         end_date = kwargs.pop("end_date", self._dateformat(the_gig.enddate))
@@ -171,7 +171,7 @@ class GigTestBase(TestCase):
             data[x] = kwargs[x]
 
         c = Client()
-        c.force_login(self.joeuser)
+        c.force_login(user if user else self.joeuser)
         response = c.post(f"/gig/{the_gig.id}/update", data)
         self.assertEqual(
             response.status_code, expect_code
@@ -289,15 +289,39 @@ class GigTest(GigTestBase):
             user=self.janeuser, title="permission gig", expect_code=403
         )
 
+        # now make sure I can!
+        self.band.anyone_can_create_gigs = True
+        self.band.save()
+        # need a member of the band so there's a valid contact to select from in the form
+        self.create_gig_form(
+            user=self.joeuser, title="permission gig", expect_code=302
+        )
+
+
     def test_gig_edit_permissions(self):
         """ make sure that if I don't have permission to edit a gig, I can't """
-        g, _, _ = self.assoc_joe_and_create_gig(
+        g, a, _ = self.assoc_joe_and_create_gig(
             set_time="12:30 pm", end_time="02:00 pm"
         )
         self.band.anyone_can_manage_gigs = False
         self.band.save()
+
+        # not in band
         self.update_gig_form(g, user=self.janeuser,
                              title="not legal!", expect_code=403)
+
+        # not in band
+        self.band.anyone_can_manage_gigs = True
+        self.band.save()
+        self.update_gig_form(g, user=self.janeuser,
+                             title="not legal!", expect_code=403)
+
+        # in band but not admin, but anyone can edit so it's cool
+        a.is_admin = False
+        a.save()
+        self.update_gig_form(g, user=self.joeuser,
+                             title="legal!", expect_code=302)
+
 
     @flag_missing_vars
     def test_new_gig_email(self):
