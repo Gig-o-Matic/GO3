@@ -209,6 +209,7 @@ LANGUAGES = [
     ("de", _("German")),
     ("en-US", _("English (US)")),
     ("en-GB", _("English (UK, AU, NZ, ...)")),
+    ("es", _("Spanish")),
     ("fr", _("French")),
     ("it", _("Italian")),
 ]
