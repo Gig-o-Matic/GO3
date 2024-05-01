@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-21 18:38-0400\n"
+"POT-Creation-Date: 2024-05-01 15:04-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -301,10 +301,14 @@ msgid "English (UK, AU, NZ, ...)"
 msgstr ""
 
 #: go3/settings.py:212
-msgid "French"
+msgid "Spanish"
 msgstr ""
 
 #: go3/settings.py:213
+msgid "French"
+msgstr ""
+
+#: go3/settings.py:214
 msgid "Italian"
 msgstr ""
 
@@ -434,6 +438,14 @@ msgid ""
 "account via the \"Forgot Password?\" link below."
 msgstr ""
 
+#: templates/admin/base_site.html:3
+msgid "Django site admin"
+msgstr ""
+
+#: templates/admin/base_site.html:19
+msgid "Django administration"
+msgstr ""
+
 #: templates/agenda/agenda.html:14 templates/agenda/calendar.html:19
 #: templates/agenda/grid.html:23
 msgid "Make this my default view!"
@@ -445,6 +457,10 @@ msgstr ""
 
 #: templates/agenda/agenda.html:39
 msgid "Upcoming Gigs"
+msgstr ""
+
+#: templates/agenda/agenda_gigs.html:19 templates/agenda/grid.html:60
+msgid "No Gigs!"
 msgstr ""
 
 #: templates/agenda/agenda_plan_edit.html:61
@@ -471,10 +487,6 @@ msgstr ""
 
 #: templates/agenda/grid.html:20
 msgid "Grid of Gigs"
-msgstr ""
-
-#: templates/agenda/grid.html:60
-msgid "No Gigs"
 msgstr ""
 
 #: templates/agenda/hidden_bands_info.html:5

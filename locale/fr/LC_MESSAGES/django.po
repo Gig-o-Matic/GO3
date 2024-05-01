@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-21 18:38-0400\n"
+"POT-Creation-Date: 2024-05-01 15:04-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -321,10 +321,14 @@ msgid "English (UK, AU, NZ, ...)"
 msgstr ""
 
 #: go3/settings.py:212
-msgid "French"
+msgid "Spanish"
 msgstr ""
 
 #: go3/settings.py:213
+msgid "French"
+msgstr ""
+
+#: go3/settings.py:214
 msgid "Italian"
 msgstr ""
 
@@ -485,6 +489,14 @@ msgid ""
 "account via the \"Forgot Password?\" link below."
 msgstr ""
 
+#: templates/admin/base_site.html:3
+msgid "Django site admin"
+msgstr ""
+
+#: templates/admin/base_site.html:19
+msgid "Django administration"
+msgstr ""
+
 #: templates/agenda/agenda.html:14 templates/agenda/calendar.html:19
 #: templates/agenda/grid.html:23
 msgid "Make this my default view!"
@@ -497,6 +509,10 @@ msgstr "Concerts à venir : remplissez vos disponibilités"
 #: templates/agenda/agenda.html:39
 msgid "Upcoming Gigs"
 msgstr "Concerts à venir"
+
+#: templates/agenda/agenda_gigs.html:19 templates/agenda/grid.html:60
+msgid "No Gigs!"
+msgstr "Pas de concerts !"
 
 #: templates/agenda/agenda_plan_edit.html:61
 #: templates/gig/gig_plan_edit.html:68
@@ -527,12 +543,6 @@ msgstr "Grille"
 #| msgid "Grid o'Gigs"
 msgid "Grid of Gigs"
 msgstr "Grille des concerts"
-
-#: templates/agenda/grid.html:60
-#, fuzzy
-#| msgid "No Gigs!"
-msgid "No Gigs"
-msgstr "Pas de concerts !"
 
 #: templates/agenda/hidden_bands_info.html:5
 msgid "Bands hidden from view:"
