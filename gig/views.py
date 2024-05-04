@@ -59,7 +59,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             self.request.user, self.object.band)
 
         if self.object.enddate:
-            context['multi_day_gig'] = self.object.date.date() != self.object.enddate.date()
+            context['multi_day_gig'] = self.object.is_full_day
         else:
             context['multi_day_gig'] = False
 
