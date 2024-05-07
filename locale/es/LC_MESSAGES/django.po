@@ -524,13 +524,13 @@ msgstr "Calendario"
 
 #: templates/agenda/calendar.html:30
 msgid "committed gigs"
-msgstr ""
+msgstr "Eventos comprometidos"
 
 #: templates/agenda/calendar.html:33
 #, fuzzy
 #| msgid "Unconfirmed"
 msgid "confirmed gigs"
-msgstr "No confirmado"
+msgstr "Eventos confirmados"
 
 #: templates/agenda/grid.html:15 templates/base/navbar.html:18
 msgid "Grid"
