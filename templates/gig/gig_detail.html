@@ -89,15 +89,25 @@
                     <div class="row">
                         <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
                         {% if call_time %}
-                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
-                            {{ call_time|time:"TIME_FORMAT" }}
-                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}</div>
                         {% endif %}
                         {% if set_time %}
-                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ set_time|time:"TIME_FORMAT" }}</div>
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}</div>
                         {% endif %}
                         {% if end_time %}
-                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ end_time|time:"TIME_FORMAT" }}</div>
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}</div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-2 col-md-2 col-sm-2 col-12"></div>
+                        {% if call_time %}
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-4">{{ call_time|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
+                        {% if set_time %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{{ set_time|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
+                        {% if end_time %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{{ end_time|time:"TIME_FORMAT" }}</div>
                         {% endif %}
                     </div>
                 {% endif %}
