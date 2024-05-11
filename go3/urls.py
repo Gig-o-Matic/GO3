@@ -55,6 +55,7 @@ urlpatterns = [
     path('migration/', include('migration.urls')),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
     path('404',test404.as_view()),
+    path("__debug__/", include("debug_toolbar.urls")),
     path('jsi18n/', JavaScriptCatalog.as_view(), name="javascript-catalog"),
     # Backward compatibility with old GO2 cal feed
     path('cal/m/<slug:go2_id>', go2_id_calfeed),
