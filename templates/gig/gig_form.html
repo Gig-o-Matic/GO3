@@ -219,14 +219,7 @@
                 <div class="col-12">
                     {{ form.invite_occasionals.errors }}
                     {{ form.invite_occasionals }}
-                    <!-- {{ form.invite_occasionals.label_tag }} -->
-                    <label for="gig_invite_occasionals">
-                        {% if is_new or is_dupe %}
-                            {% trans "Invite occasional members" %}
-                        {% else %}
-                            {% trans "Also send update to occasional members" %}  
-                        {% endif %}
-                    </label>  
+                    {{ form.invite_occasionals.label_tag }}
                 </div>
             </div>
             <div class="row">
