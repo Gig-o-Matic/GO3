@@ -44,11 +44,8 @@ class GigForm(forms.ModelForm):
             """ this is a new gig """
             self.fields['email_changes'].label = _('Email members about this new gig')
             self.fields['email_changes'].initial = band.send_updates_by_default
-
-            self.fields['invite_occasionals'].label = _('Invite occasional members')
         else:
             self.fields['email_changes'].label = _('Email members about change')
-            self.fields['invite_occasionals'].label = _('Also send update to occasional members')
 
         if user:
             self.fields['contact'].initial = user
@@ -227,7 +224,7 @@ class GigForm(forms.ModelForm):
             'details': _('Details'),
             'setlist': _('Setlist'),
 
-            'hide_from_calendar': _('hide from calendar'),
-            'invite_occasionals': _('Invite occasional members'),
+            'hide_from_calendar': _('Hide from calendar'),
+            'invite_occasionals': _('Include occasional members'),
             'email_changes': _('Email members about this new gig')
         }
