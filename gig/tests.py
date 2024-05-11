@@ -967,6 +967,20 @@ class GigTest(GigTestBase):
         g2 = gigs[1]
         self.assertEqual(g2.date - g1.date, timedelta(days=1))
 
+    def test_series_email(self):
+        self.assoc_user(self.joeuser)
+        self.band.anyone_can_create_gigs = True
+        self.band.save()
+        g=self.create_gig_form(add_series=True,
+                             total_gigs=3,
+                             repeat='day',
+                             )
+        self.assertEqual(len(mail.outbox),1)
+        message = mail.outbox[0]
+        self.assertIn('Series', message.subject)
+        self.assertIn(f'Last Date: {g.date.strftime("%m/%d/%Y")}', message.body)
+
+
     def test_series_of_full_day_gigs(self):
         g1, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(Gig.objects.count(), 1)
