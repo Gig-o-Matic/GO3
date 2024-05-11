@@ -150,7 +150,7 @@ def is_single_day(gig):
         return True
     return (end - gig.date) < datetime.timedelta(days=1)
 
-def email_from_plan(plan, template):
+def email_from_plan(plan, template, dates=None):
     gig = plan.gig
     with timezone.override(gig.band.timezone):
         latest_record = gig.history.latest()
@@ -167,29 +167,33 @@ def email_from_plan(plan, template):
             'plan': plan,
             'status': plan.status,
             'status_label': PlanStatusChoices(plan.status).label,
+            'dates': dates,
             **PlanStatusChoices.__members__,
         }
         return prepare_email(member.as_email_recipient(), template, context, reply_to=[contact_email])
 
-def send_emails_from_plans(plans_query, template):
+def send_emails_from_plans(plans_query, template, dates=None):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,
                                      assoc__email_me=True)
     # if the plan is for a gig that did not invite occasionals, select only members that are not
     # occasional
     contactable = contactable.filter(Q(gig__invite_occasionals=True) | Q(assoc__is_occasional=False))
-    send_messages_async(email_from_plan(p, template) for p in contactable)
+    send_messages_async(email_from_plan(p, template, dates) for p in contactable)
 
-def send_email_from_gig(gig, template):
-    send_emails_from_plans(gig.member_plans, template)
+def send_email_from_gig(gig, template, dates=None):
+    send_emails_from_plans(gig.member_plans, template, dates)
 
 def send_reminder_email(gig):
     undecided = gig.member_plans.filter(status__in=(PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW))
     send_emails_from_plans(undecided, 'email/gig_reminder.md')
 
 
-def notify_new_gig(gig, created):
-    async_task('gig.helpers.send_email_from_gig', gig,
-               'email/new_gig.md' if created else 'email/edited_gig.md')
+def notify_new_gig(gig, created, dates=None):
+    if dates:
+        async_task('gig.helpers.send_email_from_gig', gig, 'email/new_gig_series.md', dates=dates)
+    else:
+        async_task('gig.helpers.send_email_from_gig', gig,
+                'email/new_gig.md' if created else 'email/edited_gig.md')
 
 @login_required
 @band_editor_required
@@ -238,6 +242,8 @@ def create_gig_series(the_gig, number_to_copy, period):
     set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
     end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
 
+    the_dates = [the_gig.date]
+
     for _ in range(1, number_to_copy):
         if period == 'day' or period == 'week':
             last_date = last_date + delta
@@ -263,3 +269,7 @@ def create_gig_series(the_gig, number_to_copy, period):
         the_gig._state.adding = True
         the_gig.cal_feed_id = uuid.uuid4()
         the_gig.save()
+        the_dates.append(the_gig.date)
+    
+    # return the list of dates for all the gigs
+    return the_dates
