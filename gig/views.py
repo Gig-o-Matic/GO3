@@ -143,11 +143,14 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
         result = super().form_valid(form)
 
         # call the super before sending notifications, so the object is saved
-        if form.cleaned_data['email_changes']:
-            notify_new_gig(form.instance, created=True)
 
         if form.cleaned_data['add_series']:
-            create_gig_series(form.instance, form.cleaned_data['total_gigs'], form.cleaned_data['repeat'])
+            the_dates = create_gig_series(form.instance, form.cleaned_data['total_gigs'], form.cleaned_data['repeat'])
+            if form.cleaned_data['email_changes']:
+                notify_new_gig(form.instance, created=True, dates=the_dates)
+        else:
+            if form.cleaned_data['email_changes']:
+                notify_new_gig(form.instance, created=True)
 
         return result
 
