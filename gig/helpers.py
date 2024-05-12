@@ -27,6 +27,7 @@ from django.db.models import Q
 from .models import Gig, Plan
 from .util import PlanStatusChoices
 from band.models import Section, Assoc, AssocStatusChoices
+from stats.tasks import register_sent_emails
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
@@ -172,16 +173,17 @@ def email_from_plan(plan, template, dates=None):
         }
         return prepare_email(member.as_email_recipient(), template, context, reply_to=[contact_email])
 
-def send_emails_from_plans(plans_query, template, dates=None):
+def send_emails_from_plans(plans_query, template, band, dates=None):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,
                                      assoc__email_me=True)
     # if the plan is for a gig that did not invite occasionals, select only members that are not
     # occasional
     contactable = contactable.filter(Q(gig__invite_occasionals=True) | Q(assoc__is_occasional=False))
     send_messages_async(email_from_plan(p, template, dates) for p in contactable)
+    register_sent_emails(band, len(contactable))
 
 def send_email_from_gig(gig, template, dates=None):
-    send_emails_from_plans(gig.member_plans, template, dates)
+    send_emails_from_plans(gig.member_plans, template, gig.band, dates)
 
 def send_reminder_email(gig):
     undecided = gig.member_plans.filter(status__in=(PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW))

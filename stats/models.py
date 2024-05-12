@@ -19,7 +19,6 @@ from django.db import models
 from band.models import Band
 from django.utils import timezone
 
-
 class MetricTypes(models.IntegerChoices):
     DAILY = 0, "Daily"
     ALLTIME = 1, "All Time"

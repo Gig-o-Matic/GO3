@@ -18,6 +18,7 @@
 from .models import BandMetric, Stat, MetricTypes
 from band.models import Band
 from gig.models import Gig
+from django.utils import timezone
 from datetime import datetime
 import pytz
 
@@ -45,7 +46,7 @@ def collect_band_stats():
         if m is None:
             m = BandMetric(name='All Time Number of Members', band=b, kind=MetricTypes.ALLTIME)
             m.save()
-        c = b.assocs.count()
+        c = b.assocs.filter(is_alum=True).count()
         m.register(c)
         agg_all_time_number_members += c
 
@@ -56,7 +57,7 @@ def collect_band_stats():
             m.save()
         gigcount = Gig.objects.future().filter(
             band=b,
-            date__gte=pytz.utc.localize(datetime.utcnow())
+            date__gte=timezone.now()
         ).count()
         m.register(gigcount)
         agg_number_of_gigs += gigcount
@@ -71,33 +72,44 @@ def collect_band_stats():
         agg_all_time_gigs = c
 
 
-        # now collect them in aggregate
+    # now collect them in aggregate
 
-        # number of members in each band
-        m = BandMetric.objects.filter(name='Number of Active Members', band=None).first()
-        if m is None:
-            m = BandMetric(name='Number of Active Members', band=None, kind=MetricTypes.DAILY)
-            m.save()
-        m.register(agg_number_active_members)
+    # number of members in each band
+    m = BandMetric.objects.filter(name='Number of Active Members', band=None).first()
+    if m is None:
+        m = BandMetric(name='Number of Active Members', band=None, kind=MetricTypes.DAILY)
+        m.save()
+    m.register(agg_number_active_members)
 
-        # all time members in each band
-        m = BandMetric.objects.filter(name='All Time Number of Members', band=None).first()
-        if m is None:
-            m = BandMetric(name='All Time Number of Members', band=None, kind=MetricTypes.ALLTIME)
-            m.save()
-        m.register(agg_all_time_number_members)
+    # all time members in each band
+    m = BandMetric.objects.filter(name='All Time Number of Members', band=None).first()
+    if m is None:
+        m = BandMetric(name='All Time Number of Members', band=None, kind=MetricTypes.ALLTIME)
+        m.save()
+    m.register(agg_all_time_number_members)
 
-        # number of gigs each band is planning
-        m = BandMetric.objects.filter(name='Number of Gigs', band=None).first()
-        if m is None:
-            m = BandMetric(name='Number of Gigs', band=None,  kind=MetricTypes.DAILY)
-            m.save()
-        m.register(agg_number_of_gigs)
+    # number of gigs each band is planning
+    m = BandMetric.objects.filter(name='Number of Gigs', band=None).first()
+    if m is None:
+        m = BandMetric(name='Number of Gigs', band=None,  kind=MetricTypes.DAILY)
+        m.save()
+    m.register(agg_number_of_gigs)
 
-        # number of gigs total for each band
-        m = BandMetric.objects.filter(name='All Time Total Gigs', band=None).first()
-        if m is None:
-            m = BandMetric(name='All Time Total Gigs', band=None, kind=MetricTypes.ALLTIME)
-            m.save()
-        m.register(agg_all_time_gigs)
+    # number of gigs total for each band
+    m = BandMetric.objects.filter(name='All Time Total Gigs', band=None).first()
+    if m is None:
+        m = BandMetric(name='All Time Total Gigs', band=None, kind=MetricTypes.ALLTIME)
+        m.save()
+    m.register(agg_all_time_gigs)
 
+
+def register_sent_emails(band, number):
+    return
+#     """ add to the total emails sent today by this band """
+#         m = BandMetric.objects.filter(name='Number of Emails', band=b).first()
+#         if m is None:
+#             m = BandMetric(name='Number of Emails', band=b,  kind=MetricTypes.DAILY)
+#             m.save()
+
+#         m.register(gigcount)
+#         agg_number_of_gigs += gigcount
