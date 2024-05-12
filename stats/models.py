@@ -22,6 +22,7 @@ from django.utils import timezone
 class MetricTypes(models.IntegerChoices):
     DAILY = 0, "Daily"
     ALLTIME = 1, "All Time"
+    DAILY_ACCUMULATE = 2, "Daily Accumulate"
 
 
 class Metric(models.Model):
@@ -36,6 +37,13 @@ class Metric(models.Model):
             # see if we already have one for today
             now = timezone.now()
             self.stats.filter(created__date=now).delete()
+        elif self.kind == MetricTypes.DAILY_ACCUMULATE:
+            # see if we already have one for today
+            now = timezone.now()
+            stat = self.stats.filter(created__date=now).first()
+            if stat:
+                val += stat.value
+                stat.delete()
         s = Stat(metric=self, value=val)
         s.save()
 

@@ -20,6 +20,7 @@ from band.models import Band
 from gig.models import Gig
 from django.utils import timezone
 from datetime import datetime
+from django_q.tasks import async_task
 import pytz
 
 
@@ -33,8 +34,9 @@ def collect_band_stats():
     for b in Band.objects.all():
 
         # number of members in each band
-        m = BandMetric.objects.filter(name='Number of Active Members', band=b).first()
-        if m is None:
+        try:
+            m = BandMetric.objects.get(name='Number of Active Members', band=b)
+        except BandMetric.DoesNotExist:
             m = BandMetric(name='Number of Active Members', band=b, kind=MetricTypes.DAILY)
             m.save()
         c = b.confirmed_members.count()
@@ -42,8 +44,9 @@ def collect_band_stats():
         agg_number_active_members += c
 
         # all time members in each band
-        m = BandMetric.objects.filter(name='All Time Number of Members', band=b).first()
-        if m is None:
+        try:
+            m = BandMetric.objects.get(name='All Time Number of Members', band=b)
+        except BandMetric.DoesNotExist:
             m = BandMetric(name='All Time Number of Members', band=b, kind=MetricTypes.ALLTIME)
             m.save()
         c = b.assocs.filter(is_alum=True).count()
@@ -51,8 +54,9 @@ def collect_band_stats():
         agg_all_time_number_members += c
 
         # number of gigs each band is planning
-        m = BandMetric.objects.filter(name='Number of Gigs', band=b).first()
-        if m is None:
+        try:
+            m = BandMetric.objects.get(name='Number of Gigs', band=b)
+        except BandMetric.DoesNotExist:
             m = BandMetric(name='Number of Gigs', band=b,  kind=MetricTypes.DAILY)
             m.save()
         gigcount = Gig.objects.future().filter(
@@ -63,8 +67,9 @@ def collect_band_stats():
         agg_number_of_gigs += gigcount
 
         # number of gigs total for each band
-        m = BandMetric.objects.filter(name='All Time Total Gigs', band=b).first()
-        if m is None:
+        try:
+            m = BandMetric.objects.get(name='All Time Total Gigs', band=b)
+        except BandMetric.DoesNotExist:
             m = BandMetric(name='All Time Total Gigs', band=b, kind=MetricTypes.ALLTIME)
             m.save()
         c = Gig.objects.filter(band=b).count()
@@ -75,41 +80,62 @@ def collect_band_stats():
     # now collect them in aggregate
 
     # number of members in each band
-    m = BandMetric.objects.filter(name='Number of Active Members', band=None).first()
-    if m is None:
+    try:
+        m = BandMetric.objects.get(name='Number of Active Members', band=None)
+    except BandMetric.DoesNotExist:
         m = BandMetric(name='Number of Active Members', band=None, kind=MetricTypes.DAILY)
         m.save()
     m.register(agg_number_active_members)
 
     # all time members in each band
-    m = BandMetric.objects.filter(name='All Time Number of Members', band=None).first()
-    if m is None:
+    try:
+        m = BandMetric.objects.get(name='All Time Number of Members', band=None)
+    except BandMetric.DoesNotExist:
         m = BandMetric(name='All Time Number of Members', band=None, kind=MetricTypes.ALLTIME)
         m.save()
     m.register(agg_all_time_number_members)
 
     # number of gigs each band is planning
-    m = BandMetric.objects.filter(name='Number of Gigs', band=None).first()
-    if m is None:
+    try:
+        m = BandMetric.objects.get(name='Number of Gigs', band=None)
+    except BandMetric.DoesNotExist:
         m = BandMetric(name='Number of Gigs', band=None,  kind=MetricTypes.DAILY)
         m.save()
     m.register(agg_number_of_gigs)
 
     # number of gigs total for each band
-    m = BandMetric.objects.filter(name='All Time Total Gigs', band=None).first()
-    if m is None:
+    try:
+        m = BandMetric.objects.get(name='All Time Total Gigs', band=None)
+    except BandMetric.DoesNotExist:
         m = BandMetric(name='All Time Total Gigs', band=None, kind=MetricTypes.ALLTIME)
         m.save()
     m.register(agg_all_time_gigs)
 
 
-def register_sent_emails(band, number):
-    return
-#     """ add to the total emails sent today by this band """
-#         m = BandMetric.objects.filter(name='Number of Emails', band=b).first()
-#         if m is None:
-#             m = BandMetric(name='Number of Emails', band=b,  kind=MetricTypes.DAILY)
-#             m.save()
+def async_register_sent_emails(counter):
+    async_task('stats.tasks.register_sent_emails', counter)
 
-#         m.register(gigcount)
-#         agg_number_of_gigs += gigcount
+
+def register_sent_emails(counter):
+    """ recieves a collections Counter object of bands """
+
+    agg_numbers_of_emails = 0
+    for k, v in counter.items():
+        """ add to the total emails sent today by this band """
+        try:
+            m = BandMetric.objects.get(name='Number of Emails Sent', band=k)
+        except BandMetric.DoesNotExist:
+            m = BandMetric(name='Number of Emails Sent', band=k,  kind=MetricTypes.DAILY_ACCUMULATE)
+            m.save()
+
+        m.register(v)
+        agg_numbers_of_emails += v
+
+    # total emails sent today
+    try:
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
+    except BandMetric.DoesNotExist:
+        m = BandMetric(name='Number of Emails Sent', band=None, kind=MetricTypes.DAILY_ACCUMULATE)
+        m.save()
+    m.register(agg_numbers_of_emails)
+

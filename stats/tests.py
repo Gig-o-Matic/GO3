@@ -14,15 +14,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.test import TestCase
-from .models import Metric, Stat, BandMetric
+from django.core import mail
+from .models import BandMetric
 from .tasks import collect_band_stats
 from member.models import Member
 from band.models import Band, Assoc
 from gig.tests import GigTestBase
 from band.util import AssocStatusChoices
 from freezegun import freeze_time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 
 class StatsTest(GigTestBase):
@@ -36,7 +36,7 @@ class StatsTest(GigTestBase):
         for i in range(c,num+c):
             m = Member.objects.create_user(email=f'member{i}@b.c')
             members.append(m)
-            a = Assoc.objects.create(member=m, band=self.band, status=AssocStatusChoices.CONFIRMED)
+            a = Assoc.objects.create(member=m, band=band, status=AssocStatusChoices.CONFIRMED)
             assocs.append(a)
         return members, assocs
 
@@ -160,3 +160,34 @@ class StatsTest(GigTestBase):
         m = BandMetric.objects.get(name='All Time Number of Members', band=None)
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value, 20)
+
+    def test_email_stats(self):
+        self.assoc_joe_and_create_gig()
+        self.assertEqual(len(mail.outbox), 1)  # just to joe
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
+        self.assertEqual(m.stats.first().value, 1)
+
+        self.create_gig_form(contact=self.joeuser)
+        self.create_gig_form(contact=self.joeuser)
+        self.assertEqual(len(mail.outbox), 3)  # just to joe
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
+        self.assertEqual(m.stats.first().value, 3)
+
+        # check the aggregate version
+        b2 = Band.objects.create(
+            name="test band 2",
+            timezone="UTC",
+            anyone_can_create_gigs=True,
+        )
+        m, _ = self.add_members(10,b2)
+        self.create_gig_form(user=m[0], contact=m[0], call_date="01/03/2100", band=b2)
+        self.assertEqual(len(mail.outbox),13)
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
+        self.assertEqual(m.stats.first().value, 10)
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
+        self.assertEqual(m.stats.first().value, 13)
+
