@@ -181,8 +181,8 @@ class StatsTest(GigTestBase):
             timezone="UTC",
             anyone_can_create_gigs=True,
         )
-        m, _ = self.add_members(10,b2)
-        self.create_gig_form(user=m[0], contact=m[0], call_date="01/03/2100", band=b2)
+        members, _ = self.add_members(10,b2)
+        self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
         self.assertEqual(len(mail.outbox),13)
 
         m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
@@ -191,3 +191,11 @@ class StatsTest(GigTestBase):
         m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
         self.assertEqual(m.stats.first().value, 13)
 
+        self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
+        self.assertEqual(len(mail.outbox),23)
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
+        self.assertEqual(m.stats.first().value, 20)
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
+        self.assertEqual(m.stats.first().value, 23)
