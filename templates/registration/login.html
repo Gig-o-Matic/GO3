@@ -15,7 +15,7 @@
 </div>
 {% endif %}
 
-<form class="form" role="form" action= "{% url 'login' %}" method="POST">
+<form class="form" role="form" action="{% url 'login' %}" method="post" >
     {% csrf_token %}
     <div class="form-group row">
         <div class="col-form-label col-lg-3 text-lg-right">{{ form.username.label_tag}}</div>
@@ -38,6 +38,7 @@
             <a href="{% url 'member-signup' %}">{% trans "Sign Up!" %}</a>
         </div>
     </div>
+    <input type="hidden" name="next" value="{{ next }}">
 </form>
 
 {% get_current_language as current_code %}
