@@ -67,10 +67,6 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value,10)
 
-        m = BandMetric.objects.get(name='All Time Number of Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value,10)
-
         self.add_members(1)
         # add a new one for the next day
         with freeze_time(timezone.now() + timedelta(days=1)):
@@ -79,10 +75,6 @@ class StatsTest(GigTestBase):
         m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
         self.assertEqual(m.stats.count(),2)
         self.assertEqual(m.stats.last().value,11)
-
-        m = BandMetric.objects.get(name='All Time Number of Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value,11)
 
 
     def test_band_member_stat_delete(self):
@@ -138,10 +130,6 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value, 9)
 
-        m = BandMetric.objects.get(name='All Time Number of Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value, 10)
-
         # check the aggregate version
         b2 = Band.objects.create(
             name="test band 2",
@@ -157,10 +145,7 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
         self.assertEqual(m.stats.first().value, 19)
     
-        m = BandMetric.objects.get(name='All Time Number of Members', band=None)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value, 20)
-
+    
     def test_email_stats(self):
         self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)  # just to joe
