@@ -27,9 +27,7 @@ import pytz
 def collect_band_stats():
 
     agg_number_active_members = 0
-    agg_all_time_number_members = 0
     agg_number_of_gigs = 0
-    agg_all_time_gigs = 0
 
     for b in Band.objects.all():
 
