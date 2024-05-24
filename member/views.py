@@ -29,7 +29,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView, LoginView
 from django.contrib import messages
 from go3.colors import the_colors
 from go3.settings import env
@@ -456,3 +456,14 @@ def confirm_email(request, pk):
     return set_language(
                 render(request, 'member/email_change_confirmation.html',
                         {'validlink': valid}))
+
+
+class LanguageLoginView(LoginView):
+    """ we override the default loginview and set the user's preferential language """
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        translation.activate(self.request.user.preferences.language)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.request.user.preferences.language )
+        return response
+

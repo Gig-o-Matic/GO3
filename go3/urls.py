@@ -41,9 +41,11 @@ from go3.schema import schema
 from agenda.views import PrivateGraphQLView
 from django.views.i18n import JavaScriptCatalog
 from member.helpers import go2_id_calfeed
+from member.views import LanguageLoginView
 
 urlpatterns = [
     path('', include('agenda.urls')),
+    path('accounts/login/', LanguageLoginView.as_view(), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('band/', include('band.urls')),
