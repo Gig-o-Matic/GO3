@@ -1264,8 +1264,15 @@ class GigSecurityTest(GigTestBase):
         self.assertEqual(response.status_code, 200) # pass - we're assoc'd
         self.band.anyone_can_manage_gigs = False
         self.band.save()
+        self.band.refresh_from_db()
+        g.band.refresh_from_db()
         response = c.get(reverse("gig-update", args=[g.id]))
         self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+
+        g.creator = self.janeuser
+        g.save()
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 200) # pass if we created the gig
 
         c = Client()
         response = c.get(reverse("gig-update", args=[g.id]))
