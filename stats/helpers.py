@@ -27,12 +27,16 @@ def get_band_stats(the_band):
 
     the_metrics = BandMetric.objects.filter(band=the_band)
     for m in the_metrics:
-        the_stat = m.stats.latest('created')
-        the_stats.append({
-            'name': m.name,
-            'date': the_stat.created,
-            'value': the_stat.value
-        })
+        try:
+            the_stat = m.stats.latest('created')
+            the_stats.append({
+                'name': m.name,
+                'date': the_stat.created,
+                'value': the_stat.value
+            })
+        except Stat.DoesNotExist:
+            pass
+        
     return the_stats
 
 def get_gigs_over_time_stats(the_band):
