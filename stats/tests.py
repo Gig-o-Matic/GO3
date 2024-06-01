@@ -184,3 +184,12 @@ class StatsTest(GigTestBase):
 
         m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
         self.assertEqual(m.stats.first().value, 23)
+
+        # test sending more tomorrow
+        with freeze_time(timezone.now() + timedelta(days=1)): # count again tomorrow
+            self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
+        
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
+        self.assertEqual(len(m.stats.all()),2)
+        self.assertTrue(len(m.stats.filter(created=timezone.now().date())),1)
+
