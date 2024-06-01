@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.core import mail
-from .models import BandMetric
+from .models import BandMetric, Stat
 from .tasks import collect_band_stats
 from member.models import Member
 from band.models import Band, Assoc
@@ -193,3 +193,15 @@ class StatsTest(GigTestBase):
         self.assertEqual(len(m.stats.all()),2)
         self.assertTrue(len(m.stats.filter(created=timezone.now().date())),1)
 
+
+    def test_no_stats(self):
+        self.assoc_joe_and_create_gig()
+        self.assertEqual(len(mail.outbox), 1)  # just to joe
+
+        m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
+        self.assertEqual(m.stats.first().value, 1)
+
+        # get rid of the stats
+        Stat.objects.all().delete()
+        m2 = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
+        self.assertEqual(len(m2.stats.all()),0)

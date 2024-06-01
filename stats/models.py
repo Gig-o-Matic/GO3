@@ -61,9 +61,9 @@ class BandMetric(Metric):
 
 class Stat(models.Model):
     metric = models.ForeignKey(
-        Metric, related_name="stats", on_delete=models.CASCADE, null=False)
+        BandMetric, related_name="stats", on_delete=models.CASCADE, null=False)
     created = models.DateField(auto_now_add=True)
     value = models.IntegerField(blank=True, default=0)
 
     def __str__(self):
-        return "Stat of '{0}' created {1}".format(self.metric.name, self.created)
+        return "Stat of '{0}' created {1}".format(self.metric, self.created)
