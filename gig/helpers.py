@@ -181,6 +181,8 @@ def send_emails_from_plans(plans_query, template, dates=None):
     # occasional
     contactable = contactable.filter(Q(gig__invite_occasionals=True) | Q(assoc__is_occasional=False))
     send_messages_async(email_from_plan(p, template, dates) for p in contactable)
+
+    # do this as a counter even though any specific call of this will be for a single band.
     register_sent_emails(Counter(p.gig.band for p in contactable))
 
 def send_email_from_gig(gig, template, dates=None):
