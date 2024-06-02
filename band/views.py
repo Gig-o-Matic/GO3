@@ -16,9 +16,10 @@ from member.models import Invite
 from member.util import MemberStatusChoices
 from member.helpers import has_manage_band_permission
 from stats.helpers import get_band_stats, get_gigs_over_time_stats
+from stats.util import dateconverter
 import json
 from django.utils.safestring import SafeString
-from datetime import datetime
+from datetime import date
 from django.utils.translation import gettext_lazy as _
 from go3.settings import URL_BASE
 
@@ -120,12 +121,8 @@ class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['the_stats'] = get_band_stats(the_band)
 
-        # get the gigs over time data
-
-        def myconverter(o):
-            if isinstance(o, datetime):
-                return [o.year, o.month, o.day]
-        context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=myconverter)
+        # get the gigs over time data            
+        context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=dateconverter)
 
         if the_band.gigs.count():
             context['last_gig_created'] = the_band.gigs.latest('created_date').created_date

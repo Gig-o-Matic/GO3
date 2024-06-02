@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .helpers import get_all_gigs_over_time_stats, get_all_stats
+from .util import dateconverter
 import json
 from datetime import datetime
 from go3.settings import URL_BASE
@@ -16,10 +17,6 @@ class AllStatsView(LoginRequiredMixin, TemplateView):
         context['the_stats'] = get_all_stats()
 
         # get the gigs over time data
-
-        def myconverter(o):
-            if isinstance(o, datetime):
-                return [o.year, o.month, o.day]
-        context['gigs_over_time_data'] = json.dumps(get_all_gigs_over_time_stats(), default=myconverter)
+        context['gigs_over_time_data'] = json.dumps(get_all_gigs_over_time_stats(), default=dateconverter)
 
         return context
