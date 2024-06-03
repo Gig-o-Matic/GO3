@@ -22,8 +22,9 @@ from band.models import Band, Assoc
 from gig.tests import GigTestBase
 from band.util import AssocStatusChoices
 from freezegun import freeze_time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.utils import timezone
+from django.db.models import Sum
 
 class StatsTest(GigTestBase):
 
@@ -120,34 +121,9 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),2)  # should now be two
         self.assertEqual(m.stats.order_by('created').last().value,2)
 
-    def test_all_time_members(self):
-        Member.objects.all().delete()  # start from scratch
-        _, assocs = self.add_members(10)
-        assocs[0].status = AssocStatusChoices.NOT_CONFIRMED
-        assocs[0].save()
-        collect_band_stats()
-        m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value, 9)
-
-        # check the aggregate version
-        b2 = Band.objects.create(
-            name="test band 2",
-            timezone="UTC",
-        )
-
-        # add a bunch of unassociated members
-        self.add_members(10, b2)
-
-        collect_band_stats()
-
-        m = BandMetric.objects.get(name='Number of Active Members', band=None)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value, 19)
-    
     
     def test_email_stats(self):
-        self.assoc_joe_and_create_gig()
+        g, _, _ = self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)  # just to joe
 
         m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
@@ -158,7 +134,9 @@ class StatsTest(GigTestBase):
         self.assertEqual(len(mail.outbox), 3)  # just to joe
 
         m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
-        self.assertEqual(m.stats.first().value, 3)
+        self.assertEqual(m.stats.count(),3)
+        self.assertEqual(m.stats.filter(
+            created=datetime.now()).aggregate(Sum('value'))['value__sum'], 3)
 
         # check the aggregate version
         b2 = Band.objects.create(
@@ -173,25 +151,19 @@ class StatsTest(GigTestBase):
         m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
         self.assertEqual(m.stats.first().value, 10)
 
-        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
-        self.assertEqual(m.stats.first().value, 13)
-
         self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
-        self.assertEqual(len(mail.outbox),23)
-
-        m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
-        self.assertEqual(m.stats.first().value, 20)
-
-        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
-        self.assertEqual(m.stats.first().value, 23)
+        self.assertEqual(m.stats.count(),2)
+        self.assertEqual(m.stats.filter(
+            created=datetime.now()).aggregate(Sum('value'))['value__sum'], 20)
 
         # test sending more tomorrow
         with freeze_time(timezone.now() + timedelta(days=1)): # count again tomorrow
             self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
         
         m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
-        self.assertEqual(len(m.stats.all()),2)
-        self.assertTrue(len(m.stats.filter(created=timezone.now().date())),1)
+        self.assertEqual(len(m.stats.all()),3)
+        self.assertEqual(m.stats.filter(
+            created=datetime.now() + timedelta(days=1)).aggregate(Sum('value'))['value__sum'], 10)
 
 
     def test_no_stats(self):

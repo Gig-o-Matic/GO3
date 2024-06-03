@@ -29,7 +29,7 @@ def collect_band_stats():
     for b in Band.objects.all():
 
         # number of members in each band
-        m = BandMetric.objects.get_or_create(
+        m, _ = BandMetric.objects.get_or_create(
             name='Number of Active Members', band=b,
             defaults={
                 'name' : 'Number of Active Members',
@@ -40,7 +40,7 @@ def collect_band_stats():
         m.register(c)
 
         # number of gigs each band is planning
-        m = BandMetric.objects.get_or_create(
+        m, _ = BandMetric.objects.get_or_create(
             name='Number of Gigs', band=b,
             defaults={
                 'name' : 'Number of Gigs',
@@ -61,7 +61,7 @@ def register_sent_emails(counter):
     """ recieves a collections Counter object of bands """
 
     for k, v in counter.items():
-        """ add to the total emails sent today by this band """
+        """ add to the total emails sent by this band """
         m, _ = BandMetric.objects.get_or_create(
             name='Number of Emails Sent', band=k,
             defaults={
