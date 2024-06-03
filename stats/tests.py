@@ -123,7 +123,7 @@ class StatsTest(GigTestBase):
 
     
     def test_email_stats(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assoc_joe_and_create_gig()
         self.assertEqual(len(mail.outbox), 1)  # just to joe
 
         m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
