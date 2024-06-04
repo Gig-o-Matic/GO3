@@ -73,11 +73,20 @@ class Metric(models.Model):
         if self.kind == MetricTypes.EVERY:
             # find out the last time we did any collecting
             s = self.stats.latest('created')
-            # sum up all of the 
+            # sum up all of the stats
             return self.stats.filter(created=s.created).aggregate(Sum('value'))['value__sum'], s.created
         else:
             s = self.stats.latest('created')
             return s.value, s.created
+        
+    def total_value(self):
+        if self.kind == MetricTypes.EVERY:
+            # sum up all of the stats
+            return self.stats.aggregate(Sum('value'))['value__sum']
+        else:
+            # for other types, it's the same - just return the latest since they're aggregates
+            s = self.stats.latest('created')
+            return s.value
 
     def __str__(self):
         return "{0}".format(self.name)
