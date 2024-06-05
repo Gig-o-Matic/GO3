@@ -25,3 +25,5 @@ class PlanAdmin(admin.ModelAdmin):
 @admin.register(Gig)
 class GigAdmin(admin.ModelAdmin):
     search_fields=['title', 'band__name']
+    readonly_fields = (['created_date'])
+
