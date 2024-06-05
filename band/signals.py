@@ -51,7 +51,7 @@ def set_plan_sections(sender, instance, created, **kwargs):
     # if this is a new assoc, make plans for the new member
     the_gigs = instance.band.gigs.future()
     for g in the_gigs:
-        _ = g.member_plans
+        g.update_plans()
 
     # update any plans that rely on knowing the default section
     update_plan_default_section(instance)

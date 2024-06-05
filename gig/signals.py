@@ -26,7 +26,7 @@ from django_q.tasks import async_task
 def create_member_plans(sender, instance, created, **kwargs):
     """ makes sure every member has a plan set for a newly created gig """
     if created:
-        _ = instance.member_plans
+        instance.update_plans()
 
 
 @receiver(post_save, sender=Gig)
