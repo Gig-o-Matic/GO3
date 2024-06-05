@@ -194,6 +194,15 @@ class Gig(AbstractEvent):
 
     @property
     def member_plans(self):
+        # if this is an archived gig, return all the plans, otherwise just those for active members
+        plans = self.plans # pylint: disable=no-member
+        if self.is_archived:
+            return plans
+        else:
+            return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE).filter(assoc__status=AssocStatusChoices.CONFIRMED)
+
+    def update_plans(self):
+        """ make sure every active member has a plan for this gig """
         """ if this gig is not archived, find any members that don't have plans yet. This is called whenever a new gig is created
             through the signaling system, or when a member joins a band from the assoc signal. """
         if self.is_archived is False:
@@ -209,12 +218,7 @@ class Gig(AbstractEvent):
             for a in absent:
                 Plan.objects.create(gig=self, assoc=a, section=s)
             
-        # if this is an archived gig, return all the plans, otherwise just those for active members
-        plans = self.plans # pylint: disable=no-member
-        if self.is_archived:
-            return plans
-        else:
-            return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE).filter(assoc__status=AssocStatusChoices.CONFIRMED)
+        return self.member_plans
 
 class GigComment(models.Model):
     gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)

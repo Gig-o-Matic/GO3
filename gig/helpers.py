@@ -184,7 +184,7 @@ def send_emails_from_plans(plans_query, template, dates=None):
 
     # do this as a counter even though any specific call of this will be for a single band.
     if contactable.count():
-        register_sent_emails(contactable.first().gig.band, contactable.count())
+        register_sent_emails(contactable.first().gig.band, contactable.count(),contactable.first().gig.id)
 
 def send_email_from_gig(gig, template, dates=None):
     send_emails_from_plans(gig.member_plans, template, dates)
