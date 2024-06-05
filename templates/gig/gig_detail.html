@@ -22,10 +22,14 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if user_has_manage_gig_permission and gig.is_in_trash == False and gig.is_archived == False %}
+                    {% if gig.is_in_trash == False and gig.is_archived == False %}
                         <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
-                            <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
+                            {% if user_has_manage_gig_permission  %}
+                                <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
+                            {% endif %}
+                            {% if user_has_create_gig_permission  %}
+                                <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
