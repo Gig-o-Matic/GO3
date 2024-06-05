@@ -54,7 +54,7 @@ def collect_band_stats():
         ).count()
         m.register(gigcount)
 
-def register_sent_emails(band, count):
+def register_sent_emails(band, count, gig_id):
     """ recieves a collections Counter object of bands """
 
     """ add to the total emails sent by this band """
@@ -63,8 +63,8 @@ def register_sent_emails(band, count):
         defaults={
             'name' : 'Number of Emails Sent',
             'band' : band,
-            'kind' : MetricTypes.EVERY
+            'kind' : MetricTypes.EVERY,
         }
     )
-    m.register(count)
+    m.register(count, gig_id)
 

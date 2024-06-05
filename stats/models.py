@@ -32,10 +32,10 @@ class Metric(models.Model):
     kind = models.IntegerField(
         choices=MetricTypes.choices, default=MetricTypes.DAILY)
 
-    def register(self, val):
+    def register(self, val, extra=None):
         if self.kind == MetricTypes.ALLTIME:
             # for this kind of metric there is only one stat
-            Stat.objects.lock_for_update().update_or_create(
+            Stat.objects.update_or_create(
                 metric=self,
                 defaults={
                     "metric":self,
@@ -67,7 +67,7 @@ class Metric(models.Model):
             obj.save(["value"])
         elif self.kind == MetricTypes.EVERY:
             # just save a stat every time
-            _ = Stat.objects.create(metric=self, value=val)
+            _ = Stat.objects.create(metric=self, value=val, extra=extra)
 
     def latest_value(self):
         if self.kind == MetricTypes.EVERY:
@@ -105,6 +105,7 @@ class Stat(models.Model):
         BandMetric, related_name="stats", on_delete=models.CASCADE, null=False)
     created = models.DateField(auto_now_add=True)
     value = models.IntegerField(blank=True, default=0)
+    extra = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return "Stat of '{0}' created {1}".format(self.metric, self.created)
