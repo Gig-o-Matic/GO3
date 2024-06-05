@@ -56,6 +56,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['the_user_is_band_admin'] = has_band_admin(
             self.request.user, self.object.band)
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
+            self.request.user, self.object.band) or self.object.creator == self.request.user
+        context['user_has_create_gig_permission'] = has_create_gig_permission(
             self.request.user, self.object.band)
 
         if self.object.enddate:
@@ -227,7 +229,7 @@ class DuplicateView(CreateView):
         if not self.request.user.is_authenticated:
             return self.handle_no_permission()
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.is_editor(self.request.user)
+        return has_create_gig_permission(self.request.user, gig.band)
 
     def get_context_data(self, **kwargs):
         self.original_gig = Gig.objects.get(id=self.kwargs['pk'])
