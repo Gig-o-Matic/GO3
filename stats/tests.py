@@ -17,13 +17,14 @@
 from django.core import mail
 from .models import BandMetric, Stat
 from .tasks import collect_band_stats
+from .helpers import get_emails_for_date, get_emails_for_all_bands
 from member.models import Member
 from band.models import Band, Assoc
 from gig.tests import GigTestBase
 from band.util import AssocStatusChoices
 from freezegun import freeze_time
-from datetime import timedelta
-from django.utils import timezone
+from datetime import datetime, timedelta
+from django.db.models import Sum
 
 class StatsTest(GigTestBase):
 
@@ -69,7 +70,7 @@ class StatsTest(GigTestBase):
 
         self.add_members(1)
         # add a new one for the next day
-        with freeze_time(timezone.now() + timedelta(days=1)):
+        with freeze_time(datetime.now() + timedelta(days=1)):
             collect_band_stats()
 
         m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
@@ -114,37 +115,12 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
 
         self.create_gig_form(contact=self.joeuser, call_date="01/03/2100")
-        with freeze_time(timezone.now() + timedelta(days=1)): # count again tomorrow
+        with freeze_time(datetime.now() + timedelta(days=1)): # count again tomorrow
             collect_band_stats()
         m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
         self.assertEqual(m.stats.count(),2)  # should now be two
         self.assertEqual(m.stats.order_by('created').last().value,2)
 
-    def test_all_time_members(self):
-        Member.objects.all().delete()  # start from scratch
-        _, assocs = self.add_members(10)
-        assocs[0].status = AssocStatusChoices.NOT_CONFIRMED
-        assocs[0].save()
-        collect_band_stats()
-        m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value, 9)
-
-        # check the aggregate version
-        b2 = Band.objects.create(
-            name="test band 2",
-            timezone="UTC",
-        )
-
-        # add a bunch of unassociated members
-        self.add_members(10, b2)
-
-        collect_band_stats()
-
-        m = BandMetric.objects.get(name='Number of Active Members', band=None)
-        self.assertEqual(m.stats.count(),1)
-        self.assertEqual(m.stats.first().value, 19)
-    
     
     def test_email_stats(self):
         self.assoc_joe_and_create_gig()
@@ -158,7 +134,9 @@ class StatsTest(GigTestBase):
         self.assertEqual(len(mail.outbox), 3)  # just to joe
 
         m = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
-        self.assertEqual(m.stats.first().value, 3)
+        self.assertEqual(m.stats.count(),3)
+        self.assertEqual(m.stats.filter(
+            created=datetime.now()).aggregate(Sum('value'))['value__sum'], 3)
 
         # check the aggregate version
         b2 = Band.objects.create(
@@ -173,26 +151,22 @@ class StatsTest(GigTestBase):
         m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
         self.assertEqual(m.stats.first().value, 10)
 
-        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
-        self.assertEqual(m.stats.first().value, 13)
-
         self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
-        self.assertEqual(len(mail.outbox),23)
-
-        m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
-        self.assertEqual(m.stats.first().value, 20)
-
-        m = BandMetric.objects.get(name='Number of Emails Sent', band=None)
-        self.assertEqual(m.stats.first().value, 23)
+        self.assertEqual(m.stats.count(),2)
+        self.assertEqual(m.stats.filter(
+            created=datetime.now()).aggregate(Sum('value'))['value__sum'], 20)
 
         # test sending more tomorrow
-        with freeze_time(timezone.now() + timedelta(days=1)): # count again tomorrow
+        with freeze_time(datetime.now() + timedelta(days=1)): # count again tomorrow
             self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
         
         m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
-        self.assertEqual(len(m.stats.all()),2)
-        self.assertTrue(len(m.stats.filter(created=timezone.now().date())),1)
-
+        self.assertEqual(len(m.stats.all()),3)
+        self.assertEqual(m.stats.filter(
+            created=datetime.now() + timedelta(days=1)).aggregate(Sum('value'))['value__sum'], 10)
+        
+        self.assertEqual(m.latest_value()[0], 10)
+        self.assertEqual(m.total_value(), 30)
 
     def test_no_stats(self):
         self.assoc_joe_and_create_gig()
@@ -205,3 +179,48 @@ class StatsTest(GigTestBase):
         Stat.objects.all().delete()
         m2 = BandMetric.objects.get(name='Number of Emails Sent', band=self.band)
         self.assertEqual(len(m2.stats.all()),0)
+
+    def test_collect_all_data(self):
+        """ want to test the helpers that count all gigs over time and email stats """
+
+        # get rid of our band
+        self.band.delete()
+
+        # set up a bunch of bands
+        band_count = 8
+        member_count = 3
+
+        the_bands=[]
+        for x in range(0,band_count):
+            b = Band.objects.create(
+                name=f'test band {x}',
+                timezone="UTC",
+                anyone_can_create_gigs=True,
+            )
+            self.add_members(member_count,b)
+            the_bands.append(b)
+
+        # now make all the odd number ones send a bunch of emails
+        emails_sent = 0
+        for i in range(1,band_count,2):
+            b = the_bands[i]
+            m = b.confirmed_members[0]
+            for j in range(0,i):
+                with freeze_time(datetime.now() + timedelta(days=j)):
+                    self.create_gig_form(user=m, contact=m, call_date="01/03/2100", band=b)
+            emails_sent += len(b.confirmed_members) * (j+1)
+            self.assertEqual(emails_sent,len(mail.outbox))
+
+        # ok. check all email
+        self.assertEqual(get_emails_for_date(),emails_sent)
+        self.assertEqual(get_emails_for_date(datetime.now() + timedelta(days=0)),(band_count/2)*member_count)
+        self.assertEqual(get_emails_for_date(datetime.now() + timedelta(days=1)),((band_count/2)-1)*member_count)
+
+        # now get the top offenders
+        offenders = get_emails_for_all_bands()
+        self.assertEqual(len(offenders),band_count/2) # only half of the bands sent email
+        self.assertEqual(offenders[0][0].name,f'test band {band_count-1}')
+        offenders2 = get_emails_for_all_bands(3)
+        self.assertEqual(len(offenders2),3)
+        self.assertEqual(offenders[0],offenders2[0])
+

@@ -15,14 +15,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.db import models
 from band.models import Band
-from django.utils import timezone
+from django.db import models
+from django.db.models import Sum
+from datetime import datetime
 
 class MetricTypes(models.IntegerChoices):
     DAILY = 0, "Daily"
     ALLTIME = 1, "All Time"
     DAILY_ACCUMULATE = 2, "Daily Accumulate"
+    EVERY = 3, "Every"
 
 
 class Metric(models.Model):
@@ -32,20 +34,59 @@ class Metric(models.Model):
 
     def register(self, val):
         if self.kind == MetricTypes.ALLTIME:
-            self.stats.all().delete()
+            # for this kind of metric there is only one stat
+            Stat.objects.lock_for_update().update_or_create(
+                metric=self,
+                defaults={
+                    "metric":self,
+                    "value":val
+                },
+            )
         elif self.kind == MetricTypes.DAILY:
-            # see if we already have one for today
-            now = timezone.now().date()
-            self.stats.filter(created=now).delete()
+            # for this kind of metric there's one for each day
+            now = datetime.now().date()
+            Stat.objects.update_or_create(
+                metric=self,
+                created=now,
+                defaults={
+                    "metric":self,
+                    "value":val
+                },
+            )
         elif self.kind == MetricTypes.DAILY_ACCUMULATE:
             # see if we already have one for today
-            now = timezone.now().date()
-            stat = self.stats.filter(created=now).first()
-            if stat:
-                val += stat.value
-                stat.delete()
-        s = Stat(metric=self, value=val)
-        s.save()
+            now = datetime.now().date()
+            obj, _ = Stat.objects.get_or_create(
+                metric=self,
+                created=now,
+                defaults={
+                    "metric":self,
+                }
+            )
+            obj.value = val
+            obj.save(["value"])
+        elif self.kind == MetricTypes.EVERY:
+            # just save a stat every time
+            _ = Stat.objects.create(metric=self, value=val)
+
+    def latest_value(self):
+        if self.kind == MetricTypes.EVERY:
+            # find out the last time we did any collecting
+            s = self.stats.latest('created')
+            # sum up all of the stats
+            return self.stats.filter(created=s.created).aggregate(Sum('value'))['value__sum'], s.created
+        else:
+            s = self.stats.latest('created')
+            return s.value, s.created
+        
+    def total_value(self):
+        if self.kind == MetricTypes.EVERY:
+            # sum up all of the stats
+            return self.stats.aggregate(Sum('value'))['value__sum']
+        else:
+            # for other types, it's the same - just return the latest since they're aggregates
+            s = self.stats.latest('created')
+            return s.value
 
     def __str__(self):
         return "{0}".format(self.name)

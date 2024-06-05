@@ -9,17 +9,16 @@
     <div class="page-header mx-auto col-lg-8 col-md-10 col-sm-12">
         {% trans "Gig-O-Matic Stats" %} - {{url_base}}
     </div>
+</div>
+<div>
     <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
         {% for stat in the_stats %}
         <div class="row" style="padding-top: 5px; {% cycle '' 'background:#f5f5f5;' %}">
             <div class="col-3">
-                {% trans stat.name %}
+                {{ stat.0 }}
             </div>
             <div class="col-3">
-                {{ stat.value }}
-            </div>
-            <div class="col-3">
-                {{ stat.date|date:"D d M Y" }}
+                {{ stat.1 }}
             </div>
         </div>
     {% endfor %}
@@ -31,6 +30,22 @@
         <div class="col-12" id="bandcharts" data-charts='{{gigs_over_time_data}}'></div>
     </div>        
 </div>
+&nbsp;
+<div>
+    <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
+        {% for stat in emails_all_bands %}
+        <div class="row" style="padding-top: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+            <div class="col-3">
+                {{ stat.0 }}
+            </div>
+            <div class="col-3">
+                {{ stat.1 }}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+
 
 {% endblock content %}
 
