@@ -942,7 +942,10 @@ class GigTest(GigTestBase):
         return obj
 
     def test_duplicate_gig(self):
-        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.band.anyone_can_create_gigs = False
+        self.band.save()
+
+        g1, _, _ = self.assoc_joe_and_create_gig(user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 1)
 
         _ = self.duplicate_gig_form(
