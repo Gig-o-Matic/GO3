@@ -17,8 +17,8 @@
 
 from band.models import Band
 from django.db import models
-from django.utils import timezone
 from django.db.models import Sum
+from datetime import datetime
 
 class MetricTypes(models.IntegerChoices):
     DAILY = 0, "Daily"
@@ -44,7 +44,7 @@ class Metric(models.Model):
             )
         elif self.kind == MetricTypes.DAILY:
             # for this kind of metric there's one for each day
-            now = timezone.now().date()
+            now = datetime.now().date()
             Stat.objects.update_or_create(
                 metric=self,
                 created=now,
@@ -55,7 +55,7 @@ class Metric(models.Model):
             )
         elif self.kind == MetricTypes.DAILY_ACCUMULATE:
             # see if we already have one for today
-            now = timezone.now().date()
+            now = datetime.now().date()
             obj, _ = Stat.objects.get_or_create(
                 metric=self,
                 created=now,

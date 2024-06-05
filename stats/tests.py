@@ -24,7 +24,6 @@ from gig.tests import GigTestBase
 from band.util import AssocStatusChoices
 from freezegun import freeze_time
 from datetime import datetime, timedelta
-from django.utils import timezone
 from django.db.models import Sum
 
 class StatsTest(GigTestBase):
@@ -71,7 +70,7 @@ class StatsTest(GigTestBase):
 
         self.add_members(1)
         # add a new one for the next day
-        with freeze_time(timezone.now() + timedelta(days=1)):
+        with freeze_time(datetime.now() + timedelta(days=1)):
             collect_band_stats()
 
         m = BandMetric.objects.get(name='Number of Active Members', band=self.band)
@@ -116,7 +115,7 @@ class StatsTest(GigTestBase):
         self.assertEqual(m.stats.count(),1)
 
         self.create_gig_form(contact=self.joeuser, call_date="01/03/2100")
-        with freeze_time(timezone.now() + timedelta(days=1)): # count again tomorrow
+        with freeze_time(datetime.now() + timedelta(days=1)): # count again tomorrow
             collect_band_stats()
         m = BandMetric.objects.get(name='Number of Gigs', band=self.band)
         self.assertEqual(m.stats.count(),2)  # should now be two
@@ -158,7 +157,7 @@ class StatsTest(GigTestBase):
             created=datetime.now()).aggregate(Sum('value'))['value__sum'], 20)
 
         # test sending more tomorrow
-        with freeze_time(timezone.now() + timedelta(days=1)): # count again tomorrow
+        with freeze_time(datetime.now() + timedelta(days=1)): # count again tomorrow
             self.create_gig_form(user=members[0], contact=members[0], call_date="01/03/2100", band=b2)
         
         m = BandMetric.objects.get(name='Number of Emails Sent', band=b2)
@@ -207,15 +206,15 @@ class StatsTest(GigTestBase):
             b = the_bands[i]
             m = b.confirmed_members[0]
             for j in range(0,i):
-                with freeze_time(timezone.now() + timedelta(days=j)):
+                with freeze_time(datetime.now() + timedelta(days=j)):
                     self.create_gig_form(user=m, contact=m, call_date="01/03/2100", band=b)
             emails_sent += len(b.confirmed_members) * (j+1)
             self.assertEqual(emails_sent,len(mail.outbox))
 
         # ok. check all email
         self.assertEqual(get_emails_for_date(),emails_sent)
-        self.assertEqual(get_emails_for_date(timezone.now() + timedelta(days=0)),(band_count/2)*member_count)
-        self.assertEqual(get_emails_for_date(timezone.now() + timedelta(days=1)),((band_count/2)-1)*member_count)
+        self.assertEqual(get_emails_for_date(datetime.now() + timedelta(days=0)),(band_count/2)*member_count)
+        self.assertEqual(get_emails_for_date(datetime.now() + timedelta(days=1)),((band_count/2)-1)*member_count)
 
         # now get the top offenders
         offenders = get_emails_for_all_bands()
