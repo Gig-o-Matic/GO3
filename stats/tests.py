@@ -188,7 +188,8 @@ class StatsTest(GigTestBase):
         self.band.delete()
 
         # set up a bunch of bands
-        band_count = 12
+        band_count = 8
+        member_count = 3
 
         the_bands=[]
         for x in range(0,band_count):
@@ -197,7 +198,7 @@ class StatsTest(GigTestBase):
                 timezone="UTC",
                 anyone_can_create_gigs=True,
             )
-            self.add_members(10,b)
+            self.add_members(member_count,b)
             the_bands.append(b)
 
         # now make all the odd number ones send a bunch of emails
@@ -213,13 +214,13 @@ class StatsTest(GigTestBase):
 
         # ok. check all email
         self.assertEqual(get_emails_for_date(),emails_sent)
-        self.assertEqual(get_emails_for_date(timezone.now() + timedelta(days=0)),(band_count/2)*10)
-        self.assertEqual(get_emails_for_date(timezone.now() + timedelta(days=1)),((band_count/2)-1)*10)
+        self.assertEqual(get_emails_for_date(timezone.now() + timedelta(days=0)),(band_count/2)*member_count)
+        self.assertEqual(get_emails_for_date(timezone.now() + timedelta(days=1)),((band_count/2)-1)*member_count)
 
         # now get the top offenders
         offenders = get_emails_for_all_bands()
         self.assertEqual(len(offenders),band_count/2) # only half of the bands sent email
-        self.assertEqual(offenders[0][0].id,band_count+1)  # there was an extra one we deleted
+        self.assertEqual(offenders[0][0].name,f'test band {band_count-1}')
         offenders2 = get_emails_for_all_bands(3)
         self.assertEqual(len(offenders2),3)
         self.assertEqual(offenders[0],offenders2[0])
