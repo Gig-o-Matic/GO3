@@ -183,7 +183,8 @@ def send_emails_from_plans(plans_query, template, dates=None):
     send_messages_async(email_from_plan(p, template, dates) for p in contactable)
 
     # do this as a counter even though any specific call of this will be for a single band.
-    register_sent_emails(Counter(p.gig.band for p in contactable))
+    if contactable.count():
+        register_sent_emails(contactable.first().gig.band, contactable.count())
 
 def send_email_from_gig(gig, template, dates=None):
     send_emails_from_plans(gig.member_plans, template, dates)

@@ -54,21 +54,17 @@ def collect_band_stats():
         ).count()
         m.register(gigcount)
 
-def async_register_sent_emails(counter):
-    async_task('stats.tasks.register_sent_emails', counter)
-
-def register_sent_emails(counter):
+def register_sent_emails(band, count):
     """ recieves a collections Counter object of bands """
 
-    for k, v in counter.items():
-        """ add to the total emails sent by this band """
-        m, _ = BandMetric.objects.get_or_create(
-            name='Number of Emails Sent', band=k,
-            defaults={
-                'name' : 'Number of Emails Sent',
-                'band' : k,
-                'kind' : MetricTypes.EVERY
-            }
-        )
-        m.register(v)
+    """ add to the total emails sent by this band """
+    m, _ = BandMetric.objects.get_or_create(
+        name='Number of Emails Sent', band=band,
+        defaults={
+            'name' : 'Number of Emails Sent',
+            'band' : band,
+            'kind' : MetricTypes.EVERY
+        }
+    )
+    m.register(count)
 

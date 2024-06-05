@@ -224,3 +224,16 @@ class StatsTest(GigTestBase):
         self.assertEqual(len(offenders2),3)
         self.assertEqual(offenders[0],offenders2[0])
 
+    def test_send_no_emails(self):
+        _, a, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(len(mail.outbox), 1)  # just to joe
+        self.assertEqual(get_emails_for_date(),1)
+        self.assertEqual(Stat.objects.count(),1)
+
+        a.email_me = False
+        a.save()
+
+        self.assertEqual(get_emails_for_date(),1)
+        self.assertEqual(Stat.objects.count(),1)
+
+
