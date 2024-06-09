@@ -8,7 +8,7 @@ function initStats(container) {
     }
     Highcharts.chart(container, {
         title: {
-            text: 'Gigs Over Time'
+            text: 'Scheduled Gigs'
         },
         xAxis: {
             title: {

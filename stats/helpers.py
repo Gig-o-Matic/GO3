@@ -70,17 +70,25 @@ def get_emails_for_date(date=None, band=None):
         args['created'] = date
 
     if band:
-        args['band'] = band
+        args['metric__band'] = band
 
     val = Stat.objects.filter(**args).aggregate(Sum('value'))['value__sum']
 
     return val if val else 0
 
 def get_emails_for_all_bands(maxnum=None):
-    x = Stat.objects.filter(metric__name='Number of Emails Sent').values('metric__band').annotate(emails=Sum('value'))
-    the_list = [[Band.objects.get(id=s['metric__band']),s['emails']] for s in x]
-    the_list.sort(key = lambda d: -d[1])
+    """ returns list of [band, all-time-emails-sent, today-emails-sent]"""
+    
+    x = Stat.objects.filter(metric__name='Number of Emails Sent').values('metric__band').annotate(emails=Sum('value')).order_by('-emails')
     if maxnum:
-        return the_list[:maxnum]
-    else:
-        return the_list
+        x = x[:maxnum]
+
+    the_list = []
+    today = datetime.now().date()
+    for s in x:
+        """ get emails for today for the band """
+        band = Band.objects.get(id=s['metric__band'])
+        now = get_emails_for_date(date=today, band=band)
+        the_list.append([band, s['emails'], now])
+
+    return the_list
