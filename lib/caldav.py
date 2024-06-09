@@ -56,7 +56,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
 
     def _make_summary(event):
         """ makes the summary: the title, plus band name and status """
-        return f'{event.band.name}:{event.title} ({GigStatusChoices(event.status).label})'
+        return f'{event.title} ({GigStatusChoices(event.status).label}) - {event.band.name}'
 
     def _make_description(event):
         """ description is the details, plus the setlist """
