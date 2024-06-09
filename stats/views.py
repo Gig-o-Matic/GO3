@@ -23,8 +23,8 @@ class AllStatsView(LoginRequiredMixin, TemplateView):
         context['gigs_over_time_data'] = json.dumps(get_all_gigs_over_time_stats(), default=dateconverter)
 
         # get the email totals for all bands
-        data = get_emails_for_all_bands()
-        y = [[x[0].name, x[1]] for x in data]
-        context['emails_all_bands'] = y
+        data = get_emails_for_all_bands(10)
+        y = [[x[0].name, x[1],x[2]] for x in data]
+        context['top_email_bands'] = y
 
         return context
