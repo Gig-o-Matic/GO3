@@ -19,7 +19,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from member.util import AgendaChoices
+from member.util import AgendaChoices, AgendaLayoutChoices, AgendaPanelTypes
 from band.models import Assoc
 from band.util import AssocStatusChoices
 from datetime import datetime
@@ -53,6 +53,18 @@ class AgendaView(AgendaBaseView):
         if self.request.user.assocs.count() > 0:
             b = self.request.user.assocs.first().band
             timezone.activate(b.timezone)
+
+        # Depending on the layout they want, send different instructions
+        layout = self.request.user.preferences.agenda_layout
+        the_panes = []
+        if layout == AgendaLayoutChoices.ONE_LIST:
+            the_panes=[[int(AgendaPanelTypes.ONE_LIST),0]]
+        elif layout == AgendaLayoutChoices.NEED_RESPONSE:
+            the_panes=[[int(AgendaPanelTypes.NEEDS_RESPONSE),0], [int(AgendaPanelTypes.HAS_RESPONSE),0]]
+        else:
+            the_bands = self.request.user.confirmed_assocs.exclude(hide_from_schedule=True).values_list("id", flat=True)
+            the_panes=[[int(AgendaPanelTypes.ONE_BAND), b] for b in the_bands]
+        context['the_panes'] = the_panes
 
         return context
 

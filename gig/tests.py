@@ -192,6 +192,18 @@ class GigTestBase(TestCase):
         p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
 
+    def add_members(self,num,band=None):
+        c = Member.objects.count()
+        members = []
+        assocs = []
+        if band is None:
+            band = self.band
+        for i in range(c,num+c):
+            m = Member.objects.create_user(email=f'member{i}@b.c')
+            members.append(m)
+            a = Assoc.objects.create(member=m, band=band, status=AssocStatusChoices.CONFIRMED)
+            assocs.append(a)
+        return members, assocs
 
 class GigTest(GigTestBase):
     def test_no_section(self):

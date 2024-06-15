@@ -17,37 +17,16 @@
         </div>
     </div>
 </div>
-{% include 'agenda/hidden_bands_info.html' %}
-<div class="row">
-    <div class="mx-auto col-md-10 col-12">
-        <div class="card mb-4">
-            <div class="card-header">
-                <div class="row titlerow">
-                    <div class="col-12">
-                        {% trans "Future Gigs: Weigh In!" %}
-                    </div>
-                </div>
-            </div>
-            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs' the_type='noplans' page=1 %}" hx-trigger="load">
-                <i class="fas fa-spinner fa-pulse fa-lg"></i>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <div class="row titlerow">
-                    <div class="col-8">
-                        {% trans "Upcoming Gigs" %}
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div hx-get="{% url 'agenda-gigs' the_type='plans' page=1 %}" hx-trigger="load">
-                    <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="row mt-4">
+
 </div>
+{% include 'agenda/hidden_bands_info.html' %}
+
+{% for the_pane in the_panes %}
+    <div class="row" hx-get="{% url 'agenda-gigs' the_type=the_pane.0 the_band=the_pane.1 %}" hx-trigger="load">
+        <i class="fas fa-spinner fa-pulse fa-lg"></i>
+    </div>
+{% endfor %}
 
 {% endblock content %}
 

@@ -159,7 +159,7 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-        'calendar_show_only_committed']
+        'calendar_show_only_committed', 'agenda_layout']
 
     def get_object(self, queryset=None):
             m = Member.objects.get(id=self.kwargs['pk'])

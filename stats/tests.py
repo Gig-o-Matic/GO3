@@ -28,19 +28,6 @@ from django.db.models import Sum
 
 class StatsTest(GigTestBase):
 
-    def add_members(self,num,band=None):
-        c = Member.objects.count()
-        members = []
-        assocs = []
-        if band is None:
-            band = self.band
-        for i in range(c,num+c):
-            m = Member.objects.create_user(email=f'member{i}@b.c')
-            members.append(m)
-            a = Assoc.objects.create(member=m, band=band, status=AssocStatusChoices.CONFIRMED)
-            assocs.append(a)
-        return members, assocs
-
     def test_band_member_stat(self):
         """ show that we collect band member stats properly """
         Member.objects.all().delete()  # start from scratch
