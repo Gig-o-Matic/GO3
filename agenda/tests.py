@@ -162,13 +162,13 @@ class AgendaTest(GigTestBase):
         # test single list with all bands
         a2.hide_from_schedule = False
         a2.save()
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.ONE_LIST, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.ONE_LIST, 0)
         self.assertEqual(len(the_list), 6)
 
         # test single list with a hidden band
         a2.hide_from_schedule = True
         a2.save()
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.ONE_LIST, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.ONE_LIST, 0)
         self.assertEqual(len(the_list), 3)
 
         a2.hide_from_schedule = False
@@ -181,29 +181,29 @@ class AgendaTest(GigTestBase):
         p.status = PlanStatusChoices.DEFINITELY
         p.save()
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.NEEDS_RESPONSE, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.NEEDS_RESPONSE, 0)
         self.assertEqual(len(the_list), 5)
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.HAS_RESPONSE, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.HAS_RESPONSE, 0)
         self.assertEqual(len(the_list), 1)
 
         # test ditto with hidden band
         a2.hide_from_schedule = True
         a2.save()
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.NEEDS_RESPONSE, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.NEEDS_RESPONSE, 0)
         self.assertEqual(len(the_list), 2)
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.HAS_RESPONSE, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.HAS_RESPONSE, 0)
         self.assertEqual(len(the_list), 1)
 
         a1.hide_from_schedule = True
         a1.save()
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.NEEDS_RESPONSE, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.NEEDS_RESPONSE, 0)
         self.assertEqual(len(the_list), 0)
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.HAS_RESPONSE, 0)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.HAS_RESPONSE, 0)
         self.assertEqual(len(the_list), 0)
 
         a1.hide_from_schedule = False
@@ -212,20 +212,20 @@ class AgendaTest(GigTestBase):
         a2.save()
 
         # test split by band
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b1.id)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b1.id)
         self.assertEqual(len(the_list), 3)
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b2.id)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b2.id)
         self.assertEqual(len(the_list), 3)
 
         # test ditto with hidden band
         a2.hide_from_schedule = True
         a2.save()
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b1.id)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b1.id)
         self.assertEqual(len(the_list), 3)
 
-        the_list, the_title = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b2.id)
+        the_list, _ = _get_agenda_plans(joe, AgendaPanelTypes.ONE_BAND, b2.id)
         self.assertEqual(len(the_list), 0)
 
 

@@ -37,7 +37,7 @@ Add the day of week to the short_date_format - can just append D?
     </div>
     <div class="col-sm-12 col-md-5">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
-        {% if user.band_count > 1 %}
+        {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
             {% if band.shortname %}
                 ({{ band.shortname }})

@@ -25,6 +25,7 @@ from pytz import timezone as pytz_timezone
 from datetime import timedelta
 
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from gig.models import Gig, Plan, GigStatusChoices
 from band.models import Band, Assoc, Section
@@ -49,28 +50,35 @@ def _get_agenda_plans(user, the_type, the_band):
         # get all plans except those that should be hidden
         the_plans = Plan.member_plans.future_plans(user)
         the_plans = the_plans.filter(assoc__hide_from_schedule=False)
-        the_title = "All Gigs"
+        the_title = _("Upcoming Gigs")
     elif the_type == AgendaPanelTypes.HAS_RESPONSE:
         the_plans = user.future_plans.all()
-        the_title = "Upcoming Gigs"
+        the_title = _("Upcoming Gigs")
     elif the_type == AgendaPanelTypes.NEEDS_RESPONSE:
         the_plans = user.future_noplans.all()
-        the_title = "Weigh In"
+        the_title = _("Future Gigs: Weigh In!")
     else:
         # the type is actually the band ID
         the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
-        the_title = f"Gigs for {Band.objects.get(id=the_band).name}"
+        the_title = Band.objects.get(id=the_band).name
 
     return the_plans, the_title
 
 
 @login_required
-def agenda_gigs(request, the_type, the_band):
+def agenda_gigs(request, the_type, the_band=None):
 
     the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
 
     if the_plans:
-        return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'plans': the_plans, 'title': the_title})
+        return render(request, 'agenda/agenda_gigs.html', 
+                        {
+                            'the_colors:': the_colors,
+                            'plans': the_plans,
+                            'title': the_title,
+                            'single_band': the_type == AgendaPanelTypes.ONE_BAND,
+                        }
+                      )
     else:
         return HttpResponse()
 
