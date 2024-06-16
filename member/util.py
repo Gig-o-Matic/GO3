@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 class MemberStatusChoices(models.IntegerChoices):
     ACTIVE = 0, "Active"
@@ -27,9 +28,9 @@ class AgendaChoices(models.IntegerChoices):
     CALENDAR = 2, "Calendar"
 
 class AgendaLayoutChoices(models.IntegerChoices):
-    NEED_RESPONSE = 0, "Need Response"
-    BY_BAND = 1, "By Band"
-    ONE_LIST = 2, "Single List"
+    NEED_RESPONSE = 0, _("Weigh In")
+    BY_BAND = 1, _("By Band")
+    ONE_LIST = 2, _("Single List")
 
 # Types of panels for the agenda page. Any other value is the ID of a band to show
 class AgendaPanelTypes(models.IntegerChoices):
