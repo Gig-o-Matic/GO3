@@ -62,7 +62,7 @@ class AgendaView(AgendaBaseView):
         elif layout == AgendaLayoutChoices.NEED_RESPONSE:
             the_panes=[[int(AgendaPanelTypes.NEEDS_RESPONSE),0], [int(AgendaPanelTypes.HAS_RESPONSE),0]]
         else:
-            the_bands = self.request.user.confirmed_assocs.exclude(hide_from_schedule=True).values_list("id", flat=True)
+            the_bands = self.request.user.confirmed_assocs.exclude(hide_from_schedule=True).values_list("band__id", flat=True)
             the_panes=[[int(AgendaPanelTypes.ONE_BAND), b] for b in the_bands]
         context['the_panes'] = the_panes
 

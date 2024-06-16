@@ -79,10 +79,7 @@ def agenda_gigs(request, the_type, the_band=None):
 
     the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
 
-    if the_title is None: # something went wrong
-        return redirect('home')
-
-    if the_plans:
+    if the_plans or the_type==AgendaPanelTypes.ONE_BAND:
         return render(request, 'agenda/agenda_gigs.html', 
                         {
                             'the_colors:': the_colors,

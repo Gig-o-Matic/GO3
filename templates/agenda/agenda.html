@@ -22,11 +22,25 @@
 </div>
 {% include 'agenda/hidden_bands_info.html' %}
 
-{% for the_pane in the_panes %}
-    <div class="row" hx-get="{% url 'agenda-gigs' the_type=the_pane.0 the_band=the_pane.1 %}" hx-trigger="load">
-        <i class="fas fa-spinner fa-pulse fa-lg"></i>
+{% if the_panes|length %}
+
+    {% for the_pane in the_panes %}
+        <div class="row" hx-get="{% url 'agenda-gigs' the_type=the_pane.0 the_band=the_pane.1 %}" hx-trigger="load">
+            <i class="fas fa-spinner fa-pulse fa-lg"></i>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="row">
+        <div class="mx-auto col-md-10 col-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% trans "No Gigs!" %}
+                </div>
+            </div>
+        </div>
     </div>
-{% endfor %}
+
+{% endif %}
 
 {% endblock content %}
 
