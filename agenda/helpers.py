@@ -16,7 +16,7 @@
 """
 
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 import datetime
 from dateutil.parser import parse
@@ -59,8 +59,17 @@ def _get_agenda_plans(user, the_type, the_band):
         the_title = _("Future Gigs: Weigh In!")
     else:
         # the type is actually the band ID
+        try:
+            band = Band.objects.get(pk=the_band)
+            try:
+                Assoc.objects.get(band=band, member=user, status=AssocStatusChoices.CONFIRMED)
+            except Assoc.DoesNotExist:
+                return None, None
+        except Band.DoesNotExist:
+            return None, None
+
         the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
-        the_title = Band.objects.get(id=the_band).name
+        the_title = band.name
 
     return the_plans, the_title
 
@@ -69,6 +78,9 @@ def _get_agenda_plans(user, the_type, the_band):
 def agenda_gigs(request, the_type, the_band=None):
 
     the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
+
+    if the_title is None: # something went wrong
+        return redirect('home')
 
     if the_plans:
         return render(request, 'agenda/agenda_gigs.html', 
