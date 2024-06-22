@@ -159,7 +159,19 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
     fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-        'calendar_show_only_committed', 'agenda_layout']
+              'calendar_show_only_committed', 'agenda_layout']
+    
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+
+        beta = kw['instance'].member.is_beta_tester
+        if not beta and 'agenda_layout' in self.fields:
+            self.fields.remove('agenda_layout')
+        elif beta and 'agenda_layout' not in self.fields:
+            self.fields.append('agenda_layout')
+
+        return kw
+
 
     def get_object(self, queryset=None):
             m = Member.objects.get(id=self.kwargs['pk'])
