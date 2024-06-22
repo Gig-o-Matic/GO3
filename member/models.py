@@ -99,6 +99,7 @@ class Member(AbstractUser):
 
     display_name = models.CharField(max_length=200, blank=True, null=True)
 
+    # used for testing new features on a few people
     is_beta_tester = models.BooleanField(default=False)
 
     @property
