@@ -26,7 +26,7 @@
 
     {% for the_pane in the_panes %}
         <div class="row" hx-get="{% url 'agenda-gigs' the_type=the_pane.0 the_band=the_pane.1 %}" hx-trigger="load">
-            <i class="fas fa-spinner fa-pulse fa-lg"></i>
+            <i class="fas fa-spinner fa-pulse fa-lg mx-auto"></i>
         </div>
     {% endfor %}
 {% else %}
