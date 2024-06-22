@@ -99,6 +99,8 @@ class Member(AbstractUser):
 
     display_name = models.CharField(max_length=200, blank=True, null=True)
 
+    is_beta_tester = models.BooleanField(default=False)
+
     @property
     def member_name(self):
         return self.username if self.username else self.email
