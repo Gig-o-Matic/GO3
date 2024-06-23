@@ -70,7 +70,7 @@ class BandRequestView(FormView):
         if not verify_captcha(self.request):
             return redirect('home')
 
-        recipient = email.EmailRecipient(email='gigomatic.superuser@gmail.com')
+        recipient = email.EmailRecipient(email='superuser@gig-o-matic.com')
         message = email.prepare_email(recipient, 'email/band_request.md', form.cleaned_data)
         email.send_messages_async([message])
         return render(self.request, 'help/confirm_band_request.html')
