@@ -23,11 +23,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import BandRequestForm
 from lib import email
 from lib.captcha import verify_captcha, get_captcha_site_key
-from go3.settings import env, URL_BASE
+from go3.settings import env, URL_BASE, SUPERUSER_EMAIL, HELP_EMAIL
 
 @login_required
 def help(request):
-    return render(request, 'help/help.html')
+    return render(request, 'help/help.html', {'superuser_email':SUPERUSER_EMAIL})
 
 @login_required
 def privacy(request):
@@ -53,7 +53,7 @@ class CalfeedView(LoginRequiredMixin, TemplateView):
 
 
 def whatis(request):
-    return render(request, 'help/whatis.html')
+    return render(request, 'help/whatis.html', {'help_email':HELP_EMAIL})
 
 class BandRequestView(FormView):
     template_name = 'help/band_request.html'
@@ -70,7 +70,7 @@ class BandRequestView(FormView):
         if not verify_captcha(self.request):
             return redirect('home')
 
-        recipient = email.EmailRecipient(email='superuser@gig-o-matic.com')
+        recipient = email.EmailRecipient(email=SUPERUSER_EMAIL)
         message = email.prepare_email(recipient, 'email/band_request.md', form.cleaned_data)
         email.send_messages_async([message])
         return render(self.request, 'help/confirm_band_request.html')
