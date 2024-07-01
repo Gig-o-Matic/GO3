@@ -8,7 +8,7 @@
 <div class="row">
     <div class="mx-auto col-md-10 col-12">
         <div class="page-header">
-            {% trans "Schedule" %}: {% if user.nickname %}{{user.nickname}}{%else%}{{user.name}}{% endif %}
+            {% trans "Schedule" %}: {% if user.nickname %}{{user.nickname}}{%else%}{{user.username}}{% endif %}
             {% if user.preferences.default_view != 0 %}
                 <span id='default-sel'>
                     <small>(<a hx-get="{% url 'set-default-view' val=0 %}" hx-target='#default-sel' href="#">{% trans "Make this my default view!" %}</a>)</small>
@@ -17,37 +17,30 @@
         </div>
     </div>
 </div>
+<div class="row mt-4">
+
+</div>
 {% include 'agenda/hidden_bands_info.html' %}
-<div class="row">
-    <div class="mx-auto col-md-10 col-12">
-        <div class="card mb-4">
-            <div class="card-header">
-                <div class="row titlerow">
-                    <div class="col-12">
-                        {% trans "Future Gigs: Weigh In!" %}
-                    </div>
-                </div>
-            </div>
-            <div class="card-body" id="weighin-gigs" hx-get="{% url 'agenda-gigs' the_type='noplans' page=1 %}" hx-trigger="load">
-                <i class="fas fa-spinner fa-pulse fa-lg"></i>
-            </div>
+
+{% if the_panes|length %}
+
+    {% for the_pane in the_panes %}
+        <div class="row" hx-get="{% url 'agenda-gigs' the_type=the_pane.0 the_band=the_pane.1 %}" hx-trigger="load">
+            <i class="fas fa-spinner fa-pulse fa-lg mx-auto"></i>
         </div>
-        <div class="card">
-            <div class="card-header">
-                <div class="row titlerow">
-                    <div class="col-8">
-                        {% trans "Upcoming Gigs" %}
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div hx-get="{% url 'agenda-gigs' the_type='plans' page=1 %}" hx-trigger="load">
-                    <i class="fas fa-spinner fa-pulse fa-lg"></i>
+    {% endfor %}
+{% else %}
+    <div class="row">
+        <div class="mx-auto col-md-10 col-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% trans "No Gigs!" %}
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+{% endif %}
 
 {% endblock content %}
 

@@ -16,7 +16,7 @@
 """
 
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 import datetime
 from dateutil.parser import parse
@@ -25,11 +25,12 @@ from pytz import timezone as pytz_timezone
 from datetime import timedelta
 
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from gig.models import Gig, Plan, GigStatusChoices
 from band.models import Band, Assoc, Section
 from band.util import AssocStatusChoices
-from member.util import AgendaChoices
+from member.util import AgendaChoices, AgendaPanelTypes
 
 import json
 import logging
@@ -44,18 +45,51 @@ from django.core.paginator import Paginator
 PAGE_LENGTH = 10000
 
 
-@login_required
-def agenda_gigs(request, the_type=None, page=1):
-
-    if the_type == 'noplans':
-        the_plans = request.user.future_noplans.all()
+def _get_agenda_plans(user, the_type, the_band):
+    if the_type == AgendaPanelTypes.ONE_LIST:
+        # get all plans except those that should be hidden
+        the_plans = Plan.member_plans.future_plans(user)
+        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
+        the_title = _("Upcoming Gigs")
+    elif the_type == AgendaPanelTypes.HAS_RESPONSE:
+        the_plans = user.future_plans.all()
+        the_title = _("Upcoming Gigs")
+    elif the_type == AgendaPanelTypes.NEEDS_RESPONSE:
+        the_plans = user.future_noplans.all()
+        the_title = _("Future Gigs: Weigh In!")
     else:
-        the_plans = request.user.future_plans.all()
+        # the type is actually the band ID
+        try:
+            band = Band.objects.get(pk=the_band)
+            try:
+                Assoc.objects.get(band=band, member=user, status=AssocStatusChoices.CONFIRMED)
+            except Assoc.DoesNotExist:
+                return None, None
+        except Band.DoesNotExist:
+            return None, None
 
-    paginator = Paginator(the_plans, PAGE_LENGTH)
-    page_obj = paginator.get_page(page)
+        the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
+        the_title = band.name
 
-    return render(request, 'agenda/agenda_gigs.html', {'the_colors:': the_colors, 'page_obj': page_obj, 'the_type': the_type})
+    return the_plans, the_title
+
+
+@login_required
+def agenda_gigs(request, the_type, the_band=None):
+
+    the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
+
+    if the_plans or the_type==AgendaPanelTypes.ONE_BAND:
+        return render(request, 'agenda/agenda_gigs.html', 
+                        {
+                            'the_colors:': the_colors,
+                            'plans': the_plans,
+                            'title': the_title,
+                            'single_band': the_type == AgendaPanelTypes.ONE_BAND,
+                        }
+                      )
+    else:
+        return HttpResponse()
 
 
 @login_required

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-11 12:12-0400\n"
+"POT-Creation-Date: 2024-06-16 12:32-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -19,7 +19,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: band/views.py:133
+#: agenda/helpers.py:53 agenda/helpers.py:56
+msgid "Upcoming Gigs"
+msgstr ""
+
+#: agenda/helpers.py:59
+msgid "Future Gigs: Weigh In!"
+msgstr ""
+
+#: band/views.py:130
 msgid "not ever!"
 msgstr ""
 
@@ -67,17 +75,17 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: gig/forms.py:168 templates/gig/gig_detail.html:92
+#: gig/forms.py:168 templates/gig/gig_detail.html:96
 #: templates/gig/gig_detail_archived.html:73
 msgid "Call Time"
 msgstr ""
 
-#: gig/forms.py:169 templates/gig/gig_detail.html:95
+#: gig/forms.py:169 templates/gig/gig_detail.html:99
 #: templates/gig/gig_detail_archived.html:78
 msgid "Set Time"
 msgstr ""
 
-#: gig/forms.py:170 templates/gig/gig_detail.html:98
+#: gig/forms.py:170 templates/gig/gig_detail.html:102
 #: templates/gig/gig_detail_archived.html:81
 msgid "End Time"
 msgstr ""
@@ -150,12 +158,12 @@ msgstr ""
 msgid "Gig Title"
 msgstr ""
 
-#: gig/forms.py:210 gig/helpers.py:116 templates/gig/gig_detail.html:72
+#: gig/forms.py:210 gig/helpers.py:118 templates/gig/gig_detail.html:76
 #: templates/gig/gig_detail_archived.html:53
 msgid "Contact"
 msgstr ""
 
-#: gig/forms.py:211 gig/helpers.py:114
+#: gig/forms.py:211 gig/helpers.py:116
 msgid "Status"
 msgstr ""
 
@@ -167,31 +175,31 @@ msgstr ""
 msgid "Address or URL"
 msgstr ""
 
-#: gig/forms.py:219 templates/gig/gig_detail.html:133
+#: gig/forms.py:219 templates/gig/gig_detail.html:137
 #: templates/gig/gig_detail_archived.html:103
 msgid "What to Wear"
 msgstr ""
 
-#: gig/forms.py:220 templates/gig/gig_detail.html:140
+#: gig/forms.py:220 templates/gig/gig_detail.html:144
 #: templates/gig/gig_detail_archived.html:110
 msgid "Pay Deal"
 msgstr ""
 
-#: gig/forms.py:222 templates/gig/gig_detail.html:147
+#: gig/forms.py:222 templates/gig/gig_detail.html:151
 #: templates/gig/gig_detail_archived.html:117
 msgid "Leader"
 msgstr ""
 
-#: gig/forms.py:223 gig/helpers.py:137 templates/gig/gig_detail.html:154
+#: gig/forms.py:223 gig/helpers.py:139 templates/gig/gig_detail.html:158
 #: templates/gig/gig_detail_archived.html:124
 msgid "Post-gig Plans"
 msgstr ""
 
-#: gig/forms.py:224 gig/helpers.py:140
+#: gig/forms.py:224 gig/helpers.py:142
 msgid "Details"
 msgstr ""
 
-#: gig/forms.py:225 templates/gig/gig_detail.html:186
+#: gig/forms.py:225 templates/gig/gig_detail.html:190
 #: templates/gig/gig_detail_archived.html:156
 msgid "Setlist"
 msgstr ""
@@ -204,45 +212,45 @@ msgstr ""
 msgid "Include occasional members"
 msgstr ""
 
-#: gig/helpers.py:97
+#: gig/helpers.py:99
 msgid "not set"
 msgstr ""
 
-#: gig/helpers.py:131
+#: gig/helpers.py:133
 msgid "Date/Time"
 msgstr ""
 
-#: gig/helpers.py:131 gig/helpers.py:134 gig/helpers.py:137 gig/helpers.py:140
-#: gig/helpers.py:143
+#: gig/helpers.py:133 gig/helpers.py:136 gig/helpers.py:139 gig/helpers.py:142
+#: gig/helpers.py:145
 msgid "(See below.)"
 msgstr ""
 
-#: gig/helpers.py:134 templates/gig/gig_detail.html:126
+#: gig/helpers.py:136 templates/gig/gig_detail.html:130
 #: templates/gig/gig_detail_archived.html:96
 msgid "Address"
 msgstr ""
 
-#: gig/helpers.py:143
+#: gig/helpers.py:145
 msgid "What To Wear"
 msgstr ""
 
-#: gig/helpers.py:164 member/views.py:273 member/views.py:278
+#: gig/helpers.py:166 member/views.py:273 member/views.py:278
 #: member/views.py:282
 msgid ", "
 msgstr ""
 
-#: gig/models.py:131 gig/util.py:30 templates/gig/gig_detail.html:47
+#: gig/models.py:131 gig/util.py:30 templates/gig/gig_detail.html:51
 #: templates/gig/gig_detail_archived.html:41
 msgid "Unconfirmed"
 msgstr ""
 
-#: gig/models.py:131 templates/gig/gig_detail.html:43
+#: gig/models.py:131 templates/gig/gig_detail.html:47
 #: templates/gig/gig_detail_archived.html:37
 msgid "Confirmed!"
 msgstr ""
 
 #: gig/models.py:131 templates/agenda/agenda_plan_edit.html:91
-#: templates/gig/gig_detail.html:45 templates/gig/gig_detail_archived.html:39
+#: templates/gig/gig_detail.html:49 templates/gig/gig_detail_archived.html:39
 msgid "Canceled!"
 msgstr ""
 
@@ -353,7 +361,7 @@ msgstr ""
 msgid "former member"
 msgstr "Plans"
 
-#: member/models.py:79 member/models.py:246
+#: member/models.py:79 member/models.py:250
 #, fuzzy
 #| msgid "confirm_email_address_email"
 msgid "email address"
@@ -384,7 +392,7 @@ msgstr "Plans"
 msgid "Hide canceled gigs"
 msgstr ""
 
-#: member/models.py:229 templates/registration/login.html:49
+#: member/models.py:229 templates/registration/login.html:50
 msgid "Language"
 msgstr ""
 
@@ -412,7 +420,11 @@ msgstr ""
 msgid "Show gig time on schedule"
 msgstr ""
 
-#: member/models.py:260
+#: member/models.py:237
+msgid "Schedule page layout"
+msgstr ""
+
+#: member/models.py:264
 #, fuzzy
 #| msgid "new_gig_email"
 msgid "new email"
@@ -431,6 +443,18 @@ msgstr ""
 "\n"
 "Thanks,\n"
 "The Gig-o-Matic Team"
+
+#: member/util.py:31
+msgid "Weigh In"
+msgstr ""
+
+#: member/util.py:32
+msgid "By Band"
+msgstr ""
+
+#: member/util.py:33
+msgid "Single List"
+msgstr ""
 
 #: member/views.py:97
 msgid "You have selected a new email address - check your inbox to verify!"
@@ -481,15 +505,7 @@ msgstr ""
 msgid "Make this my default view!"
 msgstr ""
 
-#: templates/agenda/agenda.html:27
-msgid "Future Gigs: Weigh In!"
-msgstr ""
-
-#: templates/agenda/agenda.html:39
-msgid "Upcoming Gigs"
-msgstr ""
-
-#: templates/agenda/agenda_gigs.html:19
+#: templates/agenda/agenda_gigs.html:23
 msgid "No Gigs!"
 msgstr ""
 
@@ -560,7 +576,7 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
-#: templates/band/band_detail.html:32 templates/gig/gig_detail.html:27
+#: templates/band/band_detail.html:32 templates/gig/gig_detail.html:28
 #: templates/member/member_detail.html:26
 #: templates/member/member_detail.html:182
 msgid "Edit"
@@ -720,7 +736,7 @@ msgstr ""
 msgid "Band Navigator"
 msgstr ""
 
-#: templates/band/band_section_members.html:7 templates/gig/gig_detail.html:259
+#: templates/band/band_section_members.html:7 templates/gig/gig_detail.html:263
 #: templates/gig/gig_detail_archived.html:185
 #: templates/gig/gig_print_planlist.html:50
 msgid "No Section"
@@ -876,68 +892,68 @@ msgstr ""
 msgid "Gig Info"
 msgstr ""
 
-#: templates/gig/gig_detail.html:28
+#: templates/gig/gig_detail.html:31
 msgid "Duplicate"
 msgstr ""
 
-#: templates/gig/gig_detail.html:35 templates/gig/gig_detail_archived.html:29
+#: templates/gig/gig_detail.html:39 templates/gig/gig_detail_archived.html:29
 msgid "Gig"
 msgstr ""
 
-#: templates/gig/gig_detail.html:50 templates/gig/gig_detail_archived.html:44
+#: templates/gig/gig_detail.html:54 templates/gig/gig_detail_archived.html:44
 msgid "Hidden From Public Page and Feed"
 msgstr ""
 
-#: templates/gig/gig_detail.html:58
+#: templates/gig/gig_detail.html:62
 msgid "THIS GIG IS IN THE TRASH!"
 msgstr ""
 
-#: templates/gig/gig_detail.html:61
+#: templates/gig/gig_detail.html:65
 msgid "Restore Gig"
 msgstr ""
 
-#: templates/gig/gig_detail.html:68 templates/gig/gig_detail_archived.html:49
+#: templates/gig/gig_detail.html:72 templates/gig/gig_detail_archived.html:49
 msgid "Band"
 msgstr ""
 
-#: templates/gig/gig_detail.html:161 templates/gig/gig_detail_archived.html:131
+#: templates/gig/gig_detail.html:165 templates/gig/gig_detail_archived.html:131
 msgid "More Details"
 msgstr ""
 
-#: templates/gig/gig_detail.html:168 templates/gig/gig_detail_archived.html:138
+#: templates/gig/gig_detail.html:172 templates/gig/gig_detail_archived.html:138
 msgid "Occasional members were not invited."
 msgstr ""
 
-#: templates/gig/gig_detail.html:174 templates/gig/gig_detail_archived.html:144
+#: templates/gig/gig_detail.html:178 templates/gig/gig_detail_archived.html:144
 msgid "Gig is hidden from calendar."
 msgstr ""
 
-#: templates/gig/gig_detail.html:190 templates/gig/gig_detail.html:212
-#: templates/gig/gig_detail.html:216
+#: templates/gig/gig_detail.html:194 templates/gig/gig_detail.html:216
+#: templates/gig/gig_detail.html:220
 msgid "Print"
 msgstr ""
 
-#: templates/gig/gig_detail.html:208 templates/gig/gig_detail_archived.html:174
+#: templates/gig/gig_detail.html:212 templates/gig/gig_detail_archived.html:174
 msgid "Member Plans"
 msgstr "Plans"
 
-#: templates/gig/gig_detail.html:219
+#: templates/gig/gig_detail.html:223
 msgid "Show All"
 msgstr ""
 
-#: templates/gig/gig_detail.html:220
+#: templates/gig/gig_detail.html:224
 msgid "Show Committed"
 msgstr ""
 
-#: templates/gig/gig_detail.html:226
+#: templates/gig/gig_detail.html:230
 msgid "Remind"
 msgstr ""
 
-#: templates/gig/gig_detail.html:230
+#: templates/gig/gig_detail.html:234
 msgid "Reminder Sent"
 msgstr ""
 
-#: templates/gig/gig_detail.html:278 templates/gig/gig_detail_archived.html:204
+#: templates/gig/gig_detail.html:282 templates/gig/gig_detail_archived.html:204
 msgid "Comments"
 msgstr ""
 
@@ -1139,10 +1155,10 @@ msgstr ""
 
 #: templates/help/help.html:21
 msgid ""
-"I want to <a href=\"mailto:gigomatic.superuser@gmail.com\">hear about it</"
-"a>. Also, you can check the <a href=\"https://github.com/gig-o-matic/GO3/"
-"issues?state=open\">issues list in github</a>&mdash;what you're wishing for "
-"may already be on it."
+"I want to <a href=\"mailto:superuser@gig-o-matic.com\">hear about it</a>. "
+"Also, you can check the <a href=\"https://github.com/gig-o-matic/GO3/issues?"
+"state=open\">issues list in github</a>&mdash;what you're wishing for may "
+"already be on it."
 msgstr ""
 
 #: templates/help/help.html:23
@@ -1666,13 +1682,13 @@ msgstr ""
 msgid "Sign Up!"
 msgstr ""
 
-#: templates/registration/login.html:67
+#: templates/registration/login.html:68
 #, python-format
 msgid ""
 "Want your band on the Gig-o? Click <a href=\"%(band_request_url)s\">here</a>."
 msgstr ""
 
-#: templates/registration/login.html:69
+#: templates/registration/login.html:70
 #, python-format
 msgid ""
 "What is the Gig-o-Matic, anyway? Click <a href=\"%(whatis_url)s\">here</a>!"
@@ -1786,6 +1802,30 @@ msgstr ""
 
 #: templates/stats/stats.html:10
 msgid "Gig-O-Matic Stats"
+msgstr ""
+
+#: templates/stats/stats.html:38
+#, fuzzy
+#| msgid "confirm_email_address_email"
+msgid "Top email senders"
+msgstr ""
+"Hi there! Someone has requested to change their Gig-o-Matic ID to this email "
+"address.\n"
+"If it's you, please click the link to confirm. If not, just ignore this and "
+"it will\n"
+"go away.\n"
+"\n"
+"{0}\n"
+"\n"
+"Thanks,\n"
+"Team Gig-o-Matic"
+
+#: templates/stats/stats.html:41
+msgid "All Time"
+msgstr ""
+
+#: templates/stats/stats.html:44
+msgid "Today"
 msgstr ""
 
 #~ msgid "thumbnail_instructions"
