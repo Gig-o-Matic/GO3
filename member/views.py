@@ -158,8 +158,11 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
-    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-              'calendar_show_only_committed']
+
+    def __init__(self, **kwargs):
+        self.fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
+                'calendar_show_only_committed']
+        super().__init__(**kwargs)
     
     def dispatch(self, request, *args, **kwargs):
         if isinstance(request.user, Member) and request.user.is_beta_tester:
