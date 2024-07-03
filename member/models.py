@@ -238,6 +238,7 @@ class MemberPreferences(models.Model):
     agenda_layout = models.IntegerField(choices=AgendaLayoutChoices.choices, 
                                         default=AgendaLayoutChoices.NEED_RESPONSE, 
                                         verbose_name=_('Schedule page layout'))
+    agenda_band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
 
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)

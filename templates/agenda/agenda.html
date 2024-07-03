@@ -22,7 +22,7 @@
 <div class="row">
     <div class="mx-auto btn-group btn-group-toggle" data-toggle="buttons">
         {% for button in the_buttons %}
-            <label class="btn btn-secondary active">
+            <label class="btn btn-sm btn-secondary active">
                 <input type="radio" name="options" id="option1" {% if button.3 %}checked{% endif %}
                 hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
                 hx-target="#the-list">{{button.1}}

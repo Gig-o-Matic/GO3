@@ -68,10 +68,6 @@ def _get_agenda_plans(user, the_type, the_band):
         the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
         the_title = band.name
 
-    # make this the user's preference now
-    user.preferences.agenda_layout = the_type
-    user.preferences.save()
-
     return the_plans, the_title
 
 
@@ -79,6 +75,11 @@ def _get_agenda_plans(user, the_type, the_band):
 def agenda_gigs(request, the_type, the_band=None):
 
     the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
+
+    # make this the user's preference now
+    request.user.preferences.agenda_layout = the_type
+    request.user.preferences.agenda_band = Band.objects.get(id=the_band) if the_band else None
+    request.user.preferences.save()
 
     return render(request, 'agenda/agenda_gigs.html', 
                     {

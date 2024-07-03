@@ -58,20 +58,20 @@ class AgendaView(AgendaBaseView):
 
         # Depending on the layout they want, send different instructions
         layout = self.request.user.preferences.agenda_layout
-        # the_panes = []
-        # if layout == AgendaLayoutChoices.ONE_LIST:
-        #     the_panes=[[int(AgendaPanelTypes.ONE_LIST),0]]
-        # elif layout == AgendaLayoutChoices.NEED_RESPONSE:
-        #     the_panes=[[int(AgendaPanelTypes.NEEDS_RESPONSE),0], [int(AgendaPanelTypes.HAS_RESPONSE),0]]
-        # else:
-        #     the_bands = self.request.user.confirmed_assocs.exclude(hide_from_schedule=True).values_list("band__id", flat=True)
-        #     the_panes=[[int(AgendaPanelTypes.ONE_BAND), b] for b in the_bands]
+        layout_band = self.request.user.preferences.agenda_band
         context['the_layout'] = layout
 
         context['the_buttons'] = [
             [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0, layout==AgendaLayoutChoices.ONE_LIST],
             [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0, layout==AgendaLayoutChoices.NEED_RESPONSE],
         ]
+
+        bands = [a.band for a in self.request.user.confirmed_assocs if not a.hide_from_schedule]
+        if len(bands) > 1 or True:
+            for b in bands:
+                context['the_buttons'].append(
+                    [AgendaLayoutChoices.BY_BAND, b.shortname, b.id, layout==AgendaLayoutChoices.BY_BAND and layout_band==b]
+                )
 
         return context
 
