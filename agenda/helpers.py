@@ -30,7 +30,7 @@ from django.utils.translation import gettext_lazy as _
 from gig.models import Gig, Plan, GigStatusChoices
 from band.models import Band, Assoc, Section
 from band.util import AssocStatusChoices
-from member.util import AgendaChoices, AgendaPanelTypes
+from member.util import AgendaChoices, AgendaLayoutChoices
 
 import json
 import logging
@@ -46,15 +46,12 @@ PAGE_LENGTH = 10000
 
 
 def _get_agenda_plans(user, the_type, the_band):
-    if the_type == AgendaPanelTypes.ONE_LIST:
+    if the_type == AgendaLayoutChoices.ONE_LIST:
         # get all plans except those that should be hidden
         the_plans = Plan.member_plans.future_plans(user)
         the_plans = the_plans.filter(assoc__hide_from_schedule=False)
         the_title = _("Upcoming Gigs")
-    elif the_type == AgendaPanelTypes.HAS_RESPONSE:
-        the_plans = user.future_plans.all()
-        the_title = _("Upcoming Gigs")
-    elif the_type == AgendaPanelTypes.NEEDS_RESPONSE:
+    elif the_type == AgendaLayoutChoices.NEED_RESPONSE:
         the_plans = user.future_noplans.all()
         the_title = _("Future Gigs: Weigh In!")
     else:
@@ -71,6 +68,10 @@ def _get_agenda_plans(user, the_type, the_band):
         the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
         the_title = band.name
 
+    # make this the user's preference now
+    user.preferences.agenda_layout = the_type
+    user.preferences.save()
+
     return the_plans, the_title
 
 
@@ -79,17 +80,14 @@ def agenda_gigs(request, the_type, the_band=None):
 
     the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
 
-    if the_plans or the_type==AgendaPanelTypes.ONE_BAND:
-        return render(request, 'agenda/agenda_gigs.html', 
-                        {
-                            'the_colors:': the_colors,
-                            'plans': the_plans,
-                            'title': the_title,
-                            'single_band': the_type == AgendaPanelTypes.ONE_BAND,
-                        }
-                      )
-    else:
-        return HttpResponse()
+    return render(request, 'agenda/agenda_gigs.html', 
+                    {
+                        'the_colors:': the_colors,
+                        'plans': the_plans,
+                        'title': the_title,
+                        'single_band': the_type == AgendaLayoutChoices.BY_BAND,
+                    }
+    )
 
 
 @login_required

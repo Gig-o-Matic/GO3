@@ -19,12 +19,14 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from member.util import AgendaChoices, AgendaLayoutChoices, AgendaPanelTypes
+from member.util import AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc
 from band.util import AssocStatusChoices
 from datetime import datetime
 import json
 from graphene_django.views import GraphQLView
+from django.utils.translation import gettext_lazy as _
+
 
 
 @login_required
@@ -56,15 +58,20 @@ class AgendaView(AgendaBaseView):
 
         # Depending on the layout they want, send different instructions
         layout = self.request.user.preferences.agenda_layout
-        the_panes = []
-        if layout == AgendaLayoutChoices.ONE_LIST:
-            the_panes=[[int(AgendaPanelTypes.ONE_LIST),0]]
-        elif layout == AgendaLayoutChoices.NEED_RESPONSE:
-            the_panes=[[int(AgendaPanelTypes.NEEDS_RESPONSE),0], [int(AgendaPanelTypes.HAS_RESPONSE),0]]
-        else:
-            the_bands = self.request.user.confirmed_assocs.exclude(hide_from_schedule=True).values_list("band__id", flat=True)
-            the_panes=[[int(AgendaPanelTypes.ONE_BAND), b] for b in the_bands]
-        context['the_panes'] = the_panes
+        # the_panes = []
+        # if layout == AgendaLayoutChoices.ONE_LIST:
+        #     the_panes=[[int(AgendaPanelTypes.ONE_LIST),0]]
+        # elif layout == AgendaLayoutChoices.NEED_RESPONSE:
+        #     the_panes=[[int(AgendaPanelTypes.NEEDS_RESPONSE),0], [int(AgendaPanelTypes.HAS_RESPONSE),0]]
+        # else:
+        #     the_bands = self.request.user.confirmed_assocs.exclude(hide_from_schedule=True).values_list("band__id", flat=True)
+        #     the_panes=[[int(AgendaPanelTypes.ONE_BAND), b] for b in the_bands]
+        context['the_layout'] = layout
+
+        context['the_buttons'] = [
+            [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0, layout==AgendaLayoutChoices.ONE_LIST],
+            [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0, layout==AgendaLayoutChoices.NEED_RESPONSE],
+        ]
 
         return context
 
