@@ -67,7 +67,7 @@ class AgendaView(AgendaBaseView):
         ]
 
         bands = [a.band for a in self.request.user.confirmed_assocs if not a.hide_from_schedule]
-        if len(bands) > 1 or True:
+        if len(bands) > 1:
             for b in bands:
                 context['the_buttons'].append(
                     [AgendaLayoutChoices.BY_BAND, b.shortname, b.id, layout==AgendaLayoutChoices.BY_BAND and layout_band==b]
