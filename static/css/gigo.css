@@ -319,3 +319,16 @@ ul.errorlist {
 .calendar-preferences-info {
   font-style: italic;
 }
+
+.btn-outline-primary.filter:not(:disabled):not(.disabled).active,
+.btn-outline-primary.filter:not(:disabled):not(.disabled):active,
+.btn-outline-primary.filter:hover {
+  color: #fff;
+  background-color: #008000;
+  border-color: #008000;
+}
+
+.filter {
+  color: #008000;
+  border-color: #008000;
+}
