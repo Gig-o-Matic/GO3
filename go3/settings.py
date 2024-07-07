@@ -293,6 +293,8 @@ else:
     }
 
 # Email settings
+HELP_EMAIL = "help@gig-o-matic.com"
+SUPERUSER_EMAIL = "superuser@gig-o-matic.com"
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = env("SENDGRID_SENDER", default="superuser@gig-o-matic.com")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY', default=None)
