@@ -232,7 +232,7 @@
                 <div class="card-header">
                     <div class="row titlerow">
                         {% if band.sections.populated|length == 1 %}
-                            <div class="col-4">
+                            <div class="col-sm-8 col-6">
                                 {% trans "Members" %}
                                 {% if the_user_is_band_admin or request.user.is_superuser %}
                                     <button class="btn btn-primary btn-sm" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></button>
