@@ -239,10 +239,10 @@
                                 {% endif %}
                             </div>
                         {% else %}
-                            <div class="col-3">
+                            <div class="col-md-3 d-none d-md-block">
                                 {% trans "Sections" %}
                             </div>
-                            <div class="col-5">
+                            <div class="col-md-5 col-sm-8 col-6">
                                 {% trans "Members" %}
                                     {% if the_user_is_band_admin or request.user.is_superuser %}
                                         <a class="btn btn-primary btn-sm" href="#" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></a>
@@ -250,7 +250,7 @@
                             </div>
                         {% endif %}
                         {% if the_user_is_band_admin or request.user.is_superuser %}
-                            <div class="ml-auto">
+                            <div class="col-sm-4 col-6 pr-0 text-right">
                                 <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
                             </div>
                         {% endif %}
@@ -272,14 +272,13 @@
                         	{% endfor %}
                         </div>
                     </div>
-                    <div class="row">
-                        {% if request.user.is_superuser or the_user_is_band_admin %}
-                            <div class="col-md-4">
-                                <br>
+                    {% if request.user.is_superuser or the_user_is_band_admin %}
+                        <div class="row mt-2">
+                            <div class="col-12 justify-content-start">
                                 <a href="{% url 'band-section-setup' pk=band.id %}" class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
                             </div>
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div> <!-- panel -->
 
