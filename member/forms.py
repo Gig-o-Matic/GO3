@@ -33,7 +33,7 @@ class MemberCreateForm(UserCreationForm):
 class MemberChangeForm(UserChangeForm):
     class Meta:
         model = Member
-        fields = ['email','username','nickname','phone','statement','images','is_beta_tester']
+        fields = ['email','username','nickname','phone','statement','images']
 
     def clean_email(self):
         if 'email' in self.changed_data:
