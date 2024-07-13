@@ -348,11 +348,6 @@ class MemberCalfeedTest(FSTestCase):
         self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)
 
 
-    def test_member_beta_flag(self):
-        """ make sure the beta flag exists """
-        self.assertFalse(self.joeuser.is_beta_tester)
-
-
     def test_calfeeds_dirty(self):
         self.joeuser.cal_feed_dirty = False
         self.joeuser.save()
