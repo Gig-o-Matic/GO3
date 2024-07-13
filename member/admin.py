@@ -72,7 +72,7 @@ class MemberAdmin(BaseUserAdmin):
     )
     search_fields = ('email',)
     ordering = ('email',)
-    filter_horizontal = ()
+    filter_horizontal = ('groups','user_permissions')
 
 admin.site.register(MemberPreferences)
 admin.site.register(Invite)
