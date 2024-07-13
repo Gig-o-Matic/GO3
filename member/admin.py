@@ -38,7 +38,7 @@ class MemberAdmin(BaseUserAdmin):
     # that reference specific fields on auth.User.
 
     list_display = ('email', 'username', 'nickname')
-    list_filter = ('status',)
+    list_filter = ('status','groups')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username','nickname','phone')}),
