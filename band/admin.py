@@ -28,6 +28,7 @@ class BandAdmin(admin.ModelAdmin):
 @admin.register(Assoc)
 class AssocAdmin(admin.ModelAdmin):
     search_fields=['member__username', 'member__nickname', 'member__email', 'band__name']
+    list_filter = ('is_admin',)
 
 admin.site.register(Section)
 

@@ -451,19 +451,13 @@ def confirm_email(request, pk):
         valid = False
 
     if valid:
-        if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
-            valid=False
-        else:
-            conf.member.email = conf.new_email
-            conf.member.save()
-            conf.delete()
+        # we have a valid reponse, so change the user's email
+        conf.member.email = conf.new_email
+        conf.member.save()
+        conf.delete()
+        translation.activate(conf.member.preferences.language)
 
-    def set_language(response):
-        return response
-
-    return set_language(
-                render(request, 'member/email_change_confirmation.html',
-                        {'validlink': valid}))
+    return render(request, 'member/email_change_confirmation.html', {'validlink': valid})
 
 
 class LanguageLoginView(LoginView):
