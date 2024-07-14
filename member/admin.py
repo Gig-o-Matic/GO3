@@ -38,7 +38,7 @@ class MemberAdmin(BaseUserAdmin):
     # that reference specific fields on auth.User.
 
     list_display = ('email', 'username', 'nickname')
-    list_filter = ('status',)
+    list_filter = ('status','groups','is_beta_tester','assocs__is_admin',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username','nickname','phone')}),
@@ -72,7 +72,7 @@ class MemberAdmin(BaseUserAdmin):
     )
     search_fields = ('email',)
     ordering = ('email',)
-    filter_horizontal = ()
+    filter_horizontal = ('groups','user_permissions',)
 
 admin.site.register(MemberPreferences)
 admin.site.register(Invite)
