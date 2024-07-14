@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from django.utils import timezone
 from member.util import AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc
@@ -31,6 +32,9 @@ from django.utils.translation import gettext_lazy as _
 
 @login_required
 def AgendaSelector(request):
+
+    if request.user.band_count == 0:
+        return redirect("/member")
 
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
