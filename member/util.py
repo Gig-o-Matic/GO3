@@ -31,10 +31,3 @@ class AgendaLayoutChoices(models.IntegerChoices):
     NEED_RESPONSE = 0, _("Weigh In")
     BY_BAND = 1, _("By Band")
     ONE_LIST = 2, _("Single List")
-
-# # Types of panels for the agenda page. Any other value is the ID of a band to show
-# class AgendaPanelTypes(models.IntegerChoices):
-#     HAS_RESPONSE = 0, "Has Response"
-#     NEEDS_RESPONSE = 1, "Needs Response"
-#     ONE_LIST = 2, "Entire List"
-#     ONE_BAND = 3, "Single Band"
