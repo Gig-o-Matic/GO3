@@ -71,6 +71,7 @@ class AgendaView(AgendaBaseView):
             layout = self.request.user.preferences.agenda_layout
             if layout == AgendaLayoutChoices.HAS_RESPONSE:
                 layout = AgendaLayoutChoices.ONE_LIST
+                
             layout_band = self.request.user.preferences.agenda_band
             context['the_layout'] = layout
 
