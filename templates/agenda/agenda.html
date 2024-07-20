@@ -20,7 +20,12 @@
 {% include 'agenda/hidden_bands_info.html' %}
 <div class="row mt-2"></div>
 {% if user.preferences.agenda_use_classic %}
-    <div class="row" hx-load="{% url 'agenda-gigs' the_type=3 the_band=0 %}">
+    {% if noplans %}
+    <div class="row" hx-get="{% url 'agenda-gigs' the_type=0 the_band=0 %}" hx-trigger="load">
+    </div>
+    <div class="row mt-2"></div>
+    {% endif %}
+    <div class="row" hx-get="{% url 'agenda-gigs' the_type=3 the_band=0 %}" hx-trigger="load">
     </div>
 {% else %}
     <div class="row">
