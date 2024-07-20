@@ -239,6 +239,7 @@ class MemberPreferences(models.Model):
                                         default=AgendaLayoutChoices.ONE_LIST,
                                         verbose_name=_('Schedule page layout'))
     agenda_band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
+    agenda_use_classic = models.BooleanField(default=False, verbose_name=_('Use classic schedule page'))
 
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)

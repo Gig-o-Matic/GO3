@@ -54,6 +54,9 @@ def _get_agenda_plans(user, the_type, the_band):
     elif the_type == AgendaLayoutChoices.NEED_RESPONSE:
         the_plans = user.future_noplans.all()
         the_title = _("Future Gigs: Weigh In!")
+    elif the_type == AgendaLayoutChoices.HAS_RESPONSE:
+        the_plans = user.future_plans.all()
+        the_title = _("Upcoming Gigs")
     else:
         # the type is actually the band ID
         try:

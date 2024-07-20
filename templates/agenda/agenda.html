@@ -19,24 +19,29 @@
 </div>
 {% include 'agenda/hidden_bands_info.html' %}
 <div class="row mt-2"></div>
-<div class="row">
-    <div class="col-md-10 col-12 mx-auto justify-content-start">
-        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-            {% for button in the_buttons %}
-                <label class="btn btn-sm btn-outline-secondary filter shadow-none active">
-                    <input type="radio" name="options" id="option1" {% if button.3 %}checked{% endif %}
-                    hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
-                    hx-target="#the-list">{{button.1}}
-                </label>
-                {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
-                hx-target="#the-list" hx-trigger="load"></span>{% endif %}
-            {% endfor %}
+{% if user.preferences.agenda_use_classic %}
+    <div class="row" hx-load="{% url 'agenda-gigs' the_type=3 the_band=0 %}">
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-md-10 col-12 mx-auto justify-content-start">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                {% for button in the_buttons %}
+                    <label class="btn btn-sm btn-outline-secondary filter shadow-none active">
+                        <input type="radio" name="options" id="option1" {% if button.3 %}checked{% endif %}
+                        hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
+                        hx-target="#the-list">{{button.1}}
+                    </label>
+                    {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
+                    hx-target="#the-list" hx-trigger="load"></span>{% endif %}
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
-<div class="row mt-2"></div>
-<div class="row" id="the-list">
-</div>
+    <div class="row mt-2"></div>
+    <div class="row" id="the-list">
+    </div>
+{% endif %}
 
 {% endblock content %}
 

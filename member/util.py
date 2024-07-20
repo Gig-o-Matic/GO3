@@ -31,3 +31,4 @@ class AgendaLayoutChoices(models.IntegerChoices):
     NEED_RESPONSE = 0, _("Weigh In")
     BY_BAND = 1, _("By Band")
     ONE_LIST = 2, _("Single List")
+    HAS_RESPONSE = 3, _("Has Response")
