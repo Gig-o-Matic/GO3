@@ -37,8 +37,8 @@
                         hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
                         hx-target="#the-list">{{button.1}}
                     </label>
-                    <!-- {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
-                    hx-target="#the-list" hx-trigger="load"></span>{% endif %} -->
+                    {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
+                    hx-target="#the-list" hx-trigger="load"></span>{% endif %}
                 {% endfor %}
             </div>
         </div>
