@@ -84,7 +84,7 @@ class AgendaView(AgendaBaseView):
             if len(bands) > 1:
                 for b in bands:
                     context['the_buttons'].append(
-                        [AgendaLayoutChoices.BY_BAND, b.shortname, b.id, layout==AgendaLayoutChoices.BY_BAND and layout_band==b]
+                        [AgendaLayoutChoices.BY_BAND, b.shortname if b.shortname else b.name, b.id, layout==AgendaLayoutChoices.BY_BAND and layout_band==b]
                     )
 
         return context
