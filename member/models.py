@@ -24,7 +24,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 import datetime
 from django.utils import timezone
-from .util import MemberStatusChoices, AgendaChoices
+from .util import MemberStatusChoices, AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc, Band
 from band.util import AssocStatusChoices
 from go3.settings import LANGUAGES
@@ -235,6 +235,12 @@ class MemberPreferences(models.Model):
     calendar_show_only_confirmed = models.BooleanField(default=False, verbose_name=_('Calendar shows only confirmed gigs'))
     calendar_show_only_committed = models.BooleanField(default=False, verbose_name=_('Calendar shows only gigs I can do (or maybe can do)'))
     agenda_show_time = models.BooleanField(default=True, verbose_name=_('Show gig time on schedule'))
+    agenda_layout = models.IntegerField(choices=AgendaLayoutChoices.choices, 
+                                        default=AgendaLayoutChoices.ONE_LIST,
+                                        verbose_name=_('Schedule page layout'))
+    agenda_band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
+    agenda_use_classic = models.BooleanField(default=False, verbose_name=_('Use old schedule page layout'))
+
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 

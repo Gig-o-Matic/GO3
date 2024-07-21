@@ -16,6 +16,11 @@
 """
 from gig.tests import GigTestBase
 from gig.util import GigStatusChoices, PlanStatusChoices
+from gig.models import Plan
+from member.util import AgendaLayoutChoices
+from agenda.helpers import _get_agenda_plans
+from band.models import Band, Assoc
+from band.util import AssocStatusChoices
 from django.test import Client
 from django.urls import reverse
 from json import loads
@@ -23,45 +28,38 @@ from datetime import datetime
 from pytz import timezone
 
 class AgendaTest(GigTestBase):
-    def test_agenda(self):
+    def test_agenda_types(self):
+        """ Test the different URLs for returning panels on the agenda page """
         self.assoc_user(self.joeuser)
         gigs = []
         for i in range(0, 19):
             gigs.append(self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}"))
         c = Client()
         c.force_login(self.joeuser)
+        self.joeuser.preferences.agenda_layout = AgendaLayoutChoices.ONE_LIST
+        self.joeuser.preferences.save()
 
-        # first 'page' of gigs should have 19 (because pagination is very long)
-        response = c.get(f'/plans/noplans/1')
+        # get as a single list
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 19)
+
+        # test "has plans" vs. "doesn't have plans"
 
         first_gig = gigs[0]
         plan = first_gig.plans.get(assoc__member=self.joeuser)
         plan.status = PlanStatusChoices.DEFINITELY
         plan.save()
-        response = c.get(f'/plans/noplans/1')
+
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
-        response = c.get(f'/plans/plans/1')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
 
         # now make sure that a gig that is canceled is moved to the "plans" set even
         # though it has no plans...
         gigs[1].status = GigStatusChoices.CANCELED
         gigs[1].save()
-        response = c.get(f'/plans/noplans/1')
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 17)
-        response = c.get(f'/plans/plans/1')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 2)
 
-
-        # tests that pass if pagination is set to 10        
-        # # first 'page' of gigs should have 10
-        # response = c.get(f'/plans/noplans/1')
-        # self.assertEqual(response.content.decode('ascii').count("xyzzy"), 10)
-
-        # # second 'page' of gigs should have 9
-        # response = c.get(f'/plans/noplans/2')
-        # self.assertEqual(response.content.decode('ascii').count("xyzzy"), 9)
 
     def test_agenda_occasionals(self):
         _ = self.assoc_user(self.joeuser)
@@ -113,14 +111,110 @@ class AgendaTest(GigTestBase):
         c = Client()
         c.force_login(self.joeuser)
         # first 'page' of gigs should show the gig
-        response = c.get(f'/plans/noplans/1')
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
+
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
 
         a.hide_from_schedule = True
         a.save()
         # first 'page' of gigs should not show the gig
-        response = c.get(f'/plans/noplans/1')
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 0)
+
+    def test_agenda_page_types(self):
+        """
+        There are lots of different ways to have an agenda page. Tests them all!
+        - Single list
+        - Single list with hidden band
+        - Split by 'needs plan'
+        - ditto with hidden band
+        - Split by band
+        - ditto with hidden band
+        """
+        joe = self.joeuser
+        b1 = self.band
+        b1.anyone_can_create_gigs=True
+        b1.save()
+        a1 = Assoc.objects.create(member=joe, band=b1, status=AssocStatusChoices.CONFIRMED)
+
+        b2 = Band.objects.create(
+            name="test band 2",
+            timezone="UTC",
+            anyone_can_create_gigs=True,
+        )
+        a2 = Assoc.objects.create(member=joe, band=b2, status=AssocStatusChoices.CONFIRMED)
+
+        gigs = []
+        gigs.append(self.create_gig_form(user=joe, contact=joe, title='test1', call_date="01/03/2100", band=b1))
+        gigs.append(self.create_gig_form(user=joe, contact=joe, title='test2', call_date="01/04/2100", band=b1))
+        gigs.append(self.create_gig_form(user=joe, contact=joe, title='test3', call_date="01/05/2100", band=b1))
+        gigs.append(self.create_gig_form(user=joe, contact=joe, title='test1b', call_date="01/03/2100", band=b2))
+        gigs.append(self.create_gig_form(user=joe, contact=joe, title='test2b', call_date="01/04/2100", band=b2))
+        gigs.append(self.create_gig_form(user=joe, contact=joe, title='test3b', call_date="01/05/2100", band=b2))
+
+        joe.preferences.agenda_layout = AgendaLayoutChoices.ONE_LIST
+        joe.preferences.save()
+
+        # test single list with all bands
+        a2.hide_from_schedule = False
+        a2.save()
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.ONE_LIST, 0)
+        self.assertEqual(len(the_list), 6)
+
+        # test single list with a hidden band
+        a2.hide_from_schedule = True
+        a2.save()
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.ONE_LIST, 0)
+        self.assertEqual(len(the_list), 3)
+
+        a2.hide_from_schedule = False
+        a2.save()
+
+        # test Split by 'needs plan'
+
+        # register a plan
+        p = Plan.objects.get(gig=gigs[0], assoc=a1)
+        p.status = PlanStatusChoices.DEFINITELY
+        p.save()
+
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.NEED_RESPONSE, 0)
+        self.assertEqual(len(the_list), 5)
+
+        # test ditto with hidden band
+        a2.hide_from_schedule = True
+        a2.save()
+
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.NEED_RESPONSE, 0)
+        self.assertEqual(len(the_list), 2)
+
+        a1.hide_from_schedule = True
+        a1.save()
+
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.NEED_RESPONSE, 0)
+        self.assertEqual(len(the_list), 0)
+
+        a1.hide_from_schedule = False
+        a1.save()
+        a2.hide_from_schedule = False
+        a2.save()
+
+        # test split by band
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.BY_BAND, b1.id)
+        self.assertEqual(len(the_list), 3)
+
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.BY_BAND, b2.id)
+        self.assertEqual(len(the_list), 3)
+
+        # test ditto with hidden band
+        a2.hide_from_schedule = True
+        a2.save()
+
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.BY_BAND, b1.id)
+        self.assertEqual(len(the_list), 3)
+
+        the_list, _ = _get_agenda_plans(joe, AgendaLayoutChoices.BY_BAND, b2.id)
+        self.assertEqual(len(the_list), 0)
+
 
 
 class CalendarTest(GigTestBase):
