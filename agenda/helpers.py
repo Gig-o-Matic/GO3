@@ -50,8 +50,6 @@ def _get_agenda_plans(user, the_type, the_band):
         # get all plans except those that should be hidden
         the_plans = Plan.member_plans.future_plans(user)
         the_plans = the_plans.filter(assoc__hide_from_schedule=False)
-        if user.preferences.hide_canceled_gigs:
-            the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
         the_title = _("Upcoming Gigs")
     elif the_type == AgendaLayoutChoices.NEED_RESPONSE:
         the_plans = user.future_noplans.all()
@@ -72,6 +70,9 @@ def _get_agenda_plans(user, the_type, the_band):
 
         the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
         the_title = band.name
+
+    if user.preferences.hide_canceled_gigs:
+        the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
 
     return the_plans, the_title
 
