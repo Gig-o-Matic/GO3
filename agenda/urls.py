@@ -33,4 +33,5 @@ urlpatterns = [
     path('grid/gigs', helpers.grid_gigs, name='grid-gigs'),
 
     path('defaultview/<int:val>', helpers.set_default_view, name='set-default-view'),
+    path('schedule/needplans', helpers.get_needplans_count, name='need-plans-count'),
 ]

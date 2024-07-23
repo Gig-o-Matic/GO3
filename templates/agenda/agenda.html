@@ -36,6 +36,9 @@
                         <input type="radio" name="options" id="option1" {% if button.3 %}checked{% endif %}
                         hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
                         hx-target="#the-list">{{button.1}}
+                        {% if button.4 %}
+                        <span class="badge badge-secondary" id="needplan-badge"></span>
+                        {% endif %}
                     </label>
                     {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
                     hx-target="#the-list" hx-trigger="load"></span>{% endif %}
