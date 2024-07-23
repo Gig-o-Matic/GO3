@@ -168,7 +168,7 @@ def set_default_view(request, val):
 @login_required
 def get_needplans_count(request, *args, **kw):
     c = request.user.future_noplans.count()
-    return HttpResponse(c if c else "")
+    return HttpResponse(c if c else 0)
 
 
 @login_required

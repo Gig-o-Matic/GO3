@@ -75,6 +75,12 @@ class AgendaView(AgendaBaseView):
             layout_band = self.request.user.preferences.agenda_band
             context['the_layout'] = layout
 
+            # the buttons are an array for the template to chew on:
+            # * layout type
+            # * button label
+            # * band (if it's a band filter otherwise ignored)
+            # * True if the button is active
+            # * True if it's the 'needs response' button
             context['the_buttons'] = [
                 [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0, layout==AgendaLayoutChoices.ONE_LIST, False],
                 [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0, 
