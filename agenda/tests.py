@@ -53,6 +53,10 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
 
+        # while we're here, check the needs response counter URL
+        response = c.get(f'/schedule/needplans')
+        self.assertEqual(response.content.decode('ascii'),"18")
+
         # now make sure that a gig that is canceled is moved to the "plans" set even
         # though it has no plans...
         gigs[1].status = GigStatusChoices.CANCELED
