@@ -75,16 +75,25 @@ class AgendaView(AgendaBaseView):
             layout_band = self.request.user.preferences.agenda_band
             context['the_layout'] = layout
 
+            # the buttons are an array for the template to chew on:
+            # * layout type
+            # * button label
+            # * band (if it's a band filter otherwise ignored)
+            # * True if the button is active
+            # * True if it's the 'needs response' button
             context['the_buttons'] = [
-                [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0, layout==AgendaLayoutChoices.ONE_LIST],
-                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0, layout==AgendaLayoutChoices.NEED_RESPONSE],
+                [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0, layout==AgendaLayoutChoices.ONE_LIST, False],
+                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0, 
+                 layout==AgendaLayoutChoices.NEED_RESPONSE, True],
             ]
 
             bands = [a.band for a in self.request.user.confirmed_assocs if not a.hide_from_schedule]
             if len(bands) > 1:
                 for b in bands:
                     context['the_buttons'].append(
-                        [AgendaLayoutChoices.BY_BAND, b.shortname if b.shortname else b.name, b.id, layout==AgendaLayoutChoices.BY_BAND and layout_band==b]
+                        [AgendaLayoutChoices.BY_BAND, 
+                         b.shortname if b.shortname else b.name, b.id,
+                         layout==AgendaLayoutChoices.BY_BAND and layout_band==b, False]
                     )
 
         return context

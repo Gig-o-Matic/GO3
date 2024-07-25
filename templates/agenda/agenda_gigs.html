@@ -1,11 +1,14 @@
 {% load i18n %}
 {% load static %}
 <div class="mx-auto col-md-10 col-12">
+    <span hx-get="{% url 'need-plans-count' %}" hx-target="#needplan-badge" hx-trigger="load"></span>
+
     <div class="card mb-4">
         <div class="card-header">
             <div class="row titlerow">
                 <div class="col-12">
                     {{ title }}
+                    <i class="fas fa-spinner fa-pulse fa-lg htmx-indicator" id="indicator"></i>
                 </div>
             </div>
         </div>

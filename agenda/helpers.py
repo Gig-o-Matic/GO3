@@ -166,6 +166,11 @@ def set_default_view(request, val):
 
 
 @login_required
+def get_needplans_count(request, *args, **kw):
+    return HttpResponse(request.user.future_noplans.count())
+
+
+@login_required
 def grid_heatmap(request, *args, **kw):
     year = int(request.POST['year'])
     band_id = int(request.POST['band'])
