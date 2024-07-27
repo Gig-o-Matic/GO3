@@ -95,11 +95,19 @@ class CaldavTest(TestCase):
 
     def test_calfeed_event_start(self):
         # for member feeds, the start date should be the call time; for band feeds, the start should be the set time
+
+        # first, a gig without a set time should show the call time
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
+                          self.band.pub_cal_feed_id, is_for_band=True)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
+
+        # for member feeds, should show the call time
         self.testgig.setdate = self.testgig.date + timedelta(hours=1)
         self.testgig.save()
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
 
+        # for band feeds, should show the set time
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.band.pub_cal_feed_id, is_for_band=True)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')==-1)
