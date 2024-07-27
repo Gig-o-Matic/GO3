@@ -264,7 +264,7 @@ def prepare_band_calfeed(band):
     }
 
     the_gigs = Gig.objects.filter(**filter_args)
-    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id)
+    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id,is_for_band=True)
     return cf
 
 

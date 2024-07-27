@@ -93,6 +93,19 @@ class CaldavTest(TestCase):
         self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
         self.assertTrue(cf.find(b'DTEND:20200229T163000Z')>0)
 
+    def test_calfeed_event_start(self):
+        # for member feeds, the start date should be the call time; for band feeds, the start should be the set time
+        self.testgig.setdate = self.testgig.date + timedelta(hours=1)
+        self.testgig.save()
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
+
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
+                          self.band.pub_cal_feed_id, is_for_band=True)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')==-1)
+        self.assertTrue(cf.find(b'DTSTART:20200229T153000Z')>0)
+
+
     def test_calfeed_event_full_day(self):
         self.testgig.is_full_day = True
         self.testgig.save()
