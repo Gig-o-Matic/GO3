@@ -193,6 +193,35 @@ def send_reminder_email(gig):
     undecided = gig.member_plans.filter(status__in=(PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW))
     send_emails_from_plans(undecided, 'email/gig_reminder.md')
 
+# def notify_gig_contact_of_rsvp(gig: Gig, plan: Plan):
+#     member = gig.contact
+#     template = 'email/rsvp_notification.md'
+#     respondant = plan.assoc.member
+
+#     class MemberStatus:
+#         def __init__(self, name: str, status: int)
+#             self.name = name
+#             self.status = status
+
+
+#     class SectionStatus:
+#         def __init__(self, name: str, member_status: MemberStatus):
+#             self.name = name
+#             self.member_status = member_status
+
+#     section_data = []
+#     for section in plan.assoc.band.sections:
+#         for member in section:
+#             pass
+
+
+#     context = {
+#         'gig_name': gig.title,
+#         'responder_name': respondant.display_name,
+#         'response': plan.status,
+#         'sections':
+#     }
+#         return prepare_email(member.as_email_recipient(), template, context)
 
 def notify_new_gig(gig, created, dates=None):
     if dates:
