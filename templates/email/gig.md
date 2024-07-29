@@ -15,6 +15,10 @@ Subject: {% block subject %}{% endblock %}
 {% trans "End Time" %}: {{ gig.enddate|date:"TIME_FORMAT" }}{% endif %}
 {% endif %}{% if gig.datenotes %}{% trans "Notes" %}: {{ gig.datenotes }}{% endif %}{% endblock gigdates %}
 
+{% if gig.address %}
+{% trans "Address" %}: {{ gig.address }}
+{% endif %}
+
 {% trans "Contact" %}: {{ contact_name }}
 {% trans "Status" %}: {{ gig.status_string }}
 {% if gig.details %}
