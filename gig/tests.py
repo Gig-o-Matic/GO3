@@ -674,6 +674,31 @@ class GigTest(GigTestBase):
         self.assertIn(self.janeuser.display_name, message.body)
         self.assertIn(f"(was {self.joeuser.display_name})", message.body)
 
+    def test_gig_edit_setlist(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.update_gig_form(g)
+
+        mail.outbox = []
+        self.update_gig_form(
+            g, setlist="Tequila\nLand of a Thousand Dances"
+        )
+
+        message = mail.outbox[0]
+        self.assertIn("(Set List)", message.subject)
+
+    def test_gig_edit_address(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.update_gig_form(g)
+
+        mail.outbox = []
+        self.update_gig_form(
+            g, address="123 Main St. Anytown, MN 55016"
+        )
+
+        message = mail.outbox[0]
+        self.assertIn("(Address)", message.subject)
+        self.assertIn("Address: 123 Main St. Anytown, MN 55016", message.body)
+
     def test_gig_edit_trans(self):
         self.joeuser.preferences.language = "de"
         self.joeuser.save()
