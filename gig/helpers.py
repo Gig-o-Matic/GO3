@@ -140,6 +140,9 @@ def generate_changes(latest, previous):
 
     if 'details' in diff.changed_fields:
         changes.append((_('Details'), _('(See below.)'), None))
+
+    if 'setlist' in diff.changed_fields:
+        changes.append((_('Set List'), None, None))
     
     if 'dress' in diff.changed_fields:
         changes.append((_('What To Wear'), _('(See below.)'), None))
