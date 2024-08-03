@@ -599,7 +599,7 @@ class SectionTest(TestCase):
 class PublicBandPageTest(GigTestBase):
     def test_public_gigs(self):
         band = self.band
-        a1 = Assoc.objects.create(
+        Assoc.objects.create(
             member=self.joeuser, band=band, status=AssocStatusChoices.CONFIRMED
         )
         self.create_gig_form(contact=self.joeuser, title="test1")
