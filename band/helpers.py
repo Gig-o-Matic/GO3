@@ -299,3 +299,22 @@ def band_public_page(request, name):
         return redirect('/')
 
     return redirect('band-detail', pk=band.id)
+
+def public_gigs(request, pk):
+    the_band = get_object_or_404(Band, pk=pk)
+
+    threshold_date = timezone.now() - timedelta(hours=4)
+    the_gigs = Gig.objects.filter(date__gt=threshold_date,
+                                trashed_date__isnull=True,
+                                is_archived=False,
+                                is_private=False,
+                            ).order_by('date')
+
+
+    # the_gigs = Gig.objects.filter(band=the_band, is_private=False, )
+    return render(request, 'band/public_gigs.html',
+        {
+            'band': the_band,
+            'gigs': the_gigs,
+        }
+    )
