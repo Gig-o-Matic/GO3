@@ -33,6 +33,7 @@ urlpatterns = [
     path('<int:pk>/archive', views.ArchiveView.as_view(), name='band-archive'),
     path('<int:pk>/sections', views.SectionSetupView.as_view(), name='band-section-setup'),
     path('<int:pk>/set_sections', helpers.set_sections, name='band-set-sections'), 
+    path('<int:pk>/public_gigs', helpers.public_gigs, name='band-public-gigs'), 
 
     path('pub/<str:name>/', helpers.band_public_page, name='band-public-page'),
 

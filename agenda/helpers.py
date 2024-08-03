@@ -96,7 +96,6 @@ def agenda_gigs(request, the_type, the_band=None):
                     }
     )
 
-
 @login_required
 def calendar_events(request, pk):
     startstr = request.GET['start']

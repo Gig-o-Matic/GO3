@@ -596,6 +596,23 @@ class SectionTest(TestCase):
         section2 = band.sections.create(name="Section 2")
         self.assertGreater(section2.order, section1.order)
 
+class PublicBandPageTest(GigTestBase):
+    def test_public_gigs(self):
+        band = self.band
+        Assoc.objects.create(
+            member=self.joeuser, band=band, status=AssocStatusChoices.CONFIRMED
+        )
+        self.create_gig_form(contact=self.joeuser, title="test1")
+        self.create_gig_form(contact=self.joeuser, title="test2", is_private=True)
+        self.create_gig_form(contact=self.joeuser, title="test3")
+
+        response = self.client.post(reverse('band-public-gigs', args=[band.id]))
+        content = response.content.decode("ascii")
+        self.assertTrue("test1" in content)
+        self.assertFalse("test2" in content)
+        self.assertTrue("test3" in content)
+
+
 class BandCalfeedTest(FSTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
