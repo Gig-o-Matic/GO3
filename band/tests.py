@@ -612,6 +612,16 @@ class PublicBandPageTest(GigTestBase):
         self.assertFalse("test2" in content)
         self.assertTrue("test3" in content)
 
+        otherband = Band.objects.create(name='other band')
+        Assoc.objects.create(member=self.joeuser,
+                             band=otherband, is_admin=True, status=AssocStatusChoices.CONFIRMED)
+        self.create_gig_form(contact=self.joeuser, title="other band gig", band=otherband)
+
+        response = self.client.post(reverse('band-public-gigs', args=[band.id]))
+        content = response.content.decode("ascii")
+        self.assertFalse("other band gig" in content)
+
+
 
 class BandCalfeedTest(FSTestCase):
     def setUp(self):
