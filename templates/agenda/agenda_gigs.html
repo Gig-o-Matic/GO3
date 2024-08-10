@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load static %}
 <div class="mx-auto col-md-10 col-12">
-    <span hx-get="{% url 'need-plans-count' %}" hx-target="#needplan-badge" hx-trigger="load"></span>
+    <span hx-get="{% url 'plans-count' the_type=0 the_band=0 %}" hx-target="#needplan-badge" hx-trigger="load"></span>
 
     <div class="card mb-4">
         <div class="card-header">

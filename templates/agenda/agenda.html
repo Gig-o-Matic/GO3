@@ -36,8 +36,15 @@
                         <input type="radio" name="options" id="option1" {% if button.3 %}checked{% endif %}
                         hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
                         hx-target="#the-list" hx-indicator="#indicator">{{button.1}}
+                        {% comment %}
+                            For the badge, just use a static value unless it's the "need response"
+                            button, in which case do it dynamically from the agenda_gigs.html content
+                        {% endcomment %}
                         {% if button.4 %}
                         <span class="badge badge-secondary" id="needplan-badge">&nbsp;&nbsp;</span>
+                        {% else %}
+                        <span class="badge badge-secondary"
+                            hx-get="{% url 'plans-count' the_type=button.0 the_band=button.2 %}" hx-trigger="load"></span>
                         {% endif %}
                     </label>
                     {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
