@@ -54,7 +54,7 @@ class AgendaTest(GigTestBase):
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
 
         # while we're here, check the needs response counter URL
-        response = c.get(f'/schedule/needplans')
+        response = c.get(f'/schedule/planscount/0/0')
         self.assertEqual(response.content.decode('ascii'),"18")
 
         # now make sure that a gig that is canceled is moved to the "plans" set even

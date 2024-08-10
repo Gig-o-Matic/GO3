@@ -44,7 +44,9 @@
                         <span class="badge badge-secondary" id="needplan-badge">&nbsp;&nbsp;</span>
                         {% else %}
                         <span class="badge badge-secondary"
-                            hx-get="{% url 'plans-count' the_type=button.0 the_band=button.2 %}" hx-trigger="load"></span>
+                            hx-get="{% url 'plans-count' the_type=button.0 the_band=button.2 %}" hx-trigger="load">
+                            &nbsp;&nbsp;
+                        </span>
                         {% endif %}
                     </label>
                     {% if button.3 %}<span hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
