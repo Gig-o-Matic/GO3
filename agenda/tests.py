@@ -43,6 +43,10 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 19)
 
+        # while we're here, check the plans count URL
+        response = c.get(f'/schedule/planscount/0/0')
+        self.assertEqual(response.content.decode('ascii'),"19")
+
         # test "has plans" vs. "doesn't have plans"
 
         first_gig = gigs[0]
@@ -53,9 +57,13 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
 
-        # while we're here, check the needs response counter URL
-        response = c.get(f'/schedule/needplans')
+        # while we're here, check the need plans count URL
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii'),"18")
+
+        # while we're here, check the needs response counter URL
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii'),"19")
 
         # now make sure that a gig that is canceled is moved to the "plans" set even
         # though it has no plans...
@@ -63,6 +71,31 @@ class AgendaTest(GigTestBase):
         gigs[1].save()
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
         self.assertEqual(response.content.decode('ascii').count("xyzzy"), 17)
+
+        # while we're here, check the plans count URL
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii'),"19")
+
+        # Add another band
+        b2 = Band.objects.create(
+            name="test band 2",
+            timezone="UTC",
+            anyone_can_create_gigs=True,
+        )
+        
+        Assoc.objects.create(member=self.joeuser, band=b2, status=AssocStatusChoices.CONFIRMED)
+        self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}", band=b2)
+
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/{self.band.id}')
+        self.assertEqual(response.content.decode('ascii'),"20")
+
+        # show that one band has 19 and the other has 1
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.BY_BAND)}/{self.band.id}')
+        self.assertEqual(response.content.decode('ascii'),"19")
+
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.BY_BAND)}/{b2.id}')
+        self.assertEqual(response.content.decode('ascii'),"1")
+
 
 
     def test_agenda_occasionals(self):

@@ -82,9 +82,10 @@ class AgendaView(AgendaBaseView):
             # * True if the button is active
             # * True if it's the 'needs response' button
             context['the_buttons'] = [
-                [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0, layout==AgendaLayoutChoices.ONE_LIST, False],
-                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0, 
-                 layout==AgendaLayoutChoices.NEED_RESPONSE, True],
+                [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0,
+                 layout==AgendaLayoutChoices.ONE_LIST, False],
+                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0,
+                    layout==AgendaLayoutChoices.NEED_RESPONSE, True],
             ]
 
             bands = [a.band for a in self.request.user.confirmed_assocs if not a.hide_from_schedule]

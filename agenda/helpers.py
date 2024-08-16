@@ -165,8 +165,19 @@ def set_default_view(request, val):
 
 
 @login_required
-def get_needplans_count(request, *args, **kw):
-    return HttpResponse(request.user.future_noplans.count())
+def get_plans_count(request, *args, **kw):
+    if kw['the_type'] == AgendaLayoutChoices.ONE_LIST:
+        the_plans = Plan.member_plans.future_plans(request.user)
+        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
+        count = the_plans.count()
+    elif kw['the_type'] == AgendaLayoutChoices.NEED_RESPONSE:
+        count = request.user.future_noplans.count()
+    else:
+        the_plans = Plan.member_plans.future_plans(request.user)
+        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
+        the_plans = the_plans.filter(assoc__band=kw['the_band'])
+        count = the_plans.count()
+    return HttpResponse(count)
 
 
 @login_required
