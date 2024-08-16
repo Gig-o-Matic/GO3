@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-16 12:32-0400\n"
+"POT-Creation-Date: 2024-08-16 10:27-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -19,12 +19,21 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: agenda/helpers.py:53 agenda/helpers.py:56
+#: agenda/helpers.py:53 agenda/helpers.py:59
+#: templates/band/band_detail.html:142
 msgid "Upcoming Gigs"
 msgstr ""
 
-#: agenda/helpers.py:59
+#: agenda/helpers.py:56
 msgid "Future Gigs: Weigh In!"
+msgstr ""
+
+#: agenda/views.py:85
+msgid "All Upcoming Gigs"
+msgstr ""
+
+#: agenda/views.py:87
+msgid "Needs Reponse"
 msgstr ""
 
 #: band/views.py:130
@@ -221,7 +230,7 @@ msgid "Date/Time"
 msgstr ""
 
 #: gig/helpers.py:133 gig/helpers.py:136 gig/helpers.py:139 gig/helpers.py:142
-#: gig/helpers.py:145
+#: gig/helpers.py:148
 msgid "(See below.)"
 msgstr ""
 
@@ -231,11 +240,15 @@ msgid "Address"
 msgstr ""
 
 #: gig/helpers.py:145
+msgid "Set List"
+msgstr ""
+
+#: gig/helpers.py:148
 msgid "What To Wear"
 msgstr ""
 
-#: gig/helpers.py:166 member/views.py:273 member/views.py:278
-#: member/views.py:282
+#: gig/helpers.py:169 member/views.py:281 member/views.py:286
+#: member/views.py:290
 msgid ", "
 msgstr ""
 
@@ -361,7 +374,7 @@ msgstr ""
 msgid "former member"
 msgstr "Plans"
 
-#: member/models.py:79 member/models.py:250
+#: member/models.py:79 member/models.py:255
 #, fuzzy
 #| msgid "confirm_email_address_email"
 msgid "email address"
@@ -377,54 +390,58 @@ msgstr ""
 "Thanks,\n"
 "Team Gig-o-Matic"
 
-#: member/models.py:217
+#: member/models.py:220
 msgid "member"
 msgstr ""
 
-#: member/models.py:218
+#: member/models.py:221
 #, fuzzy
 #| msgid "Member Plans"
 msgid "members"
 msgstr "Plans"
 
-#: member/models.py:228 templates/member/member_detail.html:189
+#: member/models.py:231 templates/member/member_detail.html:189
 #: templates/member/member_detail.html:191
 msgid "Hide canceled gigs"
 msgstr ""
 
-#: member/models.py:229 templates/registration/login.html:50
+#: member/models.py:232 templates/registration/login.html:50
 msgid "Language"
 msgstr ""
 
-#: member/models.py:230 templates/member/member_detail.html:195
+#: member/models.py:233 templates/member/member_detail.html:195
 #: templates/member/member_detail.html:197
 msgid "Share my profile"
 msgstr ""
 
-#: member/models.py:231 templates/member/member_detail.html:200
+#: member/models.py:234 templates/member/member_detail.html:200
 #: templates/member/member_detail.html:202
 msgid "Share my email"
 msgstr ""
 
-#: member/models.py:232 templates/member/member_detail.html:217
+#: member/models.py:235 templates/member/member_detail.html:217
 #: templates/member/member_detail.html:219
 msgid "Calendar shows only confirmed gigs"
 msgstr ""
 
-#: member/models.py:233 templates/member/member_detail.html:222
+#: member/models.py:236 templates/member/member_detail.html:222
 #: templates/member/member_detail.html:224
 msgid "Calendar shows only gigs I can do (or maybe can do)"
 msgstr ""
 
-#: member/models.py:234
+#: member/models.py:237
 msgid "Show gig time on schedule"
 msgstr ""
 
-#: member/models.py:237
+#: member/models.py:240
 msgid "Schedule page layout"
 msgstr ""
 
-#: member/models.py:264
+#: member/models.py:242
+msgid "Use old schedule page layout"
+msgstr ""
+
+#: member/models.py:269
 #, fuzzy
 #| msgid "new_gig_email"
 msgid "new email"
@@ -456,36 +473,40 @@ msgstr ""
 msgid "Single List"
 msgstr ""
 
+#: member/util.py:34
+msgid "Has Response"
+msgstr ""
+
 #: member/views.py:97
 msgid "You have selected a new email address - check your inbox to verify!"
 msgstr ""
 
-#: member/views.py:272
+#: member/views.py:280
 #, python-brace-format
 msgid "Invalid email addresses: {e}"
 msgstr ""
 
-#: member/views.py:277
+#: member/views.py:285
 #, python-brace-format
 msgid "Invitations sent to {e}"
 msgstr ""
 
-#: member/views.py:281
+#: member/views.py:289
 #, python-brace-format
 msgid "These users are already in the band: {e}"
 msgstr ""
 
-#: member/views.py:329
+#: member/views.py:337
 #, python-brace-format
 msgid "You are now a member of {band}."
 msgstr ""
 
-#: member/views.py:386
+#: member/views.py:394
 #, python-brace-format
 msgid "Your invitation to join {band} has been deleted."
 msgstr ""
 
-#: member/views.py:409
+#: member/views.py:417
 #, python-brace-format
 msgid ""
 "An account associated with {email} already exists.  You can recover this "
@@ -505,7 +526,7 @@ msgstr ""
 msgid "Make this my default view!"
 msgstr ""
 
-#: templates/agenda/agenda_gigs.html:23
+#: templates/agenda/agenda_gigs.html:25 templates/band/public_gigs.html:23
 msgid "No Gigs!"
 msgstr ""
 
@@ -622,61 +643,61 @@ msgstr ""
 msgid "Pictures Of Us"
 msgstr ""
 
-#: templates/band/band_detail.html:167
+#: templates/band/band_detail.html:169
 msgid "Your membership is pending - ask a band member to confirm you!"
 msgstr ""
 
-#: templates/band/band_detail.html:173
+#: templates/band/band_detail.html:175
 msgid "Pending Members"
 msgstr ""
 
-#: templates/band/band_detail.html:190
+#: templates/band/band_detail.html:192
 msgid "yes, confirm member!"
 msgstr ""
 
-#: templates/band/band_detail.html:199
+#: templates/band/band_detail.html:201
 msgid "no, reject!"
 msgstr ""
 
-#: templates/band/band_detail.html:215
+#: templates/band/band_detail.html:217
 msgid "Invited Members"
 msgstr ""
 
-#: templates/band/band_detail.html:225
+#: templates/band/band_detail.html:227
 msgid "forget the invite"
 msgstr ""
 
-#: templates/band/band_detail.html:237 templates/band/band_detail.html:247
+#: templates/band/band_detail.html:239 templates/band/band_detail.html:249
 msgid "Members"
 msgstr ""
 
-#: templates/band/band_detail.html:244
+#: templates/band/band_detail.html:246
 #: templates/band/band_section_setup.html:29
 msgid "Sections"
 msgstr ""
 
-#: templates/band/band_detail.html:255 templates/band/band_detail.html:297
+#: templates/band/band_detail.html:257 templates/band/band_detail.html:298
 #: templates/member/band_invite.html:6
 msgid "Invite Members"
 msgstr ""
 
-#: templates/band/band_detail.html:280
+#: templates/band/band_detail.html:281
 msgid "Set Up Sections"
 msgstr ""
 
-#: templates/band/band_detail.html:291
+#: templates/band/band_detail.html:292
 msgid "Member Admin"
 msgstr ""
 
-#: templates/band/band_detail.html:298
+#: templates/band/band_detail.html:299
 msgid "Download Member List"
 msgstr ""
 
-#: templates/band/band_detail.html:299
+#: templates/band/band_detail.html:300
 msgid "Get Member Emails"
 msgstr ""
 
-#: templates/band/band_detail.html:315
+#: templates/band/band_detail.html:316
 msgid "Band Statistics"
 msgstr ""
 
@@ -693,7 +714,7 @@ msgstr ""
 #: templates/band/band_form.html:171 templates/band/band_section_setup.html:49
 #: templates/gig/gig_form.html:249 templates/gig/gig_form.html:251
 #: templates/help/band_request.html:30 templates/member/band_invite.html:36
-#: templates/member/member_assocs.html:18 templates/member/member_form.html:69
+#: templates/member/member_assocs.html:18 templates/member/member_form.html:78
 #: templates/member/memberpreferences_form.html:20
 #: templates/member/signup.html:20
 #: templates/registration/password_change_form.html:49
@@ -702,7 +723,7 @@ msgid "Cancel"
 msgstr ""
 
 #: templates/band/band_form.html:172 templates/band/band_section_setup.html:50
-#: templates/gig/gig_form.html:253 templates/member/member_form.html:70
+#: templates/gig/gig_form.html:253 templates/member/member_form.html:79
 #: templates/member/memberpreferences_form.html:21
 msgid "Save"
 msgstr ""
@@ -1154,9 +1175,10 @@ msgid "...make a suggestion?"
 msgstr ""
 
 #: templates/help/help.html:21
+#, python-format
 msgid ""
-"I want to <a href=\"mailto:superuser@gig-o-matic.com\">hear about it</a>. "
-"Also, you can check the <a href=\"https://github.com/gig-o-matic/GO3/issues?"
+"We want to <a href=\"mailto:%(superuser_email)s\">hear about it</a>. Also, "
+"you can check the <a href=\"https://github.com/gig-o-matic/GO3/issues?"
 "state=open\">issues list in github</a>&mdash;what you're wishing for may "
 "already be on it."
 msgstr ""
@@ -1348,9 +1370,10 @@ msgid ""
 msgstr ""
 
 #: templates/help/whatis.html:46
+#, python-format
 msgid ""
-"<i>What if I have some other question?</i> <a href=\"mailto:gigomatic."
-"superuser@gmail.com\">Email Here!</a>"
+"<i>What if I have some other question?</i> <a href=\"mailto:"
+"%(help_email)s\"> Email Here!</a>"
 msgstr ""
 
 #: templates/help/whatis.html:48
@@ -1624,7 +1647,7 @@ msgstr ""
 "facebook, right-click on the image and select \"Copy Image URL\", then paste "
 "it here."
 
-#: templates/member/member_form.html:65
+#: templates/member/member_form.html:74
 msgid "Delete"
 msgstr ""
 
