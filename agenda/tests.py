@@ -82,7 +82,8 @@ class AgendaTest(GigTestBase):
             timezone="UTC",
             anyone_can_create_gigs=True,
         )
-        a2 = Assoc.objects.create(member=self.joeuser, band=b2, status=AssocStatusChoices.CONFIRMED)
+        
+        Assoc.objects.create(member=self.joeuser, band=b2, status=AssocStatusChoices.CONFIRMED)
         self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}", band=b2)
 
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/{self.band.id}')
