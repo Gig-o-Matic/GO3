@@ -53,14 +53,10 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
         context['url_base'] = URL_BASE
 
-        is_associated = True
-        if the_user.is_anonymous:
+        try:
+            assoc = Assoc.objects.get(band=the_band, member=the_user)
+        except Assoc.DoesNotExist:
             assoc = None
-        else:
-            try:
-                assoc = Assoc.objects.get(band=the_band, member=the_user)
-            except Assoc.DoesNotExist:
-                assoc = None
             
         is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
         context['the_user_is_associated'] = is_associated
@@ -92,21 +88,15 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
     #     return reverse('member-detail', kwargs={'pk': self.object.id})
 
 
-class PublicDetailView(generic.DetailView):
-    model = Band
-
-    def get_object(self):
-        try:
-            return Band.objects.get(condensed_name=self.kwargs['name'])
-        except:
-            return redirect('/')
+class PublicDetailView(TemplateView):
+    template_name = 'band/band_public.html'
 
     def get_context_data(self, **kwargs):
+        the_band = get_object_or_404(Band, condensed_name=self.kwargs['name'])
         
-        the_band = self.object
-
         context = super().get_context_data(**kwargs)
 
+        context['band'] = the_band
         context['url_base'] = URL_BASE            
         context['the_user_is_associated'] = False
 
