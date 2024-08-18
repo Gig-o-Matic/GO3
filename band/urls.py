@@ -35,7 +35,7 @@ urlpatterns = [
     path('<int:pk>/set_sections', helpers.set_sections, name='band-set-sections'), 
     path('<int:pk>/public_gigs', helpers.public_gigs, name='band-public-gigs'), 
 
-    path('pub/<str:name>/', helpers.band_public_page, name='band-public-page'),
+    path('pub/<str:name>/', views.PublicDetailView.as_view(), name='band-public-page'),
 
     path('assoc/<int:ak>/tfparam', helpers.set_assoc_tfparam, name='assoc-tfparam'),
     path('assoc/<int:ak>/color/<int:colorindex>', helpers.set_assoc_color, name='assoc-color'),

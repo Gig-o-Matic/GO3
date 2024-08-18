@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.db.models.functions import Lower
+from django.shortcuts import redirect
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
@@ -40,7 +41,7 @@ class BandList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'bands'
 
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     model = Band
     # fields = ['name', 'hometown']
 
@@ -86,9 +87,33 @@ class DetailView(generic.DetailView):
 
         return context
 
-    def get_success_url(self):
-        return reverse('member-detail', kwargs={'pk': self.object.id})
+    # todo - we don't need this?
+    # def get_success_url(self):
+    #     return reverse('member-detail', kwargs={'pk': self.object.id})
 
+
+class PublicDetailView(generic.DetailView):
+    model = Band
+
+    def get_object(self):
+        try:
+            return Band.objects.get(condensed_name=self.kwargs['name'])
+        except:
+            return redirect('/')
+
+    def get_context_data(self, **kwargs):
+        
+        the_band = self.object
+
+        context = super().get_context_data(**kwargs)
+
+        context['url_base'] = URL_BASE            
+        context['the_user_is_associated'] = False
+
+        if the_band.images:
+            context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
+
+        return context
 
 class UpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseUpdateView):
     model = Band
