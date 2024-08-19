@@ -1249,6 +1249,26 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.is_full_day, True)
 
+    def test_gig_zones(self):
+        self.band.timezone="US/Eastern"
+        self.band.save()
+        g, a, _= self.assoc_joe_and_create_gig(
+            is_full_day=True,
+            call_date="2/1/2030"
+        )
+        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
+
+        a.delete()
+
+        g, _, _= self.assoc_joe_and_create_gig(
+            is_full_day=True,
+            call_date="2/1/2030",
+            end_date="2/2/2030"
+        )
+        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
+        self.assertEqual(g.enddate.astimezone(pytz_timezone("US/Eastern")).day,2)
+
+
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):
         g, _, _ = self.assoc_joe_and_create_gig()
