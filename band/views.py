@@ -41,10 +41,14 @@ class BandList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'bands'
 
 
-class DetailView(LoginRequiredMixin, generic.DetailView):
+class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Band
-    # fields = ['name', 'hometown']
 
+    def test_func(self):
+        # if we're not active in the band, deny entry!
+        assoc = Assoc.objects.filter(band=self.kwargs['pk'], member=self.request.user).first()
+        return assoc and (self.request.user.is_superuser or assoc.status==AssocStatusChoices.CONFIRMED)
+                
     def get_context_data(self, **kwargs):
         the_band = self.object
         the_user = self.request.user
@@ -53,30 +57,25 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
         context['url_base'] = URL_BASE
 
-        try:
-            assoc = Assoc.objects.get(band=the_band, member=the_user)
-        except Assoc.DoesNotExist:
-            assoc = None
+        assoc = Assoc.objects.get(band=the_band, member=the_user)
             
         is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
-        context['the_user_is_associated'] = is_associated
 
-        if is_associated or (the_user and the_user.is_superuser):
-            context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
+        context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
 
-            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
-            context['the_invited_members'] = Invite.objects.filter(band=the_band)
+        context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
+        context['the_invited_members'] = Invite.objects.filter(band=the_band)
 
-            if the_band.member_links:
-                links = []
-                linklist = the_band.member_links.split('\n')
-                for l in linklist:
-                    parts = l.strip().split(':')
-                    if len(parts) == 2:
-                        links.append([l,l])
-                    else:
-                        links.append([parts[0],':'.join(parts[1:])])
-                context['the_member_links'] = links
+        if the_band.member_links:
+            links = []
+            linklist = the_band.member_links.split('\n')
+            for l in linklist:
+                parts = l.strip().split(':')
+                if len(parts) == 2:
+                    links.append([l,l])
+                else:
+                    links.append([parts[0],':'.join(parts[1:])])
+            context['the_member_links'] = links
 
         if the_band.images:
             context['the_images'] = [l.strip() for l in the_band.images.split('\n')]

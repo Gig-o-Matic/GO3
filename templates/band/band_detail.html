@@ -15,7 +15,7 @@
 
         <div class="page-header">
             {{ band.name }}
-            {% if the_user_is_associated and band.shortname %}
+            {% if band.shortname %}
                 <br>
                 ({% trans "a.k.a." %}&nbsp;{{ band.shortname }})
             {% endif %}
@@ -60,44 +60,42 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if the_user_is_associated or request.user.is_superuser %}
-                    <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "Resources" %}</div>
-                        <div class="col-sm-9 col-12">
-                                {% if the_member_links %}
-                                    {% for l in the_member_links %}
-                                        <a href="{{l.1}}" target="_new">{{ l.0 }}</a><br>
-                                    {% endfor %}
-                                {% endif %}
-                                <a href="{% url 'band-archive' pk=band.id %}">{% trans "Gig Archive" %}</a><br>
-                                {% if request.user.is_superuser or the_user_is_band_admin %}
-                                    <a href="{% url 'band-trashcan' pk=band.id %}">{% trans "Gig Trashcan" %}</a><br>
-                                {% endif %}
-                        </div>
+                <div class="row mt-4">
+                    <div class="col-sm-3 col-12">{% trans "Resources" %}</div>
+                    <div class="col-sm-9 col-12">
+                            {% if the_member_links %}
+                                {% for l in the_member_links %}
+                                    <a href="{{l.1}}" target="_new">{{ l.0 }}</a><br>
+                                {% endfor %}
+                            {% endif %}
+                            <a href="{% url 'band-archive' pk=band.id %}">{% trans "Gig Archive" %}</a><br>
+                            {% if request.user.is_superuser or the_user_is_band_admin %}
+                                <a href="{% url 'band-trashcan' pk=band.id %}">{% trans "Gig Trashcan" %}</a><br>
+                            {% endif %}
                     </div>
-                    <div class="row">
-                        <div class="col-12">
-                            &nbsp;
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        &nbsp;
                     </div>
-                    <div class="row">
-                        <div class="col-sm-3 col-12">{% trans "Public Profile" %}</div>
-                        <div class="col-sm-9 col-12">
-                                <a href="{{url_base}}/band/pub/{{band.condensed_name}}" target="new">{{url_base}}/band/pub/{{ band.condensed_name }}</a>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3 col-12">{% trans "Public Profile" %}</div>
+                    <div class="col-sm-9 col-12">
+                            <a href="{{url_base}}/band/pub/{{band.condensed_name}}" target="new">{{url_base}}/band/pub/{{ band.condensed_name }}</a>
                     </div>
-                    <div class="row">
-                        <div class="col-12">
-                            &nbsp;
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        &nbsp;
                     </div>
-                    <div class="row">
-                        <div class="col-sm-3 col-12">{% trans "Public Gig Calendar Feed" %}</div>
-                        <div class="col-sm-9 col-12">
-                                <a href="{% url 'band-calfeed' pk=band.pub_cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3 col-12">{% trans "Public Gig Calendar Feed" %}</div>
+                    <div class="col-sm-9 col-12">
+                            <a href="{% url 'band-calfeed' pk=band.pub_cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
                     </div>
-                {% endif %}
+                </div>
             </div> <!-- card-body -->
         </div> <!-- card -->
 
@@ -133,198 +131,163 @@
             </div>
         {% endif %}
 
-        {% if the_user_is_associated is False and request.user.is_superuser is False %}
-        {% if band.share_gigs %}
+        {% if the_user_is_band_admin and the_pending_members %}
             <div class="card mt-4">
                 <div class="card-header">
-                    <div class="row titlerow">
-                        <div class="col-12">
-                            {% trans "Upcoming Gigs" %}
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body" id="upcoming-gigs" hx-get="{% url 'band-public-gigs' pk=band.id %}" hx-trigger="load">
-                    <div class="row">
-                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-        {% comment %}
-            {% if the_user %}
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <div class="row titlerow"><div class="col-12">
-                            {% trans "Members With Public Profiles" %}
-                        </div></div>
-                    </div>
-                    <div class="card-body" id="public-members">
-                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                    </div>
-                </div>
-            {% endif %}
-        {% endcomment %}
-        {% elif the_user in the_pending_members and request.user.is_superuser == False %}
-            {% trans "Your membership is pending - ask a band member to confirm you!" %}
-        {% else %}
-            {% if the_user_is_band_admin and the_pending_members %}
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <div class="row titlerow" id="pending-members"><div class="col-12">
-                            {% trans "Pending Members" %} <span class="badge badge-pill badge-secondary">{{the_pending_members.all|length}}</span>
-                        </div></div>
-                    </div>
-                    <div class="card-body">
-                        {% for assoc in the_pending_members %}
-                        <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
-                            <div class="col-md-2 col-sm-2 col-12">
-                                <a href="{% url 'member-detail' pk=assoc.member.id %}">{{ assoc.member.display_name|escape }}</a>
-                            </div>
-                            <div class="col-md-4 col-sm-4 col-12">
-                                {{ assoc.member.email|escape }}
-                            </div>
-                            <div class="col-md-6 col-sm-6 col-12">
-                                <button class="btn btn-primary btn-sm"
-                                   hx-ext="reload-page"
-                                   hx-post="{% url 'assoc-confirm' ak=assoc.id %}"
-                                   hx-swap="none">
-                                    {% trans "yes, confirm member!" %}
-                                    <span class="htmx-indicator">
-                                        <i class="fa fa-spinner fa-spin fa-lg"></i>
-                                    </span>    
-                                </button>
-                                <button class="btn btn-secondary btn-sm"
-                                   hx-ext="reload-page"
-                                   hx-post="{% url 'assoc-delete' ak=assoc.id %}"
-                                   hx-swap="none">
-                                    {% trans "no, reject!" %}
-                                    <span class="htmx-indicator">
-                                        <i class="fa fa-spinner fa-spin fa-lg"></i>
-                                    </span>    
-                                </button>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div> <!-- panel -->
-            {% endif %}
-
-            {% if the_user_is_band_admin and the_invited_members %}
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <div class="row titlerow"><div class="col-12">
-                            {% trans "Invited Members" %} <span class="badge badge-pill badge-secondary">{{the_invited_members.all|length}}</span>
-                        </div></div>
-                    </div>
-                    <div class="card-body">
-                        {% for m in the_invited_members %}
-                        <div class="row">
-                            <div class="col-md-4 col-sm-4 col-4">
-                                {{ m.email }}
-                            </div>
-                            <div class="col-md-3 col-sm-3 col-3">
-                                <a href="{% url 'member-invite-delete' pk=m.id %}">{% trans "forget the invite" %}</a>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div> <!-- panel -->
-            {% endif %}
-            <div class="card mt-4">
-                <div class="card-header">
-                    <div class="row titlerow">
-                        {% if band.sections.populated|length == 1 %}
-                            <div class="col-sm-8 col-6">
-                                {% trans "Members" %}
-                                {% if the_user_is_band_admin or request.user.is_superuser %}
-                                    <button class="btn btn-primary btn-sm" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></button>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <div class="col-md-3 d-none d-md-block">
-                                {% trans "Sections" %}
-                            </div>
-                            <div class="col-md-5 col-sm-8 col-6">
-                                {% trans "Members" %}
-                                    {% if the_user_is_band_admin or request.user.is_superuser %}
-                                        <a class="btn btn-primary btn-sm" href="#" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></a>
-                                    {% endif %}
-                            </div>
-                        {% endif %}
-                        {% if the_user_is_band_admin or request.user.is_superuser %}
-                            <div class="col-sm-4 col-6 pr-0 text-right">
-                                <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
-                            </div>
-                        {% endif %}
-                    </div>
+                    <div class="row titlerow" id="pending-members"><div class="col-12">
+                        {% trans "Pending Members" %} <span class="badge badge-pill badge-secondary">{{the_pending_members.all|length}}</span>
+                    </div></div>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-12" id="sectionlist">
-                            {% for s in band.sections.populated %}
-                                <div class="row"
-                                     id="section{{forloop.counter0}}"
-                                     hx-get="{% url 'section-members' pk=band.id sk=s.id %}"
-                                     hx-trigger="load"
-                                     style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
-                            		<div class="col-12">
-                            			<i class="fas fa-spinner fa-pulse fa-lg"></i>
-                            		</div>
-                           	    </div>
-                        	{% endfor %}
+                    {% for assoc in the_pending_members %}
+                    <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                        <div class="col-md-2 col-sm-2 col-12">
+                            <a href="{% url 'member-detail' pk=assoc.member.id %}">{{ assoc.member.display_name|escape }}</a>
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-12">
+                            {{ assoc.member.email|escape }}
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-12">
+                            <button class="btn btn-primary btn-sm"
+                                hx-ext="reload-page"
+                                hx-post="{% url 'assoc-confirm' ak=assoc.id %}"
+                                hx-swap="none">
+                                {% trans "yes, confirm member!" %}
+                                <span class="htmx-indicator">
+                                    <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                </span>    
+                            </button>
+                            <button class="btn btn-secondary btn-sm"
+                                hx-ext="reload-page"
+                                hx-post="{% url 'assoc-delete' ak=assoc.id %}"
+                                hx-swap="none">
+                                {% trans "no, reject!" %}
+                                <span class="htmx-indicator">
+                                    <i class="fa fa-spinner fa-spin fa-lg"></i>
+                                </span>    
+                            </button>
                         </div>
                     </div>
-                    {% if request.user.is_superuser or the_user_is_band_admin %}
-                        <div class="row mt-2">
-                            <div class="col-12 justify-content-start">
-                                <a href="{% url 'band-section-setup' pk=band.id %}" class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
-                            </div>
+                    {% endfor %}
+                </div>
+            </div> <!-- panel -->
+        {% endif %}
+
+        {% if the_user_is_band_admin and the_invited_members %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="row titlerow"><div class="col-12">
+                        {% trans "Invited Members" %} <span class="badge badge-pill badge-secondary">{{the_invited_members.all|length}}</span>
+                    </div></div>
+                </div>
+                <div class="card-body">
+                    {% for m in the_invited_members %}
+                    <div class="row">
+                        <div class="col-md-4 col-sm-4 col-4">
+                            {{ m.email }}
+                        </div>
+                        <div class="col-md-3 col-sm-3 col-3">
+                            <a href="{% url 'member-invite-delete' pk=m.id %}">{% trans "forget the invite" %}</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div> <!-- panel -->
+        {% endif %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <div class="row titlerow">
+                    {% if band.sections.populated|length == 1 %}
+                        <div class="col-sm-8 col-6">
+                            {% trans "Members" %}
+                            {% if the_user_is_band_admin or request.user.is_superuser %}
+                                <button class="btn btn-primary btn-sm" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></button>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="col-md-3 d-none d-md-block">
+                            {% trans "Sections" %}
+                        </div>
+                        <div class="col-md-5 col-sm-8 col-6">
+                            {% trans "Members" %}
+                                {% if the_user_is_band_admin or request.user.is_superuser %}
+                                    <a class="btn btn-primary btn-sm" href="#" onclick="toggle_names(); return false;"><i class="fas fa-sync fs-lg"></i></a>
+                                {% endif %}
+                        </div>
+                    {% endif %}
+                    {% if the_user_is_band_admin or request.user.is_superuser %}
+                        <div class="col-sm-4 col-6 pr-0 text-right">
+                            <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
                         </div>
                     {% endif %}
                 </div>
-            </div> <!-- panel -->
-
-            {% if the_user_is_band_admin or request.user.is_superuser %}
-                <div class="mt-4 card">
-                    <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                        <a class="card-title titlerow">
-                            {% trans "Member Admin" %}
-                        </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12" id="sectionlist">
+                        {% for s in band.sections.populated %}
+                            <div class="row"
+                                    id="section{{forloop.counter0}}"
+                                    hx-get="{% url 'section-members' pk=band.id sk=s.id %}"
+                                    hx-trigger="load"
+                                    style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
+                                <div class="col-12">
+                                    <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    <div id="collapseOne" class="collapse card-body" role="tabpanel" aria-labelledby="headingOne">
-                        <div class="row">
-                            <div class="col-12">
-                                <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
-                                <a class="btn btn-primary btn-sm" href="{% url 'member-spreadsheet' pk=band.id %}">{% trans "Download Member List" %}</a>
-                                <a class="btn btn-primary btn-sm" href="{% url 'member-emails' pk=band.id %}">{% trans "Get Member Emails" %}</a>
-
-                            </div>
-                            <hr>
+                </div>
+                {% if request.user.is_superuser or the_user_is_band_admin %}
+                    <div class="row mt-2">
+                        <div class="col-12 justify-content-start">
+                            <a href="{% url 'band-section-setup' pk=band.id %}" class="btn btn-primary btn-sm" >{% trans "Set Up Sections" %}</a>
                         </div>
-                        <div class="row">
-                            <div class="col-12" id="memberlist" hx-get="{% url 'all-members' pk=band.id %}" hx-trigger="load">
-                                <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                            </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div> <!-- panel -->
+
+        {% if the_user_is_band_admin or request.user.is_superuser %}
+            <div class="mt-4 card">
+                <div class="card-header collapsed" data-toggle="collapse" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    <a class="card-title titlerow">
+                        {% trans "Member Admin" %}
+                    </a>
+                </div>
+                <div id="collapseOne" class="collapse card-body" role="tabpanel" aria-labelledby="headingOne">
+                    <div class="row">
+                        <div class="col-12">
+                            <a class="btn btn-primary btn-sm" href="{% url 'member-invite' bk=band.id %}">{% trans "Invite Members" %}</a>
+                            <a class="btn btn-primary btn-sm" href="{% url 'member-spreadsheet' pk=band.id %}">{% trans "Download Member List" %}</a>
+                            <a class="btn btn-primary btn-sm" href="{% url 'member-emails' pk=band.id %}">{% trans "Get Member Emails" %}</a>
+
+                        </div>
+                        <hr>
+                    </div>
+                    <div class="row">
+                        <div class="col-12" id="memberlist" hx-get="{% url 'all-members' pk=band.id %}" hx-trigger="load">
+                            <i class="fas fa-spinner fa-pulse fa-lg"></i>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="mt-4 card">
-                    <div class="card-header collapsed" data-toggle="collapse" href="#collapseTwo" aria-expanded="false" aria-controls="collapseOne">
-                        <a class="card-title titlerow">
-                            {% trans "Band Statistics" %}
-                        </a>
-                    </div>
-                    <div id="collapseTwo" class="collapse card-body" role="tabpanel" aria-labelledby="headingOne">
-                        <div class="row">
-                            <div class="col-12" id="bandstats" hx-get="{% url 'band-stats' pk=band.id %}" hx-trigger="load">
-                                <i class="fas fa-spinner fa-pulse fa-lg"></i>
-                            </div>
+            <div class="mt-4 card">
+                <div class="card-header collapsed" data-toggle="collapse" href="#collapseTwo" aria-expanded="false" aria-controls="collapseOne">
+                    <a class="card-title titlerow">
+                        {% trans "Band Statistics" %}
+                    </a>
+                </div>
+                <div id="collapseTwo" class="collapse card-body" role="tabpanel" aria-labelledby="headingOne">
+                    <div class="row">
+                        <div class="col-12" id="bandstats" hx-get="{% url 'band-stats' pk=band.id %}" hx-trigger="load">
+                            <i class="fas fa-spinner fa-pulse fa-lg"></i>
                         </div>
                     </div>
                 </div>
+            </div>
 
-            {% endif %}
         {% endif %}
     </div>
 </div>
