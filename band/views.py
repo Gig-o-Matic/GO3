@@ -45,9 +45,11 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Band
 
     def test_func(self):
+        if self.request.user.is_superuser:
+            return True
         # if we're not active in the band, deny entry!
         assoc = Assoc.objects.filter(band=self.kwargs['pk'], member=self.request.user).first()
-        return assoc and (self.request.user.is_superuser or assoc.status==AssocStatusChoices.CONFIRMED)
+        return assoc and assoc.status==AssocStatusChoices.CONFIRMED
                 
     def get_context_data(self, **kwargs):
         the_band = self.object
@@ -57,10 +59,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
 
         context['url_base'] = URL_BASE
 
-        assoc = Assoc.objects.get(band=the_band, member=the_user)
+        assoc = None if the_user.is_superuser else Assoc.objects.get(band=the_band, member=the_user)
             
-        is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
-
         context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
 
         context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
