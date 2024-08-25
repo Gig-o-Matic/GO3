@@ -309,7 +309,7 @@ msgstr ""
 
 #: go3/settings.py:209
 msgid "German"
-msgstr ""
+msgstr "Deutsch"
 
 #: go3/settings.py:210
 msgid "English (US)"
@@ -321,15 +321,15 @@ msgstr ""
 
 #: go3/settings.py:212
 msgid "Spanish"
-msgstr ""
+msgstr "Español"
 
 #: go3/settings.py:213
 msgid "French"
-msgstr ""
+msgstr "Français"
 
 #: go3/settings.py:214
 msgid "Italian"
-msgstr ""
+msgstr "Italiano"
 
 #: go3/tests.py:26 go3/tests.py:28 templates/agenda/agenda.html:5
 #: templates/agenda/agenda.html:11 templates/base/navbar.html:16
