@@ -206,12 +206,12 @@ PASSWORD_RESET_TIMEOUT = 2592000 # 30 days
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
 LANGUAGES = [
-    ("de", _("German")),
-    ("en-US", _("English (US)")),
-    ("en-GB", _("English (UK, AU, NZ, ...)")),
-    ("es", _("Spanish")),
-    ("fr", _("French")),
-    ("it", _("Italian")),
+    ("de", "Deutsch"),
+    ("en-US", "English (US)"),
+    ("en-GB", "English (UK, AU, NZ, ...)"),
+    ("es", "Español"),
+    ("fr", "Français"),
+    ("it", "Italiano"),
 ]
 
 LANGUAGE_CODE = "en-us"

@@ -186,6 +186,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        {% get_language_info for member.preferences.language as lang %}
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Lanuage" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-9">{{ lang.name_local|title }}</div>
+                        <div class="col-12 d-sm-none">{% trans "Language" %}: {{ lang.name_local|title }}</div>
+                    </div>
+                    <br>
+                    <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Hide canceled gigs" %}:</div>
                         <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                         <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
