@@ -625,11 +625,18 @@ class PublicBandPageTest(GigTestBase):
         """ the public page should be accessible to everyone. The band detail """
         """ page should only be accessible to members """
 
-        self.assoc_joe_and_create_gig()
+        _, a, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
+
         resp = self.client.get(
             reverse('band-detail', args=[self.band.id]))
         self.assertEqual(resp.status_code, 200)
+
+        a.status = AssocStatusChoices.NOT_CONFIRMED
+        a.save()
+        resp = self.client.get(
+            reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(resp.status_code, 403)
 
         otherband = Band.objects.create(name='other band', shortname="ob")
         resp = self.client.get(
