@@ -91,7 +91,7 @@ class PublicDetailView(TemplateView):
     template_name = 'band/band_public.html'
 
     def get_context_data(self, **kwargs):
-        the_band = get_object_or_404(Band, condensed_name=self.kwargs['name'])
+        the_band = get_object_or_404(Band, shortname=self.kwargs['name'])
         
         context = super().get_context_data(**kwargs)
 

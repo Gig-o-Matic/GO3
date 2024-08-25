@@ -621,6 +621,51 @@ class PublicBandPageTest(GigTestBase):
         content = response.content.decode("ascii")
         self.assertFalse("other band gig" in content)
 
+    def test_public_page_access(self):
+        """ the public page should be accessible to everyone. The band detail """
+        """ page should only be accessible to members """
+
+        self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.get(
+            reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(resp.status_code, 200)
+
+        otherband = Band.objects.create(name='other band', shortname="ob")
+        resp = self.client.get(
+            reverse('band-detail', args=[otherband.id]))
+        self.assertEqual(resp.status_code, 403)
+
+        resp = self.client.get(
+            reverse('band-public-page', args=[otherband.shortname]))
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(
+            reverse('band-public-page', args=["xyzzy"]))
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.get(reverse('logout'))
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, '/accounts/login')
+
+        # logged out, test again
+        resp = self.client.get(
+            reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, f'/accounts/login/?next=/band/{self.band.id}/')
+
+        resp = self.client.get(
+            reverse('band-detail', args=[otherband.id]))
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, f'/accounts/login/?next=/band/{otherband.id}/')
+
+        resp = self.client.get(
+            reverse('band-public-page', args=[otherband.shortname]))
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(
+            reverse('band-public-page', args=["xyzzy"]))
+        self.assertEqual(resp.status_code, 404)
 
 
 class BandCalfeedTest(FSTestCase):
