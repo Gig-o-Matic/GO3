@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
 from django.db.models.functions import Lower
+from django.shortcuts import redirect
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices, BandStatusChoices
@@ -40,10 +41,16 @@ class BandList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'bands'
 
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Band
-    # fields = ['name', 'hometown']
 
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        # if we're not active in the band, deny entry!
+        assoc = Assoc.objects.filter(band=self.kwargs['pk'], member=self.request.user).first()
+        return assoc and assoc.status==AssocStatusChoices.CONFIRMED
+                
     def get_context_data(self, **kwargs):
         the_band = self.object
         the_user = self.request.user
@@ -52,43 +59,50 @@ class DetailView(generic.DetailView):
 
         context['url_base'] = URL_BASE
 
-        is_associated = True
-        if the_user.is_anonymous:
-            assoc = None
-        else:
-            try:
-                assoc = Assoc.objects.get(band=the_band, member=the_user)
-            except Assoc.DoesNotExist:
-                assoc = None
+        assoc = None if the_user.is_superuser else Assoc.objects.get(band=the_band, member=the_user)
             
-        is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
-        context['the_user_is_associated'] = is_associated
+        context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
 
-        if is_associated or (the_user and the_user.is_superuser):
-            context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
+        context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
+        context['the_invited_members'] = Invite.objects.filter(band=the_band)
 
-            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
-            context['the_invited_members'] = Invite.objects.filter(band=the_band)
-
-            if the_band.member_links:
-                links = []
-                linklist = the_band.member_links.split('\n')
-                for l in linklist:
-                    parts = l.strip().split(':')
-                    if len(parts) == 2:
-                        links.append([l,l])
-                    else:
-                        links.append([parts[0],':'.join(parts[1:])])
-                context['the_member_links'] = links
+        if the_band.member_links:
+            links = []
+            linklist = the_band.member_links.split('\n')
+            for l in linklist:
+                parts = l.strip().split(':')
+                if len(parts) == 2:
+                    links.append([l,l])
+                else:
+                    links.append([parts[0],':'.join(parts[1:])])
+            context['the_member_links'] = links
 
         if the_band.images:
             context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
 
         return context
 
-    def get_success_url(self):
-        return reverse('member-detail', kwargs={'pk': self.object.id})
+    # todo - we don't need this?
+    # def get_success_url(self):
+    #     return reverse('member-detail', kwargs={'pk': self.object.id})
 
+
+class PublicDetailView(TemplateView):
+    template_name = 'band/band_public.html'
+
+    def get_context_data(self, **kwargs):
+        the_band = get_object_or_404(Band, shortname=self.kwargs['name'])
+        
+        context = super().get_context_data(**kwargs)
+
+        context['band'] = the_band
+        context['url_base'] = URL_BASE            
+        context['the_user_is_associated'] = False
+
+        if the_band.images:
+            context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
+
+        return context
 
 class UpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseUpdateView):
     model = Band

@@ -1,0 +1,176 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Band Info" %}{% endblock title %}
+
+{% block headcontent %}
+
+{% endblock headcontent %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-8 col-md-10 col-12">
+
+        <div class="page-header">
+            {{ band.name }}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-4">
+                        {% trans "Info" %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        {% if band.description %}
+                            {{ band.description | linebreaksbr }}
+                        {% else %}
+                            {% trans "A Band of Mystery..." %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if band.hometown %}
+                    <div class="row mt-4">
+                        <div class="col-sm-3 col-12">{% trans "Hometown" %}</div>
+                        <div class="col-sm-9 col-12">
+                            <a href="http://maps.google.com?q={{band.hometown}}" target="new">{{ band.hometown }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if band.website %}
+                    <div class="row mt-4">
+                        <div class="col-sm-3 col-12">{% trans "Website" %}</div>
+                        <div class="col-sm-9 col-12">
+                            <a href="{{band.website|escape}}" target="new">{{band.website|escape}}</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div> <!-- card-body -->
+        </div> <!-- card -->
+
+        {% if the_images %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Pictures Of Us" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="pictures">
+                    <div id="bandimages" class="carousel slide" data-ride="carousel">
+                      <div class="carousel-inner">
+                        {% for i in the_images %}
+                            <div class="carousel-item{% if forloop.counter == 1 %} active{% endif %}">
+                              <img class="d-block img-fluid" src="{{i}}">
+                            </div>
+                        {% endfor %}
+                      </div>
+                      <a class="carousel-control-prev" href="#bandimages" role="button" data-slide="prev">
+                        <i class="fas fa-chevron-left fa-2x" style="color:gray;" aria-hidden="true"></i>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                      <a class="carousel-control-next" href="#bandimages" role="button" data-slide="next">
+                        <i class="fas fa-chevron-right fa-2x" style="color:gray;" aria-hidden="true"></i>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    </div>
+
+                </div>
+            </div>
+        {% endif %}
+        {% if band.share_gigs %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Upcoming Gigs" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="upcoming-gigs" hx-get="{% url 'band-public-gigs' pk=band.id %}" hx-trigger="load">
+                    <div class="row">
+                        <i class="fas fa-spinner fa-pulse fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block modal %}
+{% endblock modal %}
+
+{% block localscripts %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="{% static 'js/band_stats.js' %}"></script>
+{% comment %}
+<script src="/js/jquery.validate.js"></script>
+{% endcomment %}
+<script src="{% static "js/plan_buttons.js" %}"></script>
+
+<script>
+
+// TODO
+function updateUpcoming() {
+    if (document.getElementById('upcoming-gigs')) {
+        $.post('/band_get_upcoming',
+            {
+                bk: '{{ band.id }}'
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    document.getElementById('upcoming-gigs').innerHTML=responseTxt;
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+    }
+}
+
+// TODO
+function updatePublic() {
+    if (document.getElementById('public-members')) {
+        $.post('/band_get_public_members',
+            {
+                bk: '{{ band.id }}'
+            },
+            function(responseTxt,statusTxt,xhr){
+                if(statusTxt=="success")
+                    document.getElementById('public-members').innerHTML=responseTxt;
+                if(statusTxt=="error")
+                    alert("Error: "+xhr.status+": "+xhr.statusText);
+            });
+    }
+}
+
+var nicknames=true;
+function toggle_names() {
+    nicknames = !nicknames;
+    if (nicknames) {
+        $('.the_nickname').show();
+        $('.the_longname').hide();
+    } else {
+        $('.the_nickname').hide();
+        $('.the_longname').show();
+    };
+}
+
+htmx.on("htmx:afterSettle", function(evt) {
+    if (evt['target'].id == 'bandstats') {
+        initStats('bandcharts');
+    }
+});
+
+
+$(document).ready(function() {
+    updateUpcoming();
+    updatePublic();
+});
+</script>
+{% endblock localscripts %}
