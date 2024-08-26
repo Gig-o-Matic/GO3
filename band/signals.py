@@ -16,14 +16,27 @@
 """
 from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
+from django.db.models import Q
 from .models import Band, Assoc, Section
 from .util import AssocStatusChoices
 from gig.models import Plan
 from gig.helpers import update_plan_default_section
+from unidecode import unidecode
 
 @receiver(pre_save, sender=Band)
 def set_condensed_name(sender, instance, **kwargs):
-    instance.condensed_name = ''.join(instance.name.split()).lower()
+
+    # take out non-ascii characters
+    cname = ''.join(instance.name.split()).lower()
+    cname = unidecode(cname)
+    count = Band.objects.filter(condensed_name=cname)
+    if instance.id:
+        # make sure we don't mean ourselves - this could happen if we're saving the band for another reason
+        count = count.filter(~Q(id=instance.id))
+    count = count.count()
+    if count > 0:
+        cname = f'{cname}{count}'
+    instance.condensed_name = cname
 
 @receiver(post_save, sender=Band)
 def set_default_section(sender, instance, created, **kwargs):
