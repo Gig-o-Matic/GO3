@@ -21,7 +21,7 @@ from .models import Band, Assoc, Section
 from .util import AssocStatusChoices
 from gig.models import Plan
 from gig.helpers import update_plan_default_section
-from unidecode import unidecode
+from text_unidecode import unidecode
 
 @receiver(pre_save, sender=Band)
 def set_condensed_name(sender, instance, **kwargs):
