@@ -340,6 +340,26 @@ class MemberTests(TestCase):
         self.assertIsNone(do_delete_assoc(a))
 
 class BandTests(GigTestBase):
+    def test_condensed_name(self):
+        b1 = Band.objects.create(name="condense test")
+        self.assertEqual(b1.condensed_name, "condensetest")
+        
+        # fire the signal again but make sure it doesn't affect anything
+        b1.save()
+        self.assertEqual(b1.condensed_name, "condensetest")
+        
+        b2 = Band.objects.create(name="condense test")
+        self.assertNotEqual(b2.condensed_name, b1.condensed_name)
+        self.assertEqual(b2.condensed_name, "condensetest1")
+
+        # fire the signal again but make sure it doesn't affect anything
+        b2.save()
+        self.assertEqual(b2.condensed_name, "condensetest1")
+
+        # make sure we're only using ascii characters, too
+        b3 = Band.objects.create(name="fünny çharacters😀")
+        self.assertEqual(b3.condensed_name, "funnycharacters")
+
 
     def test_edit_permissions(self):
         self.assertTrue(self.band.is_editor(self.band_admin))
