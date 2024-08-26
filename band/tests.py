@@ -638,13 +638,13 @@ class PublicBandPageTest(GigTestBase):
             reverse('band-detail', args=[self.band.id]))
         self.assertEqual(resp.status_code, 403)
 
-        otherband = Band.objects.create(name='other band', shortname="ob")
+        otherband = Band.objects.create(name='other band')
         resp = self.client.get(
             reverse('band-detail', args=[otherband.id]))
         self.assertEqual(resp.status_code, 403)
 
         resp = self.client.get(
-            reverse('band-public-page', args=[otherband.shortname]))
+            reverse('band-public-page', args=[otherband.condensed_name]))
         self.assertEqual(resp.status_code, 200)
 
         resp = self.client.get(
@@ -667,7 +667,7 @@ class PublicBandPageTest(GigTestBase):
         self.assertEqual(resp.url, f'/accounts/login/?next=/band/{otherband.id}/')
 
         resp = self.client.get(
-            reverse('band-public-page', args=[otherband.shortname]))
+            reverse('band-public-page', args=[otherband.condensed_name]))
         self.assertEqual(resp.status_code, 200)
 
         resp = self.client.get(
