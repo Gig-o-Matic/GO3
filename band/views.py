@@ -12,7 +12,7 @@ from django.db.models.functions import Lower
 from django.shortcuts import redirect
 from .models import Band, Assoc, Section
 from .forms import BandForm
-from .util import AssocStatusChoices, BandStatusChoices
+from .util import AssocStatusChoices, _get_active_bands
 from member.models import Invite
 from member.util import MemberStatusChoices
 from member.helpers import has_manage_band_permission
@@ -20,7 +20,6 @@ from stats.helpers import get_band_stats, get_gigs_over_time_stats
 from stats.util import dateconverter
 import json
 from django.utils.safestring import SafeString
-from datetime import date
 from django.utils.translation import gettext_lazy as _
 from go3.settings import URL_BASE
 
@@ -36,8 +35,9 @@ class BandMemberRequiredMixin(UserPassesTestMixin):
         )
 
 class BandList(LoginRequiredMixin, generic.ListView):
-    queryset = Band.objects.filter(
-        status=BandStatusChoices.ACTIVE).order_by('name')
+    def get_queryset(self):
+        return _get_active_bands()
+    
     context_object_name = 'bands'
 
 
