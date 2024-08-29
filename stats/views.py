@@ -3,6 +3,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .helpers import get_all_gigs_over_time_stats, get_emails_for_date, get_emails_for_all_bands
 from .util import dateconverter
+from band.util import _get_active_bands, _get_inactive_bands
 import json
 from datetime import datetime, timedelta
 from go3.settings import URL_BASE
@@ -26,5 +27,8 @@ class AllStatsView(LoginRequiredMixin, TemplateView):
         data = get_emails_for_all_bands(10)
         y = [[x[0].name, x[1],x[2]] for x in data]
         context['top_email_bands'] = y
+
+        context['active_bands_count'] = _get_active_bands().count()
+        context['inactive_bands'] = _get_inactive_bands()
 
         return context
