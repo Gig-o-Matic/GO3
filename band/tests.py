@@ -21,7 +21,7 @@ from django.urls import reverse
 from django.core import mail
 from .models import Band, Assoc, Section
 from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, do_delete_assoc
-from .util import _get_active_bands, _get_inactive_bands
+from .util import _get_active_bands, _get_inactive_bands, _get_active_band_members
 from member.models import Member
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices
@@ -996,3 +996,53 @@ class ActiveBandTests(TestCase):
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 in list)
         self.assertTrue(b3 not in list)
+
+    def test_active_members(self):
+        # set up an active band and an inactive band
+        b1 = Band.objects.create(name='testband1')
+        b2 = Band.objects.create(name='testband2')
+
+        with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=60)):
+            # active band
+            Gig.objects.create(band=b1, title="future past", date=datetime.now(pytz_timezone('UTC'))+timedelta(days=100))
+            # inactive band
+            Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
+
+        list=_get_active_bands()
+        self.assertEqual(list.count(), 1)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 not in list)
+
+        # now make some members
+        m1 = Member.objects.create_user(email='1@h.i')
+        m2 = Member.objects.create_user(email='2@h.i')
+        m3 = Member.objects.create_user(email='3@h.i')
+
+        # join the bands
+        Assoc.objects.create(band=b1, member=m1, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(band=b2, member=m2, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(band=b1, member=m3, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(band=b2, member=m3, status=AssocStatusChoices.CONFIRMED)
+
+        list = _get_active_band_members()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(m1 in list)
+        self.assertTrue(m2 not in list)
+        self.assertTrue(m3 in list)
+
+        # add another inactive band
+        b3 = Band.objects.create(name='testband2')
+        Assoc.objects.create(band=b3, member=m1, status=AssocStatusChoices.CONFIRMED)
+        list = _get_active_band_members()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(m1 in list)
+        self.assertTrue(m2 not in list)
+        self.assertTrue(m3 in list)
+
+        # now make it active
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+        list = _get_active_band_members()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(m1 in list)
+        self.assertTrue(m2 not in list)
+        self.assertTrue(m3 in list)
