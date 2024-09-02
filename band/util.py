@@ -49,11 +49,6 @@ def _get_inactive_bands():
     """ return list of bands that haven't made a gig lately (or ever) """
     b = apps.get_model('band','Band')
 
-    # queryset = apps.get_model('band','Band').objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
-    # queryset = queryset.annotate(most_recent_gig=Max("gigs__created_date"))
-    # threshold = datetime.now(timezone('UTC')) - timedelta(days=30)
-    # queryset = queryset.filter( Q(most_recent_gig__lte = threshold) | Q(most_recent_gig = None))
-
     all = b.objects.all()
     active = _get_active_bands()
 
