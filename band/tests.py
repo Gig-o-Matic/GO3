@@ -21,15 +21,16 @@ from django.urls import reverse
 from django.core import mail
 from .models import Band, Assoc, Section
 from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, do_delete_assoc
+from .util import _get_active_bands, _get_inactive_bands
 from member.models import Member
 from gig.models import Gig, Plan
-from gig.util import GigStatusChoices, PlanStatusChoices
+from gig.util import GigStatusChoices
 from band import helpers
 from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
 from gig.tests import GigTestBase
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
 import pytz
 from pytz import timezone as pytz_timezone
 from graphene.test import Client as graphQLClient
@@ -38,6 +39,7 @@ import json
 import os
 from django.conf import settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
+from freezegun import freeze_time
 
 
 class MemberTests(TestCase):
@@ -868,3 +870,93 @@ class GraphQLTest(TestCase):
             } }""", context_value=self.context_value
         )
         assert "errors" in executed
+
+class ActiveBandTests(TestCase):
+    def test_active_band_list(self):
+
+        def _make_gig(band, title, days_ago):
+            with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=days_ago)):
+                Gig.objects.create(band=band, title=title, date=datetime.now(pytz_timezone('UTC')))
+
+        b1 = Band.objects.create(name='testband1')
+        b2 = Band.objects.create(name='testband2')
+        b3 = Band.objects.create(name='testband3')
+
+        # first, should get no bands because there are no gigs
+        list = _get_active_bands()
+        self.assertTrue(list.count()==0)
+
+        # make a gig for a band
+        _make_gig(b1,"test1",1)
+        list=_get_active_bands()
+        self.assertEqual(list.count(), 1)
+        self.assertEqual(list.first(), b1)
+
+        # now create a gig for a second band
+        _make_gig(b2,"test2",2)
+        list=_get_active_bands()
+        self.assertEqual(list.count(), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+
+        # now create a gig in the distant past for a third band
+        _make_gig(b3,"test3",31)
+        list=_get_active_bands()
+        self.assertEqual(list.count(), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+        self.assertFalse(b3 in list)
+
+        # now wake the third band up
+        _make_gig(b3,"test4",29)
+        list=_get_active_bands()
+        self.assertEqual(list.count(), 3)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 in list)
+
+    def test_inactive_band_list(self):
+
+        def _make_gig(band, title, days_ago):
+            with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=days_ago)):
+                Gig.objects.create(band=band, title=title, date=datetime.now(pytz_timezone('UTC')))
+
+        b1 = Band.objects.create(name='testband1')
+        b2 = Band.objects.create(name='testband2')
+        b3 = Band.objects.create(name='testband3')
+
+        # first, should get no bands because there are no gigs
+        list = _get_inactive_bands()
+        self.assertTrue(list.count()==3)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 in list)
+
+        # make a gig for a band
+        _make_gig(b1,"test1",1)
+        list=_get_inactive_bands()
+        self.assertEqual(list.count(), 2)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 in list)        
+
+        # now create a gig for a second band
+        _make_gig(b2,"test2",2)
+        list=_get_inactive_bands()
+        self.assertEqual(list.count(), 1)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)        
+
+        # now create a gig in the distant past for a third band
+        _make_gig(b3,"test3",31)
+        list=_get_inactive_bands()
+        self.assertEqual(list.count(), 1)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)        
+
+        # now wake the third band up
+        _make_gig(b3,"test4",29)
+        list=_get_inactive_bands()
+        self.assertEqual(list.count(), 0)
