@@ -35,15 +35,15 @@ class AssocStatusChoices(models.IntegerChoices):
 def _get_active_bands():
     """ return list of bands that have made a gig in the last month """
     b = apps.get_model('band','Band')
-    queryset = b.objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
-    queryset = queryset.annotate(most_recent_gig=Max("gigs__created_date"))
-    threshold = datetime.now(timezone('UTC')) - timedelta(days=30)
-    queryset = queryset.filter(most_recent_gig__gt = threshold)
+    queryset = b.objects.filter(status=BandStatusChoices.ACTIVE)
+    queryset = queryset.annotate(most_recent_gig=Max("gigs__created_date"), last_gig=Max("gigs__date"))
+    now = datetime.now(timezone('UTC'))
+    threshold =  now - timedelta(days=30)
+    # find bands who have created a gig in the last [threshold] days, or have a gig in the future
+    queryset = queryset.filter(Q(most_recent_gig__gt = threshold) | Q(last_gig__gt = now ))
+    queryset = queryset.order_by('name')
 
-    # now find bands that have gigs in the future
-    future_gigs = b.objects.filter(gigs__date__gt = datetime.now(timezone('UTC')))
-
-    return list(set(queryset | future_gigs))
+    return list(queryset)
 
 def _get_inactive_bands():
     """ return list of bands that haven't made a gig lately (or ever) """
@@ -58,7 +58,7 @@ def _get_inactive_bands():
     active = _get_active_bands()
 
     # this is inefficient but using the union or ^ functions doesn't seem to work
-    inactive = all.exclude(id__in=[x.id for x in active])
+    inactive = all.exclude(id__in=[x.id for x in active]).order_by('name')
 
     return list(inactive)
 
