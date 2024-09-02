@@ -43,7 +43,7 @@ def _get_active_bands():
     # now find bands that have gigs in the future
     future_gigs = b.objects.filter(gigs__date__gt = datetime.now(timezone('UTC')))
 
-    return queryset | future_gigs
+    return list(set(queryset | future_gigs))
 
 def _get_inactive_bands():
     """ return list of bands that haven't made a gig lately (or ever) """
@@ -58,9 +58,9 @@ def _get_inactive_bands():
     active = _get_active_bands()
 
     # this is inefficient but using the union or ^ functions doesn't seem to work
-    inactive = all.exclude(id__in=active)
+    inactive = all.exclude(id__in=[x.id for x in active])
 
-    return inactive
+    return list(inactive)
 
 def _get_active_band_members():
     """ return list of bands that haven't made a gig lately (or ever) """
