@@ -915,6 +915,23 @@ class ActiveBandTests(TestCase):
         self.assertTrue(b2 in list)
         self.assertTrue(b3 in list)
 
+        # now: test that a band that created its last gig more than 30 days ago BUT has gigs in the future is
+        # noted as still being active
+
+        Gig.objects.all().delete()
+
+        with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=60)):
+            Gig.objects.create(band=b1, title="future past1", date=datetime.now(pytz_timezone('UTC'))+timedelta(days=100))
+            Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+
+
+        list=_get_active_bands()
+        self.assertEqual(list.count(), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)
+
     def test_inactive_band_list(self):
 
         def _make_gig(band, title, days_ago):
@@ -960,3 +977,22 @@ class ActiveBandTests(TestCase):
         _make_gig(b3,"test4",29)
         list=_get_inactive_bands()
         self.assertEqual(list.count(), 0)
+
+        # now: test that a band that created its last gig more than 30 days ago BUT has gigs in the future is
+        # not noted as being in active
+
+        Gig.objects.all().delete()
+
+        with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=60)):
+            # 60 days ago a band makes a gig 100 days in the future
+            Gig.objects.create(band=b1, title="future past", date=datetime.now(pytz_timezone('UTC'))+timedelta(days=100))
+            # 60 days ago a band makes a gig 60 days ago
+            Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
+        # now, a band makes a gig now
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+
+        list=_get_inactive_bands()
+        self.assertEqual(list.count(), 1)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 not in list)

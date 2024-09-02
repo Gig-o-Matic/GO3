@@ -34,16 +34,30 @@ class AssocStatusChoices(models.IntegerChoices):
 
 def _get_active_bands():
     """ return list of bands that have made a gig in the last month """
-    queryset = apps.get_model('band','Band').objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
+    b = apps.get_model('band','Band')
+    queryset = b.objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
     queryset = queryset.annotate(most_recent_gig=Max("gigs__created_date"))
     threshold = datetime.now(timezone('UTC')) - timedelta(days=30)
     queryset = queryset.filter(most_recent_gig__gt = threshold)
-    return queryset
+
+    # now find bands that have gigs in the future
+    future_gigs = b.objects.filter(gigs__date__gt = datetime.now(timezone('UTC')))
+
+    return queryset | future_gigs
 
 def _get_inactive_bands():
     """ return list of bands that haven't made a gig lately (or ever) """
-    queryset = apps.get_model('band','Band').objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
-    queryset = queryset.annotate(most_recent_gig=Max("gigs__created_date"))
-    threshold = datetime.now(timezone('UTC')) - timedelta(days=30)
-    queryset = queryset.filter( Q(most_recent_gig__lte = threshold) | Q(most_recent_gig = None))
-    return queryset
+    b = apps.get_model('band','Band')
+
+    # queryset = apps.get_model('band','Band').objects.filter(status=BandStatusChoices.ACTIVE).order_by('name')
+    # queryset = queryset.annotate(most_recent_gig=Max("gigs__created_date"))
+    # threshold = datetime.now(timezone('UTC')) - timedelta(days=30)
+    # queryset = queryset.filter( Q(most_recent_gig__lte = threshold) | Q(most_recent_gig = None))
+
+    all = b.objects.all()
+    active = _get_active_bands()
+
+    # this is inefficient but using the union or ^ functions doesn't seem to work
+    inactive = all.exclude(id__in=active)
+
+    return inactive
