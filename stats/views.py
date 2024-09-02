@@ -16,9 +16,9 @@ class AllStatsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['url_base'] = URL_BASE
         context['the_stats'] = []
-        context['the_stats'].append(['Active Bands Count', [_get_active_bands().count()]])
+        context['the_stats'].append(['Active Bands Count', [len(_get_active_bands())]])
         context['the_stats'].append(['Active Member Count',[len(_get_active_band_members())]])
-        context['the_stats'].append(['Inactive Bands', [_get_inactive_bands().count()]])
+        context['the_stats'].append(['Inactive Bands', [len(_get_inactive_bands())]])
         context['the_stats'].append(['Emails Sent Today',[get_emails_for_date(datetime.now().date())]])
         context['the_stats'].append(['Emails Sent Yesterday',[get_emails_for_date((datetime.now().date())-timedelta(days=1))]])
 

@@ -884,25 +884,25 @@ class ActiveBandTests(TestCase):
 
         # first, should get no bands because there are no gigs
         list = _get_active_bands()
-        self.assertTrue(list.count()==0)
+        self.assertTrue(len(list)==0)
 
         # make a gig for a band
         _make_gig(b1,"test1",1)
         list=_get_active_bands()
-        self.assertEqual(list.count(), 1)
-        self.assertEqual(list.first(), b1)
+        self.assertEqual(len(list), 1)
+        self.assertEqual(list[0], b1)
 
         # now create a gig for a second band
         _make_gig(b2,"test2",2)
         list=_get_active_bands()
-        self.assertEqual(list.count(), 2)
+        self.assertEqual(len(list), 2)
         self.assertTrue(b1 in list)
         self.assertTrue(b2 in list)
 
         # now create a gig in the distant past for a third band
         _make_gig(b3,"test3",31)
         list=_get_active_bands()
-        self.assertEqual(list.count(), 2)
+        self.assertEqual(len(list), 2)
         self.assertTrue(b1 in list)
         self.assertTrue(b2 in list)
         self.assertFalse(b3 in list)
@@ -910,7 +910,7 @@ class ActiveBandTests(TestCase):
         # now wake the third band up
         _make_gig(b3,"test4",29)
         list=_get_active_bands()
-        self.assertEqual(list.count(), 3)
+        self.assertEqual(len(list), 3)
         self.assertTrue(b1 in list)
         self.assertTrue(b2 in list)
         self.assertTrue(b3 in list)
@@ -925,9 +925,16 @@ class ActiveBandTests(TestCase):
             Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
         Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
 
-
         list=_get_active_bands()
-        self.assertEqual(list.count(), 2)
+        self.assertEqual(len(list), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)
+
+        # add another gig and make sure each band only shows up once
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+        list=_get_active_bands()
+        self.assertEqual(len(list), 2)
         self.assertTrue(b1 in list)
         self.assertTrue(b2 not in list)
         self.assertTrue(b3 in list)
@@ -944,7 +951,7 @@ class ActiveBandTests(TestCase):
 
         # first, should get no bands because there are no gigs
         list = _get_inactive_bands()
-        self.assertTrue(list.count()==3)
+        self.assertTrue(len(list)==3)
         self.assertTrue(b1 in list)
         self.assertTrue(b2 in list)
         self.assertTrue(b3 in list)
@@ -952,7 +959,7 @@ class ActiveBandTests(TestCase):
         # make a gig for a band
         _make_gig(b1,"test1",1)
         list=_get_inactive_bands()
-        self.assertEqual(list.count(), 2)
+        self.assertEqual(len(list), 2)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 in list)
         self.assertTrue(b3 in list)        
@@ -960,7 +967,7 @@ class ActiveBandTests(TestCase):
         # now create a gig for a second band
         _make_gig(b2,"test2",2)
         list=_get_inactive_bands()
-        self.assertEqual(list.count(), 1)
+        self.assertEqual(len(list), 1)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 not in list)
         self.assertTrue(b3 in list)        
@@ -968,7 +975,7 @@ class ActiveBandTests(TestCase):
         # now create a gig in the distant past for a third band
         _make_gig(b3,"test3",31)
         list=_get_inactive_bands()
-        self.assertEqual(list.count(), 1)
+        self.assertEqual(len(list), 1)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 not in list)
         self.assertTrue(b3 in list)        
@@ -976,7 +983,7 @@ class ActiveBandTests(TestCase):
         # now wake the third band up
         _make_gig(b3,"test4",29)
         list=_get_inactive_bands()
-        self.assertEqual(list.count(), 0)
+        self.assertEqual(len(list), 0)
 
         # now: test that a band that created its last gig more than 30 days ago BUT has gigs in the future is
         # not noted as being in active
@@ -992,7 +999,7 @@ class ActiveBandTests(TestCase):
         Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
 
         list=_get_inactive_bands()
-        self.assertEqual(list.count(), 1)
+        self.assertEqual(len(list), 1)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 in list)
         self.assertTrue(b3 not in list)
@@ -1009,7 +1016,7 @@ class ActiveBandTests(TestCase):
             Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
 
         list=_get_active_bands()
-        self.assertEqual(list.count(), 1)
+        self.assertEqual(len(list), 1)
         self.assertTrue(b1 in list)
         self.assertTrue(b2 not in list)
 
