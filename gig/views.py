@@ -44,13 +44,6 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
-    def get_template_names(self):
-        if self.object.is_archived:
-            self.template_name_suffix = '_detail_archived'
-
-        t = super().get_template_names()
-        return t
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['the_user_is_band_admin'] = has_band_admin(
