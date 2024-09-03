@@ -37,7 +37,7 @@ class BandMemberRequiredMixin(UserPassesTestMixin):
 class BandList(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         pk_list = [obj.pk for obj in _get_active_bands()]
-        return Band.objects.filter(pk__in=pk_list)
+        return Band.objects.filter(pk__in=pk_list).order_by('name')
     
     context_object_name = 'bands'
 
