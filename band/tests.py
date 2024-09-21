@@ -40,6 +40,7 @@ import os
 from django.conf import settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from freezegun import freeze_time
+import pytest
 
 
 class MemberTests(TestCase):
@@ -696,7 +697,7 @@ class PublicBandPageTest(GigTestBase):
             reverse('band-public-page', args=["xyzzy"]))
         self.assertEqual(resp.status_code, 404)
 
-
+@pytest.mark.django_db
 class BandCalfeedTest(FSTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -726,7 +727,7 @@ class BandCalfeedTest(FSTestCase):
         the_date = timezone.datetime(
             2100, 1, 2, tzinfo=pytz.timezone(self.band.timezone))
         Gig.objects.create(
-            title="Gig1",
+            title="Good Gig",
             band_id=self.band.id,
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
@@ -734,7 +735,7 @@ class BandCalfeedTest(FSTestCase):
             status=GigStatusChoices.CONFIRMED
         )
         Gig.objects.create(
-            title="Gig2",
+            title="Private Gig",
             band_id=self.band.id,
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
@@ -743,19 +744,39 @@ class BandCalfeedTest(FSTestCase):
             status=GigStatusChoices.CONFIRMED
         )
         Gig.objects.create(
-            title="Gig3",
+            title="Canceled Gig",
             band_id=self.band.id,
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
             status=GigStatusChoices.CANCELED
         )
+        Gig.objects.create(
+            title="Trashed Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED,
+            trashed_date=datetime.now(pytz_timezone('UTC')),            
+        )
+        Gig.objects.create(
+            title="Archived Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED,
+            is_archived=True,            
+        )
 
     def test_band_caldav_stream(self):
         cf = prepare_band_calfeed(self.band)
-        self.assertTrue(cf.find(b'Gig1') >= 0)
-        self.assertTrue(cf.find(b'Gig2') < 0)
-        self.assertTrue(cf.find(b'Gig3') < 0)
+        self.assertTrue(cf.find(b'Good Gig') >= 0)
+        self.assertTrue(cf.find(b'Private Gig') < 0)
+        self.assertTrue(cf.find(b'Canceled Gig') < 0)
+        self.assertTrue(cf.find(b'Trashed Gig') < 0)
+        self.assertTrue(cf.find(b'Archived Gig') >= 0)
 
     def test_member_calfeed_bad_url(self):
         """ fail on bad calfeed url """
