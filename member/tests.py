@@ -41,6 +41,7 @@ from gig.tests import GigTestBase
 import pytz
 import os
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
+import pytest
 
 class MemberTest(TestCase):
     def setUp(self):
@@ -195,7 +196,7 @@ class MemberEmailTest(TestCase):
         # We want a new line, but it could show up as "<br>" or "<br />"
         self.assertIn('<br', message.alternatives[0][0])
 
-
+@pytest.mark.django_db
 class MemberCalfeedTest(FSTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -363,7 +364,7 @@ class MemberCalfeedTest(FSTestCase):
         self.joeuser.refresh_from_db()
         self.assertTrue(self.joeuser.cal_feed_dirty)
 
-
+@pytest.mark.django_db
 class InviteTest(TemplateTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(

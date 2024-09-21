@@ -29,6 +29,7 @@ from datetime import timedelta
 from django.utils import timezone
 import pytz
 from django.conf import settings
+import pytest
 
 class EmailTest(TestCase):
 
@@ -154,7 +155,7 @@ class CaldavTest(TestCase):
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),'de', self.joeuser.cal_feed_id)
         self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n',cf)
 
-
+@pytest.mark.django_db
 class CaldavFileTest(FSTestCase):
 
     def setUp(self):
