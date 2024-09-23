@@ -160,8 +160,8 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
 
     def __init__(self, **kwargs):
-        self.fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-                'calendar_show_only_committed', 'agenda_use_classic']
+        self.fields = ['language','share_profile','share_email','calendar_show_only_confirmed',
+                'calendar_show_only_committed', 'hide_canceled_gigs', 'agenda_use_classic']
         super().__init__(**kwargs)
     
     def dispatch(self, request, *args, **kwargs):
