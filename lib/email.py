@@ -27,7 +27,7 @@ class EmailRecipient:
 
     @property
     def email_line(self):
-        return f'{self.name} <{self.email}>' if self.name else self.email
+        return f'"{self.name}" <{self.email}>' if self.name else self.email
 
 
 def prepare_email(recipient, template, context=None, **kw):
