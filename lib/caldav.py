@@ -51,12 +51,12 @@ def delete_calfeed(tag):
             default_storage.delete(file_path)
 
 
-def make_calfeed(the_title, the_events, the_language, the_uid):
+def make_calfeed(the_title, the_events, the_language, the_uid, is_for_band=False):
     """ construct an ical-compliant stream from a list of events """
 
     def _make_summary(event):
         """ makes the summary: the title, plus band name and status """
-        return f'{event.band.name}:{event.title} ({GigStatusChoices(event.status).label})'
+        return f'{event.title} ({GigStatusChoices(event.status).label}) - {event.band.name}'
 
     def _make_description(event):
         """ description is the details, plus the setlist """
@@ -89,7 +89,7 @@ def make_calfeed(the_title, the_events, the_language, the_uid):
                     enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
                     event.add('dtend', enddate, {'value': 'DATE'})
                 else:
-                    event.add('dtstart', e.date)
+                    event.add('dtstart', e.setdate if (is_for_band and e.setdate) else e.date)
                     event.add(
                         'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
                 event.add('description', _make_description(e))

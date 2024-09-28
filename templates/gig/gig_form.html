@@ -49,11 +49,6 @@
                     {% render_field form.status class="form-control" %}
                 </div>
             </div>
-            <div class="form-group">
-                {{ form.is_private.errors }}
-                {% render_field form.is_private %}
-                {{ form.is_private.label_tag }}
-            </div>
              
             <div class="row">
                 <div class="col-4">
@@ -227,6 +222,13 @@
                     {{ form.hide_from_calendar.errors }}
                     {{ form.hide_from_calendar }}
                     {{ form.hide_from_calendar.label_tag }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    {{ form.is_private.errors }}
+                    {% render_field form.is_private %}
+                    {{ form.is_private.label_tag }}
                 </div>
             </div>
             <div class="row">

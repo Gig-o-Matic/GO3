@@ -261,10 +261,11 @@ def prepare_band_calfeed(band):
         "date__gt": date_earliest,
         "status": GigStatusChoices.CONFIRMED,
         "hide_from_calendar": False,
+        "trashed_date": None,
     }
 
     the_gigs = Gig.objects.filter(**filter_args)
-    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id)
+    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id,is_for_band=True)
     return cf
 
 
@@ -299,3 +300,23 @@ def band_public_page(request, name):
         return redirect('/')
 
     return redirect('band-detail', pk=band.id)
+
+def public_gigs(request, pk):
+    the_band = get_object_or_404(Band, pk=pk)
+
+    threshold_date = timezone.now() - timedelta(hours=4)
+    the_gigs = Gig.objects.filter(band=the_band,
+                                  date__gt=threshold_date,
+                                trashed_date__isnull=True,
+                                is_archived=False,
+                                is_private=False,
+                            ).order_by('date')
+
+
+    # the_gigs = Gig.objects.filter(band=the_band, is_private=False, )
+    return render(request, 'band/public_gigs.html',
+        {
+            'band': the_band,
+            'gigs': the_gigs,
+        }
+    )

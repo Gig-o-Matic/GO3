@@ -27,10 +27,12 @@ from django.db.models import Q
 from .models import Gig, Plan
 from .util import PlanStatusChoices
 from band.models import Section, Assoc, AssocStatusChoices
+from stats.tasks import register_sent_emails
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
 from datetime import timedelta
+from collections import Counter
 import uuid
 import calendar
 
@@ -138,6 +140,9 @@ def generate_changes(latest, previous):
 
     if 'details' in diff.changed_fields:
         changes.append((_('Details'), _('(See below.)'), None))
+
+    if 'setlist' in diff.changed_fields:
+        changes.append((_('Set List'), None, None))
     
     if 'dress' in diff.changed_fields:
         changes.append((_('What To Wear'), _('(See below.)'), None))
@@ -179,6 +184,10 @@ def send_emails_from_plans(plans_query, template, dates=None):
     # occasional
     contactable = contactable.filter(Q(gig__invite_occasionals=True) | Q(assoc__is_occasional=False))
     send_messages_async(email_from_plan(p, template, dates) for p in contactable)
+
+    # do this as a counter even though any specific call of this will be for a single band.
+    if contactable.count():
+        register_sent_emails(contactable.first().gig.band, contactable.count())
 
 def send_email_from_gig(gig, template, dates=None):
     send_emails_from_plans(gig.member_plans, template, dates)

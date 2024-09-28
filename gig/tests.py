@@ -192,6 +192,18 @@ class GigTestBase(TestCase):
         p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
 
+    def add_members(self,num,band=None):
+        c = Member.objects.count()
+        members = []
+        assocs = []
+        if band is None:
+            band = self.band
+        for i in range(c,num+c):
+            m = Member.objects.create_user(email=f'member{i}@b.c')
+            members.append(m)
+            a = Assoc.objects.create(member=m, band=band, status=AssocStatusChoices.CONFIRMED)
+            assocs.append(a)
+        return members, assocs
 
 class GigTest(GigTestBase):
     def test_no_section(self):
@@ -662,6 +674,31 @@ class GigTest(GigTestBase):
         self.assertIn(self.janeuser.display_name, message.body)
         self.assertIn(f"(was {self.joeuser.display_name})", message.body)
 
+    def test_gig_edit_setlist(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.update_gig_form(g)
+
+        mail.outbox = []
+        self.update_gig_form(
+            g, setlist="Tequila\nLand of a Thousand Dances"
+        )
+
+        message = mail.outbox[0]
+        self.assertIn("(Set List)", message.subject)
+
+    def test_gig_edit_address(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.update_gig_form(g)
+
+        mail.outbox = []
+        self.update_gig_form(
+            g, address="123 Main St. Anytown, MN 55016"
+        )
+
+        message = mail.outbox[0]
+        self.assertIn("(Address)", message.subject)
+        self.assertIn("Address: 123 Main St. Anytown, MN 55016", message.body)
+
     def test_gig_edit_trans(self):
         self.joeuser.preferences.language = "de"
         self.joeuser.save()
@@ -942,7 +979,10 @@ class GigTest(GigTestBase):
         return obj
 
     def test_duplicate_gig(self):
-        g1, _, _ = self.assoc_joe_and_create_gig()
+        self.band.anyone_can_create_gigs = False
+        self.band.save()
+
+        g1, _, _ = self.assoc_joe_and_create_gig(user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 1)
 
         _ = self.duplicate_gig_form(
@@ -1209,6 +1249,26 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.is_full_day, True)
 
+    def test_gig_zones(self):
+        self.band.timezone="US/Eastern"
+        self.band.save()
+        g, a, _= self.assoc_joe_and_create_gig(
+            is_full_day=True,
+            call_date="2/1/2030"
+        )
+        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
+
+        a.delete()
+
+        g, _, _= self.assoc_joe_and_create_gig(
+            is_full_day=True,
+            call_date="2/1/2030",
+            end_date="2/2/2030"
+        )
+        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
+        self.assertEqual(g.enddate.astimezone(pytz_timezone("US/Eastern")).day,2)
+
+
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):
         g, _, _ = self.assoc_joe_and_create_gig()
@@ -1264,8 +1324,15 @@ class GigSecurityTest(GigTestBase):
         self.assertEqual(response.status_code, 200) # pass - we're assoc'd
         self.band.anyone_can_manage_gigs = False
         self.band.save()
+        self.band.refresh_from_db()
+        g.band.refresh_from_db()
         response = c.get(reverse("gig-update", args=[g.id]))
         self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+
+        g.creator = self.janeuser
+        g.save()
+        response = c.get(reverse("gig-update", args=[g.id]))
+        self.assertEqual(response.status_code, 200) # pass if we created the gig
 
         c = Client()
         response = c.get(reverse("gig-update", args=[g.id]))

@@ -44,18 +44,13 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
-    def get_template_names(self):
-        if self.object.is_archived:
-            self.template_name_suffix = '_detail_archived'
-
-        t = super().get_template_names()
-        return t
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['the_user_is_band_admin'] = has_band_admin(
             self.request.user, self.object.band)
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
+            self.request.user, self.object.band) or self.object.creator == self.request.user
+        context['user_has_create_gig_permission'] = has_create_gig_permission(
             self.request.user, self.object.band)
 
         if self.object.enddate:
@@ -180,7 +175,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     def test_func(self):
         # can only edit the gig if you're logged in and in the band        
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return has_manage_gig_permission(self.request.user, gig.band)
+        return has_manage_gig_permission(self.request.user, gig.band) or (gig.creator==self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -227,7 +222,7 @@ class DuplicateView(CreateView):
         if not self.request.user.is_authenticated:
             return self.handle_no_permission()
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.is_editor(self.request.user)
+        return has_create_gig_permission(self.request.user, gig.band)
 
     def get_context_data(self, **kwargs):
         self.original_gig = Gig.objects.get(id=self.kwargs['pk'])

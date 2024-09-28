@@ -29,7 +29,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView, LoginView
 from django.contrib import messages
 from go3.colors import the_colors
 from go3.settings import env
@@ -158,8 +158,16 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
-    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-        'calendar_show_only_committed']
+
+    def __init__(self, **kwargs):
+        self.fields = ['language','share_profile','share_email','calendar_show_only_confirmed',
+                'calendar_show_only_committed', 'hide_canceled_gigs', 'agenda_use_classic']
+        super().__init__(**kwargs)
+    
+    def dispatch(self, request, *args, **kwargs):
+        if isinstance(request.user, Member) and request.user.is_beta_tester:
+            self.fields.append('agenda_layout')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
             m = Member.objects.get(id=self.kwargs['pk'])
@@ -443,16 +451,21 @@ def confirm_email(request, pk):
         valid = False
 
     if valid:
-        if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
-            valid=False
-        else:
-            conf.member.email = conf.new_email
-            conf.member.save()
-            conf.delete()
+        # we have a valid reponse, so change the user's email
+        conf.member.email = conf.new_email
+        conf.member.save()
+        conf.delete()
+        translation.activate(conf.member.preferences.language)
 
-    def set_language(response):
+    return render(request, 'member/email_change_confirmation.html', {'validlink': valid})
+
+
+class LanguageLoginView(LoginView):
+    """ we override the default loginview and set the user's preferential language """
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        translation.activate(self.request.user.preferences.language)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.request.user.preferences.language )
         return response
 
-    return set_language(
-                render(request, 'member/email_change_confirmation.html',
-                        {'validlink': valid}))

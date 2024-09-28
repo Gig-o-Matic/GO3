@@ -18,17 +18,23 @@ from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from django.utils import timezone
-from member.util import AgendaChoices
+from member.util import AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc
 from band.util import AssocStatusChoices
 from datetime import datetime
 import json
 from graphene_django.views import GraphQLView
+from django.utils.translation import gettext_lazy as _
+
 
 
 @login_required
 def AgendaSelector(request):
+
+    if request.user.band_count == 0:
+        return redirect("/member")
 
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
@@ -53,6 +59,43 @@ class AgendaView(AgendaBaseView):
         if self.request.user.assocs.count() > 0:
             b = self.request.user.assocs.first().band
             timezone.activate(b.timezone)
+
+        # Depending on the layout they want, send different instructions
+
+        if self.request.user.preferences.agenda_use_classic:
+            if len(self.request.user.future_noplans) == 0:
+                context['noplans'] = False
+            else:
+                context['noplans'] = True
+        else:
+            layout = self.request.user.preferences.agenda_layout
+            if layout == AgendaLayoutChoices.HAS_RESPONSE:
+                layout = AgendaLayoutChoices.ONE_LIST
+                
+            layout_band = self.request.user.preferences.agenda_band
+            context['the_layout'] = layout
+
+            # the buttons are an array for the template to chew on:
+            # * layout type
+            # * button label
+            # * band (if it's a band filter otherwise ignored)
+            # * True if the button is active
+            # * True if it's the 'needs response' button
+            context['the_buttons'] = [
+                [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0,
+                 layout==AgendaLayoutChoices.ONE_LIST, False],
+                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0,
+                    layout==AgendaLayoutChoices.NEED_RESPONSE, True],
+            ]
+
+            bands = [a.band for a in self.request.user.confirmed_assocs if not a.hide_from_schedule]
+            if len(bands) > 1:
+                for b in bands:
+                    context['the_buttons'].append(
+                        [AgendaLayoutChoices.BY_BAND, 
+                         b.shortname if b.shortname else b.name, b.id,
+                         layout==AgendaLayoutChoices.BY_BAND and layout_band==b, False]
+                    )
 
         return context
 

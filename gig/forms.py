@@ -103,9 +103,10 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = False
             self.cleaned_data['has_end_time'] = False
 
-            date=date.replace(tzinfo=tzone(self.fields['timezone'].initial))
+            date = tzone(self.fields['timezone'].initial).localize(date)
             if end_date:
-                end_date=end_date.replace(tzinfo=tzone(self.fields['timezone'].initial))
+                end_date = tzone(self.fields['timezone'].initial).localize(end_date)
+
             self.cleaned_data['date'] = date
             self.cleaned_data['setdate'] = None
             self.cleaned_data['enddate'] = end_date
@@ -173,7 +174,7 @@ class GigForm(forms.ModelForm):
     datenotes = forms.Field(required=False, label=_('Date Notes'))
 
 
-    is_private = forms.BooleanField(required=False, label=_('Hide From Public Gig Feed'))
+    is_private = forms.BooleanField(required=False, label=_('Hide from public gig feed'))
 
     add_series = forms.BooleanField(required=False, label=_('Add A Series Of Copies'))
     total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=1, max_value=10)

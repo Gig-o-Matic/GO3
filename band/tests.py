@@ -21,15 +21,16 @@ from django.urls import reverse
 from django.core import mail
 from .models import Band, Assoc, Section
 from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, do_delete_assoc
+from .util import _get_active_bands, _get_inactive_bands, _get_active_band_members
 from member.models import Member
 from gig.models import Gig, Plan
-from gig.util import GigStatusChoices, PlanStatusChoices
+from gig.util import GigStatusChoices
 from band import helpers
 from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
 from gig.tests import GigTestBase
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
 import pytz
 from pytz import timezone as pytz_timezone
 from graphene.test import Client as graphQLClient
@@ -38,6 +39,8 @@ import json
 import os
 from django.conf import settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
+from freezegun import freeze_time
+import pytest
 
 
 class MemberTests(TestCase):
@@ -340,6 +343,26 @@ class MemberTests(TestCase):
         self.assertIsNone(do_delete_assoc(a))
 
 class BandTests(GigTestBase):
+    def test_condensed_name(self):
+        b1 = Band.objects.create(name="condense test")
+        self.assertEqual(b1.condensed_name, "condensetest")
+        
+        # fire the signal again but make sure it doesn't affect anything
+        b1.save()
+        self.assertEqual(b1.condensed_name, "condensetest")
+        
+        b2 = Band.objects.create(name="condense test")
+        self.assertNotEqual(b2.condensed_name, b1.condensed_name)
+        self.assertEqual(b2.condensed_name, "condensetest1")
+
+        # fire the signal again but make sure it doesn't affect anything
+        b2.save()
+        self.assertEqual(b2.condensed_name, "condensetest1")
+
+        # make sure we're only using ascii characters, too
+        b3 = Band.objects.create(name="fünny çharacters😀")
+        self.assertEqual(b3.condensed_name, "funnycharacters")
+
 
     def test_edit_permissions(self):
         self.assertTrue(self.band.is_editor(self.band_admin))
@@ -596,6 +619,85 @@ class SectionTest(TestCase):
         section2 = band.sections.create(name="Section 2")
         self.assertGreater(section2.order, section1.order)
 
+class PublicBandPageTest(GigTestBase):
+    def test_public_gigs(self):
+        band = self.band
+        Assoc.objects.create(
+            member=self.joeuser, band=band, status=AssocStatusChoices.CONFIRMED
+        )
+        self.create_gig_form(contact=self.joeuser, title="test1")
+        self.create_gig_form(contact=self.joeuser, title="test2", is_private=True)
+        self.create_gig_form(contact=self.joeuser, title="test3")
+
+        response = self.client.post(reverse('band-public-gigs', args=[band.id]))
+        content = response.content.decode("ascii")
+        self.assertTrue("test1" in content)
+        self.assertFalse("test2" in content)
+        self.assertTrue("test3" in content)
+
+        otherband = Band.objects.create(name='other band')
+        Assoc.objects.create(member=self.joeuser,
+                             band=otherband, is_admin=True, status=AssocStatusChoices.CONFIRMED)
+        self.create_gig_form(contact=self.joeuser, title="other band gig", band=otherband)
+
+        response = self.client.post(reverse('band-public-gigs', args=[band.id]))
+        content = response.content.decode("ascii")
+        self.assertFalse("other band gig" in content)
+
+    def test_public_page_access(self):
+        """ the public page should be accessible to everyone. The band detail """
+        """ page should only be accessible to members """
+
+        _, a, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+
+        resp = self.client.get(
+            reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(resp.status_code, 200)
+
+        a.status = AssocStatusChoices.NOT_CONFIRMED
+        a.save()
+        resp = self.client.get(
+            reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(resp.status_code, 403)
+
+        otherband = Band.objects.create(name='other band')
+        resp = self.client.get(
+            reverse('band-detail', args=[otherband.id]))
+        self.assertEqual(resp.status_code, 403)
+
+        resp = self.client.get(
+            reverse('band-public-page', args=[otherband.condensed_name]))
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(
+            reverse('band-public-page', args=["xyzzy"]))
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.get(reverse('logout'))
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, '/accounts/login')
+
+        # logged out, test again
+        resp = self.client.get(
+            reverse('band-detail', args=[self.band.id]))
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, f'/accounts/login/?next=/band/{self.band.id}/')
+
+        resp = self.client.get(
+            reverse('band-detail', args=[otherband.id]))
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, f'/accounts/login/?next=/band/{otherband.id}/')
+
+        resp = self.client.get(
+            reverse('band-public-page', args=[otherband.condensed_name]))
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(
+            reverse('band-public-page', args=["xyzzy"]))
+        self.assertEqual(resp.status_code, 404)
+
+@pytest.mark.django_db
 class BandCalfeedTest(FSTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -625,7 +727,7 @@ class BandCalfeedTest(FSTestCase):
         the_date = timezone.datetime(
             2100, 1, 2, tzinfo=pytz.timezone(self.band.timezone))
         Gig.objects.create(
-            title="Gig1",
+            title="Good Gig",
             band_id=self.band.id,
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
@@ -633,7 +735,7 @@ class BandCalfeedTest(FSTestCase):
             status=GigStatusChoices.CONFIRMED
         )
         Gig.objects.create(
-            title="Gig2",
+            title="Private Gig",
             band_id=self.band.id,
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
@@ -642,19 +744,39 @@ class BandCalfeedTest(FSTestCase):
             status=GigStatusChoices.CONFIRMED
         )
         Gig.objects.create(
-            title="Gig3",
+            title="Canceled Gig",
             band_id=self.band.id,
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
             status=GigStatusChoices.CANCELED
         )
+        Gig.objects.create(
+            title="Trashed Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED,
+            trashed_date=datetime.now(pytz_timezone('UTC')),            
+        )
+        Gig.objects.create(
+            title="Archived Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED,
+            is_archived=True,            
+        )
 
     def test_band_caldav_stream(self):
         cf = prepare_band_calfeed(self.band)
-        self.assertTrue(cf.find(b'Gig1') >= 0)
-        self.assertTrue(cf.find(b'Gig2') < 0)
-        self.assertTrue(cf.find(b'Gig3') < 0)
+        self.assertTrue(cf.find(b'Good Gig') >= 0)
+        self.assertTrue(cf.find(b'Private Gig') < 0)
+        self.assertTrue(cf.find(b'Canceled Gig') < 0)
+        self.assertTrue(cf.find(b'Trashed Gig') < 0)
+        self.assertTrue(cf.find(b'Archived Gig') >= 0)
 
     def test_member_calfeed_bad_url(self):
         """ fail on bad calfeed url """
@@ -769,3 +891,186 @@ class GraphQLTest(TestCase):
             } }""", context_value=self.context_value
         )
         assert "errors" in executed
+
+class ActiveBandTests(TestCase):
+    def test_active_band_list(self):
+
+        def _make_gig(band, title, days_ago):
+            with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=days_ago)):
+                Gig.objects.create(band=band, title=title, date=datetime.now(pytz_timezone('UTC')))
+
+        b1 = Band.objects.create(name='testband1')
+        b2 = Band.objects.create(name='testband2')
+        b3 = Band.objects.create(name='testband3')
+
+        # first, should get no bands because there are no gigs
+        list = _get_active_bands()
+        self.assertTrue(len(list)==0)
+
+        # make a gig for a band
+        _make_gig(b1,"test1",1)
+        list=_get_active_bands()
+        self.assertEqual(len(list), 1)
+        self.assertEqual(list[0], b1)
+
+        # now create a gig for a second band
+        _make_gig(b2,"test2",2)
+        list=_get_active_bands()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+
+        # now create a gig in the distant past for a third band
+        _make_gig(b3,"test3",31)
+        list=_get_active_bands()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+        self.assertFalse(b3 in list)
+
+        # now wake the third band up
+        _make_gig(b3,"test4",29)
+        list=_get_active_bands()
+        self.assertEqual(len(list), 3)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 in list)
+
+        # now: test that a band that created its last gig more than 30 days ago BUT has gigs in the future is
+        # noted as still being active
+
+        Gig.objects.all().delete()
+
+        with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=60)):
+            Gig.objects.create(band=b1, title="future past1", date=datetime.now(pytz_timezone('UTC'))+timedelta(days=100))
+            Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+
+        list=_get_active_bands()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)
+
+        # add another gig and make sure each band only shows up once
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+        list=_get_active_bands()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)
+
+    def test_inactive_band_list(self):
+
+        def _make_gig(band, title, days_ago):
+            with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=days_ago)):
+                Gig.objects.create(band=band, title=title, date=datetime.now(pytz_timezone('UTC')))
+
+        b1 = Band.objects.create(name='testband1')
+        b2 = Band.objects.create(name='testband2')
+        b3 = Band.objects.create(name='testband3')
+
+        # first, should get no bands because there are no gigs
+        list = _get_inactive_bands()
+        self.assertTrue(len(list)==3)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 in list)
+
+        # make a gig for a band
+        _make_gig(b1,"test1",1)
+        list=_get_inactive_bands()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 in list)        
+
+        # now create a gig for a second band
+        _make_gig(b2,"test2",2)
+        list=_get_inactive_bands()
+        self.assertEqual(len(list), 1)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)        
+
+        # now create a gig in the distant past for a third band
+        _make_gig(b3,"test3",31)
+        list=_get_inactive_bands()
+        self.assertEqual(len(list), 1)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 not in list)
+        self.assertTrue(b3 in list)        
+
+        # now wake the third band up
+        _make_gig(b3,"test4",29)
+        list=_get_inactive_bands()
+        self.assertEqual(len(list), 0)
+
+        # now: test that a band that created its last gig more than 30 days ago BUT has gigs in the future is
+        # not noted as being in active
+
+        Gig.objects.all().delete()
+
+        with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=60)):
+            # 60 days ago a band makes a gig 100 days in the future
+            Gig.objects.create(band=b1, title="future past", date=datetime.now(pytz_timezone('UTC'))+timedelta(days=100))
+            # 60 days ago a band makes a gig 60 days ago
+            Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
+        # now, a band makes a gig now
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+
+        list=_get_inactive_bands()
+        self.assertEqual(len(list), 1)
+        self.assertTrue(b1 not in list)
+        self.assertTrue(b2 in list)
+        self.assertTrue(b3 not in list)
+
+    def test_active_members(self):
+        # set up an active band and an inactive band
+        b1 = Band.objects.create(name='testband1')
+        b2 = Band.objects.create(name='testband2')
+
+        with freeze_time(datetime.now(pytz_timezone('UTC')) - timedelta(days=60)):
+            # active band
+            Gig.objects.create(band=b1, title="future past", date=datetime.now(pytz_timezone('UTC'))+timedelta(days=100))
+            # inactive band
+            Gig.objects.create(band=b2, title="future past2", date=datetime.now(pytz_timezone('UTC')))
+
+        list=_get_active_bands()
+        self.assertEqual(len(list), 1)
+        self.assertTrue(b1 in list)
+        self.assertTrue(b2 not in list)
+
+        # now make some members
+        m1 = Member.objects.create_user(email='1@h.i')
+        m2 = Member.objects.create_user(email='2@h.i')
+        m3 = Member.objects.create_user(email='3@h.i')
+
+        # join the bands
+        Assoc.objects.create(band=b1, member=m1, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(band=b2, member=m2, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(band=b1, member=m3, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(band=b2, member=m3, status=AssocStatusChoices.CONFIRMED)
+
+        list = _get_active_band_members()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(m1 in list)
+        self.assertTrue(m2 not in list)
+        self.assertTrue(m3 in list)
+
+        # add another inactive band
+        b3 = Band.objects.create(name='testband2')
+        Assoc.objects.create(band=b3, member=m1, status=AssocStatusChoices.CONFIRMED)
+        list = _get_active_band_members()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(m1 in list)
+        self.assertTrue(m2 not in list)
+        self.assertTrue(m3 in list)
+
+        # now make it active
+        Gig.objects.create(band=b3, title="future past3", date=datetime.now(pytz_timezone('UTC')))
+        list = _get_active_band_members()
+        self.assertEqual(len(list), 2)
+        self.assertTrue(m1 in list)
+        self.assertTrue(m2 not in list)
+        self.assertTrue(m3 in list)

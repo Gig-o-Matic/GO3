@@ -13,7 +13,7 @@
     <div class="mx-auto col-lg-8 col-md-10 col-12">
 
         <div class="page-header">
-            {% trans "Gig Info" %}
+            {% if gig.is_archived %}{% trans "Archived" %} {% endif %}{% trans "Gig Info" %}
         </div>
 
         <div class="card">
@@ -22,12 +22,16 @@
                     <div class="col-4">
                         {% trans "Info" %}
                     </div>
-                    {% if user_has_manage_gig_permission and gig.is_in_trash == False and gig.is_archived == False %}
-                        <div class="ml-auto">
-                            <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
-                            <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
-                        </div>
-                    {% endif %}
+                    <div class="ml-auto">
+                        {% if gig.is_in_trash == False and gig.is_archived == False %}
+                            {% if user_has_manage_gig_permission  %}
+                                <a class="btn btn-primary btn-sm" href="{% url 'gig-update' gig.id %}">{% trans "Edit" %}</a>
+                            {% endif %}
+                        {% endif %}
+                        {% if user_has_create_gig_permission  %}
+                                <a class="btn btn-primary btn-sm" href="{% url 'gig-duplicate' gig.id %}">{% trans "Duplicate" %}</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -79,9 +83,9 @@
                 <div class="row">&nbsp;</div>
                 <div class="row">
                     <div class="col-2"><i class="fas fa-calendar"></i></div>
-                    <div class="col-10">{{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                    <div class="col-10">{{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }} ({{ gig.date|date:"l" }})
                         {% if multi_day_gig %}
-                            - {{ gig.enddate|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                            - {{ gig.enddate|naturalday:"SHORT_DATE_FORMAT"|capfirst }} ({{ gig.enddate|date:"l" }})
                         {% endif %}
                     </div>
                 </div>
@@ -220,7 +224,7 @@
                         <span id="simpleon">{% trans "Show Committed" %}</span>
                         </a>
 
-                        {% if user_has_manage_gig_permission %}
+                        {% if user_has_manage_gig_permission and not gig.is_archived and not gig.is_in_trash %}
                             {% if not gig.was_reminded %}
                             <span id="showremind"><a href="#" onclick="sendreminder(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-envelope"></i>
                             	{% trans "Remind" %}

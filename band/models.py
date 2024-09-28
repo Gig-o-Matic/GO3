@@ -122,6 +122,7 @@ class Band(models.Model):
     def past_gigs(self):
         the_date = timezone.now()
         return self.gigs.filter(
+            Q(is_archived=True) |
             (Q(enddate=None) & Q(date__lt=the_date)) |
             (~Q(enddate=None) & Q(enddate__lt=the_date))
         ).order_by('date')
