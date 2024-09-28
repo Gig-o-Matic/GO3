@@ -163,7 +163,17 @@ class MemberEmailTest(TestCase):
     def test_email_to_username(self):
         self.member.username = 'Member Username'
         message = prepare_email(self.member.as_email_recipient(), 't:')
-        self.assertEqual(message.to[0], '"Member Username" <member@example.com>')
+        self.assertEqual(message.to[0], 'Member Username <member@example.com>')
+
+    def test_email_to_username_with_special_chars(self):
+        self.member.username = 'Member Username :)'
+        message = prepare_email(self.member.as_email_recipient(), 't:')
+        self.assertEqual(message.to[0], '"Member Username :)" <member@example.com>')
+
+    def test_email_to_username_with_doublequotes(self):
+        self.member.username = 'Member "Username"'
+        message = prepare_email(self.member.as_email_recipient(), 't:')
+        self.assertEqual(message.to[0], '"Member \\"Username\\"" <member@example.com>')
 
     def test_translation_en(self):
         message = prepare_email(

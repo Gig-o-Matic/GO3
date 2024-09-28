@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.utils import translation
 from django_q.tasks import async_task
 from markdown import markdown
+import email.utils
 
 from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE
 
@@ -27,8 +28,7 @@ class EmailRecipient:
 
     @property
     def email_line(self):
-        return f'"{self.name}" <{self.email}>' if self.name else self.email
-
+        return email.utils.formataddr([self.name, self.email])
 
 def prepare_email(recipient, template, context=None, **kw):
     if not context:
