@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.db.models.functions import Lower
 from django.shortcuts import redirect
 from .models import Band, Assoc, Section
@@ -16,11 +17,14 @@ from .util import AssocStatusChoices, _get_active_bands
 from member.models import Invite
 from member.util import MemberStatusChoices
 from member.helpers import has_manage_band_permission
+from gig.models import Gig
 from stats.helpers import get_band_stats, get_gigs_over_time_stats
 from stats.util import dateconverter
 import json
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
+from pytz import timezone
+from babel.dates import format_date
 from go3.settings import URL_BASE
 
 class BandMemberRequiredMixin(UserPassesTestMixin):
@@ -238,6 +242,22 @@ def member_spreadsheet(request, pk):
 
     return response
 
+@login_required
+@login_required
+def archive_spreadsheet(request, pk):
+    band = get_object_or_404(Band, pk=pk)
+    if not (band.is_admin(request.user) or request.user.is_superuser):
+        raise PermissionDenied
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{band.shortname or band.name} archive.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['date ', 'gig', 'contact'])
+    for gig in Gig.objects.filter(band=band, is_archived=True):
+        date = gig.date.strftime('%x')
+        writer.writerow([date, gig.title, gig.contact.username])
+
+    return response
 
 @login_required
 def member_emails(request, pk):

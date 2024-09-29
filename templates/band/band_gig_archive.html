@@ -14,7 +14,7 @@
         <div class="row">
             <div class="col-12">
                 <br>
-                <a class="btn btn-primary btn-sm" href="archive_spreadsheet?bk={{the_band.id}}"><i class="fas fa-download"></i> Download Archive</a>
+                <a class="btn btn-primary btn-sm" href="{% url 'archive-spreadsheet' pk=band.id %}"><i class="fas fa-download"></i> Download Archive</a>
                 <br><br>
             </div>
         </div>
