@@ -28,6 +28,7 @@ urlpatterns = [
     path('<int:pk>/stats/', views.BandStatsView.as_view(), name='band-stats'),
     path('<int:pk>/section/<int:sk>', views.SectionMembersView.as_view(), name='section-members'),
     path('<int:pk>/member_spreadsheet', views.member_spreadsheet, name='member-spreadsheet'),
+    path('<int:pk>/archive_spreadsheet', views.archive_spreadsheet, name='archive-spreadsheet'),
     path('<int:pk>/member_emails', views.member_emails, name='member-emails'),
     path('<int:pk>/trashcan', views.TrashcanView.as_view(), name='band-trashcan'),
     path('<int:pk>/archive', views.ArchiveView.as_view(), name='band-archive'),
