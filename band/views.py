@@ -243,11 +243,18 @@ def member_spreadsheet(request, pk):
     return response
 
 @login_required
-@login_required
 def archive_spreadsheet(request, pk):
     band = get_object_or_404(Band, pk=pk)
-    if not (band.is_admin(request.user) or request.user.is_superuser):
-        raise PermissionDenied
+
+    if request.user.is_superuser:
+        pass
+    else:
+        # if we're not active in the band, deny entry!
+        assoc = Assoc.objects.filter(band=band, member=request.user).first()
+        if assoc and assoc.status==AssocStatusChoices.CONFIRMED:
+            pass
+        else:
+            raise PermissionDenied
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{band.shortname or band.name} archive.csv"'

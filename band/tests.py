@@ -414,6 +414,17 @@ class BandTests(GigTestBase):
         resp = self.client.get(reverse('band-archive', args=[a.band.id]))
         self.assertEqual(resp.status_code, 200)
 
+    def test_archive_download_permission(self):
+        _, a, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.janeuser)
+        resp = self.client.get(reverse('archive-spreadsheet', args=[a.band.id]))
+        self.assertEqual(resp.status_code, 403)
+
+        self.client.force_login(self.joeuser)
+        resp = self.client.get(reverse('archive-spreadsheet', args=[a.band.id]))
+        self.assertEqual(resp.status_code, 200)
+
+
     def test_section_setup_permission(self):
         _, a, _ = self.assoc_joe_and_create_gig()
         self.client.force_login(self.janeuser)
