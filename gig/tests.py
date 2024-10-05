@@ -1249,6 +1249,21 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.is_full_day, True)
 
+    def test_full_day_is_future(self):
+        future_date = datetime.now()+timedelta(days=2)
+        g, _, p = self.assoc_joe_and_create_gig(
+            call_date=future_date.strftime("%m/%d/%Y"), call_time="",
+            set_date=future_date.strftime("%m/%d/%Y"), set_time="",
+            is_full_day=False,
+        )
+        self.assertEqual(g.is_full_day, True)
+        g.date = g.date.replace(day=datetime.now().day)
+        g.save()
+        allplans = Plan.member_plans.future_plans(self.joeuser)
+        self.assertTrue(p in allplans)
+
+
+
     def test_gig_zones(self):
         self.band.timezone="US/Eastern"
         self.band.save()
