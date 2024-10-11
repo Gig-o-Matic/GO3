@@ -45,10 +45,7 @@ class MemberPlanManager(models.Manager):
 
     def future_plans(self, member):
         threshold_date = timezone.now() - datetime.timedelta(hours=4)
-        today = timezone.now().replace(hour=0,minute=0,second=0)-datetime.timedelta(minutes=1)
-        return super().get_queryset().filter( (Q(gig__enddate=None) & Q(gig__date__gt=threshold_date)) | \
-                                               Q(gig__enddate__gt=threshold_date) | \
-                                              (Q(gig__is_full_day=True) & Q(gig__date__gte=today)),
+        return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=threshold_date)) | Q(gig__enddate__gt=threshold_date),
                                              assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__trashed_date__isnull=True,
