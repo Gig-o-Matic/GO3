@@ -34,6 +34,9 @@ class GigForm(forms.ModelForm):
             label_suffix='',
             **kwargs
         )
+
+        # Keep track of the initial date so we can see if it changed in the form validation
+        self.initial['date'] = self.instance.date
         
         if band is None and self.instance.band_id is not None:
             # TODO more robust checking, this form without a band doesn't make sense
@@ -69,7 +72,7 @@ class GigForm(forms.ModelForm):
         if the gig is a full-or-multi-day event, the times are ignored.
         if the gig is not full-or-multi-day,
             if the times are there, they must be parsable
-            if the times are good, they are merged into the datetime for date, set, calltime
+            if the times are good, they are merged into the datetime for date, set_time, call_time
             the appropriate flags are set to note which times are "real" in the datetimes.
         """
         def _parse(val,format_type):
@@ -111,7 +114,10 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['setdate'] = None
             self.cleaned_data['enddate'] = end_date
 
-            if date < timezone.now():
+            # Skip the "gig in the past" validation if the date has not changed
+            # This allows editing gig details after a gig has started
+            # See https://github.com/Gig-o-Matic/GO3/issues/557
+            if self.initial['date'] != date and date < timezone.now():
                 self.add_error('call_date', ValidationError(_('Gig date must be in the future'), code='invalid date'))
             if end_date and end_date < date:
                 self.add_error('end_date', ValidationError(_('Gig end date must be later than the start date'), code='invalid date'))
@@ -139,7 +145,7 @@ class GigForm(forms.ModelForm):
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
 
-            if date < timezone.now():
+            if self.initial['date'] != date and date < timezone.now():
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
             if setdate and setdate < date:
                 self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))

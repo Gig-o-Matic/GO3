@@ -150,22 +150,6 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
         return result
 
 
-def setup_form_times(context,object):
-    context['date'] = object.date
-    if object.is_full_day:
-        if object.enddate and object.enddate.date() != object.date.date():
-            context['enddate'] = object.enddate
-        else:
-            context['enddate'] = None
-        context['calltime'] = None
-        context['settime'] = None
-        context['endtime'] = None
-    else:
-        context['enddate'] = None
-        context['calltime'] = object.date if object.has_call_time else None
-        context['settime'] = object.setdate if object.has_set_time else None
-        context['endtime'] = object.enddate if object.has_end_time else None
-    context['is_full_day'] = object.is_full_day
 
 
 class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -181,7 +165,10 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         context = super().get_context_data(**kwargs)
         context['timezone'] = self.object.band.timezone
 
-        setup_form_times(context,self.object)
+        # Copy the date & time values from the form into context so the templates can reference them
+        context['call_date'] = self.object.date
+        context['set_time'] = self.object.setdate
+        context['end_date'] = self.object.enddate
 
         return context
 
@@ -223,13 +210,6 @@ class DuplicateView(CreateView):
             return self.handle_no_permission()
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return has_create_gig_permission(self.request.user, gig.band)
-
-    def get_context_data(self, **kwargs):
-        self.original_gig = Gig.objects.get(id=self.kwargs['pk'])
-        context = super().get_context_data(**kwargs)
-
-        setup_form_times(context, self.original_gig)
-        return context
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super().get_form_kwargs(*args, **kwargs)
