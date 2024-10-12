@@ -14,27 +14,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
-from band.util import AssocStatusChoices
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, redirect
-from django.db.models import Q
 from datetime import timedelta
-
-from gig.models import Gig, Plan
-from gig.util import PlanStatusChoices, GigStatusChoices
 from member.models import Member
-
 from lib.email import prepare_email, send_messages_async
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
-
 from band.helpers import do_delete_assoc
 from member.util import MemberStatusChoices
+from member.models import Member
 
 from django.utils.translation import gettext_lazy as _
 
@@ -113,15 +106,6 @@ def send_email_conf(confirmation):
 def prepare_calfeed(member):
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
-
-    #if member.preferences.calendar_show_only_confirmed:
-    #    filter_args["gig__status"] = GigStatusChoices.CONFIRMED
-
-    #if member.preferences.calendar_show_only_committed:
-    #    filter_args["status__in"] = [
-    #        PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
-    #if member.preferences.hide_canceled_gigs:
-    #    the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
     the_plans = member.calendar_plans.filter(gig__date__gt=date_earliest)
     the_gigs = [p.gig for p in the_plans]
     cf = make_calfeed(member, the_gigs,
@@ -147,8 +131,16 @@ def calfeed(request, pk):
         hr.status_code = 404
         return hr
 
-    return HttpResponse(tf)
+    return HttpResponse(tf,content_type='text/calendar')
 
+def go2_id_calfeed(request, go2_id):
+    try:
+        member = Member.objects.get(go2_id=go2_id)
+        return calfeed(request, member.cal_feed_id)
+    except(Member.DoesNotExist):
+        hr = HttpResponse()
+        hr.status_code = 404
+        return hr
 
 # helpers to define member permissions for various things
 def has_band_admin(user, band):

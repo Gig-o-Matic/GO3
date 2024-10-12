@@ -26,6 +26,13 @@ class BandForm(forms.ModelForm):
             **kwargs
         )
 
+    def clean(self):
+        super().clean()
+        site = self.cleaned_data.get('website',None)
+        if site:
+            if len(site) >= 4 and not site[0:4] == 'http':
+                self.cleaned_data['website'] = 'http://'+site
+
     class Meta:
         model = Band
         fields = ['name', 'shortname', 'hometown', 'description', 'member_links', 'website',

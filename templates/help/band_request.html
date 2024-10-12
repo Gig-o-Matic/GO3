@@ -8,7 +8,7 @@
 
 {% block pagecontent %}
 <p>{% trans "Getting your band on the Gig-O-Matic is easy-peasy.  Fill out the from below and the Gig-O-Matic Overlords will get right back to you." %}</p>
-<form class="form form-horizontal" role="form" action="" method="POST">
+<form class="form form-horizontal" role="form" id="bandform" action="" method="POST">
     {% csrf_token %}
     <div class="form-group">
         {{ form.email.errors }}
@@ -25,9 +25,33 @@
         {{ form.message.label_tag }}
         {% render_field form.message class="form-control" %}
     </div>
-    <div class="form-group text-right">
-        <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
-        <input type="submit" class="btn btn-primary" value="{% trans 'Make It So!' %}" />
+    <div class="row">
+        <div class="col-lg-8 col-12 form-group ml-auto text-right">
+            <a class="btn btn-secondary" href="/">{% trans "Cancel" %}</a>
+        </div>
+        <div>
+            <button type="submit" 
+                {% if enable_captcha %}
+                    class="btn btn-primary g-recaptcha" 
+                {% else %}
+                    class="btn btn-primary"
+                {% endif %}
+                data-sitekey="{{ site_key }}" data-callback='onSubmit' 
+                data-action='submit'>{% trans 'Make It So!' %}
+            </button>
+
+        </div>
     </div>
 </form>
 {% endblock pagecontent %}
+
+{% block localscripts %}
+<script src="/static/js/randomback.js"></script>
+<script src="https://www.google.com/recaptcha/api.js"></script>
+<script>
+    function onSubmit(token) {
+      document.getElementById("bandform").submit();
+    }
+</script>
+ 
+{% endblock localscripts %}

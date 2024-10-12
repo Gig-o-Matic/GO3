@@ -33,7 +33,7 @@ import sys
 import environ
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
-from multiprocessing import set_start_method  # for task q
+from bleach import sanitizer
 
 env = environ.Env(DEBUG=bool, SENDGRID_SANDBOX_MODE_IN_DEBUG=bool, CAPTCHA_THRESHOLD=float, 
                   CALFEED_DYNAMIC_CALFEED=bool, CACHE_USE_FILEBASED=bool, ALLOWED_HOSTS=list,
@@ -101,6 +101,8 @@ INSTALLED_APPS = [
     "django_q",
     "simple_history",
     "graphene_django",
+    "fontawesomefree",
+    "markdownify.apps.MarkdownifyConfig",
 ]
 
 MIDDLEWARE = [
@@ -190,6 +192,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Session timeout - default is 2 weeks but can be longer
+SESSION_COOKIE_AGE = 31536000 # one year
+
 # Increase the password reset token expiration. Default is 3 days, increase to 30
 # Since we are using this feature to onboard users, many people are not expecting
 # the email, and so not taking action fast enough. Let's give them more grace,
@@ -201,11 +206,12 @@ PASSWORD_RESET_TIMEOUT = 2592000 # 30 days
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
 LANGUAGES = [
-    ("de", _("German")),
-    ("en-US", _("English (US)")),
-    ("en-GB", _("English (UK, AU, NZ, ...)")),
-    ("fr", _("French")),
-    ("it", _("Italian")),
+    ("de", "Deutsch"),
+    ("en-US", "English (US)"),
+    ("en-GB", "English (UK, AU, NZ, ...)"),
+    ("es", "Español"),
+    ("fr", "Français"),
+    ("it", "Italiano"),
 ]
 
 LANGUAGE_CODE = "en-us"
@@ -255,13 +261,15 @@ if ROLLBAR_ACCESS_TOKEN:
 Q_CLUSTER = {
     "name": "DjangORM",
     "workers": 1,
-    "timeout": 30,
-    "retry": 60,
+    # Set timeout ridiculously high until we have a solution: https://github.com/Gig-o-Matic/GO3/pull/450#issuecomment-2072130002
+    "timeout": 600, # Allow for longer task runs, particularly emails to large bands
+    "retry": 660, # Always ensure this is larger than timeout, or tasks will duplicate!
+    "max_attempts": 1, # Prevent duplicate task runs in the case of a timeout or error
     "orm": "default",
     "sync": _testing,
     "catch_up": False,  # don't run scheduled tasks many times if we come back from an extended downtime
     "poll": 10, # turn down the poll rate - doesn't need to be 5 times per second!
-    "ack_failure": True, # Do not auto-retry tasks, prevent storms or spam
+    "ack_failures": True, # Do not auto-retry tasks, prevent storms or spam
 }
 if ROLLBAR_ACCESS_TOKEN:
     Q_CLUSTER["error_reporter"] = {
@@ -285,6 +293,8 @@ else:
     }
 
 # Email settings
+HELP_EMAIL = "help@gig-o-matic.com"
+SUPERUSER_EMAIL = "superuser@gig-o-matic.com"
 DEFAULT_FROM_EMAIL_NAME = "Gig-o-Matic Superuser"
 DEFAULT_FROM_EMAIL = env("SENDGRID_SENDER", default="superuser@gig-o-matic.com")
 SENDGRID_API_KEY = env('SENDGRID_API_KEY', default=None)
@@ -313,16 +323,22 @@ MESSAGE_TAGS = {
 # Graphene GraphQL settings
 GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 
-# if we're doing ETL from Go2, set this True
-IN_ETL = False
-
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 
 # for calling routine tasks in go3.tasks
 ROUTINE_TASK_KEY = env('ROUTINE_TASK_KEY',default=1)
 
-# try:
-#     from .settings_local import *
-# except ImportError:
-#     pass
+MARKDOWNIFY = {
+    "default": {
+        "WHITELIST_TAGS": sanitizer.ALLOWED_TAGS | frozenset([
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "br",
+        ]),
+    }
+}

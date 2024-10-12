@@ -22,8 +22,13 @@ from .models import Band, Assoc, Section
 
 @admin.register(Band)
 class BandAdmin(admin.ModelAdmin):
+    search_fields=['name']
     readonly_fields = ("creation_date","last_activity",)
 
-admin.site.register(Assoc)
+@admin.register(Assoc)
+class AssocAdmin(admin.ModelAdmin):
+    search_fields=['member__username', 'member__nickname', 'member__email', 'band__name']
+    list_filter = ('is_admin',)
+
 admin.site.register(Section)
 

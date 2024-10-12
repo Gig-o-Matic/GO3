@@ -180,9 +180,23 @@ a {
     color: firebrick;
 }
 
-/* override calendar event border thickness */
-.fc-event { /* non-theme */
-	border: 2px solid;
+/*
+ FullCalendar customizations
+ ----------------------------- */
+.fc-event {
+	border: 0;
+}
+
+.fc-h-event .fc-event-time {
+  overflow: visible;
+}
+
+.fc-h-event .fc-event-main-frame {
+  padding: 0 5px;
+}
+
+.fc-daygrid-block-event:hover {
+  background-color: #ccc !important;
 }
 
 .card-header {
@@ -281,4 +295,27 @@ ul.errorlist {
 
 .editable-container.editable-inline {
     width: 100%
+}
+
+/* member profile page
+-------------------------------------------------- */
+.assoc-band-row {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  scroll-margin-top: 40px;
+}
+
+/* band detail page
+-------------------------------------------------- */
+#pending-members {
+  scroll-margin-top: 40px;
+}
+
+/* agenda pages
+-------------------------------------------------- */
+.hidden-bands-list {
+  font-style: italic;
+}
+.calendar-preferences-info {
+  font-style: italic;
 }

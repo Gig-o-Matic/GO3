@@ -22,6 +22,7 @@ from go3.colors import the_colors
 from .util import BandStatusChoices, AssocStatusChoices
 from member.util import MemberStatusChoices, AgendaChoices
 from django.apps import apps
+from django.utils import timezone
 import pytz
 import uuid
 from go3.settings import LANGUAGES
@@ -117,6 +118,16 @@ class Band(models.Model):
     def archive_gigs(self):
         return self.gigs.filter(is_archived=True)
 
+    @property
+    def past_gigs(self):
+        the_date = timezone.now()
+        return self.gigs.filter(
+            Q(is_archived=True) |
+            (Q(enddate=None) & Q(date__lt=the_date)) |
+            (~Q(enddate=None) & Q(enddate__lt=the_date))
+        ).order_by('date')
+
+
     def __str__(self):
         return self.name
 
@@ -198,6 +209,7 @@ class Assoc(models.Model):
 
     is_admin = models.BooleanField(default=False)
     is_occasional = models.BooleanField(default=False)
+    is_alum = models.BooleanField(default=False)
 
     join_date = models.DateField(auto_now_add=True)
 
@@ -208,10 +220,6 @@ class Assoc(models.Model):
     @property
     def is_pending(self):
         return self.status == AssocStatusChoices.PENDING
-
-    @property
-    def is_alum(self):
-        return self.status == AssocStatusChoices.ALUMNI
 
     @property
     def section(self):

@@ -41,7 +41,7 @@
                             <i class="fas fa-question-circle" style="color:orange"></i> <strong>{% trans "Unconfirmed" %}</strong>
                         {% endif %}
                         {% if gig.is_private %}
-                            ({% trans "Hidden From Public Page" %})
+                            ({% trans "Hidden From Public Page and Feed" %})
                         {% endif %}
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                     <div class="col-md-2 col-sm-2 col-4">{% trans "Contact" %}</div>
                     <div class="col-md-10 col-sm-10 col-8">
                         {% if gig.contact %}
-                            {{ gig.contact.display_name }}
+                            <a href="{% url 'member-detail' gig.contact.id %}">{{ gig.contact.display_name }}</a>
                         {% endif %}
                     </div>
                 </div>
@@ -61,23 +61,33 @@
                 <div class="row">
                     <div class="col-2"><i class="fas fa-calendar"></i></div>
                     <div class="col-10">{{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
-                    {% if gig.enddate %}
-                    - {{ gig.enddate|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
-                    {% endif %}
+                        {% if multi_day_gig %}
+                            - {{ gig.enddate|naturalday:"SHORT_DATE_FORMAT"|capfirst }}
+                        {% endif %}
                     </div>
                 </div>
-                {% if not gig.enddate %}
+                {% if call_time or set_time or end_time %}
                     <div class="row">
                         <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fas fa-clock"></i></div>
+                        {% if call_time %}
                         <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Call Time" %}:
-                            {{ gig.date|time:"TIME_FORMAT" }}
+                            {{ call_time|time:"TIME_FORMAT" }}
                         </div>
-                        {% if gig.setdate %}
-                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ gig.setdate|time:"TIME_FORMAT" }}</div>
                         {% endif %}
-                        {% if gig.enddate %}
-                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ gig.enddate|time:"TIME_FORMAT" }}</div>
+                        {% if set_time %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "Set Time" %}: {{ set_time|time:"TIME_FORMAT" }}</div>
                         {% endif %}
+                        {% if end_time %}
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-4">{% trans "End Time" %}: {{ end_time|time:"TIME_FORMAT" }}</div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if gig.datenotes %}
+                    <div class="row">
+                        <div class="col-lg-2 col-md-2 col-sm-2 col-12"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="col-md-10 col-sm-10 col-8">
+                            {{ gig.datenotes }}
+                        </div>
                     </div>
                 {% endif %}
                 <div class="row">&nbsp;</div>
@@ -102,10 +112,10 @@
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
-                {% if gig.leader %}
+                {% if gig.leader_text %}
                     <div class="row">
                         <div class="col-md-2 col-sm-2 col-4">{% trans "Leader" %}</div>
-                        <div class="col-md-10 col-sm-10 col-8">{{ gig.leader }}</div>
+                        <div class="col-md-10 col-sm-10 col-8">{{ gig.leader_text }}</div>
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
@@ -126,6 +136,12 @@
                 {% if not gig.invite_occasionals %}
                     <div class="row">
                         <div class="col-md-12 col-sm-12 col-12">{% trans "Occasional members were not invited." %}</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                {% endif %}
+                {% if gig.hide_from_calendar %}
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-12">{% trans "Gig is hidden from calendar." %}</div>
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
@@ -171,10 +187,8 @@
                                     {{ section.name }}
                                 {% endif %}
                             </div>
-                            <div class="col-lg-10 col-md-10 col-sm-12 col-12">
-                        {% else %}
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-12">
                         {% endif %}
+                        <div class="col-lg-10 col-md-10 col-sm-12 col-12">
                             {% for plan in plans_by_section|lookup_plans:section %}
                                 {% include "gig/gig_plan_edit.html" with plan=plan %}
                             {% endfor %}

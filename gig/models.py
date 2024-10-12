@@ -45,7 +45,8 @@ class MemberPlanManager(models.Manager):
         return super().order_by('section')
 
     def future_plans(self, member):
-        return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=timezone.now())) | Q(gig__enddate__gt=timezone.now()),
+        threshold_date = timezone.now() - datetime.timedelta(hours=4)
+        return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=threshold_date)) | Q(gig__enddate__gt=threshold_date),
                                              assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__trashed_date__isnull=True,
@@ -163,6 +164,11 @@ class Gig(AbstractEvent):
 
     setdate = DateTimeWithoutTimezoneField(null=True, blank=True)
     enddate = DateTimeWithoutTimezoneField(null=True, blank=True)
+
+    is_full_day = models.BooleanField(default=False)
+    has_call_time = models.BooleanField(default=False)
+    has_set_time = models.BooleanField(default=False)
+    has_end_time = models.BooleanField(default=False)
 
     dress = models.TextField(null=True, blank=True)
     paid = models.TextField(null=True, blank=True)

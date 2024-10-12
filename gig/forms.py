@@ -22,10 +22,8 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime, timedelta
-from pytz import utc
+from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
-import uuid
-import calendar
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -46,11 +44,8 @@ class GigForm(forms.ModelForm):
             """ this is a new gig """
             self.fields['email_changes'].label = _('Email members about this new gig')
             self.fields['email_changes'].initial = band.send_updates_by_default
-
-            self.fields['invite_occasionals'].label = _('Invite occasional members')
         else:
             self.fields['email_changes'].label = _('Email members about change')
-            self.fields['invite_occasionals'].label = _('Also send update to occasional members')
 
         if user:
             self.fields['contact'].initial = user
@@ -59,12 +54,15 @@ class GigForm(forms.ModelForm):
         if band:
             self.fields['contact'].queryset = band.confirmed_members
 
-        # self.fields['datenotes'].widget.attrs['style'] = 'width:100%;'
-
     def clean(self):
         """
-        Checks to make sure the dates are valid. If there is an end-date set, it is assumed that the gig is "all day" events,
-        so the times are not used. Otherwise the times are used and the enddate is just the same as the start date.
+        Checks to make sure the dates and times are valid.
+         
+        if the gig is a full-or-multi-day event, the times are ignored.
+        if the gig is not full-or-multi-day,
+            if the times are there, they must be parsable
+            if the times are good, they are merged into the datetime for date, set, calltime
+            the appropriate flags are set to note which times are "real" in the datetimes.
         """
         def _parse(val,format_type):
             x = None
@@ -86,81 +84,68 @@ class GigForm(forms.ModelForm):
             self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
+        
+        # first, check to see if this is full-day or not
+        if self.cleaned_data.get('is_full_day'):
+            # we're full day, so see if there's an end date
+            end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
 
-        end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
-        if end_date is None or end_date==date:
+            # since we are full day, ignore the times completely
+            self.cleaned_data['has_call_time'] = False
+            self.cleaned_data['has_set_time'] = False
+            self.cleaned_data['has_end_time'] = False
+
+            date = tzone(self.fields['timezone'].initial).localize(date)
+            if end_date:
+                end_date = tzone(self.fields['timezone'].initial).localize(end_date)
+
+            self.cleaned_data['date'] = date
+            self.cleaned_data['setdate'] = None
+            self.cleaned_data['enddate'] = end_date
+
+            if date < timezone.now():
+                self.add_error('call_date', ValidationError(_('Gig date must be in the future'), code='invalid date'))
+            if end_date and end_date < date:
+                self.add_error('end_date', ValidationError(_('Gig end date must be later than the start date'), code='invalid date'))
+
+        else:
+            # we're not full-day, so ignore the end date in the form
             call_time = _parse(self.cleaned_data.get('call_time',None), 'TIME_INPUT_FORMATS')
             set_time = _parse(self.cleaned_data.get('set_time',None), 'TIME_INPUT_FORMATS')
             end_time = _parse(self.cleaned_data.get('end_time',None), 'TIME_INPUT_FORMATS')
 
+            if not call_time:
+                if set_time:
+                    # if set time is set, but call time is not, default call time to match set time
+                    call_time = set_time
+                else:
+                    # If call time and set time are both unset, treat this as a full-day gig (a gig without times)
+                    self.cleaned_data['is_full_day'] = True
+
+            self.cleaned_data['has_call_time'] = not call_time is None
+            self.cleaned_data['has_set_time'] = not set_time is None
+            self.cleaned_data['has_end_time'] = not end_time is None
+
             date = _mergetime(date, call_time)
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
-        else:
-            # Multi-day gig. We don't care about times, and setdate represents the start time of the set
-            setdate = None
 
-        # FIXME: Edge cases around detecting future dates without timezones
-        if date.replace(tzinfo=utc) < timezone.now():
-            self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
-        if setdate and setdate < date:
-            self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
-        if enddate:
-            if enddate < date:
-                if end_date:
-                    self.add_error('end_date', ValidationError(_('Gig end must not be earlier than the start'), code='invalid end time'))
-                else:
+            # FIXME: Edge cases around detecting future dates without timezones
+            if date.replace(tzinfo=utc) < timezone.now():
+                self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
+            if setdate and setdate < date:
+                self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
+            if enddate:
+                if enddate < date:
                     self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
-            elif setdate and enddate < setdate:
-                self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+                elif setdate and enddate < setdate:
+                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
 
-        self.cleaned_data['date'] = date
-        self.cleaned_data['setdate'] = setdate
-        self.cleaned_data['enddate'] = enddate
+            self.cleaned_data['date'] = date
+            self.cleaned_data['setdate'] = setdate
+            self.cleaned_data['enddate'] = enddate
 
         super().clean()
-
-    def create_gig_series(self, the_gig, number_to_copy, period):
-        """ create a series of copies of a gig spaced out over time """
-
-        if not number_to_copy:
-            return
-
-        last_date = the_gig.date
-        if period == 'day':
-            delta = timedelta(days=1)
-        elif period == 'week':
-            delta = timedelta(weeks=1)
-        else:
-            day_of_month = last_date.day
-            
-        set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
-        end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
-
-        for _ in range(1, number_to_copy):
-            if period == 'day' or period == 'week':
-                last_date = last_date + delta
-            else:
-                yr = last_date.year
-                mo = last_date.month+1
-                if mo > 12:
-                    mo = 1
-                    yr += 1
-                # figure out last day of next month
-                last_date = last_date.replace(month=mo, day=min(calendar.monthrange(yr,mo)[1], day_of_month), year=yr)
-
-            the_gig.date = last_date
-            
-            if set_delta is not None:
-                the_gig.setdate += set_delta
-
-            if end_delta is not None:
-                the_gig.enddate += end_delta
-
-            the_gig.id = None
-            the_gig.pk = None
-            the_gig.cal_feed_id = uuid.uuid4()
-            the_gig.save()
 
     def save(self, commit=True):
         """ save our date, setdate, and enddate into the instance """
@@ -168,14 +153,10 @@ class GigForm(forms.ModelForm):
         self.instance.setdate = self.cleaned_data['setdate']
         self.instance.enddate = self.cleaned_data['enddate']
         newgig = super().save(commit)
-
-        if self.cleaned_data['add_series']==True:
-            save_id = self.instance.id
-            self.create_gig_series(newgig, self.cleaned_data['total_gigs'], self.cleaned_data['repeat'])
-            self.instance.id = save_id
         return newgig
 
     email_changes = forms.BooleanField(required=False, label=_('Email members about change'))
+    is_full_day = forms.BooleanField(required=False, label=_('Full- or multi-day event'))
     call_date = forms.Field(required=True, label=_('Date'))
     call_time = forms.Field(required=False, label=_('Call Time'))
     set_time = forms.Field(required=False, label=_('Set Time'))
@@ -185,7 +166,7 @@ class GigForm(forms.ModelForm):
     datenotes = forms.Field(required=False, label=_('Date Notes'))
 
 
-    is_private = forms.BooleanField(required=False, label=_('Hide From Public Gig Feed'))
+    is_private = forms.BooleanField(required=False, label=_('Hide from public gig feed'))
 
     add_series = forms.BooleanField(required=False, label=_('Add A Series Of Copies'))
     total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=1, max_value=10)
@@ -203,7 +184,8 @@ class GigForm(forms.ModelForm):
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','rss_description','invite_occasionals',
-                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes']
+                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','is_full_day','has_set_time',
+                'has_call_time','has_end_time']
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
@@ -221,6 +203,8 @@ class GigForm(forms.ModelForm):
             'contact': _('Contact'),
             'status': _('Status'),
 
+            'is_full_day': _('Full- or Multi-day'),
+
             'call_date': _('Date'),
             'end_date': _('End Date'),
 
@@ -233,7 +217,7 @@ class GigForm(forms.ModelForm):
             'details': _('Details'),
             'setlist': _('Setlist'),
 
-            'hide_from_calendar': _('hide from calendar'),
-            'invite_occasionals': _('Invite occasional members'),
+            'hide_from_calendar': _('Hide from calendar'),
+            'invite_occasionals': _('Include occasional members'),
             'email_changes': _('Email members about this new gig')
         }

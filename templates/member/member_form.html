@@ -59,6 +59,15 @@
                 paste it here.)
  -->
             </div>
+            {% if user.is_superuser or user.is_beta_tester %}
+                <div class="row">
+                    <div class="col-12">
+                        {{ form.is_beta_tester.errors }}
+                        {{ form.is_beta_tester.label_tag }}
+                        {{ form.is_beta_tester }}
+                    </div>
+                </div>
+            {% endif %}
             <div class="row mt-4">
                 {% if request.user.is_superuser or request.user == member %}
                     <div class="form-group col-12 col-md-6">

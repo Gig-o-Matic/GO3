@@ -33,13 +33,19 @@ Including another URLconf
 
 
 from django.contrib import admin
+from django.views.generic.base import RedirectView
 from django.urls import include, path
 from graphene_django.views import GraphQLView
 from .views import error404, error500, test404
 from go3.schema import schema
 from agenda.views import PrivateGraphQLView
+from django.views.i18n import JavaScriptCatalog
+from member.helpers import go2_id_calfeed
+from member.views import LanguageLoginView
+
 urlpatterns = [
     path('', include('agenda.urls')),
+    path('accounts/login/', LanguageLoginView.as_view(), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('band/', include('band.urls')),
@@ -51,6 +57,10 @@ urlpatterns = [
     path('migration/', include('migration.urls')),
     path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
     path('404',test404.as_view()),
+    path('jsi18n/', JavaScriptCatalog.as_view(), name="javascript-catalog"),
+    # Backward compatibility with old GO2 cal feed
+    path('cal/m/<slug:go2_id>', go2_id_calfeed),
+    path('login', RedirectView.as_view(url='accounts/login', permanent=True)),
 ]
 
 handler404 = error404

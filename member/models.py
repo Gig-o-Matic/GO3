@@ -17,7 +17,6 @@
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.db.models import Q
 from motd.models import MOTD
 from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
@@ -25,7 +24,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 import datetime
 from django.utils import timezone
-from .util import MemberStatusChoices, AgendaChoices
+from .util import MemberStatusChoices, AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc, Band
 from band.util import AssocStatusChoices
 from go3.settings import LANGUAGES
@@ -100,6 +99,9 @@ class Member(AbstractUser):
 
     display_name = models.CharField(max_length=200, blank=True, null=True)
 
+    # used for testing new features on a few people
+    is_beta_tester = models.BooleanField(default=False)
+
     @property
     def member_name(self):
         return self.username if self.username else self.email
@@ -122,20 +124,25 @@ class Member(AbstractUser):
     @property
     def future_plans(self):
         """ used by the agenda page to decide what gigs to show """
-        plans = Plan.member_plans.future_plans(self).exclude(status=PlanStatusChoices.NO_PLAN)
-        plans = plans.exclude(assoc__hide_from_schedule=True)
+        plans = Plan.member_plans.future_plans(self)
+        
         if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
+            # hide all canceled gigs and gigs without plans
+            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED).exclude(status=PlanStatusChoices.NO_PLAN)
+        else:
+            # filter out gigs without plans unless they are canceled
+            plans = plans.exclude(Q(status=PlanStatusChoices.NO_PLAN)&~Q(gig__status=GigStatusChoices.CANCELED))
+
+        plans = plans.exclude(assoc__hide_from_schedule=True)
         return plans
 
     @property
     def future_noplans(self):
         """ used by the agenda page to decide what gigs to show """
         plans = Plan.member_plans.future_plans(self).filter(status=PlanStatusChoices.NO_PLAN)
+        plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)        
         plans = plans.exclude(assoc__hide_from_schedule=True)
         plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
-        if self.preferences.hide_canceled_gigs: # pylint: disable=no-member
-            plans = plans.exclude(gig__status=GigStatusChoices.CANCELED)
         return plans
     
     @property
@@ -214,20 +221,26 @@ class Member(AbstractUser):
         verbose_name_plural = _('members')
 
     def __str__(self):
-        return '{0}{1}'.format(self.display_name, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
+        return '{0} ({1}) {2}'.format(self.display_name, self.email, ' (deleted)' if self.status==MemberStatusChoices.DELETED else '')
 
 
 class MemberPreferences(models.Model):
     """ class to hold user preferences """
     member = models.OneToOneField(Member, related_name='preferences', on_delete=models.CASCADE)
 
-    hide_canceled_gigs = models.BooleanField(default=False)
-    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US')
-    share_profile = models.BooleanField(default=True)
-    share_email = models.BooleanField(default=False)
-    calendar_show_only_confirmed = models.BooleanField(default=False)
-    calendar_show_only_committed = models.BooleanField(default=False)
-    agenda_show_time = models.BooleanField(default=False)
+    hide_canceled_gigs = models.BooleanField(default=False, verbose_name=_('Hide canceled gigs'))
+    language = models.CharField(choices=LANGUAGES, max_length=200, default='en-US', verbose_name=_('Language'))
+    share_profile = models.BooleanField(default=True, verbose_name=_('Share my profile'))
+    share_email = models.BooleanField(default=False, verbose_name=_('Share my email'))
+    calendar_show_only_confirmed = models.BooleanField(default=False, verbose_name=_('Calendar shows only confirmed gigs'))
+    calendar_show_only_committed = models.BooleanField(default=False, verbose_name=_('Calendar shows only gigs I can do (or maybe can do)'))
+    agenda_show_time = models.BooleanField(default=True, verbose_name=_('Show gig time on schedule'))
+    agenda_layout = models.IntegerField(choices=AgendaLayoutChoices.choices, 
+                                        default=AgendaLayoutChoices.ONE_LIST,
+                                        verbose_name=_('Schedule page layout'))
+    agenda_band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
+    agenda_use_classic = models.BooleanField(default=False, verbose_name=_('Use old schedule page layout'))
+
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 

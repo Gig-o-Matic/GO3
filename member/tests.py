@@ -41,6 +41,7 @@ from gig.tests import GigTestBase
 import pytz
 import os
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
+import pytest
 
 class MemberTest(TestCase):
     def setUp(self):
@@ -164,6 +165,16 @@ class MemberEmailTest(TestCase):
         message = prepare_email(self.member.as_email_recipient(), 't:')
         self.assertEqual(message.to[0], 'Member Username <member@example.com>')
 
+    def test_email_to_username_with_special_chars(self):
+        self.member.username = 'Member Username :)'
+        message = prepare_email(self.member.as_email_recipient(), 't:')
+        self.assertEqual(message.to[0], '"Member Username :)" <member@example.com>')
+
+    def test_email_to_username_with_doublequotes(self):
+        self.member.username = 'Member "Username"'
+        message = prepare_email(self.member.as_email_recipient(), 't:')
+        self.assertEqual(message.to[0], '"Member \\"Username\\"" <member@example.com>')
+
     def test_translation_en(self):
         message = prepare_email(
             self.member.as_email_recipient(),
@@ -195,7 +206,7 @@ class MemberEmailTest(TestCase):
         # We want a new line, but it could show up as "<br>" or "<br />"
         self.assertIn('<br', message.alternatives[0][0])
 
-
+@pytest.mark.django_db
 class MemberCalfeedTest(FSTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -347,6 +358,12 @@ class MemberCalfeedTest(FSTestCase):
         cf = calfeed(request=None, pk=self.joeuser.cal_feed_id)
         self.assertTrue(cf.content.decode('ascii').find('EVENT') > 0)
 
+
+    def test_member_beta_flag(self):
+        """ make sure the beta flag exists """
+        self.assertFalse(self.joeuser.is_beta_tester)
+
+
     def test_calfeeds_dirty(self):
         self.joeuser.cal_feed_dirty = False
         self.joeuser.save()
@@ -357,7 +374,7 @@ class MemberCalfeedTest(FSTestCase):
         self.joeuser.refresh_from_db()
         self.assertTrue(self.joeuser.cal_feed_dirty)
 
-
+@pytest.mark.django_db
 class InviteTest(TemplateTestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -766,7 +783,7 @@ class InviteTest(TemplateTestCase):
         self.assertTemplateUsed(response, 'member/invite_expired.html')
 
     def test_create_member(self):
-        invite = Invite.objects.create(email='new@example.com', band=self.band)
+        invite = Invite.objects.create(email='new@example.com', band=self.band, language='fr')
         response = self.client.post(reverse('member-create', args=[invite.id]),
                                     {'username': 'New',
                                      'nickname': 'new',
@@ -779,6 +796,7 @@ class InviteTest(TemplateTestCase):
         new = Member.objects.filter(email='new@example.com').get()
         self.assertEqual(new.username, 'New')
         self.assertEqual(new.nickname, 'new')
+        self.assertEqual(new.preferences.language,'fr')
 
     def test_create_member_no_band(self):
         invite = Invite.objects.create(email='new@example.com', band=None)

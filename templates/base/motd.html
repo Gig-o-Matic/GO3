@@ -1,8 +1,9 @@
+{% load markdownify %}
 {% if request.user.id %}
     {% with motd=request.user.motd %}
     {% if motd %}
     <div id="motd-alert" class="alert alert-info fade show">
-        {{ motd  | safe }}
+        {{ motd  | markdownify }}
         <a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
     </div>
     {% endif %}

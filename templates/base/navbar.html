@@ -1,7 +1,7 @@
 {% load i18n %}
 <nav class="navbar navbar-dark {% if DEBUG %} dev {% endif %} navbar-expand-md sticky-top" role="navigation">
   <a class="navbar-brand" href="/">Gig-<i class="far fa-heart"></i>-Matic</i></a>
-{% if user %}
+  {% if not user.is_anonymous %}
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>

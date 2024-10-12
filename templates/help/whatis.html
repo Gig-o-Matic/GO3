@@ -43,7 +43,7 @@
     <li>{% blocktrans %}<i>Who made it?</i> The Gig-O-Matic Overlord Committee did it in their spare time.{% endblocktrans %}</li>
     {% url 'help-band-request' as band_request_url %}
     <li>{% blocktrans %}<i>How can I get my band involved?</i> <a href="{{ band_request_url }}">Click here</a>.{% endblocktrans %}</li>
-    <li>{% blocktrans %}<i>What if I have some other question?</i> <a href="mailto:gigomatic.superuser@gmail.com">Email Here!</a>{% endblocktrans %}</li>
+    <li>{% blocktrans %}<i>What if I have some other question?</i> <a href="mailto:{{ help_email }}"> Email Here!</a>{% endblocktrans %}</li>
 </ul>
 <p><a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> {% trans "Back to the Gig-O-Matic" %}</a></p>
 {% endblock pagecontent %}

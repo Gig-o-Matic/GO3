@@ -29,12 +29,14 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView, LoginView
 from django.contrib import messages
 from go3.colors import the_colors
+from go3.settings import env
 from django.utils import translation
 from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language_from_request
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.validators import validate_email
@@ -156,8 +158,16 @@ class UpdateView(LoginRequiredMixin, BaseUpdateView):
 
 class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
     model = MemberPreferences
-    fields = ['hide_canceled_gigs','language','share_profile','share_email','calendar_show_only_confirmed',
-              'calendar_show_only_committed']
+
+    def __init__(self, **kwargs):
+        self.fields = ['language','share_profile','share_email','calendar_show_only_confirmed',
+                'calendar_show_only_committed', 'hide_canceled_gigs', 'agenda_use_classic']
+        super().__init__(**kwargs)
+    
+    def dispatch(self, request, *args, **kwargs):
+        if isinstance(request.user, Member) and request.user.is_beta_tester:
+            self.fields.append('agenda_layout')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
             m = Member.objects.get(id=self.kwargs['pk'])
@@ -186,6 +196,7 @@ class PreferencesUpdateView(LoginRequiredMixin, BaseUpdateView):
            self.object.member.save()
 
         return response
+
 
 
 class AssocsView(LoginRequiredMixin, TemplateView):
@@ -246,11 +257,22 @@ class InviteView(LoginRequiredMixin, FormView):
                 invalid.append(email)
                 continue
 
-            if Assoc.objects.filter(member__email=email, band=band).count() > 0:
+            assocs = Assoc.objects.filter(member__email=email, band=band)
+            in_the_band = False
+            the_assoc = None
+            if assocs.count() > 0:
+                the_assoc = assocs.first()
+                if the_assoc.status == AssocStatusChoices.CONFIRMED:
+                    in_the_band = True
+
+            if in_the_band:
                 in_band.append(email)
             else:
                 Invite.objects.create(band=band, email=email, language=self.request.user.preferences.language)
                 invited.append(email)
+                if the_assoc is not None:
+                    the_assoc.status = AssocStatusChoices.INVITED
+                    the_assoc.save()
 
         self.return_to_form = False
         if invalid:
@@ -299,9 +321,16 @@ def accept_invite(request, pk):
     if (member and                             # Won't need to create a Member
         (not request.user.is_authenticated or  # They're probably just not logged in
          request.user == member)):             # They are logged in
-        if invite.band and Assoc.objects.filter(band=invite.band, member=member).count() == 0:
-            Assoc.objects.create(band=invite.band, member=member,
-                                 status=AssocStatusChoices.CONFIRMED)
+        if invite.band:
+            assocs = Assoc.objects.filter(band=invite.band, member=member)
+            if assocs.count() == 0:
+                Assoc.objects.create(band=invite.band, member=member,
+                                     status=AssocStatusChoices.CONFIRMED)
+            else:
+                assoc = assocs.first()
+                assoc.status = AssocStatusChoices.CONFIRMED
+                assoc.save()
+                
             if request.user.is_authenticated:
                 # We'll be redirecting them to their profile page, and we want to display:
                 messages.success(request,
@@ -375,6 +404,7 @@ class SignupView(FormView):
     def get_context_data(self, **kw):
         context = super().get_context_data(**kw)
         context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
         return context
 
     def form_valid(self, form):
@@ -387,7 +417,8 @@ class SignupView(FormView):
             messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
             return redirect('home')
 
-        Invite.objects.create(band=None, email=email)
+        # put the language in the invitation - this will end up in the users's preferences
+        Invite.objects.create(band=None, email=email, language=get_language_from_request(self.request))
         return render(self.request, 'member/signup_pending.html', {'email': email})
 
 
@@ -396,6 +427,7 @@ class CaptchaPasswordResetView(PasswordResetView):
     def get_context_data(self, **kw):
         context = super().get_context_data(**kw)
         context['site_key'] = get_captcha_site_key()
+        context['enable_captcha'] = env("CAPTCHA_ENABLE", default=True)
         return context
 
     def form_valid(self, form):
@@ -419,16 +451,21 @@ def confirm_email(request, pk):
         valid = False
 
     if valid:
-        if not (request.user.is_authenticated or settings.LANGUAGE_COOKIE_NAME in request.COOKIES):
-            valid=False
-        else:
-            conf.member.email = conf.new_email
-            conf.member.save()
-            conf.delete()
+        # we have a valid reponse, so change the user's email
+        conf.member.email = conf.new_email
+        conf.member.save()
+        conf.delete()
+        translation.activate(conf.member.preferences.language)
 
-    def set_language(response):
+    return render(request, 'member/email_change_confirmation.html', {'validlink': valid})
+
+
+class LanguageLoginView(LoginView):
+    """ we override the default loginview and set the user's preferential language """
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        translation.activate(self.request.user.preferences.language)
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, self.request.user.preferences.language )
         return response
 
-    return set_language(
-                render(request, 'member/email_change_confirmation.html',
-                        {'validlink': valid}))

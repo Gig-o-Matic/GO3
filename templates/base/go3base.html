@@ -1,6 +1,5 @@
 {% load i18n %}
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -30,9 +29,10 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
 
         <!-- font awesome -->
-
-<!--        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">-->
-        <script src="https://kit.fontawesome.com/97a9d560b1.js"></script>
+        <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
+  
 
         <!--[if lt IE 9]>
             <script src="../../assets/js/html5shiv.js"></script>
@@ -73,9 +73,6 @@
 
             <div class="container">
                     <div class="inner-container">
-                            {% if True %}
-                                {% include 'base/beta.html' %}
-                            {% endif %}
                             {% if user %}
                                 {% block welcome %}
                                     {% include 'base/welcome.html' %}

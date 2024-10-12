@@ -175,16 +175,21 @@ def do_delete_assoc(a):
 
     if a.status==AssocStatusChoices.CONFIRMED:
         # we can get rid of any future plans associated with this assoc
-        Plan.member_plans.future_plans(a.member).filter(gig__is_archived=False).delete()
+        Plan.member_plans.future_plans(a.member).filter(assoc=a, gig__is_archived=False).delete()
         a.member.cal_feed_dirty = True
 
-        # and now make this member an "alum"
-        a.status=AssocStatusChoices.ALUMNI
+        # and now turn this member "not confirmed" - but they're still an alum
+        a.status=AssocStatusChoices.NOT_CONFIRMED
         a.save()
     else:
-        # well, if it's not a confirmed member we can delete the assoc
-        a.delete()
-
+        # well, if it's not a confirmed member we can delete the assoc unless it's an alum
+        if a.is_alum:
+            a.status=AssocStatusChoices.NOT_CONFIRMED
+            a.save()
+        else:
+            a.delete()
+            return None  # this is for testing - to know it's really gone
+    return a  # this is for testing - to know it's not really gone, just NOT_CONFIRMED
 
 
 @login_required
@@ -256,10 +261,11 @@ def prepare_band_calfeed(band):
         "date__gt": date_earliest,
         "status": GigStatusChoices.CONFIRMED,
         "hide_from_calendar": False,
+        "trashed_date": None,
     }
 
     the_gigs = Gig.objects.filter(**filter_args)
-    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id)
+    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id,is_for_band=True)
     return cf
 
 
@@ -294,3 +300,23 @@ def band_public_page(request, name):
         return redirect('/')
 
     return redirect('band-detail', pk=band.id)
+
+def public_gigs(request, pk):
+    the_band = get_object_or_404(Band, pk=pk)
+
+    threshold_date = timezone.now() - timedelta(hours=4)
+    the_gigs = Gig.objects.filter(band=the_band,
+                                  date__gt=threshold_date,
+                                trashed_date__isnull=True,
+                                is_archived=False,
+                                is_private=False,
+                            ).order_by('date')
+
+
+    # the_gigs = Gig.objects.filter(band=the_band, is_private=False, )
+    return render(request, 'band/public_gigs.html',
+        {
+            'band': the_band,
+            'gigs': the_gigs,
+        }
+    )

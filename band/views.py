@@ -8,18 +8,23 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.db.models.functions import Lower
+from django.shortcuts import redirect
 from .models import Band, Assoc, Section
 from .forms import BandForm
-from .util import AssocStatusChoices, BandStatusChoices
+from .util import AssocStatusChoices, _get_active_bands
 from member.models import Invite
 from member.util import MemberStatusChoices
 from member.helpers import has_manage_band_permission
+from gig.models import Gig
 from stats.helpers import get_band_stats, get_gigs_over_time_stats
+from stats.util import dateconverter
 import json
 from django.utils.safestring import SafeString
-from datetime import datetime
 from django.utils.translation import gettext_lazy as _
+from pytz import timezone
+from babel.dates import format_date
 from go3.settings import URL_BASE
 
 class BandMemberRequiredMixin(UserPassesTestMixin):
@@ -34,15 +39,23 @@ class BandMemberRequiredMixin(UserPassesTestMixin):
         )
 
 class BandList(LoginRequiredMixin, generic.ListView):
-    queryset = Band.objects.filter(
-        status=BandStatusChoices.ACTIVE).order_by('name')
+    def get_queryset(self):
+        pk_list = [obj.pk for obj in _get_active_bands()]
+        return Band.objects.filter(pk__in=pk_list).order_by('name')
+    
     context_object_name = 'bands'
 
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Band
-    # fields = ['name', 'hometown']
 
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+        # if we're not active in the band, deny entry!
+        assoc = Assoc.objects.filter(band=self.kwargs['pk'], member=self.request.user).first()
+        return assoc and assoc.status==AssocStatusChoices.CONFIRMED
+                
     def get_context_data(self, **kwargs):
         the_band = self.object
         the_user = self.request.user
@@ -51,43 +64,50 @@ class DetailView(generic.DetailView):
 
         context['url_base'] = URL_BASE
 
-        is_associated = True
-        if the_user.is_anonymous:
-            assoc = None
-        else:
-            try:
-                assoc = Assoc.objects.get(band=the_band, member=the_user)
-            except Assoc.DoesNotExist:
-                assoc = None
+        assoc = None if the_user.is_superuser else Assoc.objects.get(band=the_band, member=the_user)
             
-        is_associated = assoc is not None and assoc.status == AssocStatusChoices.CONFIRMED
-        context['the_user_is_associated'] = is_associated
+        context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
 
-        if is_associated or (the_user and the_user.is_superuser):
-            context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
+        context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
+        context['the_invited_members'] = Invite.objects.filter(band=the_band)
 
-            context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
-            context['the_invited_members'] = Invite.objects.filter(band=the_band)
-
-            if the_band.member_links:
-                links = []
-                linklist = the_band.member_links.split('\n')
-                for l in linklist:
-                    parts = l.strip().split(':')
-                    if len(parts) == 2:
-                        links.append([l,l])
-                    else:
-                        links.append([parts[0],':'.join(parts[1:])])
-                context['the_member_links'] = links
+        if the_band.member_links:
+            links = []
+            linklist = the_band.member_links.split('\n')
+            for l in linklist:
+                parts = l.strip().split(':')
+                if len(parts) == 2:
+                    links.append([l,l])
+                else:
+                    links.append([parts[0],':'.join(parts[1:])])
+            context['the_member_links'] = links
 
         if the_band.images:
             context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
 
         return context
 
-    def get_success_url(self):
-        return reverse('member-detail', kwargs={'pk': self.object.id})
+    # todo - we don't need this?
+    # def get_success_url(self):
+    #     return reverse('member-detail', kwargs={'pk': self.object.id})
 
+
+class PublicDetailView(TemplateView):
+    template_name = 'band/band_public.html'
+
+    def get_context_data(self, **kwargs):
+        the_band = get_object_or_404(Band, condensed_name=self.kwargs['name'])
+        
+        context = super().get_context_data(**kwargs)
+
+        context['band'] = the_band
+        context['url_base'] = URL_BASE            
+        context['the_user_is_associated'] = False
+
+        if the_band.images:
+            context['the_images'] = [l.strip() for l in the_band.images.split('\n')]
+
+        return context
 
 class UpdateView(LoginRequiredMixin, UserPassesTestMixin, BaseUpdateView):
     model = Band
@@ -120,12 +140,8 @@ class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['the_stats'] = get_band_stats(the_band)
 
-        # get the gigs over time data
-
-        def myconverter(o):
-            if isinstance(o, datetime):
-                return [o.year, o.month, o.day]
-        context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=myconverter)
+        # get the gigs over time data            
+        context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=dateconverter)
 
         if the_band.gigs.count():
             context['last_gig_created'] = the_band.gigs.latest('created_date').created_date
@@ -226,6 +242,29 @@ def member_spreadsheet(request, pk):
 
     return response
 
+@login_required
+def archive_spreadsheet(request, pk):
+    band = get_object_or_404(Band, pk=pk)
+
+    if request.user.is_superuser:
+        pass
+    else:
+        # if we're not active in the band, deny entry!
+        assoc = Assoc.objects.filter(band=band, member=request.user).first()
+        if assoc and assoc.status==AssocStatusChoices.CONFIRMED:
+            pass
+        else:
+            raise PermissionDenied
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{band.shortname or band.name} archive.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['date ', 'gig', 'contact'])
+    for gig in Gig.objects.filter(band=band, is_archived=True):
+        date = gig.date.strftime('%x')
+        writer.writerow([date, gig.title, gig.contact.username])
+
+    return response
 
 @login_required
 def member_emails(request, pk):

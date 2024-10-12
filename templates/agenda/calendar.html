@@ -21,9 +21,10 @@
             {% endif %}
         </div>
     </div>
+    {% include 'agenda/hidden_bands_info.html' %}
     {% if user.preferences.calendar_show_only_committed or user.preferences.calendar_show_only_confirmed %}
-        <div class="row">
-            <div class="page-header page-header mx-auto col-md-10 col-12">
+        <div class="row calendar-preferences-info">
+            <div class="mx-auto col-md-10 col-12">
                 <a href="{% url 'member-prefs-update' pk=user.id %}">Filtered</a> to only:
                 {% if user.preferences.calendar_show_only_committed %}
                     &#x2713; {% trans "committed gigs" %}
@@ -51,7 +52,7 @@
     var calendar=null;
 
     // Updates the browser address bar to reflect the current date view
-    function calCallback(rawEvents, xhr) { 
+    function calCallback(rawEvents, xhr) {
         // The initial date is interpreted as UTC, so reference that timezone
         // when determining the currentStart for the calendar in view
         year = calendar.view.currentStart.getUTCFullYear()
