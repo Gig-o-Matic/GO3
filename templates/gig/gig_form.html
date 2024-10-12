@@ -57,7 +57,7 @@
                     {{ form.call_date.label_tag }}
                     {{ form.call_date.errors }}
                 </div>
-                <div class="col-4 enddate{% if not is_full_day %} style="display:none;{% endif %}">
+                <div class="col-4 end_date{% if not is_full_day %} style="display:none;{% endif %}">
                     {{ form.end_date.label_tag }}
                     {{ form.end_date.errors }}                    
                 </div>
@@ -70,7 +70,7 @@
                 </div>
                 <div class="form-group col-4">
                     <div class="form-group">
-                        <div class="input-group date" id="id_call_date_widget" data-target-input="nearest">
+                        <div class="input-group call_date" id="id_call_date_widget" data-target-input="nearest">
                             <input type="text" name="call_date" class="form-control datetimepicker-input" id="id_call_date" data-target="#id_call_date_widget" required/>
                             <div class="input-group-append" data-target="#id_call_date_widget" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -78,9 +78,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group col-4 enddate{% if not is_full_day %} style="display:none;{% endif %}">
+                <div class="form-group col-4 end_date{% if not is_full_day %} style="display:none;{% endif %}">
                     <div class="form-group">
-                        <div class="input-group date" id="id_end_date_widget" data-target-input="nearest">
+                        <div class="input-group end_date" id="id_end_date_widget" data-target-input="nearest">
                             <input type="text" name="end_date" class="form-control datetimepicker-input" id="id_end_date" data-target="#id_end_date_widget"/>
                             <div class="input-group-append" data-target="#id_end_date_widget" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -283,10 +283,10 @@
 function setfullday() {
     if ($("#id_is_full_day").is(":checked")) {
         $('.gigtimes').hide();
-        $('.enddate').show();
+        $('.end_date').show();
     } else {
         $('.gigtimes').show();
-        $('.enddate').hide();
+        $('.end_date').hide();
     }
 }
 
@@ -311,9 +311,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if date %}
-            defaultDate: '{{ date.isoformat }}',
-        {% endif %}
+        defaultDate: '{{ call_date.isoformat }}',
     });
     $('#id_end_date_widget').datetimepicker({
         format: 'L',
@@ -324,9 +322,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if enddate %}
-            defaultDate: '{{ enddate.isoformat }}',
-        {% endif %}
+        defaultDate: '{{ end_date.isoformat }}',
     });
     $('#id_call_time_widget').datetimepicker({
         format: 'LT',
@@ -336,9 +332,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if calltime %}
-            defaultDate: '{{ calltime.isoformat }}',
-        {% endif %}
+        defaultDate: '{{ call_date.isoformat }}',
     });
     $('#id_set_time_widget').datetimepicker({
         format: 'LT',
@@ -348,9 +342,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if settime %}
-            defaultDate: '{{ settime.isoformat }}',
-        {% endif %}
+        defaultDate: '{{ set_time.isoformat }}',
     });
     $('#id_end_time_widget').datetimepicker({
         format: 'LT',
@@ -360,9 +352,7 @@ $(document).ready(function () {
                     down: "fa fa-arrow-down",
                 },
         locale: '{{ user.preferences.language }}',
-        {% if endtime %}
-            defaultDate: '{{ endtime.isoformat }}',
-        {% endif %}
+        defaultDate: '{{ end_date.isoformat }}',
     });
 
 {% comment %}    
