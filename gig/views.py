@@ -91,9 +91,6 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Gig
     form_class = GigForm
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def test_func(self):
         # can only create the gig if you're logged in and in the band        
         band = get_object_or_404(Band, id=self.kwargs['bk'])
