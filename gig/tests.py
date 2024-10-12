@@ -14,9 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import copy
 from django.core import mail
-from django.test import TestCase, RequestFactory, Client
+from django.test import TestCase, Client
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
@@ -24,11 +23,8 @@ from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
-from .forms import GigForm
-from .views import CreateView, UpdateView
 from .tasks import archive_old_gigs
-from go3 import settings
-from datetime import timedelta, datetime, time
+from datetime import timedelta, datetime
 from django.urls import reverse
 from django.utils import timezone
 from pytz import timezone as pytz_timezone
@@ -901,6 +897,38 @@ class GigTest(GigTestBase):
             end_time="2:00 pm",
             expect_code=200,
         )
+    
+    def test_allow_editing_past_gig_details(self):
+        # Create a gig in the past directly in the DB to bypass form validation
+        # This simulates a gig that has already started
+        # Allow edits to gig details as long as they don't change the gig call time
+        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0, tzinfo=timezone.utc)
+        gig = self.create_gig(start_date=past_date, the_member=self.band_admin)
+        
+        form_data = {
+            "title": "Test New Gig Title",
+            "contact": f"{self.band_admin.id}",
+            "status": "1",
+            "call_date": f"{gig.date.strftime("%d/%m/%Y")}",
+            "end_date": f"{gig.enddate.strftime("%d/%m/%Y")}",
+            "call_time": f"{gig.date.strftime("%I:%M %p")}",
+            "set_time": f"{gig.setdate.strftime("%I:%M %p")}",
+            "end_time": f"{gig.enddate.strftime("%I:%M %p")}",
+            "datenotes": "Nothing special",
+            "address": "123 Main Street. Anywhereville, USA 100001",
+            "dress": "Faux Formal",
+            "paid": "Community",
+            "leader_text": "TBD",
+            "postgig": "Let's eat!",
+            "details": "This is gonna be fun",
+            "setlist": "1. Song 1\n2. Song 2\n3. Song 3\n",
+            "invite_occasionals": "on",
+            "email_changes": "on",
+        }
+        self.client.force_login(self.band_admin)
+        self.client.post(f"/gig/{gig.id}/update", form_data)
+        gig = Gig.objects.get(id=gig.id)
+        self.assertEqual(gig.title, "Test New Gig Title")
 
     # testing gig comments
     def send_comment(self, user, gig, text):

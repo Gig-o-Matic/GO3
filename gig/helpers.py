@@ -128,7 +128,7 @@ def generate_changes(latest, previous):
     # if 'enddate' in diff.changed_fields:
     #     changes.append((_('End Time'), *date_diff(latest.enddate, previous.enddate)))
         
-    check = [x in diff.changed_fields for x in ['is_full_day', 'date', 'setdate', 'senddate', 'datenotes']]
+    check = [x in diff.changed_fields for x in ['is_full_day', 'date', 'setdate', 'enddate', 'datenotes']]
     if True in check:
         changes.append((_('Date/Time'), _('(See below.)'), None))
 
