@@ -18,10 +18,10 @@
 from django import forms
 from .models import Gig
 from band.models import Band
-from django.utils import timezone, formats
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
 
@@ -57,14 +57,6 @@ class GigForm(forms.ModelForm):
         if band:
             self.fields['contact'].queryset = band.confirmed_members
 
-        if band:
-            self.fields['timezone'].initial = band.timezone
-        elif self.instance:
-            self.fields['timezone'].initial = self.instance.band.timezone
-        else:
-            raise(ValueError('issue with band'))
-
-
     def clean(self):
         """
         Checks to make sure the dates and times are valid.
@@ -85,10 +77,10 @@ class GigForm(forms.ModelForm):
                         continue
             return x
 
-        def _mergetime(hour, minute='', zone=None):
-            if minute:
-                hour = hour.replace(hour=minute.hour, minute=minute.minute)
-            return zone.localize(hour) if zone else hour
+        def _mergetime(date, time='', zone=None):
+            if time:
+                date = date.replace(hour=time.hour, minute=time.minute)
+            return date
 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         if date is None:
@@ -140,12 +132,11 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = not set_time is None
             self.cleaned_data['has_end_time'] = not end_time is None
 
-            zone = tzone(self.fields['timezone'].initial)
-            date = _mergetime(date, call_time, zone)
+            date = _mergetime(date, call_time)
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
 
-            if self.initial['date'] != date and date < timezone.now():
+            if self.initial['date'] != date and date.replace(tzinfo=utc) < timezone.now():
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
             if setdate and setdate < date:
                 self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))

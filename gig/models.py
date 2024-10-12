@@ -25,6 +25,7 @@ from member.util import MemberStatusChoices
 from django.utils import timezone
 import datetime
 import uuid
+from go3.datetime_without_timezone import DateTimeWithoutTimezoneField
 
 
 class GigsManager(models.Manager):
@@ -111,7 +112,7 @@ class AbstractEvent(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
-    date = models.DateTimeField()
+    date = DateTimeWithoutTimezoneField()
     datenotes = models.TextField(null=True, blank=True)
 
     address = models.TextField(null=True, blank=True)
@@ -161,8 +162,8 @@ class Gig(AbstractEvent):
     contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
     setlist = models.TextField(null=True, blank=True)
 
-    setdate = models.DateTimeField(null=True, blank=True)
-    enddate = models.DateTimeField(null=True, blank=True)
+    setdate = DateTimeWithoutTimezoneField(null=True, blank=True)
+    enddate = DateTimeWithoutTimezoneField(null=True, blank=True)
 
     is_full_day = models.BooleanField(default=False)
     has_call_time = models.BooleanField(default=False)
