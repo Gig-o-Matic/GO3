@@ -31,8 +31,11 @@ from go3 import settings
 from datetime import timedelta, datetime, time
 from django.urls import reverse
 from django.utils import timezone
+from graphene.test import Client as graphQLClient
+from go3.schema import schema
 from pytz import timezone as pytz_timezone
 from lib.template_test import MISSING, flag_missing_vars
+from django.contrib.auth.models import AnonymousUser
 
 
 class GigTestBase(TestCase):
@@ -87,12 +90,16 @@ class GigTestBase(TestCase):
             status=GigStatusChoices.UNCONFIRMED,
             email_changes=True,
         )
-    
+
     def create_one_gig_of_each_status(self):
-        self.create_gig_form(contact=self.joeuser, title=f"Unconfirmed Gig-xyzzy", status=GigStatusChoices.UNCONFIRMED)
-        self.create_gig_form(contact=self.joeuser, title=f"Canceled Gig-xyzzy", status=GigStatusChoices.CANCELED)
-        self.create_gig_form(contact=self.joeuser, title=f"Confirmed Gig-xyzzy", status=GigStatusChoices.CONFIRMED)
-        self.create_gig_form(contact=self.joeuser, title=f"Asking Gig-xyzzy", status=GigStatusChoices.ASKING)
+        self.create_gig_form(
+            contact=self.joeuser, title=f"Unconfirmed Gig-xyzzy", status=GigStatusChoices.UNCONFIRMED)
+        self.create_gig_form(
+            contact=self.joeuser, title=f"Canceled Gig-xyzzy", status=GigStatusChoices.CANCELED)
+        self.create_gig_form(
+            contact=self.joeuser, title=f"Confirmed Gig-xyzzy", status=GigStatusChoices.CONFIRMED)
+        self.create_gig_form(
+            contact=self.joeuser, title=f"Asking Gig-xyzzy", status=GigStatusChoices.ASKING)
 
     def create_gig_form(
         self,
@@ -113,7 +120,7 @@ class GigTestBase(TestCase):
         status = kwargs.pop("status", GigStatusChoices.UNCONFIRMED)
         contact = kwargs.pop("contact", self.joeuser).id
         send_update = kwargs.pop("send_update", True)
-        the_band = kwargs.pop("band",self.band)
+        the_band = kwargs.pop("band", self.band)
 
         c = Client()
         c.force_login(user if user else self.joeuser)
@@ -192,18 +199,20 @@ class GigTestBase(TestCase):
         p = g.member_plans.filter(assoc=a).get() if g else None
         return g, a, p
 
-    def add_members(self,num,band=None):
+    def add_members(self, num, band=None):
         c = Member.objects.count()
         members = []
         assocs = []
         if band is None:
             band = self.band
-        for i in range(c,num+c):
+        for i in range(c, num+c):
             m = Member.objects.create_user(email=f'member{i}@b.c')
             members.append(m)
-            a = Assoc.objects.create(member=m, band=band, status=AssocStatusChoices.CONFIRMED)
+            a = Assoc.objects.create(
+                member=m, band=band, status=AssocStatusChoices.CONFIRMED)
             assocs.append(a)
         return members, assocs
+
 
 class GigTest(GigTestBase):
     def test_no_section(self):
@@ -283,13 +292,12 @@ class GigTest(GigTestBase):
         p.plan_section = s2
         p.save()
         p.refresh_from_db()
-        self.assertEqual(p.section, s2) # should be using the override
+        self.assertEqual(p.section, s2)  # should be using the override
 
         # now delete the override section
         s2.delete()
         p.refresh_from_db()
-        self.assertEqual(p.section, s1) # should revert to joe's default
-
+        self.assertEqual(p.section, s1)  # should revert to joe's default
 
     def test_gig_create_permissions(self):
         """ make sure that if I don't have permission to create a gig, I can't """
@@ -308,7 +316,6 @@ class GigTest(GigTestBase):
         self.create_gig_form(
             user=self.joeuser, title="permission gig", expect_code=302
         )
-
 
     def test_gig_edit_permissions(self):
         """ make sure that if I don't have permission to edit a gig, I can't """
@@ -333,7 +340,6 @@ class GigTest(GigTestBase):
         a.save()
         self.update_gig_form(g, user=self.joeuser,
                              title="legal!", expect_code=302)
-
 
     @flag_missing_vars
     def test_new_gig_email(self):
@@ -379,9 +385,9 @@ class GigTest(GigTestBase):
         self.assertEqual(len(mail.outbox), 1)
 
     def test_gig_creator_set(self):
-        g,_,_ = self.assoc_joe_and_create_gig(set_time="", end_time="02:00 pm")
+        g, _, _ = self.assoc_joe_and_create_gig(
+            set_time="", end_time="02:00 pm")
         self.assertEqual(g.creator, self.joeuser)
-
 
     def test_gig_time_no_set(self):
         self.assoc_joe_and_create_gig(set_time="", end_time="02:00 pm")
@@ -399,30 +405,34 @@ class GigTest(GigTestBase):
 
     def test_gig_occasionals(self):
         a = self.band.all_assocs
-        self.assertEqual(len(a),1)
+        self.assertEqual(len(a), 1)
         super_a = a[0]
         super_a.email_me = True
         super_a.save()
         joe_a = self.assoc_user(self.joeuser)
         joe_a.is_occasional = False
         joe_a.save()
-        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
-        self.assertEqual(len(mail.outbox),2)  # both should get email
+        self.create_gig_form(contact=self.joeuser,
+                             email_changes=True, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox), 2)  # both should get email
         joe_a.is_occasional = True
         joe_a.save()
         mail.outbox.clear()
-        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=True)
-        self.assertEqual(len(mail.outbox),2) # both should get email
+        self.create_gig_form(contact=self.joeuser,
+                             email_changes=True, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox), 2)  # both should get email
         mail.outbox.clear()
-        self.create_gig_form(contact=self.joeuser, email_changes = True, invite_occasionals=False)
-        self.assertEqual(len(mail.outbox),1) # only superuser gets email
+        self.create_gig_form(contact=self.joeuser,
+                             email_changes=True, invite_occasionals=False)
+        self.assertEqual(len(mail.outbox), 1)  # only superuser gets email
         mail.outbox.clear()
-        self.create_gig_form(contact=self.joeuser, email_changes = False, invite_occasionals=True)
-        self.assertEqual(len(mail.outbox),0) # nobody gets email
+        self.create_gig_form(contact=self.joeuser,
+                             email_changes=False, invite_occasionals=True)
+        self.assertEqual(len(mail.outbox), 0)  # nobody gets email
 
     def test_hide_gig_for_user(self):
         a = self.band.all_assocs
-        self.assertEqual(len(a),1)
+        self.assertEqual(len(a), 1)
         super_a = a[0]
         self.assertTrue(super_a.is_admin)
         super_a.email_me = True
@@ -430,13 +440,16 @@ class GigTest(GigTestBase):
         joe_a = self.assoc_user(self.joeuser)
         joe_a.hide_from_schedule = False
         joe_a.save()
-        self.create_gig_form(contact=self.band_admin, email_changes = True, invite_occasionals=True)
+        self.create_gig_form(contact=self.band_admin,
+                             email_changes=True, invite_occasionals=True)
         plans = self.joeuser.calendar_plans
-        self.assertEqual(len(plans),1)  # should see the gig in the calendar_plans
+        # should see the gig in the calendar_plans
+        self.assertEqual(len(plans), 1)
         joe_a.hide_from_schedule = True
         joe_a.save()
         plans = self.joeuser.calendar_plans
-        self.assertEqual(len(plans),0)  # should not see the gig in the calendar_plans
+        # should not see the gig in the calendar_plans
+        self.assertEqual(len(plans), 0)
 
     def test_gig_time_no_set_no_end(self):
         self.assoc_joe_and_create_gig(set_time="", end_date="", end_time="")
@@ -661,7 +674,7 @@ class GigTest(GigTestBase):
         message = mail.outbox[0]
         self.assertIn("(Date/Time)", message.subject)
         self.assertIn("Call Time: noon\nSet Time: 2 p.m.", message.body)
-        
+
     def test_gig_edit_contact(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -726,7 +739,8 @@ class GigTest(GigTestBase):
 
         message = mail.outbox[0]
         self.assertIn(
-            f'Your current status is "{PlanStatusChoices.DEFINITELY.label}"',  # pylint: disable=no-member
+            f'Your current status is "{
+                PlanStatusChoices.DEFINITELY.label}"',  # pylint: disable=no-member
             message.body,
         )
         self.assertNotIn("**can** make it", message.body)
@@ -741,7 +755,8 @@ class GigTest(GigTestBase):
 
         message = mail.outbox[0]
         self.assertIn(
-            f'Your current status is "{PlanStatusChoices.CANT_DO_IT.label}"',  # pylint: disable=no-member
+            f'Your current status is "{
+                PlanStatusChoices.CANT_DO_IT.label}"',  # pylint: disable=no-member
             message.body,
         )
         self.assertIn("**can** make it", message.body)
@@ -836,7 +851,8 @@ class GigTest(GigTestBase):
         g, _, _ = self.assoc_joe_and_create_gig(
             call_date=future_date.strftime("%m/%d/%Y"), call_time="")
         self.assertDateEqual(
-            g.date, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=0, minute=0)
+            g.date, datetime(month=future_date.month, day=future_date.day,
+                             year=future_date.year, hour=0, minute=0)
         )
 
     def test_dates_only(self):
@@ -846,7 +862,8 @@ class GigTest(GigTestBase):
             call_date=future_start_date.strftime("%m/%d/%Y"), call_time="", end_date=future_end_date.strftime("%m/%d/%Y")
         )
         self.assertDateEqual(
-            g.date, datetime(month=future_start_date.month, day=future_start_date.day, year=future_start_date.year, hour=0, minute=0)
+            g.date, datetime(month=future_start_date.month, day=future_start_date.day,
+                             year=future_start_date.year, hour=0, minute=0)
         )
         self.assertIsNone(g.setdate)
         self.assertIsNone(g.enddate)
@@ -860,13 +877,16 @@ class GigTest(GigTestBase):
             end_time="2:00 pm",
         )
         self.assertDateEqual(
-            g.date, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=12, minute=0)
+            g.date, datetime(month=future_date.month, day=future_date.day,
+                             year=future_date.year, hour=12, minute=0)
         )
         self.assertDateEqual(
-            g.setdate, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=13, minute=0)
+            g.setdate, datetime(month=future_date.month, day=future_date.day,
+                                year=future_date.year, hour=13, minute=0)
         )
         self.assertDateEqual(
-            g.enddate, datetime(month=future_date.month, day=future_date.day, year=future_date.year, hour=14, minute=0)
+            g.enddate, datetime(month=future_date.month, day=future_date.day,
+                                year=future_date.year, hour=14, minute=0)
         )
 
     def test_settime_order(self):
@@ -1011,15 +1031,15 @@ class GigTest(GigTestBase):
         self.assoc_user(self.joeuser)
         self.band.anyone_can_create_gigs = True
         self.band.save()
-        g=self.create_gig_form(add_series=True,
-                             total_gigs=3,
-                             repeat='day',
-                             )
-        self.assertEqual(len(mail.outbox),1)
+        g = self.create_gig_form(add_series=True,
+                                 total_gigs=3,
+                                 repeat='day',
+                                 )
+        self.assertEqual(len(mail.outbox), 1)
         message = mail.outbox[0]
         self.assertIn('Series', message.subject)
-        self.assertIn(f'Last Date: {g.date.strftime("%m/%d/%Y")}', message.body)
-
+        self.assertIn(
+            f'Last Date: {g.date.strftime("%m/%d/%Y")}', message.body)
 
     def test_series_of_full_day_gigs(self):
         g1, _, _ = self.assoc_joe_and_create_gig()
@@ -1175,7 +1195,6 @@ class GigTest(GigTestBase):
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         self.assertEqual(resp.status_code, 302)  # should redirect
 
-
     def test_gig_shown(self):
         """
             assure that a gig that happened in the past day still shows up as a 'future plan' 
@@ -1205,7 +1224,7 @@ class GigTest(GigTestBase):
 
     def test_gig_autoarchive(self):
 
-        def _check_gig(g,is_full_day,date,setdate,enddate):
+        def _check_gig(g, is_full_day, date, setdate, enddate):
             g.is_archived = False
             g.is_full_day = is_full_day
             g.date = date
@@ -1220,15 +1239,19 @@ class GigTest(GigTestBase):
 
         # test an all-day gig with no end date
         self.assertFalse(_check_gig(g, True, timezone.now(), None, None))
-        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=10), None, None))
+        self.assertTrue(_check_gig(g, True, timezone.now() -
+                        timedelta(days=10), None, None))
 
         # test an all-day gig with an end date
-        self.assertFalse(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()))
-        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()-timedelta(days=10)))
+        self.assertFalse(_check_gig(g, True, timezone.now() -
+                         timedelta(days=11), None, timezone.now()))
+        self.assertTrue(_check_gig(g, True, timezone.now(
+        )-timedelta(days=11), None, timezone.now()-timedelta(days=10)))
 
         # test non-all-day gig with no end date
         self.assertFalse(_check_gig(g, False, timezone.now(), None, None))
-        self.assertTrue(_check_gig(g, False, timezone.now()-timedelta(days=10), None, None))
+        self.assertTrue(_check_gig(g, False, timezone.now() -
+                        timedelta(days=10), None, None))
 
     def test_gig_default_call_date_to_set_date(self):
         future_date = datetime.now() + timedelta(days=7)
@@ -1239,7 +1262,7 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.date, g.setdate)
         self.assertEqual(g.has_call_time, True)
-    
+
     def test_gig_default_full_day_without_times(self):
         future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
@@ -1250,23 +1273,24 @@ class GigTest(GigTestBase):
         self.assertEqual(g.is_full_day, True)
 
     def test_gig_zones(self):
-        self.band.timezone="US/Eastern"
+        self.band.timezone = "US/Eastern"
         self.band.save()
-        g, a, _= self.assoc_joe_and_create_gig(
+        g, a, _ = self.assoc_joe_and_create_gig(
             is_full_day=True,
             call_date="2/1/2030"
         )
-        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
+        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day, 1)
 
         a.delete()
 
-        g, _, _= self.assoc_joe_and_create_gig(
+        g, _, _ = self.assoc_joe_and_create_gig(
             is_full_day=True,
             call_date="2/1/2030",
             end_date="2/2/2030"
         )
-        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
-        self.assertEqual(g.enddate.astimezone(pytz_timezone("US/Eastern")).day,2)
+        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day, 1)
+        self.assertEqual(g.enddate.astimezone(
+            pytz_timezone("US/Eastern")).day, 2)
 
 
 class GigSecurityTest(GigTestBase):
@@ -1279,11 +1303,12 @@ class GigSecurityTest(GigTestBase):
 
         c.force_login(self.janeuser)
         response = c.get(reverse("gig-detail", args=[g.id]))
-        self.assertEqual(response.status_code, 403) # fail if we're not associated
+        # fail if we're not associated
+        self.assertEqual(response.status_code, 403)
 
         c = Client()
         response = c.get(reverse("gig-detail", args=[g.id]))
-        self.assertEqual(response.status_code, 302) # fail if we're logged out
+        self.assertEqual(response.status_code, 302)  # fail if we're logged out
 
     def test_gig_create_access(self):
         _, _, _ = self.assoc_joe_and_create_gig()
@@ -1294,19 +1319,21 @@ class GigSecurityTest(GigTestBase):
 
         c.force_login(self.janeuser)
         response = c.get(reverse("gig-create", args=[self.band.id]))
-        self.assertEqual(response.status_code, 403) # fail if we're not associated
+        # fail if we're not associated
+        self.assertEqual(response.status_code, 403)
 
         self.assoc_user(self.janeuser)
         response = c.get(reverse("gig-create", args=[self.band.id]))
-        self.assertEqual(response.status_code, 200) # pass - we're assoc'd
+        self.assertEqual(response.status_code, 200)  # pass - we're assoc'd
         self.band.anyone_can_create_gigs = False
         self.band.save()
         response = c.get(reverse("gig-create", args=[self.band.id]))
-        self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+        # fail if we can't create gigs
+        self.assertEqual(response.status_code, 403)
 
         c = Client()
         response = c.get(reverse("gig-create", args=[self.band.id]))
-        self.assertEqual(response.status_code, 302) # fail if we're logged out
+        self.assertEqual(response.status_code, 302)  # fail if we're logged out
 
     def test_gig_edit_access(self):
         g, _, _ = self.assoc_joe_and_create_gig()
@@ -1317,23 +1344,106 @@ class GigSecurityTest(GigTestBase):
 
         c.force_login(self.janeuser)
         response = c.get(reverse("gig-update", args=[g.id]))
-        self.assertEqual(response.status_code, 403) # fail if we're not associated
+        # fail if we're not associated
+        self.assertEqual(response.status_code, 403)
 
         self.assoc_user(self.janeuser)
         response = c.get(reverse("gig-update", args=[g.id]))
-        self.assertEqual(response.status_code, 200) # pass - we're assoc'd
+        self.assertEqual(response.status_code, 200)  # pass - we're assoc'd
         self.band.anyone_can_manage_gigs = False
         self.band.save()
         self.band.refresh_from_db()
         g.band.refresh_from_db()
         response = c.get(reverse("gig-update", args=[g.id]))
-        self.assertEqual(response.status_code, 403) # fail if we can't create gigs
+        # fail if we can't create gigs
+        self.assertEqual(response.status_code, 403)
 
         g.creator = self.janeuser
         g.save()
         response = c.get(reverse("gig-update", args=[g.id]))
-        self.assertEqual(response.status_code, 200) # pass if we created the gig
+        # pass if we created the gig
+        self.assertEqual(response.status_code, 200)
 
         c = Client()
         response = c.get(reverse("gig-update", args=[g.id]))
-        self.assertEqual(response.status_code, 302) # fail if we're logged out
+        self.assertEqual(response.status_code, 302)  # fail if we're logged out
+
+
+class GraphQLTest(GigTestBase):
+    def setUp(self):
+        super().setUp()
+        self.client = graphQLClient(schema)
+        self.context_value = RequestFactory().get('/graphql')
+        self.assoc_user(self.joeuser)
+        self.assoc_user(self.janeuser)
+        self.joeband = Band.objects.create(
+            name="Joe's Band", timezone="UTC", anyone_can_create_gigs=True, hometown="Seattle")
+        self.janeband = Band.objects.create(
+            name="Jane's Band", timezone="UTC", anyone_can_create_gigs=True, hometown="Seattle")
+
+        Assoc.objects.create(
+            member=self.joeuser, band=self.joeband, status=AssocStatusChoices.CONFIRMED)
+        Assoc.objects.create(
+            member=self.janeuser, band=self.janeband, status=AssocStatusChoices.CONFIRMED)
+
+        self.joe_gig = Gig.objects.create(title="Joe's Gig", band=self.joeband,
+                                          date="2100-01-02T12:00:00+00:00", status=GigStatusChoices.UNCONFIRMED, contact=self.joeuser)
+        self.jane_gig = Gig.objects.create(title="Jane's Gig", band=self.janeband,
+                                           date="2100-01-02T12:00:00+00:00", status=GigStatusChoices.UNCONFIRMED, contact=self.janeuser)
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_joe_gig(self):
+        self.context_value.user = self.joeuser
+        executed = self.client.execute(
+            '''query {
+                allGigs {
+                    title,
+                    date,
+                    status
+                }
+            }''', context_value=self.context_value)
+        assert executed == {'data': {'allGigs': [
+            {'title': "Joe's Gig", 'date': '2100-01-02T12:00:00+00:00', 'status': 'A_0'}]}}
+
+    def test_jane_gig(self):
+        self.context_value.user = self.janeuser
+        executed = self.client.execute(
+            '''query {
+                allGigs {
+                    title,
+                    date,
+                    status
+                }
+            }''', context_value=self.context_value)
+        assert executed == {'data': {'allGigs': [
+            {'title': "Jane's Gig", 'date': '2100-01-02T12:00:00+00:00', 'status': 'A_0'}]}}
+
+    def test_superuser_gigs(self):
+        self.context_value.user = self.super
+        executed = self.client.execute(
+            '''query {
+                allGigs {
+                    title,
+                    date,
+                    status
+                }
+            }''', context_value=self.context_value)
+        assert executed == {'data': {'allGigs': [
+            {'title': "Joe's Gig", 'date': '2100-01-02T12:00:00+00:00', 'status': 'A_0'},
+            {'title': "Jane's Gig", 'date': '2100-01-02T12:00:00+00:00', 'status': 'A_0'}
+        ]}}
+
+    def test_unauthenticated_gigs(self):
+        self.context_value.user = AnonymousUser()
+        executed = self.client.execute(
+            '''query {
+                allGigs {
+                    title,
+                    date,
+                    status
+                }
+            }''', context_value=self.context_value)
+        print('executed', executed)
+        assert executed == {'data': {'allGigs': []}}

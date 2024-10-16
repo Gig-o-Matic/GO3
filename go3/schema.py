@@ -1,9 +1,17 @@
 import graphene
 from graphene_django import DjangoObjectType
 
+from gig.models import Gig
 from band.models import Band, Assoc
 from member.models import Member
-from graphql import GraphQLError
+from graphql import GraphQLError\
+
+
+
+class GigType(DjangoObjectType):
+    class Meta:
+        model = Gig
+        fields = ("title", "date", "status")
 
 
 class BandType(DjangoObjectType):
@@ -25,12 +33,26 @@ class MemberType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
+    all_gigs = graphene.List(GigType)
     all_bands = graphene.List(AssocType)
     band_by_name = graphene.Field(
         BandType, name=graphene.String(required=True))
     all_members = graphene.List(MemberType)
     member_by_email = graphene.Field(
         MemberType, email=graphene.String(required=True))
+
+    def resolve_all_gigs(self, info):
+        user = info.context.user
+
+        if not user.is_authenticated:
+            return Gig.objects.none()
+        elif user.is_superuser:
+            return Gig.objects.all()
+        else:
+            assocs = Assoc.objects.filter(member=user)
+            band_ids = assocs.values_list('band', flat=True)
+            gigs = Gig.objects.filter(band__in=band_ids)
+            return gigs
 
     def resolve_all_bands(self, info):
         user = info.context.user
