@@ -1174,7 +1174,12 @@ class GigTest(GigTestBase):
         """
         g, _, _ = self.assoc_joe_and_create_gig()
         g.date = timezone.now() + timedelta(days=1)
+        self.joeuser.preferences.current_timezone = str(g.date.tzinfo)
         g.save()
+        g.refresh_from_db()
+        self.joeuser.preferences.current_timezone = str(timezone.now().tzinfo)
+        self.joeuser.save()
+        self.joeuser.refresh_from_db()
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 

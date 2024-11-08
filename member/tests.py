@@ -46,7 +46,7 @@ import pytest
 class MemberTest(TestCase):
     def setUp(self):
         m = Member.objects.create_user('a@b.com', password='abc')
-        b = Band.objects.create(name='test band')
+        b = Band.objects.create(name='test band', timezone="America/New_York")
         Assoc.objects.create(band=b, member=m)
         Band.objects.create(name='another band')
 
@@ -73,6 +73,15 @@ class MemberTest(TestCase):
         self.assertEqual(len(m.assocs.all()), 1)
         b = m.assocs.first().band
         self.assertEqual(b.name, 'test band')
+
+    def test_member_timezone(self):
+        m = Member.objects.all()
+        self.assertEqual(len(m), 1)
+        m = m[0]
+        self.assertEqual(len(m.assocs.all()), 1)
+        b = m.assocs.first().band
+        self.assertIsNotNone(m.preferences.current_timezone)
+        self.assertEqual(b.timezone, m.preferences.current_timezone)
 
     def test_memberassocsview(self):
         m = Member.objects.first()

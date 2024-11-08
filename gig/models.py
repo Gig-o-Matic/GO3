@@ -14,8 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import datetime
+import pytz
 import uuid
+from datetime import timedelta
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
@@ -24,7 +25,7 @@ from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 from .util import GigStatusChoices, PlanStatusChoices
 from member.util import MemberStatusChoices
-from django.utils import timezone
+from django.utils.timezone import localtime
 from go3.datetime_without_timezone import DateTimeWithoutTimezoneField
 
 
@@ -45,14 +46,26 @@ class MemberPlanManager(models.Manager):
         return super().order_by('section')
 
     def future_plans(self, member):
-        threshold_date = timezone.now() - datetime.timedelta(hours=4)
-        return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=threshold_date)) | Q(gig__enddate__gt=threshold_date),
-                                             assoc__member=member, 
+        # get the local server time and convert it to whatever timezone the member is in
+        time_for_user = localtime(timezone=pytz.timezone(member.preferences.current_timezone))
+        time_for_user = time_for_user.replace(tzinfo = None)
+        recent_for_user = time_for_user - timedelta(hours=4) # for gigs with no end date
+        yesterday_for_user = time_for_user.replace(hour=23, minute=59) - timedelta(days=1)
+
+        # find plans that are for this member that are not trashed or archived
+        possible = super().get_queryset().filter(assoc__member=member, 
                                              assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__trashed_date__isnull=True,
                                              gig__is_archived=False,
-                                            ).order_by('gig__date')
+                                            )
+        # find plans for gigs that haven't ended yet
+        possible = possible.filter((Q(gig__is_full_day=True) & Q(gig__date__gte=yesterday_for_user)) |
+                                   (Q(gig__enddate=None) & Q(gig__date__gte=recent_for_user)) |
+                                   Q(gig__enddate__gt=time_for_user))
 
+        possible = possible.order_by('gig__date')
+
+        return possible
 
 class Plan(models.Model):
     """ Models a gig-o-matic plan """
