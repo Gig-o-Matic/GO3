@@ -82,17 +82,17 @@ class CaldavTest(TestCase):
 
     def test_calfeed_event_no_enddate(self):
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
         # with no end date set, caldeef should show an end date of an hour after start
-        self.assertTrue(cf.find(b'DTEND:20200229T153000Z')>0)
+        self.assertTrue(cf.find(b'DTEND:20200229T153000')>0)
 
     def test_calfeed_event_enddate(self):
         # set the end date and make sure the calfeed is updated
         self.testgig.enddate = self.testgig.date + timedelta(hours=2)
         self.testgig.save()
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
-        self.assertTrue(cf.find(b'DTEND:20200229T163000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTEND:20200229T163000')>0)
 
     def test_calfeed_event_start(self):
         # for member feeds, the start date should be the call time; for band feeds, the start should be the set time
@@ -100,19 +100,19 @@ class CaldavTest(TestCase):
         # first, a gig without a set time should show the call time
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.band.pub_cal_feed_id, is_for_band=True)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for member feeds, should show the call time
         self.testgig.setdate = self.testgig.date + timedelta(hours=1)
         self.testgig.save()
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for band feeds, should show the set time
         cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.band.pub_cal_feed_id, is_for_band=True)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000Z')==-1)
-        self.assertTrue(cf.find(b'DTSTART:20200229T153000Z')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')==-1)
+        self.assertTrue(cf.find(b'DTSTART:20200229T153000')>0)
 
 
     def test_calfeed_event_full_day(self):

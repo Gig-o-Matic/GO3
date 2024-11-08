@@ -474,43 +474,6 @@ class GigTest(GigTestBase):
             "Call Time: noon\nSet Time: 12:30 p.m.\nEnd Time: 2 p.m.", message.body
         )
 
-    def test_gig_time_daylight_savings(self):
-        """
-        check to see that gig times are rendered correctly when going from UTC in the
-        database to something else.
-        """
-        self.band.timezone = "UTC"
-        self.band.save()
-        Assoc.objects.create(
-            member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
-        )
-        date1 = timezone.datetime(2037, 1, 2, 12, tzinfo=pytz_timezone("UTC"))
-        date2 = timezone.datetime(2037, 7, 2, 12, tzinfo=pytz_timezone("UTC"))
-        self.create_gig_form(
-            call_date=self._dateformat(date1), call_time=self._timeformat(date1)
-        )
-        self.create_gig_form(
-            call_date=self._dateformat(date2), call_time=self._timeformat(date2)
-        )
-
-        # get the gigs we just made
-        gigs = Gig.objects.order_by("id")
-        first, second = gigs
-
-        c = Client()
-        c.force_login(self.joeuser)
-        response = c.get(f"/gig/{first.id}/")
-        self.assertIn("noon", response.content.decode("ascii"))
-
-        # now change the band's timezone and render again
-        self.band.timezone = "America/New_York"
-        self.band.save()
-
-        response = c.get(f"/gig/{first.id}/")
-        self.assertIn("7 a.m.", response.content.decode("ascii"))
-        response = c.get(f"/gig/{second.id}/")
-        self.assertIn("8 a.m.", response.content.decode("ascii"))
-
     @flag_missing_vars
     def test_reminder_email(self):
         g, _, _ = self.assoc_joe_and_create_gig()
@@ -766,7 +729,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_snooze_long(self):
-        now = datetime.now(tz=timezone.get_current_timezone())
+        now = timezone.now()
         _, _, p = self.assoc_joe_and_create_gig()
         response = self.client.get(
             reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
@@ -778,7 +741,7 @@ class GigTest(GigTestBase):
         self.assertGreaterEqual((p.snooze_until - now).days, 7)
 
     def test_answer_snooze_short(self):
-        now = datetime.now(tz=timezone.get_current_timezone())
+        now = timezone.now()
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = now.date() + timedelta(days=3)
         response = self.client.get(

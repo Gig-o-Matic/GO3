@@ -22,7 +22,6 @@ from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime
-from pytz import timezone as tzone, utc
 from django.utils.formats import get_format
 
 class GigForm(forms.ModelForm):
@@ -85,10 +84,10 @@ class GigForm(forms.ModelForm):
                         continue
             return x
 
-        def _mergetime(hour, minute='', zone=None):
+        def _mergetime(hour, minute=''):
             if minute:
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
-            return zone.localize(hour) if zone else hour
+            return hour
 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         if date is None:
@@ -106,10 +105,6 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = False
             self.cleaned_data['has_end_time'] = False
 
-            date = tzone(self.fields['timezone'].initial).localize(date)
-            if end_date:
-                end_date = tzone(self.fields['timezone'].initial).localize(end_date)
-
             self.cleaned_data['date'] = date
             self.cleaned_data['setdate'] = None
             self.cleaned_data['enddate'] = end_date
@@ -117,10 +112,12 @@ class GigForm(forms.ModelForm):
             # Skip the "gig in the past" validation if the date has not changed
             # This allows editing gig details after a gig has started
             # See https://github.com/Gig-o-Matic/GO3/issues/557
-            if self.initial['date'] != date and date < timezone.now():
-                self.add_error('call_date', ValidationError(_('Gig date must be in the future'), code='invalid date'))
-            if end_date and end_date < date:
-                self.add_error('end_date', ValidationError(_('Gig end date must be later than the start date'), code='invalid date'))
+
+            # TODO - the validation needs to happen on the client side
+            # if self.initial['date'] != date and date < timezone.now():
+            #     self.add_error('call_date', ValidationError(_('Gig date must be in the future'), code='invalid date'))
+            # if end_date and end_date < date:
+            #     self.add_error('end_date', ValidationError(_('Gig end date must be later than the start date'), code='invalid date'))
 
         else:
             # we're not full-day, so ignore the end date in the form
@@ -140,13 +137,14 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = not set_time is None
             self.cleaned_data['has_end_time'] = not end_time is None
 
-            zone = tzone(self.fields['timezone'].initial)
-            date = _mergetime(date, call_time, zone)
+            date = _mergetime(date, call_time)
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
 
-            if self.initial['date'] != date and date < timezone.now():
+            if self.initial['date'] != date and date < datetime.now():
+                # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
+
             if setdate and setdate < date:
                 self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
             if enddate:

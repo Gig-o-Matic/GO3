@@ -33,8 +33,6 @@ from gig.helpers import notify_new_gig
 from member.helpers import has_band_admin, has_manage_gig_permission, has_create_gig_permission, has_comment_permission
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from validators import url as url_validate
-import pytz
-
 
 class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Gig
@@ -303,7 +301,7 @@ def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
     if val == PlanStatusChoices.DONT_KNOW:
-        now = datetime.datetime.now(tz=timezone.get_current_timezone())
+        now = datetime.datetime.now()
         if (future_days := (plan.gig.date - now).days) > 8:
             plan.snooze_until = now + datetime.timedelta(days=7)
         elif future_days > 2:

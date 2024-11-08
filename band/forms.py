@@ -17,7 +17,6 @@
 
 from django import forms
 from .models import Band
-import pytz
 
 class BandForm(forms.ModelForm):
     def __init__(self, **kwargs):
