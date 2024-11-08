@@ -36,6 +36,13 @@ def AgendaSelector(request):
     if request.user.band_count == 0:
         return redirect("/member")
 
+    try:
+        newzone = request.GET['zone']
+        request.user.preferences.current_timezone = newzone
+        request.user.preferences.save()
+    except KeyError:
+        pass
+
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
         AgendaChoices.CALENDAR: CalendarView,

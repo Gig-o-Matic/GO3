@@ -97,6 +97,13 @@ def agenda_gigs(request, the_type, the_band=None):
     )
 
 @login_required
+def update_zone(request):
+    if request.user.preferences.auto_update_timezone:
+        return render(request, 'agenda/agenda_update_zone.html')
+    else:
+        return redirect('home')
+
+@login_required
 def calendar_events(request, pk):
     startstr = request.GET['start']
     endstr = request.GET['end']
