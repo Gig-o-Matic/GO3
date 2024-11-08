@@ -117,7 +117,7 @@ class CalendarView(AgendaBaseView):
         return context
 
 
-class GridView(LoginRequiredMixin, TemplateView):
+class GridView(AgendaBaseView):
     template_name = 'agenda/grid.html'
 
     def get_context_data(self, **kwargs):
