@@ -19,8 +19,7 @@ from django.urls import path
 from . import views, helpers
 
 urlpatterns = [
-    path('', helpers.update_zone),
-    path('home', views.AgendaSelector, name='home'),
+    path('', views.AgendaSelector, name='home'),
     path('agenda', views.AgendaView.as_view(), name='agenda'),
     # path('noplans/<int:page>', helpers.agenda_gigs, name='agenda-gigs-noplans'),
     path('plans/<int:the_type>/<int:the_band>', helpers.agenda_gigs, name='agenda-gigs'),
