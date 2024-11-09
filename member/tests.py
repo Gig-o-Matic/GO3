@@ -75,6 +75,12 @@ class MemberTest(TestCase):
         self.assertEqual(b.name, 'test band')
 
     def test_member_timezone(self):
+        
+        # set the assoc.status to confirmed
+        a = Assoc.objects.first()
+        a.status = AssocStatusChoices.CONFIRMED
+        a.save()
+        
         m = Member.objects.all()
         self.assertEqual(len(m), 1)
         m = m[0]
