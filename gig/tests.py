@@ -729,7 +729,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_snooze_long(self):
-        now = timezone.now()
+        now = timezone.now().replace(tzinfo=None)
         _, _, p = self.assoc_joe_and_create_gig()
         response = self.client.get(
             reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
@@ -741,7 +741,7 @@ class GigTest(GigTestBase):
         self.assertGreaterEqual((p.snooze_until - now).days, 7)
 
     def test_answer_snooze_short(self):
-        now = timezone.now()
+        now = timezone.now().replace(tzinfo=None)
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = now.date() + timedelta(days=3)
         response = self.client.get(

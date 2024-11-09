@@ -301,7 +301,7 @@ def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
     if val == PlanStatusChoices.DONT_KNOW:
-        now = datetime.datetime.now()
+        now = datetime.datetime.now().replace(tzinfo=None)
         if (future_days := (plan.gig.date - now).days) > 8:
             plan.snooze_until = now + datetime.timedelta(days=7)
         elif future_days > 2:
