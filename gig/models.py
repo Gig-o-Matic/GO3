@@ -47,6 +47,7 @@ class MemberPlanManager(models.Manager):
 
     def future_plans(self, member):
         # get the local server time and convert it to whatever timezone the member is in
+        
         time_for_user = localtime(timezone=pytz.timezone(member.preferences.current_timezone))
         time_for_user = time_for_user.replace(tzinfo = None)
         recent_for_user = time_for_user - timedelta(hours=4) # for gigs with no end date

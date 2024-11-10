@@ -24,10 +24,9 @@ from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from django.urls import reverse
-from django.utils import timezone
-from pytz import timezone as pytz_timezone
+from pytz import timezone as pytz_timezone, utc
 from lib.template_test import MISSING, flag_missing_vars
 
 
@@ -67,7 +66,7 @@ class GigTestBase(TestCase):
         end_date="auto",
     ):
         thedate = (
-            timezone.datetime(2100, 1, 2, 12, tzinfo=pytz_timezone("UTC"))
+            datetime(2100, 1, 2, 12, tzinfo=None)
             if start_date == "auto"
             else start_date
         )
@@ -519,7 +518,7 @@ class GigTest(GigTestBase):
         )
         g = self.create_gig_form()
         g.member_plans.update(
-            snooze_until=datetime.now(tz=timezone.get_current_timezone())
+            snooze_until=utc.localize(datetime.now())
         )
         mail.outbox = []
         send_snooze_reminders()
@@ -538,7 +537,7 @@ class GigTest(GigTestBase):
             member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
         )
         g = self.create_gig_form()
-        now = datetime.now(tz=timezone.get_current_timezone())
+        now = utc.localize(datetime.now())
         g.member_plans.filter(assoc=joeassoc).update(snooze_until=now)
         g.member_plans.filter(assoc=janeassoc).update(
             snooze_until=now + timedelta(days=2)
@@ -556,7 +555,7 @@ class GigTest(GigTestBase):
             member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
         )
         g = self.create_gig_form()
-        now = datetime.now(tz=timezone.get_current_timezone())
+        now = datetime.now().replace(tzinfo=timezone.utc)
         g.member_plans.filter(assoc=a).update(snooze_until=now)
         mail.outbox = []
         send_snooze_reminders()
@@ -729,7 +728,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_snooze_long(self):
-        now = timezone.now().replace(tzinfo=None)
+        now = datetime.now().replace(tzinfo=None)
         _, _, p = self.assoc_joe_and_create_gig()
         response = self.client.get(
             reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
@@ -741,7 +740,7 @@ class GigTest(GigTestBase):
         self.assertGreaterEqual((p.snooze_until.date() - now.date()).days, 7)
 
     def test_answer_snooze_short(self):
-        now = timezone.now()#.replace(tzinfo=None)
+        now = datetime.now().replace(tzinfo=None)
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = now.date() + timedelta(days=3)
         response = self.client.get(
@@ -755,7 +754,7 @@ class GigTest(GigTestBase):
 
     def test_answer_snooze_too_short(self):
         g, _, p = self.assoc_joe_and_create_gig()
-        g.date = timezone.now() + timedelta(days=1)
+        g.date = datetime.now() + timedelta(days=1)
         g.save()
         response = self.client.get(
             reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
@@ -767,7 +766,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_unsets_snooze_until(self):
-        now = datetime.now(tz=timezone.get_current_timezone())
+        now = utc.localize(datetime.now())
         _, _, p = self.assoc_joe_and_create_gig()
         p.status = PlanStatusChoices.DONT_KNOW
         p.snooze_until = now
@@ -1173,28 +1172,26 @@ class GigTest(GigTestBase):
             so it's on the schedule page
         """
         g, _, _ = self.assoc_joe_and_create_gig()
-        g.date = timezone.now() + timedelta(days=1)
-        self.joeuser.preferences.current_timezone = str(g.date.tzinfo)
+        g.date = datetime.now() + timedelta(days=1)
         g.save()
         g.refresh_from_db()
-        self.joeuser.preferences.current_timezone = str(timezone.now().tzinfo)
+        self.joeuser.preferences.current_timezone='America/New_York'
         self.joeuser.save()
-        self.joeuser.refresh_from_db()
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
-        g.date = timezone.now()
+        g.date = datetime.now().replace(tzinfo=pytz_timezone('America/New_York'))
         g.save()
 
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
-        g.date = timezone.now() - timedelta(hours=3, minutes=59)
+        g.date = datetime.now() - timedelta(hours=3, minutes=59)
         g.save()
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
-        g.date = timezone.now() - timedelta(hours=4, minutes=1)
+        g.date = datetime.now() - timedelta(hours=4, minutes=1)
         g.save()
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertFalse(g in gigs)
@@ -1215,16 +1212,16 @@ class GigTest(GigTestBase):
         g, _, _ = self.assoc_joe_and_create_gig()
 
         # test an all-day gig with no end date
-        self.assertFalse(_check_gig(g, True, timezone.now(), None, None))
-        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=10), None, None))
+        self.assertFalse(_check_gig(g, True, datetime.now(), None, None))
+        self.assertTrue(_check_gig(g, True, datetime.now()-timedelta(days=10), None, None))
 
         # test an all-day gig with an end date
-        self.assertFalse(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()))
-        self.assertTrue(_check_gig(g, True, timezone.now()-timedelta(days=11), None, timezone.now()-timedelta(days=10)))
+        self.assertFalse(_check_gig(g, True, datetime.now()-timedelta(days=11), None, datetime.now()))
+        self.assertTrue(_check_gig(g, True, datetime.now()-timedelta(days=11), None, datetime.now()-timedelta(days=10)))
 
         # test non-all-day gig with no end date
-        self.assertFalse(_check_gig(g, False, timezone.now(), None, None))
-        self.assertTrue(_check_gig(g, False, timezone.now()-timedelta(days=10), None, None))
+        self.assertFalse(_check_gig(g, False, datetime.now(), None, None))
+        self.assertTrue(_check_gig(g, False, datetime.now()-timedelta(days=10), None, None))
 
     def test_gig_default_call_date_to_set_date(self):
         future_date = datetime.now() + timedelta(days=7)
