@@ -864,7 +864,7 @@ class GigTest(GigTestBase):
         # Create a gig in the past directly in the DB to bypass form validation
         # This simulates a gig that has already started
         # Allow edits to gig details as long as they don't change the gig call time
-        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0, tzinfo=timezone.utc)
+        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0, tzinfo=None)
         gig = self.create_gig(start_date=past_date, the_member=self.band_admin)
         
         form_data = {
