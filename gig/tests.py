@@ -1249,7 +1249,7 @@ class GigTest(GigTestBase):
             is_full_day=True,
             call_date="2/1/2030"
         )
-        self.assertEqual(g.date.astimezone(pytz_timezone("US/Eastern")).day,1)
+        self.assertEqual(g.date.day,1)
 
         a.delete()
 
