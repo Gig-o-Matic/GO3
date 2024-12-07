@@ -896,6 +896,7 @@ class GigTest(GigTestBase):
         print(f'there are {len(Gig.objects.all())} gigs')
         print(f'gig IDs are {[g.id for g in Gig.objects.all()]}')
         gig = Gig.objects.get(id=gig.id)
+        gig.refresh_from_db()
         print(f'title is now {gig.title}')
         print(f'details is now {gig.details}')
         self.assertEqual(gig.title, "Test New Gig Title")
