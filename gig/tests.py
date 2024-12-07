@@ -882,7 +882,7 @@ class GigTest(GigTestBase):
             "paid": "Community",
             "leader_text": "TBD",
             "postgig": "Let's eat!",
-            "details": "This is gonna be fun",
+            "details": "This is gonna be fun someday",
             "setlist": "1. Song 1\n2. Song 2\n3. Song 3\n",
             "invite_occasionals": "on",
             "email_changes": "on",
@@ -896,6 +896,8 @@ class GigTest(GigTestBase):
         print(f'there are {len(Gig.objects.all())} gigs')
         print(f'gig IDs are {[g.id for g in Gig.objects.all()]}')
         gig = Gig.objects.get(id=gig.id)
+        print(f'title is now {gig.title}')
+        print(f'details is now {gig.details}')
         self.assertEqual(gig.title, "Test New Gig Title")
 
     # testing gig comments
