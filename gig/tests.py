@@ -887,8 +887,14 @@ class GigTest(GigTestBase):
             "invite_occasionals": "on",
             "email_changes": "on",
         }
+        print(f'there are {len(Gig.objects.all())} gigs')
+        print(f'old gig id is {gig.id}')
+        print(f'old title is {gig.title}')
+        print(f'new title is {form_data['title']}')
         self.client.force_login(self.band_admin)
         self.client.post(f"/gig/{gig.id}/update", form_data)
+        print(f'there are {len(Gig.objects.all())} gigs')
+        print(f'gig IDs are {[g.id for g in Gig.objects.all()]}')
         gig = Gig.objects.get(id=gig.id)
         self.assertEqual(gig.title, "Test New Gig Title")
 
