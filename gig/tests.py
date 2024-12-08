@@ -890,8 +890,9 @@ class GigTest(GigTestBase):
         print(f'gig dates are: {gig.date} {gig.setdate} {gig.enddate}')
 
         self.client.force_login(self.band_admin)
-        self.client.post(f"/gig/{gig.id}/update", form_data)
-        gig = Gig.objects.get(id=gig.id)
+        resp = self.client.post(f"/gig/{gig.id}/update", form_data)
+        self.assertEqual(resp.status_code, 302)
+        # gig = Gig.objects.get(id=gig.id)
         gig.refresh_from_db()
         self.assertEqual(gig.title, "Test New Gig Title")
 
