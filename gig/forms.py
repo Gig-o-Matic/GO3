@@ -24,6 +24,10 @@ from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 from django.utils.formats import get_format
 
+def MyValidationError(e,c):
+    print(f'!!1 {e} {c}')
+    ValidationError(e,c)
+
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
         band = kwargs.pop('band', None)
@@ -91,7 +95,7 @@ class GigForm(forms.ModelForm):
 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         if date is None:
-            self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
+            self.add_error('call_date', MyValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
         
@@ -143,15 +147,15 @@ class GigForm(forms.ModelForm):
 
             if self.initial['date'] != date and date < datetime.now():
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
-                self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
+                self.add_error('call_date', MyValidationError(_('Gig call time must be in the future'), code='invalid date'))
 
             if setdate and setdate < date:
-                self.add_error('set_time', ValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
+                self.add_error('set_time', MyValidationError(_('Set time must not be earlier than the call time'), code='invalid set time'))
             if enddate:
                 if enddate < date:
-                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
+                    self.add_error('end_time', MyValidationError(_('Gig end must not be earlier than the call time'), code='invalid end time'))
                 elif setdate and enddate < setdate:
-                    self.add_error('end_time', ValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
+                    self.add_error('end_time', MyValidationError(_('Gig end must not be earlier than the set time'), code='invalid end time'))
 
             self.cleaned_data['date'] = date
             self.cleaned_data['setdate'] = setdate

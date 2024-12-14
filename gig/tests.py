@@ -876,6 +876,7 @@ class GigTest(GigTestBase):
             "call_time": f"{gig.date.strftime("%I:%M %p")}",
             "set_time": f"{gig.setdate.strftime("%I:%M %p")}",
             "end_time": f"{gig.enddate.strftime("%I:%M %p")}",
+            "is_full_day": False,
             "datenotes": "Nothing special",
             "address": "123 Main Street. Anywhereville, USA 100001",
             "dress": "Faux Formal",
@@ -893,9 +894,7 @@ class GigTest(GigTestBase):
         resp = self.client.post(f"/gig/{gig.id}/update", form_data)
         print(f'request: {resp.request}')
         print(f'status: {resp.status_code}')
-        print(f'url: {resp.url}')
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(False)
         # gig = Gig.objects.get(id=gig.id)
         gig.refresh_from_db()
         self.assertEqual(gig.title, "Test New Gig Title")
