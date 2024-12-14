@@ -891,7 +891,11 @@ class GigTest(GigTestBase):
 
         self.client.force_login(self.band_admin)
         resp = self.client.post(f"/gig/{gig.id}/update", form_data)
+        print(f'request: {resp.request}')
+        print(f'status: {resp.status_code}')
+        print(f'url: {resp.url}')
         self.assertEqual(resp.status_code, 302)
+        self.assertTrue(False)
         # gig = Gig.objects.get(id=gig.id)
         gig.refresh_from_db()
         self.assertEqual(gig.title, "Test New Gig Title")
