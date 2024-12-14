@@ -24,9 +24,9 @@ from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 from django.utils.formats import get_format
 
-def MyValidationError(e,c):
-    print(f'!!1 {e} {c}')
-    ValidationError(e,c)
+def MyValidationError(e,code=None):
+    print(f'!!1 {e} {code}')
+    ValidationError(e,code)
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
