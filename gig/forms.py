@@ -142,6 +142,7 @@ class GigForm(forms.ModelForm):
             enddate = _mergetime(date, end_time) if end_time else None
 
             if self.initial['date'] != date and date < datetime.now():
+                print(f"!!! {self.initial['date']} and {date}")
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
 
