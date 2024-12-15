@@ -897,7 +897,8 @@ class GigTest(GigTestBase):
         # self.assertEqual(resp.status_code, 302)
         # # gig = Gig.objects.get(id=gig.id)
 
-        self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
+        # self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
+        self.update_gig_form(gig, user=self.band_admin, expect_code=302)
 
         gig.refresh_from_db()
         self.assertEqual(gig.title, "Test New Gig Title")
