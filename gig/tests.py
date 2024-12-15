@@ -867,35 +867,38 @@ class GigTest(GigTestBase):
         past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0, tzinfo=None)
         gig = self.create_gig(start_date=past_date, the_member=self.band_admin)
         
-        form_data = {
-            "title": "Test New Gig Title",
-            "contact": f"{self.band_admin.id}",
-            "status": "1",
-            "call_date": f"{gig.date.strftime("%d/%m/%Y")}",
-            "end_date": f"{gig.enddate.strftime("%d/%m/%Y")}",
-            "call_time": f"{gig.date.strftime("%I:%M %p")}",
-            "set_time": f"{gig.setdate.strftime("%I:%M %p")}",
-            "end_time": f"{gig.enddate.strftime("%I:%M %p")}",
-            "is_full_day": False,
-            "datenotes": "Nothing special",
-            "address": "123 Main Street. Anywhereville, USA 100001",
-            "dress": "Faux Formal",
-            "paid": "Community",
-            "leader_text": "TBD",
-            "postgig": "Let's eat!",
-            "details": "This is gonna be fun someday",
-            "setlist": "1. Song 1\n2. Song 2\n3. Song 3\n",
-            "invite_occasionals": "on",
-            "email_changes": "on",
-        }
-        print(f'gig dates are: {gig.date} {gig.setdate} {gig.enddate}')
+        # form_data = {
+        #     "title": "Test New Gig Title",
+        #     "contact": f"{self.band_admin.id}",
+        #     "status": "1",
+        #     "call_date": f"{gig.date.strftime("%d/%m/%Y")}",
+        #     "end_date": f"{gig.enddate.strftime("%d/%m/%Y")}",
+        #     "call_time": f"{gig.date.strftime("%I:%M %p")}",
+        #     "set_time": f"{gig.setdate.strftime("%I:%M %p")}",
+        #     "end_time": f"{gig.enddate.strftime("%I:%M %p")}",
+        #     "is_full_day": False,
+        #     "datenotes": "Nothing special",
+        #     "address": "123 Main Street. Anywhereville, USA 100001",
+        #     "dress": "Faux Formal",
+        #     "paid": "Community",
+        #     "leader_text": "TBD",
+        #     "postgig": "Let's eat!",
+        #     "details": "This is gonna be fun someday",
+        #     "setlist": "1. Song 1\n2. Song 2\n3. Song 3\n",
+        #     "invite_occasionals": "on",
+        #     "email_changes": "on",
+        # }
+        # print(f'gig dates are: {gig.date} {gig.setdate} {gig.enddate}')
 
-        self.client.force_login(self.band_admin)
-        resp = self.client.post(f"/gig/{gig.id}/update", form_data)
-        print(f'request: {resp.request}')
-        print(f'status: {resp.status_code}')
-        self.assertEqual(resp.status_code, 302)
-        # gig = Gig.objects.get(id=gig.id)
+        # self.client.force_login(self.band_admin)
+        # resp = self.client.post(f"/gig/{gig.id}/update", form_data)
+        # print(f'request: {resp.request}')
+        # print(f'status: {resp.status_code}')
+        # self.assertEqual(resp.status_code, 302)
+        # # gig = Gig.objects.get(id=gig.id)
+
+        self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
+
         gig.refresh_from_db()
         self.assertEqual(gig.title, "Test New Gig Title")
 
