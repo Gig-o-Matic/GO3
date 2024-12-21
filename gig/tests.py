@@ -898,9 +898,11 @@ class GigTest(GigTestBase):
         # # gig = Gig.objects.get(id=gig.id)
 
         # self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
-        self.update_gig_form(gig, user=self.band_admin, expect_code=302)
+        print(f'gig date is {gig.date}')
+        self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
 
         gig.refresh_from_db()
+        print(f'gig date 2 is {gig.date}')
         self.assertEqual(gig.title, "Test New Gig Title")
 
     # testing gig comments
