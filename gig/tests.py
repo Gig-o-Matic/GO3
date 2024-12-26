@@ -872,6 +872,7 @@ class GigTest(GigTestBase):
         
         future_date = datetime.now() + timedelta(days=7)
         gig, _, _ = self.assoc_joe_and_create_gig(
+            title="GRRRR GIG"
             call_date=future_date.strftime("%m/%d/%Y"),
             call_time="12:00 pm",
             set_time="1:00 pm",
@@ -909,7 +910,7 @@ class GigTest(GigTestBase):
         # # gig = Gig.objects.get(id=gig.id)
 
         # self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
-        # gig.date = past_date
+        gig.date = past_date
         gig.save()
         gig.refresh_from_db()
         print(f'gig date is {gig.date}')
