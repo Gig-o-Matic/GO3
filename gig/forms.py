@@ -34,6 +34,8 @@ class GigForm(forms.ModelForm):
             **kwargs
         )
 
+        print(f'self.initial={self.initial}')
+
         # Keep track of the initial date so we can see if it changed in the form validation
         self.initial['date'] = self.instance.date
         
