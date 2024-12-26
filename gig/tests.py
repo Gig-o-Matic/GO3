@@ -872,7 +872,7 @@ class GigTest(GigTestBase):
         
         future_date = datetime.now() + timedelta(days=7)
         gig, _, _ = self.assoc_joe_and_create_gig(
-            title="GRRRR GIG"
+            title="GRRRR GIG",
             call_date=future_date.strftime("%m/%d/%Y"),
             call_time="12:00 pm",
             set_time="1:00 pm",
