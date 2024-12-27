@@ -874,11 +874,11 @@ class GigTest(GigTestBase):
         gig, _, _ = self.assoc_joe_and_create_gig(
             title="GRRRR GIG",
             call_date=future_date.strftime("%m/%d/%Y"),
-            call_time="12:00 pm",
-            set_time="1:00 pm",
-            end_time="2:00 pm",
+            call_time="12:01 pm",
+            set_time="1:02 pm",
+            end_time="2:03 pm",
         )
-
+        print("ok")
         # form_data = {
         #     "title": "Test New Gig Title",
         #     "contact": f"{self.band_admin.id}",
