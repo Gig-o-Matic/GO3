@@ -157,25 +157,25 @@ def is_single_day(gig):
 
 def email_from_plan(plan, template, dates=None):
     gig = plan.gig
-    with timezone.override(gig.band.timezone):
-        latest_record = gig.history.latest()
-        changes = generate_changes(latest_record, latest_record.prev_record)
-        member = plan.assoc.member
-        contact_name, contact_email = ((gig.contact.display_name, gig.contact.email)
-                                       if gig.contact else ('??', None))
-        context = {
-            'gig': gig,
-            'changes': changes,
-            'changes_title': join_trans(_(', '), (c[0] for c in changes)),
-            'single_day': is_single_day(gig),
-            'contact_name': contact_name,
-            'plan': plan,
-            'status': plan.status,
-            'status_label': PlanStatusChoices(plan.status).label,
-            'dates': dates,
-            **PlanStatusChoices.__members__,
-        }
-        return prepare_email(member.as_email_recipient(), template, context, reply_to=[contact_email])
+    # with timezone.override(gig.band.timezone):
+    latest_record = gig.history.latest()
+    changes = generate_changes(latest_record, latest_record.prev_record)
+    member = plan.assoc.member
+    contact_name, contact_email = ((gig.contact.display_name, gig.contact.email)
+                                    if gig.contact else ('??', None))
+    context = {
+        'gig': gig,
+        'changes': changes,
+        'changes_title': join_trans(_(', '), (c[0] for c in changes)),
+        'single_day': is_single_day(gig),
+        'contact_name': contact_name,
+        'plan': plan,
+        'status': plan.status,
+        'status_label': PlanStatusChoices(plan.status).label,
+        'dates': dates,
+        **PlanStatusChoices.__members__,
+    }
+    return prepare_email(member.as_email_recipient(), template, context, reply_to=[contact_email])
 
 def send_emails_from_plans(plans_query, template, dates=None):
     contactable = plans_query.filter(assoc__status=AssocStatusChoices.CONFIRMED,

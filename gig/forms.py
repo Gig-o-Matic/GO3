@@ -18,10 +18,10 @@
 from django import forms
 from .models import Gig
 from band.models import Band
-from django.utils import timezone, formats
+# from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime
+from datetime import datetime, timezone
 from django.utils.formats import get_format
 
 class GigForm(forms.ModelForm):
@@ -34,10 +34,9 @@ class GigForm(forms.ModelForm):
             **kwargs
         )
 
-        print(f'self.initial={self.initial}')
 
         # Keep track of the initial date so we can see if it changed in the form validation
-        self.initial['date'] = self.instance.date
+        self.initial['date'] = self.instance.date.replace(tzinfo=timezone.utc) if self.instance.date else None
         
         if band is None and self.instance.band_id is not None:
             # TODO more robust checking, this form without a band doesn't make sense
@@ -139,12 +138,13 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = not set_time is None
             self.cleaned_data['has_end_time'] = not end_time is None
 
-            date = _mergetime(date, call_time)
-            setdate = _mergetime(date, set_time) if set_time else None
-            enddate = _mergetime(date, end_time) if end_time else None
+            date = _mergetime(date, call_time).replace(tzinfo=timezone.utc)
+            setdate = _mergetime(date, set_time).replace(tzinfo=timezone.utc) if set_time else None
+            enddate = _mergetime(date, end_time).replace(tzinfo=timezone.utc) if end_time else None
 
-            if self.initial['date'] != date and date < datetime.now():
-                print(f"!!! {self.initial['date']} and {date}")
+            date=date.replace(tzinfo=timezone.utc)
+            # print(f"!!! {self.initial['date']} and {date}")
+            if self.initial['date'] != date and date < datetime.now().replace(tzinfo=timezone.utc):
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
 

@@ -29,7 +29,6 @@ from django.urls import reverse
 from pytz import timezone as pytz_timezone, utc
 from lib.template_test import MISSING, flag_missing_vars
 
-
 class GigTestBase(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -865,9 +864,7 @@ class GigTest(GigTestBase):
         # This simulates a gig that has already started
         # Allow edits to gig details as long as they don't change the gig call time
 
-        print("starting test")
-
-        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0, tzinfo=None)
+        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0)
         # gig = self.create_gig(start_date=past_date, the_member=self.band_admin)
         
         future_date = datetime.now() + timedelta(days=7)
@@ -878,7 +875,6 @@ class GigTest(GigTestBase):
             set_time="1:02 pm",
             end_time="2:03 pm",
         )
-        print("ok")
         # form_data = {
         #     "title": "Test New Gig Title",
         #     "contact": f"{self.band_admin.id}",
@@ -913,11 +909,10 @@ class GigTest(GigTestBase):
         gig.date = past_date
         gig.save()
         gig.refresh_from_db()
-        print(f'gig date is {gig.date}')
+
         self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
 
         gig.refresh_from_db()
-        print(f'gig date 2 is {gig.date}')
         self.assertEqual(gig.title, "Test New Gig Title")
 
     # testing gig comments

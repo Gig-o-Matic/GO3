@@ -81,7 +81,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             else:
                 context['address_string'] = f'http://maps.google.com?q={self.object.address}'
 
-        timezone.activate(self.object.band.timezone)
+        # timezone.activate(self.object.band.timezone)
 
         return context
 
