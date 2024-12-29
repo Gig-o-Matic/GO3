@@ -1213,7 +1213,6 @@ class GigTest(GigTestBase):
 
         # first, pretend it's the day before the gig
         with freeze_time(gigdate - timedelta(days=1)):
-            d = datetime.now()
             gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
