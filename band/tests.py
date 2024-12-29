@@ -41,10 +41,6 @@ from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from freezegun import freeze_time
 import pytest
 from gig.tests import GigTestBase
-
-with freeze_time("2025-4-1"):
-    d = datetime.now()
-    print(f'BXB: {d}')
     
 class MemberTests(TestCase):
     def setUp(self):
