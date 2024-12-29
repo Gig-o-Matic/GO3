@@ -28,7 +28,6 @@ from gig.util import GigStatusChoices
 from band import helpers
 from member.util import MemberStatusChoices
 from band.util import AssocStatusChoices
-from gig.tests import GigTestBase
 from django.utils import timezone
 from datetime import datetime, timedelta
 import pytz
@@ -41,8 +40,12 @@ from django.conf import settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from freezegun import freeze_time
 import pytest
+from gig.tests import GigTestBase
 
-
+with freeze_time("2025-4-1"):
+    d = datetime.now()
+    print(f'BXB: {d}')
+    
 class MemberTests(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(

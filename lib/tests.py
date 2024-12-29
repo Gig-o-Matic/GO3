@@ -63,7 +63,7 @@ class CaldavTest(TestCase):
         Gig.objects.all().delete()
 
     def create_gig(self):
-        the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=pytz.timezone(self.band.timezone))
+        the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=timezone.utc)
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,

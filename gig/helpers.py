@@ -157,7 +157,6 @@ def is_single_day(gig):
 
 def email_from_plan(plan, template, dates=None):
     gig = plan.gig
-    # with timezone.override(gig.band.timezone):
     latest_record = gig.history.latest()
     changes = generate_changes(latest_record, latest_record.prev_record)
     member = plan.assoc.member

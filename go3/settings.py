@@ -216,12 +216,12 @@ LANGUAGES = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "America/New_York"
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 
-USE_TZ = True
+USE_TZ = False
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
