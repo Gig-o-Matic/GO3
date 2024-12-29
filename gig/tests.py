@@ -30,9 +30,11 @@ from pytz import utc
 from lib.template_test import MISSING, flag_missing_vars
 from freezegun import freeze_time
 
-with freeze_time("2025-4-1"):
-    d = datetime.now()
-    print(f'BYB: {d}')
+# workaround for freezegun thing where it ignores modules with names
+# that start with "gi" for some reason
+from freezegun.config import DEFAULT_IGNORE_LIST, configure
+configure([x for x in DEFAULT_IGNORE_LIST if not x == 'gi'])
+
     
 class GigTestBase(TestCase):
     def setUp(self):
@@ -1193,16 +1195,11 @@ class GigTest(GigTestBase):
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         self.assertEqual(resp.status_code, 302)  # should redirect
 
-
     def test_gig_shown(self):
         """
             assure that a gig that happened in the past day still shows up as a 'future plan' 
             so it's on the schedule page
         """
-
-        with freeze_time("2025-4-1"):
-            d = datetime.now()
-            print(f'gub: {d}')
 
         g, _, _ = self.assoc_joe_and_create_gig()
         self.joeuser.preferences.current_timezone='America/New_York'

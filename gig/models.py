@@ -50,7 +50,7 @@ class MemberPlanManager(models.Manager):
         
         # time_for_user = localtime(timezone=pytz.timezone(member.preferences.current_timezone))
         # time_utc = pytz.utc.localize(datetime.now())
-        time_for_user = datetime.now().astimezone(pytz.timezone(member.preferences.current_timezone))
+        time_for_user = datetime.now(tz=pytz.utc)
         time_for_user = time_for_user.replace(tzinfo = None)
         recent_for_user = time_for_user - timedelta(hours=4) # for gigs with no end date
         yesterday_for_user = time_for_user.replace(hour=23, minute=59) - timedelta(days=1)
