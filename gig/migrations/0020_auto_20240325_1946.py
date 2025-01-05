@@ -2,9 +2,10 @@
 
 # a data migration for moving from old, bad date/time handling to perfect, new date/time handling
 
-from django.db import migrations
+from django.db import migrations, models
 import pytz
 import datetime
+
 
 def update_dates(apps, schema_editor):
 
@@ -18,6 +19,10 @@ def update_dates(apps, schema_editor):
 
     Gig = apps.get_model('gig', 'Gig')
     for g in Gig.objects.all():
+        g.safe_date = g.date
+        g.safe_setdate = g.setdate
+        g.safe_enddate = g.enddate
+
         zone = pytz.timezone(g.band.timezone)
 
         # convert to local times for ease of dealing with midnight
@@ -60,5 +65,35 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='gig',
+            name='safe_date',
+            field=models.DateTimeField(null=True),
+        ),
+        migrations.AddField(
+            model_name='gig',
+            name='safe_enddate',
+            field=models.DateTimeField(null=True),
+        ),
+        migrations.AddField(
+            model_name='gig',
+            name='safe_setdate',
+            field=models.DateTimeField(null=True),
+        ),
+        migrations.AddField(
+            model_name='historicalgig',
+            name='safe_date',
+            field=models.DateTimeField(null=True),
+        ),
+        migrations.AddField(
+            model_name='historicalgig',
+            name='safe_enddate',
+            field=models.DateTimeField(null=True),
+        ),
+        migrations.AddField(
+            model_name='historicalgig',
+            name='safe_setdate',
+            field=models.DateTimeField(null=True),
+        ),
         migrations.RunPython(update_dates, unupdate_dates)
     ]

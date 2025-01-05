@@ -130,6 +130,7 @@ class AbstractEvent(models.Model):
 
     date = DateTimeWithoutTimezoneField()
     datenotes = models.TextField(null=True, blank=True)
+    safe_date = models.DateTimeField(null=True)
 
     address = models.TextField(null=True, blank=True)
     status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNCONFIRMED)
@@ -180,6 +181,9 @@ class Gig(AbstractEvent):
 
     setdate = DateTimeWithoutTimezoneField(null=True, blank=True)
     enddate = DateTimeWithoutTimezoneField(null=True, blank=True)
+    safe_setdate = models.DateTimeField(null=True)
+    safe_enddate = models.DateTimeField(null=True)
+
 
     is_full_day = models.BooleanField(default=False)
     has_call_time = models.BooleanField(default=False)
