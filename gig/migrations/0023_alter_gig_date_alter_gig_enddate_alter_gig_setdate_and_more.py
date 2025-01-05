@@ -7,7 +7,7 @@ import go3.datetime_without_timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('gig', '0021_save_dates'),
+        ('gig', '0022_save_dates'),
     ]
 
     operations = [

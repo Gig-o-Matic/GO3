@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
 
 
     dependencies = [
-        ('gig', '0020_auto_20240325_1946'),
+        ('gig', '0021_gig_safe_date_gig_safe_enddate_gig_safe_setdate_and_more'),
     ]
 
     operations = [
