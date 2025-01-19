@@ -35,7 +35,7 @@ from freezegun import freeze_time
 from freezegun.config import DEFAULT_IGNORE_LIST, configure
 configure([x for x in DEFAULT_IGNORE_LIST if not x == 'gi'])
 
-    
+
 class GigTestBase(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -88,7 +88,7 @@ class GigTestBase(TestCase):
             status=GigStatusChoices.UNCONFIRMED,
             email_changes=True,
         )
-    
+
     def create_one_gig_of_each_status(self):
         self.create_gig_form(contact=self.joeuser, title=f"Unconfirmed Gig-xyzzy", status=GigStatusChoices.UNCONFIRMED)
         self.create_gig_form(contact=self.joeuser, title=f"Canceled Gig-xyzzy", status=GigStatusChoices.CANCELED)
@@ -625,7 +625,7 @@ class GigTest(GigTestBase):
         message = mail.outbox[0]
         self.assertIn("(Date/Time)", message.subject)
         self.assertIn("Call Time: noon\nSet Time: 2 p.m.", message.body)
-        
+
     def test_gig_edit_contact(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -865,15 +865,13 @@ class GigTest(GigTestBase):
             end_time="2:00 pm",
             expect_code=200,
         )
-    
+
     def test_allow_editing_past_gig_details(self):
         # Create a gig in the past directly in the DB to bypass form validation
         # This simulates a gig that has already started
         # Allow edits to gig details as long as they don't change the gig call time
 
         past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0)
-        # gig = self.create_gig(start_date=past_date, the_member=self.band_admin)
-        
         future_date = datetime.now() + timedelta(days=7)
         gig, _, _ = self.assoc_joe_and_create_gig(
             title="GRRRR GIG",
@@ -1167,7 +1165,7 @@ class GigTest(GigTestBase):
 
     def test_gig_shown(self):
         """
-            assure that a gig that happened in the past day still shows up as a 'future plan' 
+            assure that a gig that happened in the past day still shows up as a 'future plan'
             so it's on the schedule page
         """
 
@@ -1175,7 +1173,7 @@ class GigTest(GigTestBase):
         self.joeuser.preferences.current_timezone='America/New_York'
         self.joeuser.save()
 
-        gigdate = datetime(year=2024, month=4, day=1, hour=12, minute=0, second=0, tzinfo=timezone.utc) 
+        gigdate = datetime(year=2024, month=4, day=1, hour=12, minute=0, second=0, tzinfo=timezone.utc)
 
         g.date = gigdate
         g.save()
@@ -1237,7 +1235,7 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.date, g.setdate)
         self.assertEqual(g.has_call_time, True)
-    
+
     def test_gig_default_full_day_without_times(self):
         future_date = datetime.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(

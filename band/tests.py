@@ -41,7 +41,7 @@ from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from freezegun import freeze_time
 import pytest
 from gig.tests import GigTestBase
-    
+
 class MemberTests(TestCase):
     def setUp(self):
         self.super = Member.objects.create_user(
@@ -345,11 +345,11 @@ class BandTests(GigTestBase):
     def test_condensed_name(self):
         b1 = Band.objects.create(name="condense test")
         self.assertEqual(b1.condensed_name, "condensetest")
-        
+
         # fire the signal again but make sure it doesn't affect anything
         b1.save()
         self.assertEqual(b1.condensed_name, "condensetest")
-        
+
         b2 = Band.objects.create(name="condense test")
         self.assertNotEqual(b2.condensed_name, b1.condensed_name)
         self.assertEqual(b2.condensed_name, "condensetest1")
@@ -568,7 +568,7 @@ class BandTests(GigTestBase):
         plans = g1.plans.filter(assoc__member=self.joeuser)
         self.assertEqual(plans.count(),1)
         self.assertEqual(plans.first().gig.date.year,2020)
-        
+
         g2 = self.create_gig_form() # make another gig
         plans = g2.plans.filter(assoc__member=self.joeuser)
         self.assertEqual(plans.count(),1)
@@ -768,7 +768,7 @@ class BandCalfeedTest(FSTestCase):
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
             status=GigStatusChoices.CONFIRMED,
-            trashed_date=datetime.now(pytz_timezone('UTC')),            
+            trashed_date=datetime.now(pytz_timezone('UTC')),
         )
         Gig.objects.create(
             title="Archived Gig",
@@ -777,7 +777,7 @@ class BandCalfeedTest(FSTestCase):
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
             status=GigStatusChoices.CONFIRMED,
-            is_archived=True,            
+            is_archived=True,
         )
 
     def test_band_caldav_stream(self):
@@ -993,7 +993,7 @@ class ActiveBandTests(TestCase):
         self.assertEqual(len(list), 2)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 in list)
-        self.assertTrue(b3 in list)        
+        self.assertTrue(b3 in list)
 
         # now create a gig for a second band
         _make_gig(b2,"test2",2)
@@ -1001,7 +1001,7 @@ class ActiveBandTests(TestCase):
         self.assertEqual(len(list), 1)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 not in list)
-        self.assertTrue(b3 in list)        
+        self.assertTrue(b3 in list)
 
         # now create a gig in the distant past for a third band
         _make_gig(b3,"test3",31)
@@ -1009,7 +1009,7 @@ class ActiveBandTests(TestCase):
         self.assertEqual(len(list), 1)
         self.assertTrue(b1 not in list)
         self.assertTrue(b2 not in list)
-        self.assertTrue(b3 in list)        
+        self.assertTrue(b3 in list)
 
         # now wake the third band up
         _make_gig(b3,"test4",29)

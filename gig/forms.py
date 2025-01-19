@@ -18,7 +18,6 @@
 from django import forms
 from .models import Gig
 from band.models import Band
-# from django.utils import timezone, formats
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime, timezone
@@ -37,7 +36,7 @@ class GigForm(forms.ModelForm):
 
         # Keep track of the initial date so we can see if it changed in the form validation
         self.initial['date'] = self.instance.date.replace(tzinfo=timezone.utc) if self.instance.date else None
-        
+
         if band is None and self.instance.band_id is not None:
             # TODO more robust checking, this form without a band doesn't make sense
             band = self.instance.band
@@ -61,7 +60,7 @@ class GigForm(forms.ModelForm):
     def clean(self):
         """
         Checks to make sure the dates and times are valid.
-         
+
         if the gig is a full-or-multi-day event, the times are ignored.
         if the gig is not full-or-multi-day,
             if the times are there, they must be parsable
@@ -88,7 +87,7 @@ class GigForm(forms.ModelForm):
             self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
-        
+
         # first, check to see if this is full-day or not
         if self.cleaned_data.get('is_full_day'):
             # we're full day, so see if there's an end date
@@ -136,7 +135,6 @@ class GigForm(forms.ModelForm):
             enddate = _mergetime(date, end_time).replace(tzinfo=timezone.utc) if end_time else None
 
             date=date.replace(tzinfo=timezone.utc)
-            # print(f"!!! {self.initial['date']} and {date}")
             if self.initial['date'] != date and date < datetime.now().replace(tzinfo=timezone.utc):
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
@@ -177,7 +175,7 @@ class GigForm(forms.ModelForm):
 
     add_series = forms.BooleanField(required=False, label=_('Add A Series Of Copies'))
     total_gigs = forms.IntegerField(required=False, label=_('Total Number Of Gigs'), min_value=1, max_value=10)
-    repeat = forms.ChoiceField(required=False, label=_('Repeat Every'), 
+    repeat = forms.ChoiceField(required=False, label=_('Repeat Every'),
                                 choices=[
                                             ('day', _('day')),
                                             ('week', _('week')),
@@ -189,7 +187,7 @@ class GigForm(forms.ModelForm):
         model = Gig
         localized_fields = '__all__'
 
-        fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date', 
+        fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date',
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','rss_description','invite_occasionals',
                 'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','is_full_day','has_set_time',
                 'has_call_time','has_end_time']

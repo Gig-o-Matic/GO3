@@ -46,17 +46,12 @@ class MemberPlanManager(models.Manager):
         return super().order_by('section')
 
     def future_plans(self, member):
-        # get the local server time and convert it to whatever timezone the member is in
-        
-        # time_for_user = localtime(timezone=pytz.timezone(member.preferences.current_timezone))
-        # time_utc = pytz.utc.localize(datetime.now())
-        time_for_user = datetime.now(tz=pytz.utc)
-        time_for_user = time_for_user.replace(tzinfo = None)
+        time_for_user = datetime.now(tz=pytz.utc).replace(tzinfo = None)
         recent_for_user = time_for_user - timedelta(hours=4) # for gigs with no end date
         yesterday_for_user = time_for_user.replace(hour=23, minute=59) - timedelta(days=1)
 
         # find plans that are for this member that are not trashed or archived
-        possible = super().get_queryset().filter(assoc__member=member, 
+        possible = super().get_queryset().filter(assoc__member=member,
                                              assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__trashed_date__isnull=True,
                                              gig__is_archived=False,
@@ -119,9 +114,9 @@ class AbstractEvent(models.Model):
         abstract = True
 
     title = models.CharField(max_length=200)
-    band = models.ForeignKey(Band, 
+    band = models.ForeignKey(Band,
                             related_name="%(class)ss",
-                            related_query_name="%(class)ss", 
+                            related_query_name="%(class)ss",
                             on_delete=models.CASCADE)
 
     details = models.TextField(null=True, blank=True)
@@ -150,7 +145,7 @@ class AbstractEvent(models.Model):
 
     is_archived = models.BooleanField( default=False )
 
-    is_private = models.BooleanField( default=False )    
+    is_private = models.BooleanField( default=False )
 
     # todo what's this?
     # comment_id = ndb.TextProperty( default = None)
@@ -229,7 +224,7 @@ class Gig(AbstractEvent):
             s = self.band.sections.get(is_default=True)
             for a in absent:
                 Plan.objects.create(gig=self, assoc=a, section=s)
-            
+
         # if this is an archived gig, return all the plans, otherwise just those for active members
         plans = self.plans # pylint: disable=no-member
         if self.is_archived:

@@ -39,7 +39,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Gig
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band        
+        # can only see the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
@@ -81,8 +81,6 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             else:
                 context['address_string'] = f'http://maps.google.com?q={self.object.address}'
 
-        # timezone.activate(self.object.band.timezone)
-
         return context
 
 
@@ -91,7 +89,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     form_class = GigForm
 
     def test_func(self):
-        # can only create the gig if you're logged in and in the band        
+        # can only create the gig if you're logged in and in the band
         band = get_object_or_404(Band, id=self.kwargs['bk'])
         return has_create_gig_permission(self.request.user, band)
 
@@ -153,7 +151,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     form_class = GigForm
 
     def test_func(self):
-        # can only edit the gig if you're logged in and in the band        
+        # can only edit the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return has_manage_gig_permission(self.request.user, gig.band) or (gig.creator==self.request.user)
 
@@ -268,7 +266,7 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_planlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band        
+        # can only see the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user)
 
@@ -286,7 +284,7 @@ class PrintSetlistView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_setlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band        
+        # can only see the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user)
 
