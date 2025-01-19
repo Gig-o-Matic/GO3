@@ -36,6 +36,13 @@ def AgendaSelector(request):
     if request.user.band_count == 0:
         return redirect("/member")
 
+    try:
+        newzone = request.GET['zone']
+        request.user.preferences.current_timezone = newzone
+        request.user.preferences.save()
+    except KeyError:
+        pass
+
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
         AgendaChoices.CALENDAR: CalendarView,
@@ -55,10 +62,6 @@ class AgendaView(AgendaBaseView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Default to the first band's timezone, if an association exists
-        if self.request.user.assocs.count() > 0:
-            b = self.request.user.assocs.first().band
-            timezone.activate(b.timezone)
 
         # Depending on the layout they want, send different instructions
 
@@ -117,7 +120,7 @@ class CalendarView(AgendaBaseView):
         return context
 
 
-class GridView(LoginRequiredMixin, TemplateView):
+class GridView(AgendaBaseView):
     template_name = 'agenda/grid.html'
 
     def get_context_data(self, **kwargs):

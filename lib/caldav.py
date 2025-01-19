@@ -74,29 +74,31 @@ def make_calfeed(the_title, the_events, the_language, the_uid, is_for_band=False
         cal.add('X-WR-CALDESC',
                 '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_title))
         for e in the_events:
-            with timezone.override(e.band.timezone):
-                event = Event()
-                event.add('dtstamp', timezone.now())
-                event.add('uid', e.cal_feed_id)
-                event.add('summary', _make_summary(e))
-                if e.is_full_day:
-                    event.add('dtstart', e.date.date(), {'value': 'DATE'})
-                    # To make the event use the full final day, icalendar clients expect the end date
-                    # to be the date after the event ends. So we add 1 day.
-                    # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
-                    # "The "DTEND" property for a "VEVENT" calendar component specifies
-                    # the non-inclusive end of the event."
-                    enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
-                    event.add('dtend', enddate, {'value': 'DATE'})
-                else:
-                    event.add('dtstart', e.setdate if (is_for_band and e.setdate) else e.date)
-                    event.add(
-                        'dtend', e.enddate if e.enddate else e.date + timedelta(hours=1))
-                event.add('description', _make_description(e))
-                event.add('location', e.address)
-                event.add(
-                    'url', f'{URL_BASE}/gig/{e.id}')
-                # todo don't hardwire the URL
-                # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
-                cal.add_component(event)
+            event = Event()
+            event.add('dtstamp', timezone.now())
+            event.add('uid', e.cal_feed_id)
+            event.add('summary', _make_summary(e))
+            if e.is_full_day:
+                event.add('dtstart', e.date.date(), {'value': 'DATE'})
+                # To make the event use the full final day, icalendar clients expect the end date
+                # to be the date after the event ends. So we add 1 day.
+                # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
+                # "The "DTEND" property for a "VEVENT" calendar component specifies
+                # the non-inclusive end of the event."
+                enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
+                event.add('dtend', enddate, {'value': 'DATE'})
+            else:
+                setdate = e.setdate if (is_for_band and e.setdate) else e.date
+                setdate.replace(tzinfo=None)
+                event.add('dtstart', setdate)
+                enddate = e.enddate if e.enddate else e.date + timedelta(hours=1)
+                enddate.replace(tzinfo=None)
+                event.add('dtend', enddate)
+            event.add('description', _make_description(e))
+            event.add('location', e.address)
+            event.add(
+                'url', f'{URL_BASE}/gig/{e.id}')
+            # todo don't hardwire the URL
+            # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
+            cal.add_component(event)
     return cal.to_ical()
