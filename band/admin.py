@@ -25,8 +25,13 @@ class BandAdmin(admin.ModelAdmin):
     search_fields=['name']
     readonly_fields = ("creation_date","last_activity",)
 
+def _model_str(obj):
+    return f'{obj}'
+
 @admin.register(Assoc)
 class AssocAdmin(admin.ModelAdmin):
+    
+    list_display = (_model_str,'join_date')
     search_fields=['member__username', 'member__nickname', 'member__email', 'band__name']
     list_filter = ('is_admin',)
 

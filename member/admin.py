@@ -37,7 +37,7 @@ class MemberAdmin(BaseUserAdmin):
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
 
-    list_display = ('email', 'username', 'nickname')
+    list_display = ('email', 'username', 'nickname','date_joined')
     list_filter = ('status','groups','is_beta_tester','assocs__is_admin',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
