@@ -61,9 +61,6 @@ def _get_active_band_members():
     """ return list of bands that haven't made a gig lately (or ever) """
     a = apps.get_model('band','Assoc')
 
-    active_assocs = a.objects.filter(band__in=_get_active_bands())
-    active_members = list(set([a.member for a in active_assocs]))
-
-    return active_members
-
-
+    alist = a.objects.filter(band__in=_get_active_bands()).values('member').distinct()
+    m = apps.get_model('member','Member')
+    return m.objects.filter(id__in=alist)
