@@ -127,6 +127,9 @@ class Band(models.Model):
             (~Q(enddate=None) & Q(enddate__lt=the_date))
         ).order_by('date')
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("band-detail", kwargs={"pk": self.pk})
 
     def __str__(self):
         return self.name

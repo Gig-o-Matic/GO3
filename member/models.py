@@ -213,6 +213,10 @@ class Member(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("member-detail", kwargs={"pk": self.pk})
+
     class Meta:
         permissions = (
             ("beta_tester", "Is A Beta Tester"),
