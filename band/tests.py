@@ -670,12 +670,18 @@ class PublicBandPageTest(GigTestBase):
         a.save()
         resp = self.client.get(
             reverse('band-detail', args=[self.band.id]))
-        self.assertEqual(resp.status_code, 403)
+        # if a logged-in person tries to access a band they're not a member of, they should
+        # be redirected to the band's public page
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, f'/band/pub/{self.band.condensed_name}/')
 
         otherband = Band.objects.create(name='other band')
         resp = self.client.get(
             reverse('band-detail', args=[otherband.id]))
-        self.assertEqual(resp.status_code, 403)
+        # if a logged-in person tries to access a band they're not a member of, they should
+        # be redirected to the band's public page
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, f'/band/pub/{otherband.condensed_name}/')
 
         resp = self.client.get(
             reverse('band-public-page', args=[otherband.condensed_name]))
