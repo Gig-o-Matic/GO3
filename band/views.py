@@ -54,7 +54,21 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         # if we're not active in the band, deny entry!
         assoc = Assoc.objects.filter(band=self.kwargs['pk'], member=self.request.user).first()
         return assoc and assoc.status==AssocStatusChoices.CONFIRMED
-                
+
+    def handle_no_permission(self):
+        """ if the user has no permission but is authenticated, direct to the public page """
+        if self.request.user.is_authenticated:
+            # well, they're authenticated, they just caren't in the band, so redirect
+            # to the band's public page
+            try:
+                band_id = int(self.request.get_full_path().split('/')[2])
+                band = Band.objects.get(pk=band_id)
+                return redirect('band-public-page', name=band.condensed_name)
+            except:
+                pass
+
+        return super().handle_no_permission()
+
     def get_context_data(self, **kwargs):
         the_band = self.object
         the_user = self.request.user
