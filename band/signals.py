@@ -69,6 +69,13 @@ def set_plan_sections(sender, instance, created, **kwargs):
     # update any plans that rely on knowing the default section
     update_plan_default_section(instance)
 
+    # if this is the only band for the member, take on its timezone
+    m = instance.member
+    if m.band_count == 1:
+        m.preferences.current_timezone = instance.band.timezone
+        m.preferences.save()
+
+
 @receiver(pre_delete, sender=Section)
 def set_sections_of_assocs(sender, instance, **kwargs):
     # when a section gets deleted, set any assocs in the section to the band's default section before proceeding

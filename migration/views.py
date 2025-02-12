@@ -14,6 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import json
+import dateutil.parser
+import pytz
+import re
 from django_q.tasks import async_task
 from lib.mixins import SuperUserRequiredMixin
 from .forms import BandMigrationForm
@@ -22,12 +26,6 @@ from band.util import AssocStatusChoices
 from gig.models import Gig
 from member.models import Member
 from django.views.generic.base import TemplateView
-from io import StringIO
-import csv
-import json
-import dateutil.parser
-import pytz
-import re
 
 class BandMigrationFormView(SuperUserRequiredMixin, TemplateView):
     template_name = "migration/band_form.html"
@@ -112,10 +110,10 @@ class BandMigrationResultsView(SuperUserRequiredMixin, TemplateView):
                     hide_from_calendar = fields["hide_from_calendar"],
                     rss_description = fields["rss_description"],
                     default_to_attending = fields["default_to_attending"],
-                    date = self.mangle_time(fields["date"], band.timezone),
-                    setdate = self.mangle_time(fields["setdate"], band.timezone),
-                    enddate = self.mangle_time(fields["enddate"], band.timezone),
-                    created_date = self.mangle_time(fields["created_date"], band.timezone),
+                    date = fields["date"],
+                    setdate = fields["setdate"],
+                    enddate = fields["enddate"],
+                    created_date = fields["created_date"],
                     datenotes = fields["time_notes"],
                     status = fields["status"],
                     # Assume we have all times, will fix below:

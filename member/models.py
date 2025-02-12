@@ -15,6 +15,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import uuid
+import pytz
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from motd.models import MOTD
@@ -22,15 +24,12 @@ from gig.models import Plan, GigStatusChoices
 from gig.util import PlanStatusChoices
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
-import datetime
-from django.utils import timezone
 from .util import MemberStatusChoices, AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc, Band
 from band.util import AssocStatusChoices
 from go3.settings import LANGUAGES
 from lib.email import EmailRecipient
 from lib.caldav import delete_calfeed
-import uuid
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -244,7 +243,8 @@ class MemberPreferences(models.Model):
                                         verbose_name=_('Schedule page layout'))
     agenda_band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
     agenda_use_classic = models.BooleanField(default=False, verbose_name=_('Use old schedule page layout'))
-
+    current_timezone = models.CharField(max_length=200, default='UTC', choices=[(x, x) for x in pytz.common_timezones])
+    auto_update_timezone = models.BooleanField(default=True, verbose_name=_('Automatically Update Timezone'))
 
     default_view = models.IntegerField(choices=AgendaChoices.choices, default=AgendaChoices.AGENDA)
 
