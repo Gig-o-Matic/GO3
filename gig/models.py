@@ -52,10 +52,10 @@ class MemberPlanManager(models.Manager):
 
         # find plans that are for this member that are not trashed or archived
         possible = super().get_queryset().filter(assoc__member=member,
-                                             assoc__status=AssocStatusChoices.CONFIRMED,
-                                             gig__trashed_date__isnull=True,
-                                             gig__is_archived=False,
-                                            )
+                                                 assoc__status=AssocStatusChoices.CONFIRMED,
+                                                 gig__trashed_date__isnull=True,
+                                                 gig__is_archived=False,
+                                                )
         # find plans for gigs that haven't ended yet
         possible = possible.filter((Q(gig__is_full_day=True) & Q(gig__date__gte=yesterday_for_user)) |
                                    (Q(gig__enddate=None) & Q(gig__date__gte=recent_for_user)) |
@@ -191,13 +191,6 @@ class Gig(AbstractEvent):
 
     leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
     leader_text = models.TextField(null=True, blank=True)
-
-    # todo manage these
-    # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
-    # sorttime = ndb.IntegerProperty( default=None )
-
-    # todo what's this?
-    # comment_id = ndb.TextProperty( default = None)
 
     rss_description = models.TextField(null=True, blank=True)
 
