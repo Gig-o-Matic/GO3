@@ -73,4 +73,4 @@ validators==0.22.0
 wcwidth==0.2.5
 webencodings==0.5.1
 whitenoise==6.6.0
-wrapt==1.12.1
+wrapt==1.17.2
