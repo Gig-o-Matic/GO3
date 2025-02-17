@@ -60,6 +60,8 @@ def plan_editor_required(func):
 @login_required
 @plan_editor_required
 def update_plan(request, plan, val):
+    if plan.gig.plans_locked:
+        return HttpResponseForbidden()
     plan.status = val
     plan.save()
     return render(request, 'gig/plan_icon.html', {'plan_value': val})
@@ -127,7 +129,7 @@ def generate_changes(latest, previous):
     #     changes.append((_('Set Time'), *date_diff(latest.setdate, previous.setdate)))
     # if 'enddate' in diff.changed_fields:
     #     changes.append((_('End Time'), *date_diff(latest.enddate, previous.enddate)))
-        
+
     check = [x in diff.changed_fields for x in ['is_full_day', 'date', 'setdate', 'enddate', 'datenotes']]
     if True in check:
         changes.append((_('Date/Time'), _('(See below.)'), None))
@@ -143,7 +145,7 @@ def generate_changes(latest, previous):
 
     if 'setlist' in diff.changed_fields:
         changes.append((_('Set List'), None, None))
-    
+
     if 'dress' in diff.changed_fields:
         changes.append((_('What To Wear'), _('(See below.)'), None))
 
@@ -205,6 +207,20 @@ def notify_new_gig(gig, created, dates=None):
 
 @login_required
 @band_editor_required
+def gig_lock_plans(request, gig):
+    gig.plans_locked = True
+    gig.save()
+    return redirect('gig-detail', pk=gig.id)
+
+@login_required
+@band_editor_required
+def gig_unlock_plans(request, gig):
+    gig.plans_locked = False
+    gig.save()
+    return redirect('gig-detail', pk=gig.id)
+
+@login_required
+@band_editor_required
 def gig_untrash(request, gig):
     gig.trashed_date = None
     gig.save()
@@ -246,7 +262,7 @@ def create_gig_series(the_gig, number_to_copy, period):
         delta = timedelta(weeks=1)
     else:
         day_of_month = last_date.day
-        
+
     set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
     end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
 
@@ -265,7 +281,7 @@ def create_gig_series(the_gig, number_to_copy, period):
             last_date = last_date.replace(month=mo, day=min(calendar.monthrange(yr,mo)[1], day_of_month), year=yr)
 
         the_gig.date = last_date
-        
+
         if set_delta is not None:
             the_gig.setdate = the_gig.date + set_delta
 
@@ -278,6 +294,6 @@ def create_gig_series(the_gig, number_to_copy, period):
         the_gig.cal_feed_id = uuid.uuid4()
         the_gig.save()
         the_dates.append(the_gig.date)
-    
+
     # return the list of dates for all the gigs
     return the_dates

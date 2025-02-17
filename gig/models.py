@@ -192,6 +192,9 @@ class Gig(AbstractEvent):
     leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
     leader_text = models.TextField(null=True, blank=True)
 
+    # Flag whether band members can change their plans
+    plans_locked = models.BooleanField(default=False)
+
     rss_description = models.TextField(null=True, blank=True)
 
     # for use in calfeeds
