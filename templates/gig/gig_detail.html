@@ -61,7 +61,7 @@
                             <br>
                             <strong>{% trans "THIS GIG IS IN THE TRASH!" %}</strong>
                             {% if request.user.is_superuser or the_user_is_band_admin %}
-                                <a class="btn btn-primary btn-sm" 
+                                <a class="btn btn-primary btn-sm"
                                    href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
                             {% endif %}
                             <br><br>
@@ -234,6 +234,21 @@
                             	<small>{% trans "Reminder Sent" %}</small>
                         	</span>
                         {% endif %}
+                        {% if request.user.is_superuser or the_user_is_band_admin %}
+                            <span id="lock_plans">
+                            {% if gig.plans_locked %}
+                                <a href="{% url 'gig-unlock-plans' gig.id %}" class="btn btn-sm btn-danger" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                    <i class="fas fa-unlock"></i>
+                                    {% trans "Unlock Plans" %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'gig-lock-plans' gig.id %}" class="btn btn-sm btn-danger" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                    <i class="fas fa-lock"></i>
+                                    {% trans "Lock Plans" %}
+                                </a>
+                            {% endif %}
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -251,6 +266,20 @@
                         <div class="mx-auto">
                             {% include "gig/plan_icon.html" with plan_value=0 %}
                             <span id="count0">0</span>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if gig.plans_locked %}
+                    <div class="row">
+                        <div class="col-12 alert alert-warning"">
+                            <h3>{% trans "Gig plans are locked" %}</h3>
+                            <p>Gig plans have been locked by the band organizers to manage band attendance. If you need to make changes, contact
+                                {% if gig.contact %}
+                                    <a href="{% url 'member-detail' gig.contact.id %}">{{ gig.contact.display_name }}</a>
+                                {% else %}
+                                    your band leadership
+                                {% endif %}
+                                about your changing plans.</p>
                         </div>
                     </div>
                 {% endif %}

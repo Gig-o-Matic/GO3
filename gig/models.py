@@ -46,7 +46,7 @@ class MemberPlanManager(models.Manager):
     def future_plans(self, member):
         threshold_date = timezone.now() - datetime.timedelta(hours=4)
         return super().get_queryset().filter((Q(gig__enddate=None) & Q(gig__date__gt=threshold_date)) | Q(gig__enddate__gt=threshold_date),
-                                             assoc__member=member, 
+                                             assoc__member=member,
                                              assoc__status=AssocStatusChoices.CONFIRMED,
                                              gig__trashed_date__isnull=True,
                                              gig__is_archived=False,
@@ -102,9 +102,9 @@ class AbstractEvent(models.Model):
         abstract = True
 
     title = models.CharField(max_length=200)
-    band = models.ForeignKey(Band, 
+    band = models.ForeignKey(Band,
                             related_name="%(class)ss",
-                            related_query_name="%(class)ss", 
+                            related_query_name="%(class)ss",
                             on_delete=models.CASCADE)
 
     details = models.TextField(null=True, blank=True)
@@ -132,7 +132,7 @@ class AbstractEvent(models.Model):
 
     is_archived = models.BooleanField( default=False )
 
-    is_private = models.BooleanField( default=False )    
+    is_private = models.BooleanField( default=False )
 
     # todo what's this?
     # comment_id = ndb.TextProperty( default = None)
@@ -176,12 +176,8 @@ class Gig(AbstractEvent):
     leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
     leader_text = models.TextField(null=True, blank=True)
 
-    # todo manage these
-    # trueenddate = ndb.ComputedProperty(lambda self: self.enddate if self.enddate else self.date)
-    # sorttime = ndb.IntegerProperty( default=None )
-
-    # todo what's this?
-    # comment_id = ndb.TextProperty( default = None)
+    # Flag whether band members can change their plans
+    plans_locked = models.BooleanField(default=False)
 
     rss_description = models.TextField(null=True, blank=True)
 
@@ -208,7 +204,7 @@ class Gig(AbstractEvent):
             s = self.band.sections.get(is_default=True)
             for a in absent:
                 Plan.objects.create(gig=self, assoc=a, section=s)
-            
+
         # if this is an archived gig, return all the plans, otherwise just those for active members
         plans = self.plans # pylint: disable=no-member
         if self.is_archived:
