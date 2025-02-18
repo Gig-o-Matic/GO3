@@ -55,7 +55,7 @@ def send_snooze_reminders():
     date in the future.  Set the snooze_until property of all such plans to None,
     to so we don't send another reminder in the future.
     """
-    now = datetime.now(tz=timezone.get_current_timezone())
+    now = datetime.now(tz=timezone.utc)
     next_day = now + timedelta(days=1)
     unsnooze = Plan.objects.filter(snooze_until__isnull=False,
                                    snooze_until__lte=next_day,

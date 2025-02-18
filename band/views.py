@@ -23,8 +23,6 @@ from stats.util import dateconverter
 import json
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
-from pytz import timezone
-from babel.dates import format_date
 from go3.settings import URL_BASE
 
 class BandMemberRequiredMixin(UserPassesTestMixin):

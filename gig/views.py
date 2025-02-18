@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import datetime
+from pytz import utc
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.views.generic.base import TemplateView
@@ -33,14 +34,12 @@ from gig.helpers import notify_new_gig
 from member.helpers import has_band_admin, has_manage_gig_permission, has_create_gig_permission, has_comment_permission
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from validators import url as url_validate
-import pytz
-
 
 class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
     model = Gig
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band        
+        # can only see the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
@@ -82,8 +81,6 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             else:
                 context['address_string'] = f'http://maps.google.com?q={self.object.address}'
 
-        timezone.activate(self.object.band.timezone)
-
         return context
 
 
@@ -92,7 +89,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     form_class = GigForm
 
     def test_func(self):
-        # can only create the gig if you're logged in and in the band        
+        # can only create the gig if you're logged in and in the band
         band = get_object_or_404(Band, id=self.kwargs['bk'])
         return has_create_gig_permission(self.request.user, band)
 
@@ -154,7 +151,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     form_class = GigForm
 
     def test_func(self):
-        # can only edit the gig if you're logged in and in the band        
+        # can only edit the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return has_manage_gig_permission(self.request.user, gig.band) or (gig.creator==self.request.user)
 
@@ -269,7 +266,7 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_planlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band        
+        # can only see the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user)
 
@@ -287,7 +284,7 @@ class PrintSetlistView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_setlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band        
+        # can only see the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
         return gig.band.has_member(self.request.user)
 
@@ -303,10 +300,10 @@ def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.status = val
     if val == PlanStatusChoices.DONT_KNOW:
-        now = datetime.datetime.now(tz=timezone.get_current_timezone())
-        if (future_days := (plan.gig.date - now).days) > 8:
-            plan.snooze_until = now + datetime.timedelta(days=7)
+        now = datetime.datetime.now()
+        if (future_days := (plan.gig.date.date() - now.date()).days) > 8:
+            plan.snooze_until = now.replace(tzinfo=utc) + datetime.timedelta(days=7)
         elif future_days > 2:
-            plan.snooze_until = plan.gig.date - datetime.timedelta(days=2)
+            plan.snooze_until = plan.gig.date.replace(tzinfo=utc) - datetime.timedelta(days=2)
     plan.save()
     return render(request, 'gig/answer.html', {'gig_id': plan.gig.id})

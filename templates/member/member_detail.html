@@ -193,6 +193,15 @@
                     </div>
                     <br>
                     <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Timezone" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-9">{{ member.preferences.current_timezone }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-3">{% trans "Auto Update" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-9">{{ member.preferences.auto_update_timezone }}</div>
+                    </div>
+                    <br>
+                    <div class="row">
                         <div class="d-none d-sm-inline col-sm-3">{% trans "Share my profile" %}:</div>
                         <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.share_profile %}</div>
                         <div class="col-12 d-sm-none">{% trans "Share my profile" %}: {% include "base/tf.html" with value=member.preferences.share_profile %}</div>
