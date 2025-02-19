@@ -1,4 +1,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstimezonedetect/1.0.7/jstz.min.js"></script>
 <script>
-window.location.replace("/home?zone="+jstz.determine().name());
+zone = jstz.determine().name()
+if (zone == "{{user.preferences.current_timezone}}") {
+    window.location.replace("/home");
+} else {
+    window.location.replace("/home?zone="+zone);
+}
 </script>
