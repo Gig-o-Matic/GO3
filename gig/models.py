@@ -27,6 +27,7 @@ from .util import GigStatusChoices, PlanStatusChoices
 from member.util import MemberStatusChoices
 from django.utils.timezone import localtime
 from go3.datetime_without_timezone import DateTimeWithoutTimezoneField
+from pytz import timezone
 
 
 class GigsManager(models.Manager):
@@ -158,6 +159,13 @@ class AbstractEvent(models.Model):
     default_to_attending = models.BooleanField( default=False )
 
     trashed_date = models.DateTimeField( blank=True, null=True )
+
+    def add_tz(self, d):
+        """ return the passed-in date with a timezone added. For now just use the band's tz """
+        tzname = self.band.timezone
+        tz = timezone(tzname)
+        return tz.localize(d)
+
 
     @property
     def is_in_trash(self):

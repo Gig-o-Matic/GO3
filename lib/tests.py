@@ -114,6 +114,18 @@ class CaldavTest(TestCase):
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')==-1)
         self.assertTrue(cf.find(b'DTSTART:20200229T153000')>0)
 
+    def test_calfeed_timezone(self):
+        self.testgig.enddate = self.testgig.date + timedelta(hours=2)
+        self.testgig.save()
+        self.band.timezone = 'US/Eastern'
+        self.band.save()
+        # first, a gig without a set time should show the call time
+        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
+                          self.band.pub_cal_feed_id, is_for_band=True)
+        self.assertTrue(cf.find(b'DTSTART;TZID=US/Eastern:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTEND;TZID=US/Eastern:20200229T163000')>0)
+
+
 
     def test_calfeed_event_full_day(self):
         self.testgig.is_full_day = True
