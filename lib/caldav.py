@@ -89,11 +89,9 @@ def make_calfeed(the_title, the_events, the_language, the_uid, is_for_band=False
                 event.add('dtend', enddate, {'value': 'DATE'})
             else:
                 setdate = e.setdate if (is_for_band and e.setdate) else e.date
-                setdate.replace(tzinfo=None)
-                event.add('dtstart', setdate)
+                event.add('dtstart', e.add_tz(setdate))
                 enddate = e.enddate if e.enddate else e.date + timedelta(hours=1)
-                enddate.replace(tzinfo=None)
-                event.add('dtend', enddate)
+                event.add('dtend', e.add_tz(enddate))
             event.add('description', _make_description(e))
             event.add('location', e.address)
             event.add(
