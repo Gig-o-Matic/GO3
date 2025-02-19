@@ -164,7 +164,7 @@ class AbstractEvent(models.Model):
         """ return the passed-in date with a timezone added. For now just use the band's tz """
         tzname = self.band.timezone
         tz = timezone(tzname)
-        return tz.localize(d)
+        return d.replace(tzinfo=tz)
 
 
     @property
