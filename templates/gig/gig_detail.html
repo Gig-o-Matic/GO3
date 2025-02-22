@@ -206,6 +206,7 @@
         {% endif %}
 
         <div class="card mt-4">
+            <a id="member-plans" name="member-plans"></a>
             <div class="card-header">
                 <div class="row titlerow">
                     <div class="col-4">
@@ -237,12 +238,12 @@
                         {% if request.user.is_superuser or the_user_is_band_admin %}
                             <span id="lock_plans">
                             {% if gig.plans_locked %}
-                                <a href="{% url 'gig-unlock-plans' gig.id %}" class="btn btn-sm btn-danger" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                <a href="{% url 'gig-unlock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
                                     <i class="fas fa-unlock"></i>
                                     {% trans "Unlock Plans" %}
                                 </a>
                             {% else %}
-                                <a href="{% url 'gig-lock-plans' gig.id %}" class="btn btn-sm btn-danger" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                <a href="{% url 'gig-lock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
                                     <i class="fas fa-lock"></i>
                                     {% trans "Lock Plans" %}
                                 </a>
