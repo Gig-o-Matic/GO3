@@ -71,17 +71,17 @@ class CaldavTest(TestCase):
         )
 
     def test_calfeed(self):
-        cf = make_calfeed('flim-flam', [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
-        self.assertTrue(cf.find(b'flim-flam')>0)
+        self.assertTrue(cf.find(str(self.joeuser).encode('ASCII'))>0)
         self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
 
     def test_calfeed_event(self):
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'EVENT')>0)
 
     def test_calfeed_event_no_enddate(self):
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
         # with no end date set, caldeef should show an end date of an hour after start
         self.assertTrue(cf.find(b'DTEND:20200229T153000')>0)
@@ -90,7 +90,7 @@ class CaldavTest(TestCase):
         # set the end date and make sure the calfeed is updated
         self.testgig.enddate = self.testgig.date + timedelta(hours=2)
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
         self.assertTrue(cf.find(b'DTEND:20200229T163000')>0)
 
@@ -98,18 +98,18 @@ class CaldavTest(TestCase):
         # for member feeds, the start date should be the call time; for band feeds, the start should be the set time
 
         # first, a gig without a set time should show the call time
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.band.pub_cal_feed_id, is_for_band=True)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for member feeds, should show the call time
         self.testgig.setdate = self.testgig.date + timedelta(hours=1)
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for band feeds, should show the set time
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, 
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.band.pub_cal_feed_id, is_for_band=True)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')==-1)
         self.assertTrue(cf.find(b'DTSTART:20200229T153000')>0)
@@ -118,42 +118,55 @@ class CaldavTest(TestCase):
     def test_calfeed_event_full_day(self):
         self.testgig.is_full_day = True
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
         self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200301')>0)
 
     def test_calfeed_description(self):
         self.testgig.details = 'test desc'
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertIn(b'DESCRIPTION:test desc\r\n',cf)
 
     def test_calfeed_setlist(self):
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertIn(b'DESCRIPTION:test set\r\n',cf)
 
     def test_calfeed_details_setlist(self):
         self.testgig.details = 'test details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n',cf)
 
     def test_calfeed_summary(self):
         self.testgig.details = 'test details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n',cf)
     
     def test_calfeed_translation(self):
         self.testgig.details = 'test details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(b'flim-flam', self.band.gigs.all(),'de', self.joeuser.cal_feed_id)
+        cf = make_calfeed(self.joeuser, self.band.gigs.all(),'de', self.joeuser.cal_feed_id)
         self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n',cf)
+
+    def test_calfeed_timezone(self):
+        cf = make_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language,
+                          self.joeuser.cal_feed_id, is_for_band=True)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+
+        self.band.timezone='America/New_York'
+        self.band.save()
+        cf = make_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language, 
+                          self.joeuser.cal_feed_id, is_for_band=True)
+        self.assertTrue(cf.find(b'DTSTART;TZID=America/New_York:20200229T143000')>0)
+
+
 
 @pytest.mark.django_db
 class CaldavFileTest(FSTestCase):

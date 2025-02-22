@@ -16,13 +16,14 @@
 """
 from django.core.files.storage import default_storage, FileSystemStorage
 from icalendar import Calendar, Event
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 import os
 from gig.util import GigStatusChoices
 from django.conf import settings
 from go3.settings import URL_BASE, BASE_DIR
+import pytz
 
 if default_storage.__class__ == FileSystemStorage:
     default_storage.location = f'{settings.CALFEED_BASEDIR}calfeeds'
@@ -51,7 +52,7 @@ def delete_calfeed(tag):
             default_storage.delete(file_path)
 
 
-def make_calfeed(the_title, the_events, the_language, the_uid, is_for_band=False):
+def make_calfeed(the_source, the_events, the_language, the_uid, is_for_band=False):
     """ construct an ical-compliant stream from a list of events """
 
     def _make_summary(event):
@@ -67,32 +68,45 @@ def make_calfeed(the_title, the_events, the_language, the_uid, is_for_band=False
 
     # set up language
     cal = Calendar()
+    
+    # figure out what the timezone should be
+    try:
+        tz = the_source.timezone
+    except:
+        return #  todo we shouldn't just fail silently
+    zone = pytz.timezone(tz)
+
     with translation.override(the_language):
         cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//')
         cal.add('version', '2.0')
-        cal.add('X-WR-CALNAME', the_title)
+        cal.add('X-WR-CALNAME', the_source)
         cal.add('X-WR-CALDESC',
-                '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_title))
+                '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_source))
         for e in the_events:
             event = Event()
             event.add('dtstamp', timezone.now())
             event.add('uid', e.cal_feed_id)
             event.add('summary', _make_summary(e))
             if e.is_full_day:
-                event.add('dtstart', e.date.date(), {'value': 'DATE'})
+                date = e.date.date()
+                startdate = datetime.combine(date,datetime.min.time())
+                startdate = startdate.replace(tzinfo = zone)
+                event.add('dtstart', startdate, {'value': 'DATE'})
                 # To make the event use the full final day, icalendar clients expect the end date
                 # to be the date after the event ends. So we add 1 day.
                 # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
                 # "The "DTEND" property for a "VEVENT" calendar component specifies
                 # the non-inclusive end of the event."
                 enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
+                enddate = datetime.combine(enddate,datetime.min.time())
+                enddate = enddate.replace(tzinfo = zone)
                 event.add('dtend', enddate, {'value': 'DATE'})
             else:
                 setdate = e.setdate if (is_for_band and e.setdate) else e.date
-                setdate.replace(tzinfo=None)
+                setdate = setdate.replace(tzinfo=zone)
                 event.add('dtstart', setdate)
                 enddate = e.enddate if e.enddate else e.date + timedelta(hours=1)
-                enddate.replace(tzinfo=None)
+                enddate = enddate.replace(tzinfo=zone)
                 event.add('dtend', enddate)
             event.add('description', _make_description(e))
             event.add('location', e.address)
