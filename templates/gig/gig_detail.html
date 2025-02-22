@@ -273,7 +273,7 @@
                 {% if gig.plans_locked %}
                     <div class="row">
                         <div class="col-12 alert alert-warning"">
-                            <h3>{% trans "Gig plans are locked" %}</h3>
+                            <h3>{% trans "Gig plans are locked" %} <i class="fas fa-lock text-info"></i></h3>
                             <p>
                                 {% blocktrans with contact=gig.contact.display_name %}
                                 Gig plans have been locked by the band organizers to manage band attendance. If you need to make changes, contact {{ contact }} about your changing plan.
