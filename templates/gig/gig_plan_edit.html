@@ -2,47 +2,6 @@
 
 {% with assoc=plan.assoc plan_member=plan.assoc.member band=plan.assoc.band %}
 
-{% comment %}
-{% set plan = plan_info['plan'] %}
-{% set plan_key = plan.key %}
-
-{% set the_member_key = plan_info['the_member_key'] %}
-{% set the_member = the_member_key.get() %}
-{% set the_band_key = plan_info['the_band_key'] %}
-{% set the_band = the_band_key.get() %}
-{% set the_assoc = plan_info['the_assoc'] %}
-
-{% set show_section = False %}
-{% if the_assoc and the_assoc.is_multisectional %}
-    {% if the_member_key == the_user.key or the_user_is_superuser or the_user_is_band_admin %}
-        {% set show_section = True %}
-    {% endif %}
-{% endif %}
-
-{% set title_lg = 6 %}
-{% set title_sm = 6 %}
-{% set date_lg = 6 %}
-{% set date_sm = 6 %}
-{% set grp1_lg = 4 %}
-{% set grp1_sm = 4 %}
-{% set grp2_lg = 8 %}
-{% set grp2_sm = 8 %}
-
-{% if show_section %}
-    {% set comment_lg = 7 %}
-    {% set comment_sm = 7 %}
-    {% set comment_2_lg = 4 %}
-    {% set comment_2_sm = 4 %}
-    {% set section_lg = 2 %}
-    {% set section_sm = 2 %}
-{% else %}
-    {% set comment_2_lg = 6 %}
-    {% set comment_2_sm = 6 %}
-    {% set comment_lg = 9 %}
-    {% set comment_sm = 9 %}
-{% endif %}
-
-{% endcomment %}
 <div class="row {% if not plan.attending %}plannotattending{% endif %}">
     <div class="col-4" style="display:flex; align-items:center;" >
         {% if plan_member.is_active %}
@@ -54,7 +13,11 @@
     {% if plan.gig.is_archived == False %}
         {% if plan_member == user or the_user_is_band_admin %}
             <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
-                {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+                {% if plan_member == user and not gig.plans_locked or the_user_is_band_admin %}
+                    {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+                {% else %}
+                    <span class="pr-3">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span>
+                {% endif %}
                 {% if band.plan_feedback %}
                     {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
                 {% endif %}
@@ -75,7 +38,7 @@
                             </span>
                             <span class="htmx-indicator">
                                 <i class="fa fa-spinner fa-spin fa-lg"></i>
-                            </span>                        
+                            </span>
                         </button>
                         <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
                             {% for section in band.sections.all %}
