@@ -22,6 +22,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from datetime import datetime, timezone
 from django.utils.formats import get_format
+import pytz
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -134,8 +135,9 @@ class GigForm(forms.ModelForm):
             setdate = _mergetime(date, set_time).replace(tzinfo=timezone.utc) if set_time else None
             enddate = _mergetime(date, end_time).replace(tzinfo=timezone.utc) if end_time else None
 
-            date=date.replace(tzinfo=timezone.utc)
-            if self.initial['date'] != date and date < datetime.now().replace(tzinfo=timezone.utc):
+            date=date.replace(tzinfo=None)
+            now = datetime.now(tz=pytz.timezone(self.instance.band.timezone)).replace(tzinfo=None)
+            if self.initial['date'] != date and date < now:
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
 
