@@ -13,7 +13,11 @@
     {% if plan.gig.is_archived == False %}
         {% if plan_member == user or the_user_is_band_admin %}
             <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
-                {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+                {% if plan_member == user and not gig.plans_locked or the_user_is_band_admin %}
+                    {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+                {% else %}
+                    <span class="pr-3">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span>
+                {% endif %}
                 {% if band.plan_feedback %}
                     {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
                 {% endif %}
