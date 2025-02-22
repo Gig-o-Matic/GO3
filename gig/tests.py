@@ -24,7 +24,7 @@ from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from django.urls import reverse
 from pytz import utc
 from lib.template_test import MISSING, flag_missing_vars
@@ -561,12 +561,22 @@ class GigTest(GigTestBase):
             member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
         )
         g = self.create_gig_form()
-        now = datetime.now().replace(tzinfo=timezone.utc)
+        now = datetime.now(tz=utc)
+        g.member_plans.filter(assoc=a).update(snooze_until=now+timedelta(days=2))
+        mail.outbox = []
+        send_snooze_reminders()
+        self.assertEqual(len(mail.outbox), 0)
+
         g.member_plans.filter(assoc=a).update(snooze_until=now)
         mail.outbox = []
         send_snooze_reminders()
-
         self.assertEqual(len(mail.outbox), 1)
+
+        # do it again to make sure we don't send again
+        mail.outbox = []
+        send_snooze_reminders()
+        self.assertEqual(len(mail.outbox), 0)
+
 
     @flag_missing_vars
     def test_gig_edit_email(self):
@@ -1168,35 +1178,40 @@ class GigTest(GigTestBase):
             assure that a gig that happened in the past day still shows up as a 'future plan'
             so it's on the schedule page
         """
+        import pytz
 
         g, _, _ = self.assoc_joe_and_create_gig()
         self.joeuser.preferences.current_timezone='America/New_York'
         self.joeuser.save()
 
-        gigdate = datetime(year=2024, month=4, day=1, hour=12, minute=0, second=0, tzinfo=timezone.utc)
-
-        g.date = gigdate
-        g.save()
-        g.refresh_from_db()
+        gigdate = datetime.now(tz=pytz.timezone(self.joeuser.preferences.current_timezone))
 
         # first, pretend it's the day before the gig
-        with freeze_time(gigdate - timedelta(days=1)):
-            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        g.date = gigdate + timedelta(days=1)
+        g.save()
+        g.refresh_from_db()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
         # now pretend it's the time of the gig
-        with freeze_time(gigdate):
-            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        g.date = gigdate
+        g.save()        
+        g.refresh_from_db()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
         # now pretend it's almost 4 hours later
-        with freeze_time(gigdate + timedelta(hours=3, minutes=59)):
-            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        g.date = gigdate - timedelta(hours=3)
+        g.save()
+        g.refresh_from_db()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
         # now pretend it's more than 4 hours later
-        with freeze_time(gigdate + timedelta(hours=4, minutes=1)):
-            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        g.date = gigdate - timedelta(hours=5)
+        g.save()
+        g.refresh_from_db()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertFalse(g in gigs)
 
     def test_gig_autoarchive(self):

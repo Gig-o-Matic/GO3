@@ -88,6 +88,7 @@ class MemberTest(TestCase):
         b = m.assocs.first().band
         self.assertIsNotNone(m.preferences.current_timezone)
         self.assertEqual(b.timezone, m.preferences.current_timezone)
+        self.assertEqual(m.preferences.auto_update_timezone, True)
 
     def test_memberassocsview(self):
         m = Member.objects.first()

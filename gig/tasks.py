@@ -19,6 +19,7 @@ from gig.helpers import send_emails_from_plans
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.db.models import Q
+import pytz
 
 def delete_old_trashed_gigs():
     """
@@ -55,7 +56,7 @@ def send_snooze_reminders():
     date in the future.  Set the snooze_until property of all such plans to None,
     to so we don't send another reminder in the future.
     """
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=pytz.utc)
     next_day = now + timedelta(days=1)
     unsnooze = Plan.objects.filter(snooze_until__isnull=False,
                                    snooze_until__lte=next_day,
