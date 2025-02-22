@@ -185,7 +185,7 @@ class Member(AbstractUser):
 
     @property
     def timezone(self):
-        return self.preferences.current_timezone
+        return self.preferences.current_timezone # pylint: disable=no-member
 
     def as_email_recipient(self):
         return EmailRecipient(name=self.username, email=self.email,
