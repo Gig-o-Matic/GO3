@@ -274,13 +274,11 @@
                     <div class="row">
                         <div class="col-12 alert alert-warning"">
                             <h3>{% trans "Gig plans are locked" %}</h3>
-                            <p>Gig plans have been locked by the band organizers to manage band attendance. If you need to make changes, contact
-                                {% if gig.contact %}
-                                    <a href="{% url 'member-detail' gig.contact.id %}">{{ gig.contact.display_name }}</a>
-                                {% else %}
-                                    your band leadership
-                                {% endif %}
-                                about your changing plans.</p>
+                            <p>
+                                {% blocktrans with contact=gig.contact.display_name %}
+                                Gig plans have been locked by the band organizers to manage band attendance. If you need to make changes, contact {{ contact }} about your changing plan.
+                                {% endblocktrans %}
+                            </p>
                         </div>
                     </div>
                 {% endif %}
