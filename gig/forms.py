@@ -28,6 +28,7 @@ class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
         band = kwargs.pop('band', None)
         user = kwargs.pop('user', None)
+        self.user = user
 
         super().__init__(
             label_suffix='',
@@ -36,7 +37,7 @@ class GigForm(forms.ModelForm):
 
 
         # Keep track of the initial date so we can see if it changed in the form validation
-        self.initial['date'] = self.instance.date.replace(tzinfo=timezone.utc) if self.instance.date else None
+        self.initial['date'] = self.instance.date.replace(tzinfo=None) if self.instance.date else None
 
         if band is None and self.instance.band_id is not None:
             # TODO more robust checking, this form without a band doesn't make sense
@@ -131,12 +132,11 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = not set_time is None
             self.cleaned_data['has_end_time'] = not end_time is None
 
-            date = _mergetime(date, call_time).replace(tzinfo=timezone.utc)
-            setdate = _mergetime(date, set_time).replace(tzinfo=timezone.utc) if set_time else None
-            enddate = _mergetime(date, end_time).replace(tzinfo=timezone.utc) if end_time else None
+            date = _mergetime(date, call_time).replace(tzinfo=None)
+            setdate = _mergetime(date, set_time).replace(tzinfo=None) if set_time else None
+            enddate = _mergetime(date, end_time).replace(tzinfo=None) if end_time else None
 
-            date=date.replace(tzinfo=None)
-            now = datetime.now(tz=pytz.timezone(self.instance.band.timezone)).replace(tzinfo=None)
+            now = datetime.now(tz=pytz.timezone(self.user.timezone)).replace(tzinfo=None)
             if self.initial['date'] != date and date < now:
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))
