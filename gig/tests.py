@@ -1214,6 +1214,34 @@ class GigTest(GigTestBase):
         gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertFalse(g in gigs)
 
+    def test_gig_shown_user_timezone(self):
+        """
+            assure that a gig that happened in the past day still shows up as a 'future plan'
+            so it's on the schedule page - and respects timezone
+        """
+        import pytz
+
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.joeuser.preferences.current_timezone='America/New_York'
+        self.joeuser.save()
+
+        gigdate = datetime.now(tz=pytz.timezone(self.joeuser.preferences.current_timezone))
+
+        g.date = gigdate + timedelta(hours=1)
+        g.enddate = gigdate + timedelta(hours=1, minutes=30)
+        g.save()
+        g.refresh_from_db()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertTrue(g in gigs)
+
+        # but now put Joe in UTC and the gig should already be over
+        self.joeuser.preferences.current_timezone='UTC'
+        self.joeuser.save()
+        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        self.assertFalse(g in gigs)
+
+
+
     def test_gig_autoarchive(self):
 
         def _check_gig(g,is_full_day,date,setdate,enddate):
