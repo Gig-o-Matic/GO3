@@ -146,6 +146,7 @@ a {
 
 .h3, h3 {
     font-size: 1.1rem;
+    font-weight: bold;
 }
 
 .page-header {
@@ -302,13 +303,12 @@ ul.errorlist {
 .assoc-band-row {
   padding-top: 5px;
   padding-bottom: 5px;
-  scroll-margin-top: 40px;
 }
 
-/* band detail page
+/* Offset anchor links down to get below main site nav
 -------------------------------------------------- */
-#pending-members {
-  scroll-margin-top: 40px;
+a[name] {
+  scroll-margin-top: 50px;
 }
 
 /* agenda pages

@@ -61,7 +61,7 @@
                             <br>
                             <strong>{% trans "THIS GIG IS IN THE TRASH!" %}</strong>
                             {% if request.user.is_superuser or the_user_is_band_admin %}
-                                <a class="btn btn-primary btn-sm" 
+                                <a class="btn btn-primary btn-sm"
                                    href="{% url 'gig-untrash' gig.id %}">{% trans "Restore Gig" %}</a>
                             {% endif %}
                             <br><br>
@@ -206,6 +206,7 @@
         {% endif %}
 
         <div class="card mt-4">
+            <a id="member-plans" name="member-plans"></a>
             <div class="card-header">
                 <div class="row titlerow">
                     <div class="col-4">
@@ -234,6 +235,21 @@
                             	<small>{% trans "Reminder Sent" %}</small>
                         	</span>
                         {% endif %}
+                        {% if request.user.is_superuser or the_user_is_band_admin %}
+                            <span id="lock_plans">
+                            {% if gig.plans_locked %}
+                                <a href="{% url 'gig-unlock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                    <i class="fas fa-unlock"></i>
+                                    {% trans "Unlock Plans" %}
+                                </a>
+                            {% else %}
+                                <a href="{% url 'gig-lock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                    <i class="fas fa-lock"></i>
+                                    {% trans "Lock Plans" %}
+                                </a>
+                            {% endif %}
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -251,6 +267,24 @@
                         <div class="mx-auto">
                             {% include "gig/plan_icon.html" with plan_value=0 %}
                             <span id="count0">0</span>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if gig.plans_locked %}
+                    <div class="row">
+                        <div class="col-12 alert alert-warning"">
+                            <h3>{% trans "Gig plans are locked" %} <i class="fas fa-lock text-info"></i></h3>
+                            <p>
+                                {% if the_user_is_band_admin %}
+                                    {% blocktrans %}
+                                    Band members are prevented from making changes to their plans. As a band admin, you are still able to update plans on their behalf. To allow members to update their own plans again, use the "Unlock Plans" button above.
+                                    {% endblocktrans %}
+                                {% else %}
+                                    {% blocktrans with contact=gig.contact.display_name %}
+                                    Gig plans have been locked by the band organizers to manage band attendance. If you need to make changes, contact {{ contact }} about your changing plan.
+                                    {% endblocktrans %}
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                 {% endif %}
