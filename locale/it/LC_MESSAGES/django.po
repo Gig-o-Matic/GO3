@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-22 19:19+0000\n"
+"POT-Creation-Date: 2025-02-22 19:29+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: it <LL@li.org>\n"
@@ -751,7 +751,7 @@ msgstr ""
 msgid "Band Navigator"
 msgstr "Navigabande"
 
-#: templates/band/band_section_members.html:7 templates/gig/gig_detail.html:291
+#: templates/band/band_section_members.html:7 templates/gig/gig_detail.html:297
 #: templates/gig/gig_detail_archived.html:185
 #: templates/gig/gig_print_planlist.html:50
 #, fuzzy
@@ -998,17 +998,27 @@ msgstr ""
 msgid "Gig plans are locked"
 msgstr ""
 
-#: templates/gig/gig_detail.html:278
+#: templates/gig/gig_detail.html:279
+msgid ""
+"\n"
+"                                    Band members are prevented from making "
+"changes to their plans. As a band admin, you are still able to update plans "
+"on their behalf. To allow members to update their own plans again, use the "
+"\"Unlock Plans\" button above.\n"
+"                                    "
+msgstr ""
+
+#: templates/gig/gig_detail.html:283
 #, python-format
 msgid ""
 "\n"
-"                                Gig plans have been locked by the band "
+"                                    Gig plans have been locked by the band "
 "organizers to manage band attendance. If you need to make changes, contact "
 "%(contact)s about your changing plan.\n"
-"                                "
+"                                    "
 msgstr ""
 
-#: templates/gig/gig_detail.html:310 templates/gig/gig_detail_archived.html:204
+#: templates/gig/gig_detail.html:316 templates/gig/gig_detail_archived.html:204
 msgid "Comments"
 msgstr "Commenti"
 
