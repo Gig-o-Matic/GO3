@@ -39,7 +39,7 @@ import calendar
 def band_editor_required(func):
     def decorated(request, pk, *args, **kw):
         g = get_object_or_404(Gig, pk=pk)
-        if not g.band.is_editor(request.user):
+        if not (g.band.is_editor(request.user) or (request.user==g.contact)):
             return HttpResponseForbidden()
         return func(request, g, *args, **kw)
     return decorated
@@ -218,6 +218,16 @@ def gig_unlock_plans(request, gig):
     gig.plans_locked = False
     gig.save()
     return redirect('gig-detail', pk=gig.id)
+
+@login_required
+@band_editor_required
+def gig_toggle_watching(request, gig):
+    if request.user in gig.watchers.all():
+        gig.watchers.remove(request.user)
+    else:
+        gig.watchers.add(request.user)
+    gig.save()
+    return render(request, 'gig/watching.html', {'gig':gig})
 
 @login_required
 @band_editor_required

@@ -132,6 +132,8 @@ class AbstractEvent(models.Model):
 
     email_changes = models.BooleanField(default=True)
 
+    watchers = models.ManyToManyField('member.Member',related_name='watching')
+
     @property
     def is_canceled(self):
         self.status=GigStatusChoices.CANCELED
