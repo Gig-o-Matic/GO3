@@ -169,6 +169,8 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super().get_form_kwargs(*args, **kwargs)
 
+        kwargs['user'] = self.request.user
+
         # we need to do this because there are some form fields that do not exist in the object,
         # so we need all of the initial values from the object so we can get at them
         # from the template.

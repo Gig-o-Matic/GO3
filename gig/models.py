@@ -46,7 +46,7 @@ class MemberPlanManager(models.Manager):
         return super().order_by('section')
 
     def future_plans(self, member):
-        time_for_user = datetime.now(tz=pytz.utc).replace(tzinfo = None)
+        time_for_user = datetime.now(tz=pytz.timezone(member.preferences.current_timezone)).replace(tzinfo=None)
         recent_for_user = time_for_user - timedelta(hours=4) # for gigs with no end date
         yesterday_for_user = time_for_user.replace(hour=23, minute=59) - timedelta(days=1)
 

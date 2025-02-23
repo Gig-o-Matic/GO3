@@ -183,6 +183,10 @@ class Member(AbstractUser):
             the_motd = None
         return the_motd.text if the_motd else None
 
+    @property
+    def timezone(self):
+        return self.preferences.current_timezone # pylint: disable=no-member
+
     def as_email_recipient(self):
         return EmailRecipient(name=self.username, email=self.email,
                               language=self.preferences.language) # pylint: disable=no-member
