@@ -60,7 +60,7 @@ def plan_editor_required(func):
 @login_required
 @plan_editor_required
 def update_plan(request, plan, val):
-    if plan.gig.plans_locked:
+    if plan.gig.plans_locked and not plan.assoc.band.is_admin(request.user):
         return HttpResponseForbidden()
     plan.status = val
     plan.save()
