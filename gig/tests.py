@@ -1329,6 +1329,14 @@ class GigWatchTest(GigTestBase):
         self.assertEqual(self.joeuser.watching.count(), 0)
         self.assertEqual(g.watchers.count(), 0)
 
+        #start watching
+        response = c.get(reverse("gig-toggle-watching", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.joeuser.watching.count(), 1)
+        self.assertTrue(g in self.joeuser.watching.all())
+        self.assertEqual(g.watchers.count(), 1)
+        self.assertTrue(self.joeuser in g.watchers.all())
+
 
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):
