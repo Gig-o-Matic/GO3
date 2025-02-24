@@ -21,7 +21,7 @@ from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email, create_gig_series
+from .helpers import send_reminder_email, create_gig_series, gig_toggle_watching
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs
 from datetime import timedelta, datetime
@@ -1306,6 +1306,28 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.date.day,1)
         self.assertEqual(g.enddate.day,2)
+
+
+class GigWatchTest(GigTestBase):
+    def test_watch_gig(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c = Client()
+        c.force_login(self.joeuser)
+        self.assertEqual(self.joeuser.watching.count(), 0)
+
+        #start watching
+        response = c.get(reverse("gig-toggle-watching", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.joeuser.watching.count(), 1)
+        self.assertTrue(g in self.joeuser.watching.all())
+        self.assertEqual(g.watchers.count(), 1)
+        self.assertTrue(self.joeuser in g.watchers.all())
+
+        # stop watching
+        response = c.get(reverse("gig-toggle-watching", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.joeuser.watching.count(), 0)
+        self.assertEqual(g.watchers.count(), 0)
 
 
 class GigSecurityTest(GigTestBase):
