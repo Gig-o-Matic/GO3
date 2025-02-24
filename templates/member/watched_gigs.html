@@ -1,0 +1,11 @@
+{% if member.watching.all %}
+    {% for gig in member.watching.all %}
+    <a href="{% url 'gig-detail' pk=gig.id %}">{{gig}}</a>
+    <span class="btn btn-sm btn-info" role="button" hx-get='{% url "member-stop-watching" pk=gig.id %}' hx-target='#watched' hx-swap='innerHTML'>
+        <i class="fas fa-xmark"></i>
+    </span>
+    <br>
+    {% endfor %}
+{% else %}
+    <span>None!</span>
+{% endif %}

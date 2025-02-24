@@ -171,6 +171,7 @@
                 </div>
             </div>
 
+            {% if member.watching.all %}
             <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
@@ -179,13 +180,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    {% for gig in member.watching.all %}
-                        <a href="{% url 'gig-detail' pk=gig.id %}">{{gig}}</a><br>
-                    {% endfor %}
+                <div class="card-body" id="watched">
+                    {% include "member/watched_gigs.html" with member=member %}
                 </div>
             </div>
-
+            {% endif %}
             <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">

@@ -18,7 +18,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from datetime import timedelta
 from member.models import Member
 from lib.email import prepare_email, send_messages_async
@@ -28,6 +28,7 @@ from django.conf import settings
 from band.helpers import do_delete_assoc
 from member.util import MemberStatusChoices
 from member.models import Member
+from gig.models import Gig
 
 from django.utils.translation import gettext_lazy as _
 
@@ -162,3 +163,11 @@ def has_comment_permission(user, gig):
 
 def has_manage_band_permission(user, band):
     return user and has_band_admin(user,band)
+
+@login_required
+def stop_watching(request, pk):
+    gig = get_object_or_404(Gig, pk=pk)
+    if request.user in gig.watchers.all():
+        gig.watchers.remove(request.user)
+    gig.save()
+    return render(request, 'member/watched_gigs.html', {'member':request.user})

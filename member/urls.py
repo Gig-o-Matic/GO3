@@ -48,4 +48,6 @@ urlpatterns = [
 
     path('<int:pk>/delete', helpers.delete_member, name='member-delete'),
 
+    path('<int:pk>/stop_watch', helpers.stop_watching, name='member-stop-watching'),
+
 ]
