@@ -24,8 +24,9 @@ from band.util import AssocStatusChoices
 from django.test import Client
 from django.urls import reverse
 from json import loads
-from datetime import datetime
-from pytz import timezone
+from datetime import datetime, timedelta
+from django.utils import timezone
+from freezegun import freeze_time
 
 class AgendaTest(GigTestBase):
     def test_agenda_types(self):
@@ -96,7 +97,69 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.BY_BAND)}/{b2.id}')
         self.assertEqual(response.content.decode('ascii'),"1")
 
+    def test_agenda_date_display(self):
+        """ Test the different date displays on the agenda page """
+        self.assoc_user(self.joeuser)
+        g = self.create_gig_form(contact=self.joeuser, title=f"xyzzy")
+        self.joeuser.preferences.current_timezone='America/New_York'
+        self.joeuser.save()
+        timezone.activate('America/New_York')
+        g.date = timezone.make_aware(datetime(year=2028, month=4, day=1, hour=20))
+        g.save()
+        c = Client()
+        c.force_login(self.joeuser)
+        self.joeuser.preferences.agenda_layout = AgendaLayoutChoices.ONE_LIST
+        self.joeuser.preferences.save()
 
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("4/01"), 1)
+
+        # now make it day before the gig
+        with freeze_time(g.date - timedelta(days=1)):
+            c.force_login(self.joeuser)
+            response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("Tomorrow"), 1)
+
+        # now make it day of the gig
+        with freeze_time(g.date - timedelta(hours=1)):
+            c.force_login(self.joeuser)
+            response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("Today"), 1)
+
+        # now do it again but move me to another timezone
+        self.joeuser.preferences.current_timezone='UTC'
+        self.joeuser.save()
+
+        # now show that the agenda is different in different timezones
+        # make gig on 4/1 6pm in New York - that's 10 or 11 UTC
+        # make current time 4/1 12am UTC
+        # in UTC, gig is "today", in New_York it's "tomorrow"
+
+        g.date = timezone.make_aware(datetime(year=2028, month=4, day=1, hour=18))
+        g.save()
+
+        # now make it day before the gig UTC
+        timezone.activate('UTC')
+        the_time = timezone.make_aware(datetime(year=2028, month=4, day=1, hour=0))
+        with freeze_time( the_time ):
+            self.joeuser.preferences.current_timezone='UTC'
+            self.joeuser.save()
+            timezone.activate('UTC')
+            c.force_login(self.joeuser)
+            response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("Today"), 1)
+
+        with freeze_time( the_time ):
+            self.joeuser.preferences.current_timezone='America/New_York'
+            self.joeuser.save()
+            c.force_login(self.joeuser)
+            response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("Tomorrow"), 1)
 
     def test_agenda_occasionals(self):
         _ = self.assoc_user(self.joeuser)
@@ -267,8 +330,8 @@ class CalendarTest(GigTestBase):
         c = Client()
         c.force_login(self.joeuser)
 
-        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone('UTC'))
-        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone('UTC'))
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone.utc)
         response = c.get(reverse('calendar-events', args=[self.band.id]), data={
             'start': startdate.isoformat(),
             'end': enddate.isoformat(),
@@ -288,8 +351,8 @@ class CalendarTest(GigTestBase):
 
         c = Client()
         c.force_login(self.joeuser)
-        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone('UTC'))
-        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone('UTC'))
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone.utc)
         response = c.get(reverse('calendar-events', args=[self.band.id]), data={
             'start': startdate.isoformat(),
             'end': enddate.isoformat(),
@@ -310,8 +373,8 @@ class CalendarTest(GigTestBase):
 
         c = Client()
         c.force_login(self.joeuser)
-        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone('UTC'))
-        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone('UTC'))
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone.utc)
         response = c.get(reverse('calendar-events', args=[self.band.id]), data={
             'start': startdate.isoformat(),
             'end': enddate.isoformat(),
