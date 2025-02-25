@@ -69,13 +69,6 @@ def make_calfeed(the_source, the_events, the_language, the_uid, is_for_band=Fals
     # set up language
     cal = Calendar()
     
-    # figure out what the timezone should be
-    try:
-        tz = the_source.timezone
-    except:
-        return #  todo we shouldn't just fail silently
-    zone = pytz.timezone(tz)
-
     with translation.override(the_language):
         cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//')
         cal.add('version', '2.0')
@@ -90,7 +83,6 @@ def make_calfeed(the_source, the_events, the_language, the_uid, is_for_band=Fals
             if e.is_full_day:
                 date = e.date.date()
                 startdate = datetime.combine(date,datetime.min.time())
-                startdate = startdate.replace(tzinfo = zone)
                 event.add('dtstart', startdate, {'value': 'DATE'})
                 # To make the event use the full final day, icalendar clients expect the end date
                 # to be the date after the event ends. So we add 1 day.
@@ -99,14 +91,11 @@ def make_calfeed(the_source, the_events, the_language, the_uid, is_for_band=Fals
                 # the non-inclusive end of the event."
                 enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
                 enddate = datetime.combine(enddate,datetime.min.time())
-                enddate = enddate.replace(tzinfo = zone)
                 event.add('dtend', enddate, {'value': 'DATE'})
             else:
                 setdate = e.setdate if (is_for_band and e.setdate) else e.date
-                setdate = setdate.replace(tzinfo=zone)
                 event.add('dtstart', setdate)
                 enddate = e.enddate if e.enddate else e.date + timedelta(hours=1)
-                enddate = enddate.replace(tzinfo=zone)
                 event.add('dtend', enddate)
             event.add('description', _make_description(e))
             event.add('location', e.address)

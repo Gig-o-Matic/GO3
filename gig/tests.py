@@ -26,7 +26,8 @@ from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs
 from datetime import timedelta, datetime
 from django.urls import reverse
-from pytz import utc
+from django.utils import timezone
+from pytz import utc, timezone as pytimezone
 from lib.template_test import MISSING, flag_missing_vars
 from freezegun import freeze_time
 
@@ -881,8 +882,12 @@ class GigTest(GigTestBase):
         # This simulates a gig that has already started
         # Allow edits to gig details as long as they don't change the gig call time
 
-        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0)
-        future_date = datetime.now() + timedelta(days=7)
+        self.joeuser.preferences.current_timezone='America/New_York'
+        self.joeuser.save()
+        timezone.activate(self.joeuser.preferences.current_timezone)
+
+        past_date = datetime(year=2011, month=1, day=1, hour=12, minute=0, tzinfo=timezone.get_current_timezone())
+        future_date = timezone.now() + timedelta(days=7)
         gig, _, _ = self.assoc_joe_and_create_gig(
             title="GRRRR GIG",
             call_date=future_date.strftime("%m/%d/%Y"),
@@ -895,6 +900,7 @@ class GigTest(GigTestBase):
         gig.save()
         gig.refresh_from_db()
 
+        # expect this to pass and redirect to gig details page (code=302)
         self.update_gig_form(gig, user=self.band_admin, title="Test New Gig Title", expect_code=302)
 
         gig.refresh_from_db()
@@ -1184,62 +1190,31 @@ class GigTest(GigTestBase):
         self.joeuser.preferences.current_timezone='America/New_York'
         self.joeuser.save()
 
-        gigdate = datetime.now(tz=pytz.timezone(self.joeuser.preferences.current_timezone))
+        timezone.activate(self.joeuser.preferences.current_timezone)
+
+        # make the gig date noon on 4/1/24 in New York
+        g.date = datetime(year=2024, month=4, day=1, hour=12, minute=0, tzinfo=timezone.get_current_timezone())
+        g.save()
 
         # first, pretend it's the day before the gig
-        g.date = gigdate + timedelta(days=1)
-        g.save()
-        g.refresh_from_db()
-        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        with freeze_time(g.date - timedelta(days=1)):
+            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
         # now pretend it's the time of the gig
-        g.date = gigdate
-        g.save()        
-        g.refresh_from_db()
-        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        with freeze_time(g.date):
+            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
         # now pretend it's almost 4 hours later
-        g.date = gigdate - timedelta(hours=3)
-        g.save()
-        g.refresh_from_db()
-        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        with freeze_time(g.date + timedelta(hours=3,minutes=50)):
+            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertTrue(g in gigs)
 
         # now pretend it's more than 4 hours later
-        g.date = gigdate - timedelta(hours=5)
-        g.save()
-        g.refresh_from_db()
-        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
+        with freeze_time(g.date + timedelta(hours=4,minutes=10)):
+            gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
         self.assertFalse(g in gigs)
-
-    def test_gig_shown_user_timezone(self):
-        """
-            assure that a gig that happened in the past day still shows up as a 'future plan'
-            so it's on the schedule page - and respects timezone
-        """
-        import pytz
-
-        g, _, _ = self.assoc_joe_and_create_gig()
-        self.joeuser.preferences.current_timezone='America/New_York'
-        self.joeuser.save()
-
-        gigdate = datetime.now(tz=pytz.timezone(self.joeuser.preferences.current_timezone))
-
-        g.date = gigdate + timedelta(hours=1)
-        g.enddate = gigdate + timedelta(hours=1, minutes=30)
-        g.save()
-        g.refresh_from_db()
-        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
-        self.assertTrue(g in gigs)
-
-        # but now put Joe in UTC and the gig should already be over
-        self.joeuser.preferences.current_timezone='UTC'
-        self.joeuser.save()
-        gigs = [p.gig for p in Plan.member_plans.future_plans(self.joeuser)]
-        self.assertFalse(g in gigs)
-
 
 
     def test_gig_autoarchive(self):

@@ -20,8 +20,9 @@ from .models import Gig
 from band.models import Band
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime, timezone
+from datetime import datetime
 from django.utils.formats import get_format
+from django.utils import timezone
 import pytz
 
 class GigForm(forms.ModelForm):
@@ -36,8 +37,7 @@ class GigForm(forms.ModelForm):
         )
 
 
-        # Keep track of the initial date so we can see if it changed in the form validation
-        self.initial['date'] = self.instance.date.replace(tzinfo=None) if self.instance.date else None
+        self.initial['date'] = self.instance.date
 
         if band is None and self.instance.band_id is not None:
             # TODO more robust checking, this form without a band doesn't make sense
@@ -89,11 +89,15 @@ class GigForm(forms.ModelForm):
             self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
+        
+        date = timezone.make_aware(date)
 
         # first, check to see if this is full-day or not
         if self.cleaned_data.get('is_full_day'):
             # we're full day, so see if there's an end date
             end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
+            if end_date:
+                end_date = timezone.make_aware(end_date)
 
             # since we are full day, ignore the times completely
             self.cleaned_data['has_call_time'] = False
@@ -132,11 +136,11 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = not set_time is None
             self.cleaned_data['has_end_time'] = not end_time is None
 
-            date = _mergetime(date, call_time).replace(tzinfo=None)
-            setdate = _mergetime(date, set_time).replace(tzinfo=None) if set_time else None
-            enddate = _mergetime(date, end_time).replace(tzinfo=None) if end_time else None
+            date = _mergetime(date, call_time)
+            setdate = _mergetime(date, set_time) if set_time else None
+            enddate = _mergetime(date, end_time) if end_time else None
 
-            now = datetime.now(tz=pytz.timezone(self.user.timezone)).replace(tzinfo=None)
+            now = timezone.now()
             if self.initial['date'] != date and date < now:
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))

@@ -164,7 +164,7 @@ class CaldavTest(TestCase):
         self.band.save()
         cf = make_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.joeuser.cal_feed_id, is_for_band=True)
-        self.assertTrue(cf.find(b'DTSTART;TZID=America/New_York:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
 
 
