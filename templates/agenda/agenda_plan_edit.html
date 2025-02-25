@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load humanize %}
+{% load tz %}
 
 {% comment %}
 {% with assoc=plan.assoc %}
@@ -17,7 +18,7 @@
     <div class="row" style="position:relative; left:5px;">
 {% endif %}
     <div class="col-sm-12 col-md-3">
-        {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }} {{ gig.date|date:"D" }}
+        {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"SHORT_DATE_FORMAT"|capfirst }} {{ gig.date|date:"D" }}
 {% comment %}
 Add the day of week to the short_date_format - can just append D?
 {% endcomment %}
