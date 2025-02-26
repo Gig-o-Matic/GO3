@@ -122,7 +122,7 @@ class AbstractEvent(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
-    date = models.DateTimeField()
+    date = models.DateTimeField(null=True, blank=True)
     datenotes = models.TextField(null=True, blank=True)
     safe_date = models.DateTimeField(null=True)
 

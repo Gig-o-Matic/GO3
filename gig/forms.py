@@ -57,6 +57,8 @@ class GigForm(forms.ModelForm):
         if band:
             self.fields['contact'].queryset = band.confirmed_members
 
+        # save the band so we can access it when cleaning the dates
+        self.band = band
 
     def clean(self):
         """
@@ -89,14 +91,14 @@ class GigForm(forms.ModelForm):
             super().clean()
             return
         
-        date = timezone.make_aware(date,pytz.timezone(self.instance.band.timezone))
+        date = timezone.make_aware(date,pytz.timezone(self.band.timezone))
 
         # first, check to see if this is full-day or not
         if self.cleaned_data.get('is_full_day'):
             # we're full day, so see if there's an end date
             end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
             if end_date:
-                end_date = timezone.make_aware(end_date,pytz.timezone(self.instance.band.timezone))
+                end_date = timezone.make_aware(end_date,pytz.timezone(self.band.timezone))
 
             # since we are full day, ignore the times completely
             self.cleaned_data['has_call_time'] = False
