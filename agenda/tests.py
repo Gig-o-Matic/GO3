@@ -24,7 +24,7 @@ from band.util import AssocStatusChoices
 from django.test import Client
 from django.urls import reverse
 from json import loads
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as dttimezone
 from django.utils import timezone
 from freezegun import freeze_time
 
@@ -330,8 +330,8 @@ class CalendarTest(GigTestBase):
         c = Client()
         c.force_login(self.joeuser)
 
-        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone.utc)
-        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone.utc)
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, dttimezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, dttimezone.utc)
         response = c.get(reverse('calendar-events', args=[self.band.id]), data={
             'start': startdate.isoformat(),
             'end': enddate.isoformat(),
@@ -351,8 +351,8 @@ class CalendarTest(GigTestBase):
 
         c = Client()
         c.force_login(self.joeuser)
-        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone.utc)
-        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone.utc)
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, dttimezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, dttimezone.utc)
         response = c.get(reverse('calendar-events', args=[self.band.id]), data={
             'start': startdate.isoformat(),
             'end': enddate.isoformat(),
@@ -373,8 +373,8 @@ class CalendarTest(GigTestBase):
 
         c = Client()
         c.force_login(self.joeuser)
-        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, timezone.utc)
-        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, timezone.utc)
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, dttimezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, dttimezone.utc)
         response = c.get(reverse('calendar-events', args=[self.band.id]), data={
             'start': startdate.isoformat(),
             'end': enddate.isoformat(),

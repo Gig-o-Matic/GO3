@@ -24,7 +24,7 @@ from .models import Gig, Plan, GigComment
 from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone as dttimezone
 from django.urls import reverse
 from django.utils import timezone
 from pytz import utc, timezone as pytimezone
@@ -508,7 +508,7 @@ class GigTest(GigTestBase):
         )
         g = self.create_gig_form()
         g.member_plans.update(
-            snooze_until=utc.localize(datetime.now())
+            snooze_until=timezone.localtime(timezone=dttimezone.utc)
         )
         mail.outbox = []
         send_snooze_reminders()
@@ -527,7 +527,7 @@ class GigTest(GigTestBase):
             member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
         )
         g = self.create_gig_form()
-        now = utc.localize(datetime.now())
+        now = timezone.localtime(timezone=dttimezone.utc)
         g.member_plans.filter(assoc=joeassoc).update(snooze_until=now)
         g.member_plans.filter(assoc=janeassoc).update(
             snooze_until=now + timedelta(days=2)
@@ -545,7 +545,7 @@ class GigTest(GigTestBase):
             member=self.janeuser, band=self.band, status=AssocStatusChoices.CONFIRMED
         )
         g = self.create_gig_form()
-        now = datetime.now(tz=utc)
+        now = timezone.localtime(timezone=dttimezone.utc)
         g.member_plans.filter(assoc=a).update(snooze_until=now+timedelta(days=2))
         mail.outbox = []
         send_snooze_reminders()
@@ -728,7 +728,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_snooze_long(self):
-        now = datetime.now().replace(tzinfo=None)
+        now = timezone.now().replace(tzinfo=None)
         _, _, p = self.assoc_joe_and_create_gig()
         response = self.client.get(
             reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
@@ -740,7 +740,7 @@ class GigTest(GigTestBase):
         self.assertGreaterEqual((p.snooze_until.date() - now.date()).days, 7)
 
     def test_answer_snooze_short(self):
-        now = datetime.now().replace(tzinfo=None)
+        now = timezone.now().replace(tzinfo=None)
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = now.date() + timedelta(days=3)
         response = self.client.get(
@@ -754,7 +754,7 @@ class GigTest(GigTestBase):
 
     def test_answer_snooze_too_short(self):
         g, _, p = self.assoc_joe_and_create_gig()
-        g.date = datetime.now() + timedelta(days=1)
+        g.date = timezone.now() + timedelta(days=1)
         g.save()
         response = self.client.get(
             reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
@@ -766,7 +766,7 @@ class GigTest(GigTestBase):
         self.assertEqual(p.snooze_until, None)
 
     def test_answer_unsets_snooze_until(self):
-        now = utc.localize(datetime.now())
+        now = timezone.localtime(timezone=dttimezone.utc)
         _, _, p = self.assoc_joe_and_create_gig()
         p.status = PlanStatusChoices.DONT_KNOW
         p.snooze_until = now
@@ -790,7 +790,7 @@ class GigTest(GigTestBase):
         )
 
     def test_date_only(self):
-        future_date = datetime.now() + timedelta(days=7)
+        future_date = timezone.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
             call_date=future_date.strftime("%m/%d/%Y"), call_time="")
         self.assertDateEqual(
@@ -798,7 +798,7 @@ class GigTest(GigTestBase):
         )
 
     def test_dates_only(self):
-        future_start_date = datetime.now() + timedelta(days=7)
+        future_start_date = timezone.now() + timedelta(days=7)
         future_end_date = future_start_date + timedelta(days=1)
         g, _, _ = self.assoc_joe_and_create_gig(
             call_date=future_start_date.strftime("%m/%d/%Y"), call_time="", end_date=future_end_date.strftime("%m/%d/%Y")
@@ -810,7 +810,7 @@ class GigTest(GigTestBase):
         self.assertIsNone(g.enddate)
 
     def test_times(self):
-        future_date = datetime.now() + timedelta(days=7)
+        future_date = timezone.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
             call_date=future_date.strftime("%m/%d/%Y"),
             call_time="12:00 pm",
@@ -828,7 +828,7 @@ class GigTest(GigTestBase):
         )
 
     def test_settime_order(self):
-        future_date = datetime.now() + timedelta(days=7)
+        future_date = timezone.now() + timedelta(days=7)
         # because set time is before call time,
         # this should fail and reload the edit page - response code 200
         _, _, _ = self.assoc_joe_and_create_gig(
@@ -839,7 +839,7 @@ class GigTest(GigTestBase):
         )
 
     def test_endtime_order(self):
-        future_date = datetime.now() + timedelta(days=7)
+        future_date = timezone.now() + timedelta(days=7)
         # because end time is before call time,
         # should fail and reload the edit page - response code 200
         _, _, _ = self.assoc_joe_and_create_gig(
@@ -850,7 +850,7 @@ class GigTest(GigTestBase):
         )
 
     def test_gig_date_in_past(self):
-        past_date = datetime.now() - timedelta(days=7)
+        past_date = timezone.now() - timedelta(days=7)
         # because gig date is in the past,
         # should fail and reload the edit page - response code 200
         _, _, _ = self.assoc_joe_and_create_gig(
@@ -1209,7 +1209,7 @@ class GigTest(GigTestBase):
         self.assertEqual(g.has_call_time, True)
 
     def test_gig_default_full_day_without_times(self):
-        future_date = datetime.now() + timedelta(days=7)
+        future_date = timezone.now() + timedelta(days=7)
         g, _, _ = self.assoc_joe_and_create_gig(
             call_date=future_date.strftime("%m/%d/%Y"), call_time="",
             set_date=future_date.strftime("%m/%d/%Y"), set_time="",
