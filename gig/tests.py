@@ -73,7 +73,7 @@ class GigTestBase(TestCase):
         end_date="auto",
     ):
         thedate = (
-            datetime(2100, 1, 2, 12, tzinfo=None)
+            datetime(2100, 1, 2, 12, tzinfo=pytimezone("US/Eastern"))
             if start_date == "auto"
             else start_date
         )
