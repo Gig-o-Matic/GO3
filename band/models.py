@@ -56,6 +56,7 @@ class Band(models.Model):
 
     simple_planning = models.BooleanField(default=False)
     plan_feedback = models.TextField(max_length=500, blank=True, null=True)
+    api_key = models.CharField(max_length=200, null=True, blank=True)
 
     @property
     def feedback_strings(self):
@@ -130,6 +131,10 @@ class Band(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse("band-detail", kwargs={"pk": self.pk})
+    
+    def save(self, *args, **kwargs):
+        self.api_key = self.api_key or uuid.uuid4()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
