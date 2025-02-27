@@ -5,7 +5,7 @@ from band.models import Band
 
 router = Router()
 
-@router.get("/all")
+@router.get("")
 def list_all_gigs(request):
     api_key = request.auth
     band = Band.objects.get(api_key=api_key)
