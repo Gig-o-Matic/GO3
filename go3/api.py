@@ -1,5 +1,5 @@
 from django.conf import settings
-from ninja import NinjaAPI
+from ninja import NinjaAPI, Redoc
 from ninja.security import APIKeyHeader
 
 from band.models import Band
@@ -28,6 +28,6 @@ class BandAPIKey(APIKeyHeader):
         return None
     
 
-api = NinjaAPI(auth=BandAPIKey())
+api = NinjaAPI(auth=BandAPIKey(), docs=Redoc())
 
 api.add_router("/gigs", gig_router)
