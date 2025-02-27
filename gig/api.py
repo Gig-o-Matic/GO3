@@ -21,8 +21,8 @@ class GigAPIKey(APIKeyHeader):
         :param key: value of the header
         :return: str or None
         """
-        # if settings.DEBUG:
-        #     return key
+        if settings.DEBUG:
+            return key
         band = Band.objects.filter(api_key=key).first()
         if band:
             return key
