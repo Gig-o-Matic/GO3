@@ -6,7 +6,7 @@ from band.models import Band
 from gig.api import router as gig_router
 
 
-class GigAPIKey(APIKeyHeader):
+class BandAPIKey(APIKeyHeader):
     param_name = "X-API-Key"
 
     def authenticate(self, request, key):
@@ -28,6 +28,6 @@ class GigAPIKey(APIKeyHeader):
         return None
     
 
-api = NinjaAPI(auth=GigAPIKey())
+api = NinjaAPI(auth=BandAPIKey())
 
 api.add_router("/gigs", gig_router)
