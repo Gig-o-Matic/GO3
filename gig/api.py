@@ -26,11 +26,11 @@ class GigSchema(ModelSchema):
 
     class Meta:
         model = Gig
-        # fields = "__all__"
         fields = [
             "datenotes",
             "title",
             "details",
+            "setlist",
             "dress",
             "paid",
             "postgig",
@@ -80,8 +80,8 @@ class GigListResponse(Schema):
 
 
 class GigFilterSchema(FilterSchema):
-    gig_status: Optional[str] = Field(None, description="Filter by gig status")
-    member_status: Optional[str] = Field(None, description="Filter by member status")
+    gig_status: Optional[int] = Field(None, description="Filter by gig status")
+    member_status: Optional[int] = Field(None, description="Filter by member status")
 
 @router.get("", response={200: GigListResponse, 401: Message})
 def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
@@ -105,7 +105,7 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
     if band:
         read_key = band.read_api_key
         write_key = band.write_api_key
-        key_type = f"band ({'read' if read_key == api_key else 'write'})"
+        key_type = f"band ({'read' if read_key == api_key else 'read/write'})"
         # get all gigs for the band
         if filters.gig_status:
             gigs = band.gigs.filter(status=filters.gig_status)
@@ -116,11 +116,20 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
         # get all future gigs for the member
         plans = member.future_plans
         gigs = Member.objects.none()
+        gig = None
         for plan in plans:
-            gig = Gig.objects.filter(pk=plan.gig_id).first()
+            if filters.member_status:
+                if plan.status == filters.member_status:
+                    gig = Gig.objects.filter(pk=plan.gig_id).first()
+                else:
+                    gig = None
+            elif filters.gig_status:
+                gig = Gig.objects.filter(pk=plan.gig_id, status=filters.gig_status).first()
+            else:
+                gig = Gig.objects.filter(pk=plan.gig_id).first()
             if gig:
                 gigs |= Gig.objects.filter(pk=gig.pk)
-    return {"key_type": key_type, "count": gigs.count(), "gigs": filters.filter(gigs) if gigs else []}
+    return {"key_type": key_type, "count": gigs.count(), "gigs": gigs if gigs else []}
 
 @router.get("/member_status_choices", response={200: List[dict]})
 def member_status_choices(request):
