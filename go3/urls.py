@@ -44,7 +44,7 @@ from go3.schema import schema
 from member.helpers import go2_id_calfeed
 from member.views import LanguageLoginView
 
-from . import api
+from .api import api
 from .views import error404, error500, test404
 
 urlpatterns = [
@@ -65,7 +65,7 @@ urlpatterns = [
     # Backward compatibility with old GO2 cal feed
     path('cal/m/<slug:go2_id>', go2_id_calfeed),
     path('login', RedirectView.as_view(url='accounts/login', permanent=True)),
-    path('api/', api.api.urls),
+    path('api/', api.urls),
 ]
 
 handler404 = error404
