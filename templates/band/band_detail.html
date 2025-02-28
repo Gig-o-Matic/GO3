@@ -95,11 +95,17 @@
                     <div class="col-sm-9 col-12">
                             <a href="{% url 'band-calfeed' pk=band.pub_cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
                     </div>
-                    <div class="col-sm-3 col-12">API Key</div>
-                    <div class="col-sm-9 col-12">
-                            {{ band.api_key }}
-                    </div>
                 </div>
+                <div class="row mt-3">
+                    <div class="col-sm-3 col-12"><p>Read API Key</p></div>
+                    <div class="col-sm-9 col-12"><p>{{ band.read_api_key }}</p></div>
+                </div>
+                {% if request.user.is_superuser or the_user_is_band_admin %}
+                    <div class="row">
+                        <div class="col-sm-3 col-12"><p>Read/Write API Key</p></div>
+                        <div class="col-sm-9 col-12"><p>{{ band.write_api_key }}</p></div>
+                    </div>
+                {% endif %}
             </div> <!-- card-body -->
         </div> <!-- card -->
 
