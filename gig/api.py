@@ -115,20 +115,17 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
         key_type = "member"
         # get all future gigs for the member
         plans = member.future_plans
-        gigs = Member.objects.none()
-        gig = None
+        gigs = Gig.objects.none()
         for plan in plans:
             if filters.member_status:
-                if plan.status == filters.member_status:
-                    gig = Gig.objects.filter(pk=plan.gig_id).first()
+                if plan.status != filters.member_status:
+                    gig_qs = Gig.objects.none()
                 else:
-                    gig = None
-            elif filters.gig_status:
-                gig = Gig.objects.filter(pk=plan.gig_id, status=filters.gig_status).first()
-            else:
-                gig = Gig.objects.filter(pk=plan.gig_id).first()
-            if gig:
-                gigs |= Gig.objects.filter(pk=gig.pk)
+                    gig_qs = Gig.objects.filter(pk=plan.gig_id)
+            if filters.gig_status:
+                gig_qs = gig_qs.filter(status=filters.gig_status).first()
+            if gig_qs:
+                gigs |= gig_qs
     return {"key_type": key_type, "count": gigs.count(), "gigs": gigs if gigs else []}
 
 @router.get("/member_status_choices", response={200: List[dict]})
