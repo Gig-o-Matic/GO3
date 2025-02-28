@@ -116,9 +116,6 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
         # get all future gigs for the member
         plans = member.future_plans
         gigs = Member.objects.none()
-        member_plan = request.GET.get("plan")
-        if member_plan:
-            plans = plans.filter(status=member_plan)
         for plan in plans:
             gig = Gig.objects.filter(pk=plan.gig_id).first()
             if gig:
