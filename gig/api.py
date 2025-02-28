@@ -82,7 +82,6 @@ class GigListResponse(Schema):
 class GigFilterSchema(FilterSchema):
     gig_status: Optional[str] = Field(None, description="Filter by gig status")
     member_status: Optional[str] = Field(None, description="Filter by member status")
-    plan: Optional[str] = Field(None, description="Filter by plan")
 
 @router.get("", response={200: GigListResponse, 401: Message})
 def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
