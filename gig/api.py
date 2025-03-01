@@ -1,12 +1,15 @@
+from typing import List, Optional
+
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
-from ninja import Field, FilterSchema, Router, ModelSchema, Query, Schema
-from typing import List, Optional
+from ninja import Field, FilterSchema, ModelSchema, Query, Router, Schema
+from ninja.responses import codes_4xx
+
 from band.models import Band
 from gig.models import Gig
 from gig.util import GigStatusChoices, PlanStatusChoices
 from member.models import Member
-from ninja.responses import codes_4xx
 
 router = Router()
 
@@ -94,8 +97,8 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
 
     Key type is determined by the API key used for authentication and displayed for informational purposes.
     """
-    api_key = request.auth
-    band = Band.objects.filter(read_api_key=api_key).first() or Band.objects.filter(write_api_key=api_key).first()
+    api_key = request.auth.get("key")
+    band = Band.objects.filter(Q(read_api_key=api_key) | Q(write_api_key=api_key)).first()
     member = Member.objects.filter(api_key=api_key).first()
     if not band and not member:
         return JsonResponse({"message": "Unauthorized"}, status=401)
@@ -103,16 +106,12 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
 
     gigs = []
     if band:
-        read_key = band.read_api_key
-        write_key = band.write_api_key
-        key_type = f"band ({'read' if read_key == api_key else 'read/write'})"
         # get all gigs for the band
         if filters.gig_status:
             gigs = band.gigs.filter(status=filters.gig_status)
         else:
             gigs = band.gigs.all()
     else:
-        key_type = "member"
         # get all future gigs for the member
         plans = member.future_plans
         gigs = Gig.objects.none()
@@ -122,11 +121,14 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
                     gig_qs = Gig.objects.none()
                 else:
                     gig_qs = Gig.objects.filter(pk=plan.gig_id)
+            else:
+                gig_qs = Gig.objects.filter(pk=plan.gig_id)
+
             if filters.gig_status:
-                gig_qs = gig_qs.filter(status=filters.gig_status).first()
+                gig_qs = gig_qs.filter(status=filters.gig_status)
             if gig_qs:
                 gigs |= gig_qs
-    return {"key_type": key_type, "count": gigs.count(), "gigs": gigs if gigs else []}
+    return {"key_type": request.auth.get("key_type"), "count": gigs.count(), "gigs": gigs if gigs else []}
 
 @router.get("/member_status_choices", response={200: List[dict]})
 def member_status_choices(request):
@@ -140,6 +142,17 @@ def gig_status_choices(request):
 
 @router.get("/{gig_id}", response={200: GigSchema, 404: Message})
 def get_gig(request, gig_id: int):
-    """Retrieve a specific gig by its ID."""
-    gig = get_object_or_404(Gig, pk=gig_id)
-    return gig
+    """Retrieve a specific gig by its ID if it belongs to the authenticated band or member future plans."""
+    api_key = request.auth.get("key")
+    band = Band.objects.filter(Q(read_api_key=api_key) | Q(write_api_key=api_key)).first()
+    member = Member.objects.filter(api_key=api_key).first()
+
+    if band:
+        gig = band.gigs.filter(pk=gig_id).first()
+        if gig:
+            return gig
+    elif member:
+        plan = member.future_plans.filter(gig_id=gig_id).first()
+        if plan:
+            return plan.gig
+    return JsonResponse({"message": "Not found"}, status=404)
