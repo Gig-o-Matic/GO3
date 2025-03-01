@@ -200,6 +200,7 @@ class Member(AbstractUser):
     def save(self, *args, **kwargs):
         """ when creating members with a form, the usermanager isn't used so we have to override save """
         self.email = self.email.lower()
+        self.api_key = self.api_key or str(uuid.uuid4())
         # then super
         super().save(*args, **kwargs)
 
