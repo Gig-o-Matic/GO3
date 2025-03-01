@@ -104,7 +104,6 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
         return JsonResponse({"message": "Unauthorized"}, status=401)
 
 
-    gigs = []
     if band:
         # get all gigs for the band
         if filters.gig_status:
@@ -118,7 +117,7 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
         for plan in plans:
             if filters.member_status:
                 if plan.status != filters.member_status:
-                    gig_qs = Gig.objects.none()
+                    continue
                 else:
                     gig_qs = Gig.objects.filter(pk=plan.gig_id)
             else:
@@ -126,7 +125,7 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
 
             if filters.gig_status:
                 gig_qs = gig_qs.filter(status=filters.gig_status)
-            if gig_qs:
+            if gig_qs.exists():
                 gigs |= gig_qs
     return {"key_type": request.auth.get("key_type"), "count": gigs.count(), "gigs": gigs if gigs else []}
 
