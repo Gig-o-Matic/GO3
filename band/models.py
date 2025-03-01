@@ -138,6 +138,7 @@ class Band(models.Model):
     
     def save(self, *args, **kwargs):
         self.read_api_key = self.read_api_key or uuid.uuid4()
+        self.write_api_key = self.write_api_key or uuid.uuid4()
         super().save(*args, **kwargs)
 
     def __str__(self):
