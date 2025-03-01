@@ -15,20 +15,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import uuid
-
-import pytz
-from django.apps import apps
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.utils import timezone
-
 from go3.colors import the_colors
+from .util import BandStatusChoices, AssocStatusChoices
+from member.util import MemberStatusChoices, AgendaChoices
+from django.apps import apps
+from django.utils import timezone
+import pytz
+import uuid
 from go3.settings import LANGUAGES
-from member.util import AgendaChoices, MemberStatusChoices
-
-from .util import AssocStatusChoices, BandStatusChoices
 
 
 class Band(models.Model):
@@ -59,8 +56,6 @@ class Band(models.Model):
 
     simple_planning = models.BooleanField(default=False)
     plan_feedback = models.TextField(max_length=500, blank=True, null=True)
-    read_api_key = models.CharField(max_length=200, null=True, blank=True)
-    write_api_key = models.CharField(max_length=200, null=True, blank=True)
 
     @property
     def feedback_strings(self):
@@ -135,11 +130,6 @@ class Band(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse("band-detail", kwargs={"pk": self.pk})
-    
-    def save(self, *args, **kwargs):
-        self.read_api_key = self.read_api_key or str(uuid.uuid4())
-        self.write_api_key = self.write_api_key or str(uuid.uuid4())
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

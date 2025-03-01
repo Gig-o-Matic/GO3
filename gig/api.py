@@ -7,7 +7,7 @@ from ninja import Field, FilterSchema, ModelSchema, Query, Router, Schema
 from ninja.responses import codes_4xx
 
 from band.models import Band
-from gig.models import Gig
+from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
 from member.models import Member
 
@@ -17,7 +17,8 @@ class Message(Schema):
     message: str
 
 class GigSchema(ModelSchema):
-    id: int 
+    id: int
+    member_status: str
     band: Optional[str] = None
     contact: Optional[str] = None
     leader: Optional[str] = None
@@ -25,7 +26,7 @@ class GigSchema(ModelSchema):
     call_time: Optional[str] = None
     set_time: Optional[str] = None
     end_time: Optional[str] = None
-    status: Optional[str] = None
+    gig_status: Optional[str] = None
 
     class Meta:
         model = Gig
@@ -42,6 +43,18 @@ class GigSchema(ModelSchema):
             "is_archived",
             "is_private",
         ]
+
+    @staticmethod
+    def resolve_member_status(obj, context):
+        plans = obj.member_plans
+        if plans:
+            auth_key = context.get("request").auth.get("key")
+            member = Member.objects.filter(api_key=auth_key).first()
+            if member:
+                plan = plans.filter(assoc__member=member).first()
+                if plan:
+                    return next((str(choice[1]) for choice in PlanStatusChoices.choices if choice[0] == plan.status), "Unconfirmed")
+        return "Unconfirmed"
 
     @staticmethod
     def resolve_band(obj):
@@ -72,66 +85,56 @@ class GigSchema(ModelSchema):
         return obj.enddate.strftime("%H:%M") if obj.enddate else ""
 
     @staticmethod
-    def resolve_status(obj):
+    def resolve_gig_status(obj):
         return next((str(choice[1]) for choice in GigStatusChoices.choices if choice[0] == obj.status), "Unconfirmed")
 
 
 class GigListResponse(Schema):
-    key_type: str
     count: int
     gigs: List[GigSchema]
 
 
 class GigFilterSchema(FilterSchema):
     gig_status: Optional[int] = Field(None, description="Filter by gig status")
-    member_status: Optional[int] = Field(None, description="Filter by member status")
+    plan_status: Optional[int] = Field(None, description="Filter by plan status")
 
 @router.get("", response={200: GigListResponse, 401: Message})
 def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
     """
     Retrieve a list of all gigs.
 
-    This endpoint retrieves a list of all gigs. The list can be filtered by gig status, member status, and plan.
+    This endpoint retrieves a list of all gigs. The list can be filtered by gig status, member status.
 
     If the API key belongs to a band, the endpoint will return all gigs for that band. If the API key belongs to a member, the endpoint will return all future gigs for that member.
 
     Key type is determined by the API key used for authentication and displayed for informational purposes.
     """
     api_key = request.auth.get("key")
-    band = Band.objects.filter(Q(read_api_key=api_key) | Q(write_api_key=api_key)).first()
     member = Member.objects.filter(api_key=api_key).first()
-    if not band and not member:
+    if not member:
         return JsonResponse({"message": "Unauthorized"}, status=401)
-
-
-    if band:
-        # get all gigs for the band
-        if filters.gig_status:
-            gigs = band.gigs.filter(status=filters.gig_status)
-        else:
-            gigs = band.gigs.all()
     else:
-        # get all future gigs for the member
-        plans = member.future_plans
+        # get all gigs for the member
+        plans = Plan.objects.filter(assoc__member=member)
         gigs = Gig.objects.none()
         for plan in plans:
-            if filters.member_status:
-                if plan.status != filters.member_status:
+            if filters.plan_status in [status[0] for status in PlanStatusChoices.choices]:
+                if plan.status != filters.plan_status:
                     continue
                 else:
                     gig_qs = Gig.objects.filter(pk=plan.gig_id)
             else:
                 gig_qs = Gig.objects.filter(pk=plan.gig_id)
 
-            if filters.gig_status:
+            if filters.gig_status in [status[0] for status in GigStatusChoices.choices]:
                 gig_qs = gig_qs.filter(status=filters.gig_status)
             if gig_qs.exists():
                 gigs |= gig_qs
-    return {"key_type": request.auth.get("key_type"), "count": gigs.count(), "gigs": gigs if gigs else []}
+    return {"count": gigs.count(), "gigs": gigs if gigs else []}
 
-@router.get("/member_status_choices", response={200: List[dict]})
-def member_status_choices(request):
-    """Retrieve the available member status choices."""
+@router.get("/plan_status_choices", response={200: List[dict]})
+def plan_status_choices(request):
+    """Retrieve the available plan status choices."""
     return [{"id": status[0], "name": status[1]} for status in PlanStatusChoices.choices]
 
 @router.get("/gig_status_choices", response={200: List[dict]})
@@ -141,17 +144,15 @@ def gig_status_choices(request):
 
 @router.get("/{gig_id}", response={200: GigSchema, 404: Message})
 def get_gig(request, gig_id: int):
-    """Retrieve a specific gig by its ID if it belongs to the authenticated band or member future plans."""
+    """Retrieve a specific gig by its ID if it belongs to the authenticated member plans."""
     api_key = request.auth.get("key")
-    band = Band.objects.filter(Q(read_api_key=api_key) | Q(write_api_key=api_key)).first()
     member = Member.objects.filter(api_key=api_key).first()
 
-    if band:
-        gig = band.gigs.filter(pk=gig_id).first()
+    if member:
+        gig = Gig.objects.filter(pk=gig_id).first()
         if gig:
-            return gig
-    elif member:
-        plan = member.future_plans.filter(gig_id=gig_id).first()
-        if plan:
-            return plan.gig
+            plan = Plan.objects.filter(gig=gig, assoc__member
+            =member).first()
+            if plan:
+                return gig
     return JsonResponse({"message": "Not found"}, status=404)
