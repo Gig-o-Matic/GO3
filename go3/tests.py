@@ -12,16 +12,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.test import RequestFactory, TestCase
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
-from ninja.testing import TestClient
 
-from go3.api import api
 from member.models import Member
-
-from .settings import LANGUAGES
 
 
 class LanguageTest(TestCase):
