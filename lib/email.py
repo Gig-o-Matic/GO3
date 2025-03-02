@@ -2,10 +2,11 @@ from dataclasses import dataclass
 
 from django.core import mail
 from django.template.loader import render_to_string
-from django.utils import translation
+from django.utils import translation, timezone
 from django_q.tasks import async_task
 from markdown import markdown
 import email.utils
+import pytz
 
 from go3.settings import DEFAULT_FROM_EMAIL, DEFAULT_FROM_EMAIL_NAME, LANGUAGE_CODE, URL_BASE
 
@@ -45,11 +46,18 @@ def prepare_email(recipient, template, context=None, **kw):
     the_from = f'{the_from}<{DEFAULT_FROM_EMAIL}>'
 
     with translation.override(recipient.language):
-        text = render_to_string(template, context).strip()
+        try:
+            plan = context['plan']
+            with timezone.override(pytz.timezone(plan.assoc.band.timezone)):
+                    text = render_to_string(template, context).strip()
+        except KeyError:
+            text = render_to_string(template, context).strip()
+
     if text.startswith(SUBJECT):
         subject, text = [t.strip() for t in text[len(SUBJECT):].split('\n', 1)]
     else:
         subject = DEFAULT_SUBJECT
+
     html = markdown(text, extensions=['nl2br'])
 
     message = mail.EmailMultiAlternatives(subject, text, from_email=the_from, to=[recipient.email_line], **kw)

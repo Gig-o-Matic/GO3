@@ -27,7 +27,7 @@ from datetime import datetime
 import json
 from graphene_django.views import GraphQLView
 from django.utils.translation import gettext_lazy as _
-
+from django.utils import timezone
 
 
 @login_required
@@ -42,6 +42,11 @@ def AgendaSelector(request):
         request.user.preferences.save()
     except KeyError:
         pass
+
+    if request.user:
+        request.session["django_timezone"] = request.user.preferences.current_timezone
+        timezone.activate(request.user.preferences.current_timezone)
+
 
     view_selector = {
         AgendaChoices.AGENDA: AgendaView,
