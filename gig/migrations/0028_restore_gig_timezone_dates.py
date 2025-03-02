@@ -18,20 +18,17 @@ def restore_dates(apps, schema_editor):
     Gig = apps.get_model('gig', 'Gig')
     for g in Gig.objects.all():
 
+        """ 
+        There was no safe date, so this gig must be too new. In that case,
+        use the band's timezone to shift whatever the date is to the right timezone
+        """
+        zone = pytz.timezone(g.band.timezone)
+        g.date = _shift(g.date, zone)
+        g.setdate = _shift(g.setdate, zone) if g.setdate else None
+        g.enddate = _shift(g.enddate, zone) if g.enddate else None
+
         if g.safe_date:
-            """ there was a safe date, so we use it """
-            g.date = g.safe_date
-            g.setdate = g.safe_setdate
-            g.enddate = g.safe_enddate
-        else:
-            """ 
-            There was no safe date, so this gig must be too new. In that case,
-            use the band's timezone to shift whatever the date is to the right timezone
-            """
-            zone = pytz.timezone(g.band.timezone)
-            g.date = _shift(g.date, zone)
-            g.setdate = _shift(g.setdate, zone) if g.setdate else None
-            g.enddate = _shift(g.enddate, zone) if g.enddate else None
+            assert(g.safe_date == g.date)
 
 
         g.save()
