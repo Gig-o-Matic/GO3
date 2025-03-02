@@ -27,10 +27,6 @@ def restore_dates(apps, schema_editor):
         g.setdate = _shift(g.setdate, zone) if g.setdate else None
         g.enddate = _shift(g.enddate, zone) if g.enddate else None
 
-        if g.safe_date:
-            assert(g.safe_date == g.date)
-
-
         g.save()
 
 def unrestore_dates(apps, schema_editor):
