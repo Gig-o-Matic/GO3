@@ -71,6 +71,7 @@ def verify_requestor_is_in_user_band(request, user):
     return True
 
 
+@login_required
 def generate_api_key(request):
     user = request.user
     verify_requester_is_user(request, user)
@@ -79,6 +80,7 @@ def generate_api_key(request):
     return redirect('member-detail', pk=user.id)
     
 
+@login_required
 def revoke_api_key(request):
     user = request.user
     verify_requester_is_user(request, user)
