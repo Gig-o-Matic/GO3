@@ -105,7 +105,7 @@ class Member(AbstractUser):
     # used for testing new features on a few people
     is_beta_tester = models.BooleanField(default=False)
 
-    api_key = models.CharField(max_length=200, blank=True, null=True)
+    api_key = models.CharField(max_length=40, blank=True, null=True)
 
     @property
     def member_name(self):
@@ -200,7 +200,6 @@ class Member(AbstractUser):
     def save(self, *args, **kwargs):
         """ when creating members with a form, the usermanager isn't used so we have to override save """
         self.email = self.email.lower()
-        self.api_key = self.api_key or str(uuid.uuid4())
         # then super
         super().save(*args, **kwargs)
 
