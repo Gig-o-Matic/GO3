@@ -39,7 +39,7 @@ class ErrorTest(TestCase):
 
 class TestGO3API(TestCase):
     def setUp(self):
-        self.member = Member.objects.create_user('a@b.com', password='abc')
+        self.member = Member.objects.create_user('a@b.com', password='abc', api_key="test")
 
     def test_missing_api_key(self):
         response = self.client.get(reverse("api-1.0.0:whoami"))
