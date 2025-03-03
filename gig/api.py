@@ -1,15 +1,17 @@
 from typing import List, Optional
 
-from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import get_list_or_404, get_object_or_404
 from ninja import Field, FilterSchema, ModelSchema, Query, Router, Schema
-from ninja.responses import codes_4xx
 
-from band.models import Band
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
 from member.models import Member
+
+class CannotResolveMemberStatus(Exception):
+    pass
+
+class CannotResolveGigStatus(Exception):
+    pass
 
 router = Router()
 
@@ -53,8 +55,11 @@ class GigSchema(ModelSchema):
             if member:
                 plan = plans.filter(assoc__member=member).first()
                 if plan:
-                    return next((str(choice[1]) for choice in PlanStatusChoices.choices if choice[0] == plan.status), "Unconfirmed")
-        return "Unconfirmed"
+                    try:
+                        return next((str(choice[1]) for choice in PlanStatusChoices.choices if choice[0] == plan.status))
+                    except StopIteration:
+                        raise CannotResolveMemberStatus
+        raise CannotResolveMemberStatus
 
     @staticmethod
     def resolve_band(obj):
@@ -86,7 +91,11 @@ class GigSchema(ModelSchema):
 
     @staticmethod
     def resolve_gig_status(obj):
-        return next((str(choice[1]) for choice in GigStatusChoices.choices if choice[0] == obj.status), "Unconfirmed")
+        
+        try:
+            return next((str(choice[1]) for choice in GigStatusChoices.choices if choice[0] == obj.status))
+        except StopIteration:
+            raise CannotResolveGigStatus
 
 
 class GigListResponse(Schema):
