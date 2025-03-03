@@ -1300,3 +1300,17 @@ class MemberSecurityTest(GigTestBase):
         self.assoc_user(self.janeuser)
         response = c.get(reverse("member-detail", args=[self.janeuser.id]))
         self.assertEqual(response.status_code, 200)
+
+
+class APIKeyTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.member = Member.objects.create_user(
+            email='member@example.com', password='password123'
+        )
+
+    def test_generate_api_view(self):
+        self.assertFalse(self.member.api_key)
+        self.client.force_login(self.member)
+        self.client.get(reverse('member-generate-api-key'))
+        self.assertTrue(self.member.api_key)
