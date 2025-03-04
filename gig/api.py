@@ -19,8 +19,11 @@ class Message(Schema):
     message: str
 
 class GigSchema(ModelSchema):
+    """
+        Gig schema for serialization. Resolves the plan status and gig status to human-readable strings. Asserts that response contains defined fields.
+    """
     id: int
-    member_status: str
+    plan_status: str
     band: Optional[str] = None
     contact: Optional[str] = None
     leader: Optional[str] = None
@@ -47,7 +50,7 @@ class GigSchema(ModelSchema):
         ]
 
     @staticmethod
-    def resolve_member_status(obj, context):
+    def resolve_plan_status(obj, context):
         plans = obj.member_plans
         if plans:
             auth_key = context.get("request").auth.get("key")
@@ -104,10 +107,13 @@ class GigListResponse(Schema):
 
 
 class GigFilterSchema(FilterSchema):
+    """
+        Filter by gig status and plan status. Validates the filter parameters by type, and returns a 422 error if the filter is invalid.
+    """
     gig_status: Optional[int] = Field(None, description="Filter by gig status")
     plan_status: Optional[int] = Field(None, description="Filter by plan status")
 
-@router.get("", response={200: GigListResponse, 401: Message})
+@router.get("", response={200: GigListResponse, 401: Message, 422: Message})
 def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
     """
     Retrieve a list of all gigs.
@@ -125,20 +131,11 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
     else:
         # get all gigs for the member
         plans = Plan.objects.filter(assoc__member=member)
-        gigs = Gig.objects.none()
-        for plan in plans:
-            if filters.plan_status in [status[0] for status in PlanStatusChoices.choices]:
-                if plan.status != filters.plan_status:
-                    continue
-                else:
-                    gig_qs = Gig.objects.filter(pk=plan.gig_id)
-            else:
-                gig_qs = Gig.objects.filter(pk=plan.gig_id)
-
-            if filters.gig_status in [status[0] for status in GigStatusChoices.choices]:
-                gig_qs = gig_qs.filter(status=filters.gig_status)
-            if gig_qs.exists():
-                gigs |= gig_qs
+        if filters.plan_status in [status[0] for status in PlanStatusChoices.choices]:
+            plans = plans.filter(status=filters.plan_status)
+        if filters.gig_status in [status[0] for status in GigStatusChoices.choices]:
+            plans = plans.filter(gig__status=filters.gig_status)
+        gigs = Gig.objects.filter(plans__in=plans).distinct()
     return {"count": gigs.count(), "gigs": gigs if gigs else []}
 
 @router.get("/plan_status_choices", response={200: List[dict]})
