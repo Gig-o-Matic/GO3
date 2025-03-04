@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from ninja import NinjaAPI, Schema
+from ninja.errors import ValidationError
 from ninja.security import APIKeyHeader
 
 from gig.api import router as gig_router
@@ -50,6 +51,10 @@ def invalid_api_key(request, exc):
 @api.exception_handler(MissingAPIKeyError)
 def missing_api_key(request, exc):
     return JsonResponse({"message": "Missing API key"}, status=401)
+
+@api.exception_handler(ValidationError)
+def invalid_filter(request, exc):
+    return JsonResponse({"message": "Invalid filter"}, status=422)
 
 
 @api.get("/whoami")
