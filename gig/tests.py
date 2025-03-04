@@ -1457,3 +1457,28 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("count"), 4)
+
+    def test_get_gig(self):
+        gig = self.create_gig(the_member=self.joeuser, title="get_gig test")
+        response = self.client.get(reverse("api-1.0.0:get_gig", args=[gig.id]), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("title"), "get_gig test")
+
+    def test_get_gig_not_found(self):
+        response = self.client.get(reverse("api-1.0.0:get_gig", args=[999]), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Not found")
+
+    def test_get_gig_status_choices(self):
+        response = self.client.get(reverse("api-1.0.0:gig_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data, [{"id": status[0], "name": status[1]} for status in GigStatusChoices.choices])
+
+    def test_get_plan_status_choices(self):
+        response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data, [{"id": status[0], "name": status[1]} for status in PlanStatusChoices.choices])
