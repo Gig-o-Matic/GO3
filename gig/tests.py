@@ -1376,3 +1376,72 @@ class GigSecurityTest(GigTestBase):
         c = Client()
         response = c.get(reverse("gig-update", args=[g.id]))
         self.assertEqual(response.status_code, 302) # fail if we're logged out
+
+
+class TestGigAPI(GigTestBase):
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.joeuser)
+        self.assoc_user(self.joeuser)
+        self.create_one_gig_of_each_status()
+        self.client.get(reverse("member-generate-api-key"))
+        self.joeuser.refresh_from_db()
+
+    def test_gigs(self):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("count"), 4)
+        self.assertEqual(data.get("gigs")[0].get("gig_status"), GigStatusChoices.UNCONFIRMED.label)
+        self.assertEqual(data.get("gigs")[1].get("gig_status"), GigStatusChoices.CANCELED.label)
+        self.assertEqual(data.get("gigs")[2].get("gig_status"), GigStatusChoices.CONFIRMED.label)
+        self.assertEqual(data.get("gigs")[3].get("gig_status"), GigStatusChoices.ASKING.label)
+
+        self.assertEqual(data.get("gigs")[0].get("title"), "Unconfirmed Gig-xyzzy")
+        self.assertEqual(data.get("gigs")[1].get("title"), "Canceled Gig-xyzzy")
+        self.assertEqual(data.get("gigs")[2].get("title"), "Confirmed Gig-xyzzy")
+        self.assertEqual(data.get("gigs")[3].get("title"), "Asking Gig-xyzzy")
+        for gig in data.get("gigs"):
+            self.assertEqual(gig.get("band"), self.band.name)
+            self.assertEqual(gig.get("contact"), self.joeuser.display_name)
+            self.assertEqual(gig.get("plan_status"), PlanStatusChoices.NO_PLAN.label)
+
+    def _gig_filter(self, gig_status, status_label):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": gig_status})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("count"), 1)
+        self.assertEqual(data.get("gigs")[0].get("gig_status"), status_label)
+        self.assertEqual(data.get("gigs")[0].get("title"), f"{status_label} Gig-xyzzy")
+
+    def test_gig_status_filter(self):
+        for status in GigStatusChoices.choices:
+            self._gig_filter(status[0], status[1])
+
+    def test_gig_status_filter_invalid(self):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": "INVALID"})
+        self.assertEqual(response.status_code, 422)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Invalid filter")
+
+    def _plan_status_filter(self, plan_status, status_label, expected_count):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": plan_status})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("count"), expected_count)
+        self.assertEqual(data.get("gigs")[0].get("plan_status"), status_label)
+
+    def test_plan_status_filter(self):
+        Gig.objects.all().delete()
+        for status in PlanStatusChoices.choices:
+            gig = self.create_gig(the_member=self.joeuser, title=f"plan_status {status[1]} Gig-xyzzy")
+            plan = Plan.objects.get(gig=gig, assoc__member=self.joeuser)
+            plan.status = status[0]
+            plan.save()
+            self._plan_status_filter(status[0], status[1], expected_count=1)
+
+    def test_plan_status_filter_invalid(self):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": "INVALID"})
+        self.assertEqual(response.status_code, 422)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Invalid filter")
