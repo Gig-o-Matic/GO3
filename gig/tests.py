@@ -1465,6 +1465,15 @@ class TestGigAPI(GigTestBase):
         data = response.json()
         self.assertEqual(data.get("title"), "get_gig test")
 
+    def test_get_gig_not_associated(self):
+        new_user = Member.objects.create_user(email="new@a.c", api_key="testkey")
+        self.client.force_login(new_user)
+        gig = self.create_gig(the_member=self.janeuser, title="no association test")
+        response = self.client.get(reverse("api-1.0.0:get_gig", args=[gig.id]), HTTP_X_API_KEY=new_user.api_key)
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Not found")
+
     def test_get_gig_not_found(self):
         response = self.client.get(reverse("api-1.0.0:get_gig", args=[999]), HTTP_X_API_KEY=self.joeuser.api_key)
         self.assertEqual(response.status_code, 404)
