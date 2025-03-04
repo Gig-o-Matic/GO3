@@ -1418,11 +1418,17 @@ class TestGigAPI(GigTestBase):
         for status in GigStatusChoices.choices:
             self._gig_filter(status[0], status[1])
 
-    def test_gig_status_filter_invalid(self):
+    def test_gig_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": "INVALID"})
         self.assertEqual(response.status_code, 422)
         data = response.json()
         self.assertEqual(data.get("message"), "Invalid filter")
+
+    def test_gig_status_filter_invalid_value(self):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": 999})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("count"), 4)
 
     def _plan_status_filter(self, plan_status, status_label, expected_count):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": plan_status})
@@ -1440,8 +1446,14 @@ class TestGigAPI(GigTestBase):
             plan.save()
             self._plan_status_filter(status[0], status[1], expected_count=1)
 
-    def test_plan_status_filter_invalid(self):
+    def test_plan_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": "INVALID"})
         self.assertEqual(response.status_code, 422)
         data = response.json()
         self.assertEqual(data.get("message"), "Invalid filter")
+
+    def test_plan_status_filter_invalid_value(self):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": 999})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("count"), 4)
