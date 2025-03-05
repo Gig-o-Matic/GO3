@@ -94,7 +94,6 @@ class GigSchema(ModelSchema):
 
     @staticmethod
     def resolve_gig_status(obj):
-        
         try:
             return next((str(choice[1]) for choice in GigStatusChoices.choices if choice[0] == obj.status))
         except StopIteration:
