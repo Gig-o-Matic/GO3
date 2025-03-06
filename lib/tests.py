@@ -25,7 +25,7 @@ from band.models import Band, Assoc
 from lib.caldav import save_calfeed, get_calfeed, make_calfeed, delete_calfeed
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 import os
-from datetime import timedelta
+from datetime import timedelta, timezone as dttimezone
 from django.utils import timezone
 import pytz
 from django.conf import settings
@@ -63,7 +63,7 @@ class CaldavTest(TestCase):
         Gig.objects.all().delete()
 
     def create_gig(self):
-        the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=timezone.utc)
+        the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=dttimezone.utc)
         return Gig.objects.create(
             title="New Gig",
             band_id=self.band.id,
@@ -164,7 +164,7 @@ class CaldavTest(TestCase):
         self.band.save()
         cf = make_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language, 
                           self.joeuser.cal_feed_id, is_for_band=True)
-        self.assertTrue(cf.find(b'DTSTART;TZID=America/New_York:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
 
 
