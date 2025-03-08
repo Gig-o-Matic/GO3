@@ -15,42 +15,34 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import secrets
-
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import (AccessMixin, LoginRequiredMixin,
-                                        UserPassesTestMixin)
-from django.contrib.auth.views import (LoginView, PasswordChangeDoneView,
-                                       PasswordResetView)
-from django.core.exceptions import PermissionDenied, ValidationError
-from django.core.validators import validate_email
-from django.http import (Http404, HttpResponse, HttpResponseNotFound,
-                         JsonResponse)
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-from django.utils import translation
-from django.utils.text import format_lazy
-from django.utils.translation import get_language_from_request
-from django.utils.translation import gettext_lazy as _
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
+from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
+from .models import Member, MemberPreferences, Invite, EmailConfirmation
+from band.models import Band, Assoc, AssocStatusChoices
+from member.util import MemberStatusChoices
+from lib.translation import join_trans
 from django.views import generic
 from django.views.decorators.http import require_POST
+from django.views.generic.edit import UpdateView as BaseUpdateView, CreateView, FormView
+from django.urls import reverse
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView, FormView
-from django.views.generic.edit import UpdateView as BaseUpdateView
-
-from band.models import Assoc, AssocStatusChoices, Band
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, AccessMixin
+from django.contrib.auth.views import PasswordChangeDoneView, PasswordResetView, LoginView
+from django.contrib import messages
 from go3.colors import the_colors
 from go3.settings import env
-from lib.captcha import get_captcha_site_key, verify_captcha
-from lib.translation import join_trans
-from member.util import MemberStatusChoices
-
-from .forms import InviteForm, MemberChangeForm, MemberCreateForm, SignupForm
-from .models import EmailConfirmation, Invite, Member, MemberPreferences
-
+from django.utils import translation
+from django.utils.text import format_lazy
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language_from_request
+from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect, render
+from django.core.validators import validate_email
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.http import Http404
+from lib.captcha import verify_captcha, get_captcha_site_key
 
 def verify_requester_is_user(request, user):
     if not (request.user.id==user.id or request.user.is_superuser):
@@ -69,24 +61,6 @@ def verify_requestor_is_in_user_band(request, user):
     if len(set(rbands) & set(ubands)) == 0:
         raise PermissionDenied
     return True
-
-
-@login_required
-def generate_api_key(request):
-    user = request.user
-    verify_requester_is_user(request, user)
-    user.api_key = secrets.token_urlsafe(30)
-    user.save()
-    return redirect('member-detail', pk=user.id)
-    
-
-@login_required
-def revoke_api_key(request):
-    user = request.user
-    verify_requester_is_user(request, user)
-    user.api_key = None
-    user.save()
-    return redirect('member-detail', pk=user.id)
 
 
 class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
