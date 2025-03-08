@@ -71,7 +71,7 @@ def set_plan_sections(sender, instance, created, **kwargs):
 
     # if this is the only band for the member, take on its timezone
     m = instance.member
-    if m.band_count == 1:
+    if m.preferences.current_timezone is None and m.band_count == 1:
         m.preferences.current_timezone = instance.band.timezone
         m.preferences.save()
 

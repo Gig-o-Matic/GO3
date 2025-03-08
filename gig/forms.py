@@ -20,8 +20,9 @@ from .models import Gig
 from band.models import Band
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime, timezone
+from datetime import datetime
 from django.utils.formats import get_format
+from django.utils import timezone
 import pytz
 
 class GigForm(forms.ModelForm):
@@ -35,9 +36,7 @@ class GigForm(forms.ModelForm):
             **kwargs
         )
 
-
-        # Keep track of the initial date so we can see if it changed in the form validation
-        self.initial['date'] = self.instance.date.replace(tzinfo=None) if self.instance.date else None
+        self.initial['date'] = self.instance.date
 
         if band is None and self.instance.band_id is not None:
             # TODO more robust checking, this form without a band doesn't make sense
@@ -58,6 +57,8 @@ class GigForm(forms.ModelForm):
         if band:
             self.fields['contact'].queryset = band.confirmed_members
 
+        # save the band so we can access it when cleaning the dates
+        self.band = band
 
     def clean(self):
         """
@@ -84,25 +85,34 @@ class GigForm(forms.ModelForm):
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
             return hour
 
+        def _make_aware(c,s,e):
+            z = pytz.timezone(self.band.timezone)
+            c = timezone.make_aware(c,z) if c else None
+            s = timezone.make_aware(s,z) if s else None
+            e = timezone.make_aware(e,z) if e else None
+            return c, s, e
+ 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         if date is None:
             self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
-
+        
         # first, check to see if this is full-day or not
         if self.cleaned_data.get('is_full_day'):
             # we're full day, so see if there's an end date
-            end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
+            enddate = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
 
             # since we are full day, ignore the times completely
             self.cleaned_data['has_call_time'] = False
             self.cleaned_data['has_set_time'] = False
             self.cleaned_data['has_end_time'] = False
 
+            date, setdate, enddate = _make_aware(date, None, enddate)
+
             self.cleaned_data['date'] = date
-            self.cleaned_data['setdate'] = None
-            self.cleaned_data['enddate'] = end_date
+            self.cleaned_data['setdate'] = setdate
+            self.cleaned_data['enddate'] = enddate
 
             # Skip the "gig in the past" validation if the date has not changed
             # This allows editing gig details after a gig has started
@@ -132,11 +142,13 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = not set_time is None
             self.cleaned_data['has_end_time'] = not end_time is None
 
-            date = _mergetime(date, call_time).replace(tzinfo=None)
-            setdate = _mergetime(date, set_time).replace(tzinfo=None) if set_time else None
-            enddate = _mergetime(date, end_time).replace(tzinfo=None) if end_time else None
+            date = _mergetime(date, call_time)
+            setdate = _mergetime(date, set_time) if set_time else None
+            enddate = _mergetime(date, end_time) if end_time else None
 
-            now = datetime.now(tz=pytz.timezone(self.user.timezone)).replace(tzinfo=None)
+            date, setdate, enddate = _make_aware(date, setdate, enddate)
+
+            now = timezone.now()
             if self.initial['date'] != date and date < now:
                 # well, this is utc datetime we're comparing to, so should really be adjust to the band's timezone.
                 self.add_error('call_date', ValidationError(_('Gig call time must be in the future'), code='invalid date'))

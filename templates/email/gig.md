@@ -1,4 +1,5 @@
 {% load i18n %}{% autoescape off %}
+{% load tz %}{% localtime on %}
 Subject: {% block subject %}{% endblock %}
 
 {% block opening %}{% endblock %}
@@ -37,4 +38,4 @@ Subject: {% block subject %}{% endblock %}
 {% blocktrans %}Gig info page is [here]({{url_base}}{{ gig_url }}).{% endblocktrans %}{% endblock answer %}
 
 {% blocktrans %}Thanks,
-The Gig-o-Matic Team{% endblocktrans %}{% endautoescape %}
+The Gig-o-Matic Team{% endblocktrans %}{% endlocaltime %}{% endautoescape %}
