@@ -1300,3 +1300,27 @@ class MemberSecurityTest(GigTestBase):
         self.assoc_user(self.janeuser)
         response = c.get(reverse("member-detail", args=[self.janeuser.id]))
         self.assertEqual(response.status_code, 200)
+
+
+class APIKeyTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.member = Member.objects.create_user(
+            email='member@example.com', password='password123'
+        )
+
+    def test_generate_api_token_view(self):
+        self.assertFalse(self.member.api_key)
+        self.client.force_login(self.member)
+        self.client.get(reverse('member-generate-api-key'))
+        self.member.refresh_from_db()
+        self.assertTrue(self.member.api_key)
+
+    def test_revoke_api_token_view(self):
+        self.member.api_key = "test"
+        self.member.save()
+        self.assertTrue(self.member.api_key)
+        self.client.force_login(self.member)
+        self.client.get(reverse('member-revoke-api-key'))
+        self.member.refresh_from_db()
+        self.assertFalse(self.member.api_key)
