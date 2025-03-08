@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from gig.models import Gig, Plan
-from gig.helpers import send_emails_from_plans
+from gig.helpers import send_emails_from_plans, send_watcher_email
 from member.models import Member
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -74,6 +74,8 @@ def alert_watchers():
 
     for m in members:
         m_plans = Plan.objects.filter(status_changed=True, gig__in=m.watching.all())
+        if m_plans:
+            send_watcher_email(m, m_plans)
 
     # finally, mark the plans seen
     Plan.objects.all().update(status_changed=False)

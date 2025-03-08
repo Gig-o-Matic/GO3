@@ -205,6 +205,13 @@ def notify_new_gig(gig, created, dates=None):
         async_task('gig.helpers.send_email_from_gig', gig,
                 'email/new_gig.md' if created else 'email/edited_gig.md')
 
+def send_watcher_email(member, plans):
+    context = {
+        'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
+    }
+    msg = prepare_email(member.as_email_recipient(), 'email/watcher_email.md', context)
+    send_messages_async([msg])
+
 @login_required
 @band_editor_required
 def gig_lock_plans(request, gig):
