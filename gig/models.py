@@ -25,8 +25,7 @@ from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 from .util import GigStatusChoices, PlanStatusChoices
 from member.util import MemberStatusChoices
-from django.utils.timezone import localtime
-from go3.datetime_without_timezone import DateTimeWithoutTimezoneField
+from django.utils import timezone
 
 
 class GigsManager(models.Manager):
@@ -46,7 +45,7 @@ class MemberPlanManager(models.Manager):
         return super().order_by('section')
 
     def future_plans(self, member):
-        time_for_user = datetime.now(tz=pytz.timezone(member.preferences.current_timezone)).replace(tzinfo=None)
+        time_for_user = timezone.now()
         recent_for_user = time_for_user - timedelta(hours=4) # for gigs with no end date
         yesterday_for_user = time_for_user.replace(hour=23, minute=59) - timedelta(days=1)
 
@@ -123,7 +122,7 @@ class AbstractEvent(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
-    date = DateTimeWithoutTimezoneField()
+    date = models.DateTimeField(null=True, blank=True)
     datenotes = models.TextField(null=True, blank=True)
     safe_date = models.DateTimeField(null=True)
 
@@ -176,8 +175,8 @@ class Gig(AbstractEvent):
     contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
     setlist = models.TextField(null=True, blank=True)
 
-    setdate = DateTimeWithoutTimezoneField(null=True, blank=True)
-    enddate = DateTimeWithoutTimezoneField(null=True, blank=True)
+    setdate = models.DateTimeField(null=True, blank=True)
+    enddate = models.DateTimeField(null=True, blank=True)
     safe_setdate = models.DateTimeField(null=True)
     safe_enddate = models.DateTimeField(null=True)
 

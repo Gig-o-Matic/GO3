@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load tz %}
 <nav class="navbar navbar-dark {% if DEBUG %} dev {% endif %} navbar-expand-md sticky-top" role="navigation">
   <a class="navbar-brand" href="/">Gig-<i class="far fa-heart"></i>-Matic</i></a>
   {% if not user.is_anonymous %}
@@ -74,7 +75,6 @@
         </li>
       {% endif %}
     </ul>
-
     <ul class="navbar-nav">
         <li class="nav-item {% if help_is_active %} active{% endif %} mr-2">
             <a class="nav-link" href="/help">{% trans "Help" %}</a>
