@@ -85,29 +85,34 @@ class GigForm(forms.ModelForm):
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
             return hour
 
+        def _make_aware(c,s,e):
+            z = pytz.timezone(self.band.timezone)
+            c = timezone.make_aware(c,z) if c else None
+            s = timezone.make_aware(s,z) if s else None
+            e = timezone.make_aware(e,z) if e else None
+            return c, s, e
+ 
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         if date is None:
             self.add_error('call_date', ValidationError(_('Date is not valid'), code='invalid date'))
             super().clean()
             return
         
-        date = timezone.make_aware(date,pytz.timezone(self.band.timezone))
-
         # first, check to see if this is full-day or not
         if self.cleaned_data.get('is_full_day'):
             # we're full day, so see if there's an end date
-            end_date = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
-            if end_date:
-                end_date = timezone.make_aware(end_date,pytz.timezone(self.band.timezone))
+            enddate = _parse(self.cleaned_data.get('end_date',''), 'DATE_INPUT_FORMATS')
 
             # since we are full day, ignore the times completely
             self.cleaned_data['has_call_time'] = False
             self.cleaned_data['has_set_time'] = False
             self.cleaned_data['has_end_time'] = False
 
+            date, setdate, enddate = _make_aware(date, None, enddate)
+
             self.cleaned_data['date'] = date
-            self.cleaned_data['setdate'] = None
-            self.cleaned_data['enddate'] = end_date
+            self.cleaned_data['setdate'] = setdate
+            self.cleaned_data['enddate'] = enddate
 
             # Skip the "gig in the past" validation if the date has not changed
             # This allows editing gig details after a gig has started
@@ -140,6 +145,8 @@ class GigForm(forms.ModelForm):
             date = _mergetime(date, call_time)
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
+
+            date, setdate, enddate = _make_aware(date, setdate, enddate)
 
             now = timezone.now()
             if self.initial['date'] != date and date < now:
