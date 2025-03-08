@@ -278,7 +278,7 @@
                         </div>
                         <div class="col-sm-9 col-12">
                             {% if member.api_key %}
-                                <p>{{ member.api_key }} <a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a></p>
+                                <p><a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a> {{ member.api_key }}</p>
                             {% else %}
                                 <a class="btn btn-primary btn-sm" href="{% url 'member-generate-api-key' %}">{% trans "Generate API Key" %}</a>
                             {% endif %}
