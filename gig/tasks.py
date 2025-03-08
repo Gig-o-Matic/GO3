@@ -16,6 +16,7 @@
 """
 from gig.models import Gig, Plan
 from gig.helpers import send_emails_from_plans
+from member.models import Member
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.db.models import Q
@@ -64,3 +65,15 @@ def send_snooze_reminders():
     send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
     unsnooze.update(snooze_until=None)
 
+
+def alert_watchers():
+    """ alert members who are watching gigs that plans have changed """
+
+    # first, get all the members who need to be alerted and tell them what's up
+    members = set(Member.objects.filter(watching__isnull=False))
+
+    for m in members:
+        m_plans = Plan.objects.filter(status_changed=True, gig__in=m.watching.all())
+
+    # finally, mark the plans seen
+    Plan.objects.all().update(status_changed=False)
