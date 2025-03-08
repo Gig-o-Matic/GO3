@@ -300,12 +300,12 @@ class PrintSetlistView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 def answer(request, pk, val):
     """ update the answer via URL. If we have a snooze reminder set it will be unset in the plan save signal """
     plan = get_object_or_404(Plan, pk=pk)
-    plan.status = val
+    plan.set_status(val)
     if val == PlanStatusChoices.DONT_KNOW:
         now = datetime.datetime.now()
         if (future_days := (plan.gig.date.date() - now.date()).days) > 8:
             plan.snooze_until = now.replace(tzinfo=utc) + datetime.timedelta(days=7)
         elif future_days > 2:
             plan.snooze_until = plan.gig.date.replace(tzinfo=utc) - datetime.timedelta(days=2)
-    plan.save()
+        plan.save()
     return render(request, 'gig/answer.html', {'gig_id': plan.gig.id})
