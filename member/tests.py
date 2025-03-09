@@ -15,33 +15,36 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from unittest.mock import patch, mock_open
+import os
+from datetime import timedelta
+from unittest.mock import mock_open, patch
 
-from django.test import TestCase, RequestFactory, Client
-from .models import Member, MemberPreferences, Invite, EmailConfirmation
-from band.models import Band, Assoc, AssocStatusChoices
-from gig.models import Gig, Plan
-from gig.util import GigStatusChoices, PlanStatusChoices
-from .views import AssocsView, OtherBandsView
-from .helpers import prepare_calfeed, calfeed, update_member_calfeed
-from .util import MemberStatusChoices
-from lib.email import DEFAULT_SUBJECT, prepare_email
-from lib.template_test import MISSING, flag_missing_vars, TemplateTestCase
+import pytest
+import pytz
 from django.conf import settings
 from django.contrib import auth
 from django.core import mail
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.urls import resolve, reverse
+from django.test import Client, RequestFactory, TestCase
+from django.urls import reverse
 from django.utils import timezone
-from pytz import timezone as pytz_timezone
-from datetime import timedelta
 from graphene.test import Client as graphQLClient
-from go3.schema import schema
-from gig.tests import GigTestBase
-import pytz
-import os
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
-import pytest
+from pytz import timezone as pytz_timezone
+
+from band.models import Assoc, AssocStatusChoices, Band
+from gig.models import Gig, Plan
+from gig.tests import GigTestBase
+from gig.util import GigStatusChoices, PlanStatusChoices
+from go3.schema import schema
+from lib.email import DEFAULT_SUBJECT, prepare_email
+from lib.template_test import MISSING, TemplateTestCase, flag_missing_vars
+
+from .helpers import calfeed, prepare_calfeed, update_member_calfeed
+from .models import Invite, Member
+from .util import MemberStatusChoices
+from .views import AssocsView, OtherBandsView
+
 
 class MemberTest(TestCase):
     def setUp(self):
@@ -1309,18 +1312,32 @@ class APIKeyTest(TestCase):
             email='member@example.com', password='password123'
         )
 
-    def test_generate_api_token_view(self):
+    @patch('member.helpers.secrets.token_urlsafe')
+    @patch('member.helpers.verify_requester_is_user')
+    def test_generate_api_token_view(self, mock_verify_requester_is_user, mock_token_urlsafe):
+        mock_token_urlsafe.return_value = 'super_secret_token'
         self.assertFalse(self.member.api_key)
         self.client.force_login(self.member)
-        self.client.get(reverse('member-generate-api-key'))
+        response = self.client.get(reverse('member-generate-api-key'))
         self.member.refresh_from_db()
+        mock_verify_requester_is_user.assert_called_once()
+        mock_token_urlsafe.assert_called_once_with(30)
         self.assertTrue(self.member.api_key)
+        self.assertEqual(self.member.api_key, 'super_secret_token')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
 
-    def test_revoke_api_token_view(self):
+
+    @patch('member.helpers.verify_requester_is_user')
+    def test_revoke_api_token_view(self, mock_verify_requester_is_user):
         self.member.api_key = "test"
         self.member.save()
         self.assertTrue(self.member.api_key)
         self.client.force_login(self.member)
-        self.client.get(reverse('member-revoke-api-key'))
+        response = self.client.get(reverse('member-revoke-api-key'))
+        mock_verify_requester_is_user.assert_called_once()
         self.member.refresh_from_db()
         self.assertFalse(self.member.api_key)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
+
