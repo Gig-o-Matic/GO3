@@ -1315,6 +1315,10 @@ class TestGigAPI(GigTestBase):
         self.create_one_gig_of_each_status()
         self.client.get(reverse("member-generate-api-key"))
         self.joeuser.refresh_from_db()
+        self.unconfirmed_member = Member.objects.create_user(email="uncomfirmed@h.i", api_key="unconfirmed")
+        Assoc.objects.create(
+            member=self.unconfirmed_member, band=self.band, status=AssocStatusChoices.INVITED
+        )
 
     def test_gigs(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key)
@@ -1335,6 +1339,13 @@ class TestGigAPI(GigTestBase):
             self.assertEqual(gig.get("contact"), self.joeuser.display_name)
             self.assertEqual(gig.get("plan_status"), PlanStatusChoices.NO_PLAN.label)
             self.assertEqual(Gig.objects.get(id=gig.get("id")).plans.filter(assoc__member=self.joeuser).first().assoc.status, AssocStatusChoices.CONFIRMED)
+
+    def test_gigs_uncomfirmed_member(self):
+        response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.unconfirmed_member.api_key)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("count"), 0)
+
 
     def _gig_filter(self, gig_status, status_label):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": gig_status})
@@ -1395,6 +1406,11 @@ class TestGigAPI(GigTestBase):
         data = response.json()
         self.assertEqual(data.get("title"), "get_gig test")
         self.assertTrue(Gig.objects.get(id=gig.id).plans.filter(assoc__member=self.joeuser).first().assoc.status, AssocStatusChoices.CONFIRMED)
+
+    def test_gig_uncomfirmed_member(self):
+        gig = self.create_gig(the_member=self.joeuser, title="uncomfirmed member test")
+        response = self.client.get(reverse("api-1.0.0:get_gig", args=[gig.id]), HTTP_X_API_KEY=self.unconfirmed_member.api_key)
+        self.assertEqual(response.status_code, 404)
 
     def test_get_gig_not_associated(self):
         new_user = Member.objects.create_user(email="new@a.c", api_key="testkey")
