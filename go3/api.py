@@ -41,7 +41,7 @@ class BandAPIKey(APIKeyHeader):
 
 
 
-api = NinjaAPI(auth=BandAPIKey())
+api = NinjaAPI(title="Gig-O-Matic API", auth=BandAPIKey())
 
 
 @api.exception_handler(InvalidAPIKeyError)
