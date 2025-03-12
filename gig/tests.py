@@ -1408,7 +1408,7 @@ class TestGigAPI(GigTestBase):
         self.assertTrue(Gig.objects.get(id=gig.id).plans.filter(assoc__member=self.joeuser).first().assoc.status, AssocStatusChoices.CONFIRMED)
 
     def test_gig_uncomfirmed_member(self):
-        gig = self.create_gig(the_member=self.joeuser, title="uncomfirmed member test")
+        gig = self.create_gig(the_member=self.unconfirmed_member, title="uncomfirmed member test")
         response = self.client.get(reverse("api-1.0.0:get_gig", args=[gig.id]), HTTP_X_API_KEY=self.unconfirmed_member.api_key)
         self.assertEqual(response.status_code, 404)
 
