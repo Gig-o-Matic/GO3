@@ -3,9 +3,11 @@ from typing import List, Optional
 from django.http import JsonResponse
 from ninja import Field, FilterSchema, ModelSchema, Query, Router, Schema
 
+from band.models import AssocStatusChoices
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices, PlanStatusChoices
 from member.models import Member
+
 
 class CannotResolveMemberStatus(Exception):
     pass
@@ -128,8 +130,8 @@ def list_all_gigs(request, filters: GigFilterSchema = Query(...)):
     if not member:
         return JsonResponse({"message": "Unauthorized"}, status=401)
     else:
-        # get all gigs for the member
-        plans = Plan.objects.filter(assoc__member=member)
+        # get all gigs for the member if the member is confirmed in the band
+        plans = Plan.objects.filter(assoc__member=member, assoc__status=AssocStatusChoices.CONFIRMED)
         if filters.plan_status in [status[0] for status in PlanStatusChoices.choices]:
             plans = plans.filter(status=filters.plan_status)
         if filters.gig_status in [status[0] for status in GigStatusChoices.choices]:
@@ -156,8 +158,7 @@ def get_gig(request, gig_id: int):
     if member:
         gig = Gig.objects.filter(pk=gig_id).first()
         if gig:
-            plan = Plan.objects.filter(gig=gig, assoc__member
-            =member).first()
+            plan = Plan.objects.filter(gig=gig, assoc__member=member, assoc__status=AssocStatusChoices.CONFIRMED).first()
             if plan:
                 return gig
     return JsonResponse({"message": "Not found"}, status=404)

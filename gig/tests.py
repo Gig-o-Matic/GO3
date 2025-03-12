@@ -1334,6 +1334,7 @@ class TestGigAPI(GigTestBase):
             self.assertEqual(gig.get("band"), self.band.name)
             self.assertEqual(gig.get("contact"), self.joeuser.display_name)
             self.assertEqual(gig.get("plan_status"), PlanStatusChoices.NO_PLAN.label)
+            self.assertEqual(Gig.objects.get(id=gig.get("id")).plans.filter(assoc__member=self.joeuser).first().assoc.status, AssocStatusChoices.CONFIRMED)
 
     def _gig_filter(self, gig_status, status_label):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": gig_status})
@@ -1393,6 +1394,7 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("title"), "get_gig test")
+        self.assertTrue(Gig.objects.get(id=gig.id).plans.filter(assoc__member=self.joeuser).first().assoc.status, AssocStatusChoices.CONFIRMED)
 
     def test_get_gig_not_associated(self):
         new_user = Member.objects.create_user(email="new@a.c", api_key="testkey")
