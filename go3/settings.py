@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     "agenda.apps.AgendaConfig",
     "stats.apps.StatsConfig",
     "widget_tweaks",
+    "debug_toolbar",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -117,6 +118,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "go3.rollbar_middleware.GigORollbarNotifierMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "go3.urls"
@@ -342,4 +344,12 @@ MARKDOWNIFY = {
             "br",
         ]),
     }
+}
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
+DEBUG_TOOLBAR_CONFIG = {
+    "ROOT_TAG_EXTRA_ATTRS": "hx-preserve"
 }
