@@ -87,7 +87,7 @@ INSTALLED_APPS = [
     "band.apps.BandConfig",
     "motd.apps.MotdConfig",
     "gig.apps.GigConfig",
-    "agenda.apps.AgendaConfig",
+    "agenda",
     "stats.apps.StatsConfig",
     "widget_tweaks",
     "django.contrib.admin",

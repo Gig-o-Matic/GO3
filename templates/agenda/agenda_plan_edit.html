@@ -1,6 +1,4 @@
-{% load i18n %}
-{% load humanize %}
-{% load tz %}
+{% load i18n humanize tz agenda_tags %}
 
 {% comment %}
 {% with assoc=plan.assoc %}
@@ -36,7 +34,7 @@ Add the day of week to the short_date_format - can just append D?
         {% endif %}
         </span>
     </div>
-    <div class="col-sm-12 col-md-5">
+    <div class="col-sm-12 col-md-4">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
@@ -49,7 +47,15 @@ Add the day of week to the short_date_format - can just append D?
         {% endif %}
     </div>
     {% if gig.status != 2 %}
-        <div class="col-12 col-md-4 btn-group" role="group">
+        <div class="col-12 col-md-3">
+            {% is_url gig.address as address_is_url %}
+            {% if address_is_url %}
+                <p><a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a></p>
+            {% else %}
+                <p>{{ gig.address }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12 col-md-2 btn-group" role="group">
             {% if gig.plans_locked and not the_user_is_band_admin %}
                 <span class="mr-2">
                     {% include "gig/plan_icon.html" with plan_value=plan.status %}
