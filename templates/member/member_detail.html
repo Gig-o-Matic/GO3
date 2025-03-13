@@ -263,33 +263,36 @@
                     {% endif %}
                 </div>
             </div> <!-- card -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <div class="row titlerow">
-                        <div class="col-4">
-                            {% trans "API Key" %}
+            {% if user.is_beta_tester %} 
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <div class="row titlerow">
+                            <div class="col-4">
+                                {% trans "API Key" %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p><a href="/api/docs" target="_">API Documentation</a></p>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-sm-3 col-12">
+                                <p>API Key</p>
+                            </div>
+                            <div class="col-sm-9 col-12">
+                                {% if member.api_key %}
+                                    <p><a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a> <code class="ml-3">{{ member.api_key }}</code></p>
+                                {% else %}
+                                    <a class="btn btn-primary btn-sm" href="{% url 'member-generate-api-key' %}">{% trans "Generate API Key" %}</a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <p><a href="/api/docs" target="_">API Documentation</a></p>
-                        </div>
-                    </div>
-                    <div class="row mt-4">
-                        <div class="col-sm-3 col-12">
-                            <p>API Key</p>
-                        </div>
-                        <div class="col-sm-9 col-12">
-                            {% if member.api_key %}
-                                <p><a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a> <code class="ml-3">{{ member.api_key }}</code></p>
-                            {% else %}
-                                <a class="btn btn-primary btn-sm" href="{% url 'member-generate-api-key' %}">{% trans "Generate API Key" %}</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>
