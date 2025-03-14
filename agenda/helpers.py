@@ -102,7 +102,6 @@ def agenda_gigs(request, the_type, the_band=None):
     return render(request, 'agenda/agenda_gigs.html', 
                     {
                         'the_colors:': the_colors,
-                        'plans': the_plans,
                         'yearly_plans': yearly_plans,
                         'title': the_title,
                         'single_band': the_type == AgendaLayoutChoices.BY_BAND,
