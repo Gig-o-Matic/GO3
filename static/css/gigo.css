@@ -330,7 +330,7 @@ a[name] {
 .separator::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #000;
+  border-bottom: 3px solid #000;
 }
 
 .separator:not(:empty)::before {
