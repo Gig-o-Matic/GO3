@@ -14,7 +14,7 @@
         <div class="card-body">
             {% if plans|length %}
                 {% for year in plans %}
-                    <h3 class="separator my-3">{{ year }}</h2>
+                    <h3 class="separator{% if forloop.first %} mb-3{% else %} my-3{% endif %}">{{ year }}</h2>
                     {% for plan in plans|get_item:year %}
                         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
                             <div class="col-12">
