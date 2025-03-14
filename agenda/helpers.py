@@ -87,7 +87,7 @@ def agenda_gigs(request, the_type, the_band=None):
     request.user.preferences.agenda_band = Band.objects.get(id=the_band) if the_band else None
     request.user.preferences.save()
 
-    # insert year separators as strings in the_plans
+    # group plans by year
     yearly_plans = {}
     if the_plans:
         the_plans = list(the_plans)
