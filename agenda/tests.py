@@ -112,8 +112,9 @@ class AgendaTest(GigTestBase):
         self.joeuser.preferences.save()
 
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
-        self.assertEqual(response.content.decode('ascii').count("4/01"), 1)
+        self.assertContains(response, "2028", count=1)
+        self.assertContains(response, "xyzzy", count=1)
+        self.assertContains(response, "Apr. 1", count=1)
 
         # now make it day before the gig
         with freeze_time(g.date - timedelta(days=1)):
