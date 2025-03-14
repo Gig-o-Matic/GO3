@@ -12,10 +12,3 @@ def is_url(string):
         return True
     except ValidationError:
         return False
-
-@register.filter
-def get_item(dictionary, key):
-    try:
-        return dictionary.get(key)
-    except Exception:
-        return None

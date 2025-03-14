@@ -1,4 +1,4 @@
-{% load i18n static agenda_tags %}
+{% load i18n static %}
 <div class="mx-auto col-md-10 col-12">
     <span hx-get="{% url 'plans-count' the_type=0 the_band=0 %}" hx-target="#needplan-badge" hx-trigger="load"></span>
 
@@ -13,9 +13,9 @@
         </div>
         <div class="card-body">
             {% if yearly_plans|length %}
-                {% for year in yearly_plans %}
+                {% for year, plans in yearly_plans.items %}
                     <h3 class="separator{% if forloop.first %} mb-3{% else %} my-3{% endif %}">{{ year }}</h3>
-                    {% for plan in yearly_plans|get_item:year %}
+                    {% for plan in plans %}
                         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
                             <div class="col-12">
                                 {% include "agenda/agenda_plan_edit.html" with plan=plan %}
