@@ -87,6 +87,14 @@ def agenda_gigs(request, the_type, the_band=None):
     request.user.preferences.agenda_band = Band.objects.get(id=the_band) if the_band else None
     request.user.preferences.save()
 
+    # insert year separators as strings in the_plans
+    if the_plans:
+        the_plans = list(the_plans)
+        if the_type == AgendaLayoutChoices.ONE_LIST:
+            for i, p in enumerate(the_plans):
+                if i == 0 or (isinstance(the_plans[i - 1], Plan) and p.gig.date.year != the_plans[i - 1].gig.date.year):
+                    the_plans.insert(i, p.gig.date.year)
+
     return render(request, 'agenda/agenda_gigs.html', 
                     {
                         'the_colors:': the_colors,

@@ -1,5 +1,4 @@
-{% load i18n %}
-{% load static %}
+{% load i18n static agenda_tags %}
 <div class="mx-auto col-md-10 col-12">
     <span hx-get="{% url 'plans-count' the_type=0 the_band=0 %}" hx-target="#needplan-badge" hx-trigger="load"></span>
 
@@ -17,7 +16,12 @@
                 {% for plan in plans %}
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
                         <div class="col-12">
-                            {% include "agenda/agenda_plan_edit.html" with plan=plan %}
+                            {% is_plan plan as its_a_plan %}
+                            {% if its_a_plan %}
+                                {% include "agenda/agenda_plan_edit.html" with plan=plan %}
+                            {% else %}
+                                <h2 class="separator">{{ plan }}</h2>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
