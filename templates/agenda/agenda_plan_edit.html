@@ -25,7 +25,7 @@
             <i class="fas fa-question-circle float-md-right" style="color:orange"></i>
         {% endif %}
         </span>
-        {{ gig.date|date:"D M. j" }}
+        {{ gig.date|timezone:user.preferences.current_timezone|date:"D M. j" }}
 {% comment %}
 Add the day of week to the short_date_format - can just append D?
 {% endcomment %}
