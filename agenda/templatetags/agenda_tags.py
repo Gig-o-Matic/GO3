@@ -14,7 +14,7 @@ def is_url(string):
         return True
     except ValidationError:
         return False
-    
-@register.simple_tag
-def is_plan(plan):
-    return isinstance(plan, Plan)
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
