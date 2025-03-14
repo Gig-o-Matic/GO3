@@ -20,7 +20,7 @@ from gig.util import GigStatusChoices, PlanStatusChoices
 from gig.models import Plan
 from member.util import AgendaLayoutChoices
 from agenda.helpers import _get_agenda_plans
-from agenda.templatetags.agenda_tags import is_url, get_item
+from agenda.templatetags.agenda_tags import is_url
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 from django.test import Client
@@ -454,16 +454,3 @@ class AgendaTagTests(TestCase):
         self.assertFalse(is_url("http://"))
         self.assertFalse(is_url("https://"))
         self.assertFalse(is_url("http://www"))
-
-    def test_get_item(self):
-        d = {'a': 1, 'b': 2}
-        self.assertEqual(get_item(d, 'a'), 1)
-        self.assertEqual(get_item(d, 'b'), 2)
-        self.assertEqual(get_item(d, 'c'), None)
-        self.assertEqual(get_item(d, None), None)
-        self.assertEqual(get_item(None, 'a'), None)
-        self.assertEqual(get_item(None, None), None)
-        self.assertEqual(get_item(d, 1), None)
-        self.assertEqual(get_item(1, 'a'), None)
-        self.assertEqual(get_item(1, 1), None)
-        self.assertEqual(get_item(1, None), None)
