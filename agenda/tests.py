@@ -15,10 +15,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from gig.tests import GigTestBase
+from django.test import TestCase
 from gig.util import GigStatusChoices, PlanStatusChoices
 from gig.models import Plan
 from member.util import AgendaLayoutChoices
 from agenda.helpers import _get_agenda_plans
+from agenda.templatetags.agenda_tags import is_url, get_item
 from band.models import Band, Assoc
 from band.util import AssocStatusChoices
 from django.test import Client
@@ -112,6 +114,11 @@ class AgendaTest(GigTestBase):
         self.joeuser.preferences.save()
 
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertIn("yearly_plans", response.context)
+        self.assertEqual(len(response.context["yearly_plans"]), 1)
+        self.assertIn(2028, response.context["yearly_plans"])
+        self.assertEqual(len(response.context["yearly_plans"][2028]), 1)
+        self.assertEqual(response.context["yearly_plans"][2028][0].gig, g)
         self.assertContains(response, "2028", count=1)
         self.assertContains(response, "xyzzy", count=1)
         self.assertContains(response, "Apr. 1", count=1)
@@ -435,3 +442,28 @@ class GridTest(GigTestBase):
         self.assertEqual(response.status_code, 200)
         gigs = loads(response.content)
         self.assertEqual(len(gigs), 3)
+
+class AgendaTagTests(TestCase):
+    def test_is_url_valid_url(self):
+        self.assertTrue(is_url("http://a.com"))
+        self.assertTrue(is_url("https://a.com"))
+        self.assertTrue(is_url("http://www.a.com"))
+
+    def test_is_url_invalid_url(self):
+        self.assertFalse(is_url("a"))
+        self.assertFalse(is_url("http://"))
+        self.assertFalse(is_url("https://"))
+        self.assertFalse(is_url("http://www"))
+
+    def test_get_item(self):
+        d = {'a': 1, 'b': 2}
+        self.assertEqual(get_item(d, 'a'), 1)
+        self.assertEqual(get_item(d, 'b'), 2)
+        self.assertEqual(get_item(d, 'c'), None)
+        self.assertEqual(get_item(d, None), None)
+        self.assertEqual(get_item(None, 'a'), None)
+        self.assertEqual(get_item(None, None), None)
+        self.assertEqual(get_item(d, 1), None)
+        self.assertEqual(get_item(1, 'a'), None)
+        self.assertEqual(get_item(1, 1), None)
+        self.assertEqual(get_item(1, None), None)

@@ -15,4 +15,7 @@ def is_url(string):
 
 @register.filter
 def get_item(dictionary, key):
-    return dictionary.get(key)
+    try:
+        return dictionary.get(key)
+    except Exception:
+        return None
