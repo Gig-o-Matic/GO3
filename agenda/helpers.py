@@ -105,6 +105,7 @@ def agenda_gigs(request, the_type, the_band=None):
                         'yearly_plans': yearly_plans,
                         'title': the_title,
                         'single_band': the_type == AgendaLayoutChoices.BY_BAND,
+                        'show_locations': request.GET.get('show_locations', False),
                     }
     )
 

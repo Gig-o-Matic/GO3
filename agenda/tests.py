@@ -108,6 +108,9 @@ class AgendaTest(GigTestBase):
         timezone.activate('America/New_York')
         g.date = timezone.make_aware(datetime(year=2028, month=4, day=1, hour=20))
         g.save()
+        future_gig = self.create_gig_form(contact=self.joeuser, title=f"future gig")
+        future_gig.date = timezone.make_aware(datetime(year=2029, month=4, day=1, hour=20))
+        future_gig.save()
         c = Client()
         c.force_login(self.joeuser)
         self.joeuser.preferences.agenda_layout = AgendaLayoutChoices.ONE_LIST
@@ -115,13 +118,18 @@ class AgendaTest(GigTestBase):
 
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
         self.assertIn("yearly_plans", response.context)
-        self.assertEqual(len(response.context["yearly_plans"]), 1)
+        self.assertEqual(len(response.context["yearly_plans"]), 2)
         self.assertIn(2028, response.context["yearly_plans"])
+        self.assertIn(2029, response.context["yearly_plans"])
         self.assertEqual(len(response.context["yearly_plans"][2028]), 1)
         self.assertEqual(response.context["yearly_plans"][2028][0].gig, g)
-        self.assertContains(response, "2028", count=1, html=True)
+        self.assertEqual(len(response.context["yearly_plans"][2029]), 1)
+        self.assertEqual(response.context["yearly_plans"][2029][0].gig, future_gig)
+        # only show year if not the first year in the list
+        self.assertContains(response, "2029", count=1, html=True)
         self.assertContains(response, "xyzzy", count=1)
-        self.assertContains(response, "Apr. 1", count=1)
+        self.assertContains(response, "future gig", count=1)
+        self.assertContains(response, "04/01", count=2)
 
         # now make it day before the gig
         with freeze_time(g.date - timedelta(days=1)):

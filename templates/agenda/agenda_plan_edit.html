@@ -25,16 +25,10 @@
             <i class="fas fa-question-circle float-md-right" style="color:orange"></i>
         {% endif %}
         </span>
-        {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"D M. j"|capfirst }}
-{% comment %}
-Add the day of week to the short_date_format - can just append D?
-{% endcomment %}
-
-        {% if gig.has_call_time %}
-            {{ gig.date|time:"TIME_FORMAT" }}
+        {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"m/d D"|capfirst }}{% if gig.has_call_time %} {{ gig.date|time:"g:ia"|slice:"-3" }}
         {% endif %}
     </div>
-    <div class="col-sm-12 col-md-3">
+    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}5{% endif %}">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
@@ -47,15 +41,17 @@ Add the day of week to the short_date_format - can just append D?
         {% endif %}
     </div>
     {% if gig.status != 2 %}
-        <div class="col-12 col-md-3">
-            {% is_url gig.address as address_is_url %}
-            {% if address_is_url %}
-                <p><a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a></p>
-            {% else %}
-                <p>{{ gig.address }}</p>
-            {% endif %}
-        </div>
-        <div class="col-12 col-md-3 btn-group" role="group">
+        {% if show_locations %}
+            <div class="col-12 col-md-3">
+                {% is_url gig.address as address_is_url %}
+                {% if address_is_url %}
+                    <p><a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a></p>
+                {% else %}
+                    <p>{{ gig.address }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="col-12 col-md-{% if show_locations %}3{% else %}4{% endif %} btn-group" role="group">
             {% if gig.plans_locked and not the_user_is_band_admin %}
                 <span class="mr-2">
                     {% include "gig/plan_icon.html" with plan_value=plan.status %}
