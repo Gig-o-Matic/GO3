@@ -14,14 +14,16 @@
         <div class="card-body">
             {% if yearly_plans|length %}
                 {% for year, plans in yearly_plans.items %}
-                    <h3 class="separator{% if forloop.first %} mb-3{% else %} my-3{% endif %}">{{ year }}</h3>
-                    {% for plan in plans %}
-                        <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
-                            <div class="col-12">
-                                {% include "agenda/agenda_plan_edit.html" with plan=plan %}
+                    <h3 class="separator btn btn-link{% if forloop.first %} mb-3{% else %} my-3{% endif %}" data-toggle="collapse" data-target=".collapse-{{ year }}" aria-expanded="true" aria-controls="collapse-{{ year }}">{{ year }}</h3>
+                    <div class="collapse{% if forloop.first %} show{% endif %} collapse-{{ year }}">
+                        {% for plan in plans %}
+                            <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
+                                <div class="col-12">
+                                    {% include "agenda/agenda_plan_edit.html" with plan=plan %}
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 {% endfor %}
             {% else %}
                 {% trans "No Gigs!" %}
