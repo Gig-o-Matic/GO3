@@ -28,7 +28,7 @@
         {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"m/d D"|capfirst }}{% if gig.has_call_time %} {{ gig.date|time:"g:ia"|slice:"-3" }}
         {% endif %}
     </div>
-    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}6{% endif %} px-0">
+    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}6{% endif %} pr-0">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
