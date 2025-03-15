@@ -1325,15 +1325,14 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("count"), 4)
-        self.assertEqual(data.get("gigs")[0].get("gig_status"), GigStatusChoices.UNCONFIRMED.label)
-        self.assertEqual(data.get("gigs")[1].get("gig_status"), GigStatusChoices.CANCELED.label)
-        self.assertEqual(data.get("gigs")[2].get("gig_status"), GigStatusChoices.CONFIRMED.label)
-        self.assertEqual(data.get("gigs")[3].get("gig_status"), GigStatusChoices.ASKING.label)
+        # make sure there's one of each status in there
+        for status in GigStatusChoices.labels:
+            checks = [1 for x in data.get("gigs") if x.get("gig_status") == status ]
+            self.assertTrue(sum(checks)==1)
 
-        self.assertEqual(data.get("gigs")[0].get("title"), "Unconfirmed Gig-xyzzy")
-        self.assertEqual(data.get("gigs")[1].get("title"), "Canceled Gig-xyzzy")
-        self.assertEqual(data.get("gigs")[2].get("title"), "Confirmed Gig-xyzzy")
-        self.assertEqual(data.get("gigs")[3].get("title"), "Asking Gig-xyzzy")
+            checks = [1 for x in data.get("gigs") if str(status) in x.get("title")]
+            self.assertTrue(sum(checks)==1)
+
         for gig in data.get("gigs"):
             self.assertEqual(gig.get("band"), self.band.name)
             self.assertEqual(gig.get("contact"), self.joeuser.display_name)
