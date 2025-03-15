@@ -6,7 +6,9 @@
         <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
 
             <div class="col-sm-12 col-md-6 col-lg-5">
-                {% if gig.setdate %}
+                {% if gig.is_full_day %}
+                    {{ gig.date|naturalday:"SHORT_DATE_FORMAT"|capfirst }} {{ gig.date|date:"D" }}
+                {% elif gig.setdate %}
                     {{ gig.setdate|naturalday:"SHORT_DATE_FORMAT"|capfirst }} {{ gig.setdate|date:"D" }}
                     {{ gig.setdate|time:"TIME_FORMAT" }}
                 {% else %}

@@ -30,6 +30,7 @@ import json
 from lib.caldav import make_calfeed, save_calfeed, get_calfeed, delete_calfeed
 from lib.email import send_messages_async, prepare_email
 from django.utils import timezone
+from pytz import timezone as zone
 from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -314,6 +315,7 @@ def public_gigs(request, pk):
 
 
     # the_gigs = Gig.objects.filter(band=the_band, is_private=False, )
+    timezone.activate(zone(the_band.timezone))
     return render(request, 'band/public_gigs.html',
         {
             'band': the_band,
