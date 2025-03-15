@@ -119,7 +119,7 @@ class AgendaTest(GigTestBase):
         self.assertIn(2028, response.context["yearly_plans"])
         self.assertEqual(len(response.context["yearly_plans"][2028]), 1)
         self.assertEqual(response.context["yearly_plans"][2028][0].gig, g)
-        self.assertContains(response, "2028", count=1)
+        self.assertContains(response, "2028", count=1, html=True)
         self.assertContains(response, "xyzzy", count=1)
         self.assertContains(response, "Apr. 1", count=1)
 
