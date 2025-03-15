@@ -45,9 +45,9 @@
             <div class="col-12 col-md-3 pr-0">
                 {% is_url gig.address as address_is_url %}
                 {% if address_is_url %}
-                    <p><a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a></p>
+                    <a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a>
                 {% else %}
-                    <p>{{ gig.address }}</p>
+                    {{ gig.address }}
                 {% endif %}
             </div>
         {% endif %}
