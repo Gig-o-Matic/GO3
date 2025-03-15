@@ -28,7 +28,7 @@
         {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"m/d D"|capfirst }}{% if gig.has_call_time %} {{ gig.date|time:"g:ia"|slice:"-3" }}
         {% endif %}
     </div>
-    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}5{% endif %}">
+    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}6{% endif %}">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
@@ -51,7 +51,7 @@
                 {% endif %}
             </div>
         {% endif %}
-        <div class="col-12 col-md-{% if show_locations %}3{% else %}4{% endif %} btn-group" role="group">
+        <div class="col-12 col-md-3 btn-group" role="group">
             {% if gig.plans_locked and not the_user_is_band_admin %}
                 <span class="mr-2">
                     {% include "gig/plan_icon.html" with plan_value=plan.status %}
