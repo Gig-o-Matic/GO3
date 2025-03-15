@@ -33,19 +33,15 @@ Including another URLconf
 
 
 from django.contrib import admin
-from django.urls import include, path
 from django.views.generic.base import RedirectView
-from django.views.i18n import JavaScriptCatalog
+from django.urls import include, path
 from graphene_django.views import GraphQLView
-from ninja import NinjaAPI
-
-from agenda.views import PrivateGraphQLView
+from .views import error404, error500, test404
 from go3.schema import schema
+from agenda.views import PrivateGraphQLView
+from django.views.i18n import JavaScriptCatalog
 from member.helpers import go2_id_calfeed
 from member.views import LanguageLoginView
-
-from .api import api
-from .views import error404, error500, test404
 
 urlpatterns = [
     path('', include('agenda.urls')),
@@ -65,7 +61,6 @@ urlpatterns = [
     # Backward compatibility with old GO2 cal feed
     path('cal/m/<slug:go2_id>', go2_id_calfeed),
     path('login', RedirectView.as_view(url='accounts/login', permanent=True)),
-    path('api/', api.urls),
 ]
 
 handler404 = error404

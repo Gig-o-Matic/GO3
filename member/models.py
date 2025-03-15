@@ -16,24 +16,20 @@
 """
 
 import uuid
-
 import pytz
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.db.models import Q
+from motd.models import MOTD
+from gig.models import Plan, GigStatusChoices
+from gig.util import PlanStatusChoices
 from django.utils.translation import gettext_lazy as _
-
+from django.db.models import Q
+from .util import MemberStatusChoices, AgendaChoices, AgendaLayoutChoices
 from band.models import Assoc, Band
 from band.util import AssocStatusChoices
-from gig.models import GigStatusChoices, Plan
-from gig.util import PlanStatusChoices
 from go3.settings import LANGUAGES
-from lib.caldav import delete_calfeed
 from lib.email import EmailRecipient
-from motd.models import MOTD
-
-from .util import AgendaChoices, AgendaLayoutChoices, MemberStatusChoices
-
+from lib.caldav import delete_calfeed
 
 class MemberManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -104,8 +100,6 @@ class Member(AbstractUser):
 
     # used for testing new features on a few people
     is_beta_tester = models.BooleanField(default=False)
-
-    api_key = models.CharField(max_length=40, blank=True, null=True)
 
     @property
     def member_name(self):

@@ -12,12 +12,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from django.test import TestCase
-from django.urls import reverse
+from django.test import TestCase, RequestFactory
+from member.models import Member
+from .settings import LANGUAGES
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
-
-from member.models import Member
+from django.urls import reverse
 
 
 class LanguageTest(TestCase):
@@ -35,23 +35,3 @@ class ErrorTest(TestCase):
         self.client.force_login(self.member)
         response = self.client.get('/404')
         self.assertEqual(response.status_code, 404)
-
-
-class TestGO3API(TestCase):
-    def setUp(self):
-        self.member = Member.objects.create_user('a@b.com', password='abc', api_key="test")
-
-    def test_missing_api_key(self):
-        response = self.client.get(reverse("api-1.0.0:whoami"))
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), {"message": "Missing API key"})
-
-    def test_invalid_api_key(self):
-        response = self.client.get(reverse("api-1.0.0:whoami"), HTTP_X_API_KEY="abc")
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json(), {"message": "Invalid API key"})
-
-    def test_valid_api_key(self):
-        response = self.client.get(reverse("api-1.0.0:whoami"), HTTP_X_API_KEY=self.member.api_key)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"key": self.member.api_key})

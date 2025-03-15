@@ -91,11 +91,6 @@ python manage.py collectstatic
 DATABASE_URL="sqlite:///gig-o-matic-test.sqlite" python manage.py test
 ```
 
-## REST API
-Run the project locally and open [http://127.0.0.1:8000/api/docs](http://127.0.0.1:8000/api/docs) to view the API documentation. 
-
-Log in and navigate to the [member profile](http://127.0.0.1:8000/member/) page to generate a token.
-
 ## GraphQL API
 
 To test the GraphQL endpoint, run the project locally and navigate to `http://127.0.0.1:8000/graphql` in your browser. 
