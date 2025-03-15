@@ -14,25 +14,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import secrets
-from datetime import timedelta
-
-from django.conf import settings
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-
-from band.helpers import do_delete_assoc
-from lib.caldav import get_calfeed, make_calfeed, save_calfeed
-from lib.email import prepare_email, send_messages_async
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404, redirect
+from datetime import timedelta
 from member.models import Member
+from lib.email import prepare_email, send_messages_async
+from lib.caldav import make_calfeed, save_calfeed, get_calfeed
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from band.helpers import do_delete_assoc
 from member.util import MemberStatusChoices
-from member.views import verify_requester_is_user
+from member.models import Member
 
+from django.utils.translation import gettext_lazy as _
 
 def superuser_required(func):
     def decorated(request, pk, *args, **kw):
@@ -165,21 +162,3 @@ def has_comment_permission(user, gig):
 
 def has_manage_band_permission(user, band):
     return user and has_band_admin(user,band)
-
-
-@login_required
-def generate_api_key(request):
-    user = request.user
-    verify_requester_is_user(request, user)
-    user.api_key = secrets.token_urlsafe(30)
-    user.save()
-    return redirect('member-detail', pk=user.id)
-    
-
-@login_required
-def revoke_api_key(request):
-    user = request.user
-    verify_requester_is_user(request, user)
-    user.api_key = None
-    user.save()
-    return redirect('member-detail', pk=user.id)
