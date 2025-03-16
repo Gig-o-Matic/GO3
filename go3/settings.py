@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     "stats.apps.StatsConfig",
     "widget_tweaks",
     "go3.apps.Go3AdminConfig",
+    # "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
