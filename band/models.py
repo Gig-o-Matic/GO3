@@ -134,6 +134,10 @@ class Band(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ['name']
+
+
 
 class SectionManager(models.Manager):
     def populated(self):
