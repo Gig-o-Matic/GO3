@@ -801,6 +801,26 @@ class InviteTest(TemplateTestCase):
         self.assertOK(response)
         self.assertTemplateUsed(response, 'member/invite_expired.html')
 
+    def test_accept_first_member_is_admin(self):
+        """ the first member of a band should be autmatically set to being the admin """
+
+        # make a fresh band
+        newband = Band.objects.create(name="new_test_band")
+
+        # first member is automatically admin
+        invite = Invite.objects.create(email='jane@example.com', band=newband)
+        self.client.force_login(self.janeuser)
+        self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        assoc = Assoc.objects.filter(band=newband, member=self.janeuser).first()
+        self.assertTrue(assoc.is_admin)
+
+        # second member is not automatically admin
+        invite = Invite.objects.create(email='joe@example.com', band=newband)
+        self.client.force_login(self.joeuser)
+        self.client.get(reverse('member-invite-accept', args=[invite.id]))
+        assoc = Assoc.objects.filter(band=newband, member=self.joeuser).first()
+        self.assertFalse(assoc.is_admin)
+
     def test_create_member(self):
         invite = Invite.objects.create(email='new@example.com', band=self.band, language='fr')
         response = self.client.post(reverse('member-create', args=[invite.id]),
