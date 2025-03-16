@@ -23,6 +23,7 @@ from .models import Band, Assoc, Section
 @admin.register(Band)
 class BandAdmin(admin.ModelAdmin):
     search_fields=['name']
+    list_display = ('name','creation_date')
     readonly_fields = ("creation_date","last_activity",)
 
 def _model_str(obj):
