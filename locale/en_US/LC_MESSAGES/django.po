@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-17 02:49+0000\n"
+"POT-Creation-Date: 2025-03-17 04:00+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -253,7 +253,7 @@ msgstr ""
 msgid "Confirmed!"
 msgstr ""
 
-#: gig/models.py:143 templates/agenda/agenda_plan_edit.html:104
+#: gig/models.py:143 templates/agenda/agenda_plan_edit.html:106
 #: templates/gig/gig_detail.html:50 templates/gig/gig_detail_archived.html:39
 msgid "Canceled!"
 msgstr ""
@@ -341,7 +341,7 @@ msgstr ""
 msgid "former member"
 msgstr "Plans"
 
-#: member/models.py:82 member/models.py:269
+#: member/models.py:82 member/models.py:270
 #, fuzzy
 #| msgid "confirm_email_address_email"
 msgid "email address"
@@ -401,19 +401,19 @@ msgstr ""
 msgid "Show gig time on schedule"
 msgstr ""
 
-#: member/models.py:253
+#: member/models.py:254
 msgid "Schedule page layout"
 msgstr ""
 
-#: member/models.py:255
+#: member/models.py:256
 msgid "Use old schedule page layout"
 msgstr ""
 
-#: member/models.py:257
+#: member/models.py:258
 msgid "Automatically Update Timezone"
 msgstr ""
 
-#: member/models.py:283
+#: member/models.py:284
 #, fuzzy
 #| msgid "new_gig_email"
 msgid "new email"
@@ -498,6 +498,14 @@ msgstr ""
 msgid "Make this my default view!"
 msgstr ""
 
+#: templates/agenda/agenda_gigs.html:16
+msgid "Hide Locations"
+msgstr ""
+
+#: templates/agenda/agenda_gigs.html:16
+msgid "Show Locations"
+msgstr ""
+
 #: templates/agenda/agenda_gigs.html:36 templates/band/public_gigs.html:25
 msgid "No Gigs!"
 msgstr ""
@@ -506,7 +514,7 @@ msgstr ""
 msgid "dateformatstring"
 msgstr "m/d D"
 
-#: templates/agenda/agenda_plan_edit.html:74
+#: templates/agenda/agenda_plan_edit.html:76
 #: templates/gig/gig_plan_edit.html:31
 msgid "section"
 msgstr ""

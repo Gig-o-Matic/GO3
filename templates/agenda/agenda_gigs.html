@@ -13,7 +13,7 @@
                     <input 
                         class="btn btn-sm btn-primary"
                         type="button"
-                        value="{% if show_locations %}Hide Locations{% else %}Show Locations{% endif %}"
+                        value="{% if show_locations %}{% trans 'Hide Locations' %}{% else %}{% trans 'Show Locations' %}{% endif %}"
                         id="show-locations"
                         hx-get="{{ request.path }}{% if show_locations %}?show_locations=False{% else %}?show_locations=True{% endif %}" hx-target="#the-list" hx-trigger="click"
                     >
