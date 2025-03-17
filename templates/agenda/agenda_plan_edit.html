@@ -25,8 +25,13 @@
             <i class="fas fa-question-circle float-md-right" style="color:orange"></i>
         {% endif %}
         </span>
-        {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"m/d D"|capfirst }}{% if gig.has_call_time %} {{ gig.date|time:"g:ia"|slice:"-3" }}
-        {% endif %}
+        {% with gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
+            {% if user.preferences.language == 'en-US' %}
+                {{ gig_date }} {% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}
+            {% else %}
+                {{ gig_date }} {{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}
+            {% endif %}
+        {% endwith %}
     </div>
     <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}6{% endif %} pr-0">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>

@@ -12,3 +12,7 @@ def is_url(string):
         return True
     except ValidationError:
         return False
+    
+@register.simple_tag
+def replace_am_pm(string):
+    return string.replace(' a.m.', 'a').replace(' p.m.', 'p')

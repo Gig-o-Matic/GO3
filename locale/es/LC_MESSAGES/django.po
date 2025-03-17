@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-08 16:40+0000\n"
+"POT-Creation-Date: 2025-03-17 02:49+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -263,7 +263,7 @@ msgstr "No confirmado"
 msgid "Confirmed!"
 msgstr "¡Confirmado!"
 
-#: gig/models.py:143 templates/agenda/agenda_plan_edit.html:99
+#: gig/models.py:143 templates/agenda/agenda_plan_edit.html:104
 #: templates/gig/gig_detail.html:50 templates/gig/gig_detail_archived.html:39
 #, fuzzy
 #| msgid "Cancelled!"
@@ -472,17 +472,17 @@ msgstr "Se envió invitaciones a {e}"
 msgid "These users are already in the band: {e}"
 msgstr "Estos usuarios ya están en la banda: {e}"
 
-#: member/views.py:337
+#: member/views.py:343
 #, python-brace-format
 msgid "You are now a member of {band}."
 msgstr "Ahora eres miembro de {band}."
 
-#: member/views.py:394
+#: member/views.py:400
 #, python-brace-format
 msgid "Your invitation to join {band} has been deleted."
 msgstr "Se borró tu invitación para juntarte con {band}."
 
-#: member/views.py:417
+#: member/views.py:423
 #, python-brace-format
 msgid ""
 "An account associated with {email} already exists.  You can recover this "
@@ -504,11 +504,15 @@ msgstr ""
 msgid "Make this my default view!"
 msgstr "Establecer como mi vista predeterminada"
 
-#: templates/agenda/agenda_gigs.html:25 templates/band/public_gigs.html:23
+#: templates/agenda/agenda_gigs.html:36 templates/band/public_gigs.html:25
 msgid "No Gigs!"
 msgstr "¡No hay eventos!"
 
-#: templates/agenda/agenda_plan_edit.html:69
+#: templates/agenda/agenda_plan_edit.html:28
+msgid "dateformatstring"
+msgstr "d/m D"
+
+#: templates/agenda/agenda_plan_edit.html:74
 #: templates/gig/gig_plan_edit.html:31
 msgid "section"
 msgstr "sección"
@@ -1854,53 +1858,53 @@ msgstr "haz clic aquí si necesitas ayuda"
 msgid "Last Activity:"
 msgstr "Actividad más reciente:"
 
-#: templates/member/member_detail.html:271
+#: templates/member/member_detail.html:272
 msgid "API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:282
+#: templates/member/member_detail.html:288
 msgid "Revoke API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:284
+#: templates/member/member_detail.html:290
 msgid "Generate API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:299
+#: templates/member/member_detail.html:307
 msgid "Confirm Delete"
 msgstr "Sí, elimínalo"
 
-#: templates/member/member_detail.html:303
+#: templates/member/member_detail.html:311
 msgid "Do you really want to leave"
 msgstr "¿Tienes certeza que quieres salir?"
 
-#: templates/member/member_detail.html:306
+#: templates/member/member_detail.html:314
 msgid "Don't Leave"
 msgstr "No te vayas"
 
-#: templates/member/member_detail.html:307
+#: templates/member/member_detail.html:315
 msgid "Yes, Leave"
 msgstr "Sí, me voy"
 
-#: templates/member/member_detail.html:317
+#: templates/member/member_detail.html:325
 #, fuzzy
 #| msgid "Confirmed!"
 msgid "Confirm Rejoin"
 msgstr "Confirma que quieres unirte de nuevo"
 
-#: templates/member/member_detail.html:321
+#: templates/member/member_detail.html:329
 #, fuzzy
 #| msgid "Do you really want to leave"
 msgid "Do you really want to rejoin"
 msgstr "¿Tienes certeza que quieres salir?"
 
-#: templates/member/member_detail.html:324
+#: templates/member/member_detail.html:332
 #, fuzzy
 #| msgid "Don't Know"
 msgid "Don't Rejoin"
 msgstr "No quiero unirme de nuevo"
 
-#: templates/member/member_detail.html:325
+#: templates/member/member_detail.html:333
 msgid "Yes, Rejoin"
 msgstr "Sí, unirme de nuevo"
 

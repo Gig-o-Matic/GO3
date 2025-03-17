@@ -85,6 +85,11 @@ def agenda_gigs(request, the_type, the_band=None):
     # make this the user's preference now
     request.user.preferences.agenda_layout = the_type
     request.user.preferences.agenda_band = Band.objects.get(id=the_band) if the_band else None
+    if request.GET.get('show_locations'):
+        if request.GET.get('show_locations').lower() != 'true':
+            request.user.preferences.agenda_show_location = False
+        else:
+            request.user.preferences.agenda_show_location = True
     request.user.preferences.save()
     user_timezone = pytz_timezone(request.user.timezone)
 
@@ -106,7 +111,7 @@ def agenda_gigs(request, the_type, the_band=None):
                         'yearly_plans': yearly_plans,
                         'title': the_title,
                         'single_band': the_type == AgendaLayoutChoices.BY_BAND,
-                        'show_locations': request.GET.get('show_locations', False),
+                        'show_locations': request.user.preferences.agenda_show_location,
                     }
     )
 
