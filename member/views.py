@@ -324,13 +324,19 @@ def accept_invite(request, pk):
         if invite.band:
             assocs = Assoc.objects.filter(band=invite.band, member=member)
             if assocs.count() == 0:
-                Assoc.objects.create(band=invite.band, member=member,
+                assoc = Assoc.objects.create(band=invite.band, member=member,
                                      status=AssocStatusChoices.CONFIRMED)
             else:
                 assoc = assocs.first()
                 assoc.status = AssocStatusChoices.CONFIRMED
                 assoc.save()
                 
+            # in case this is the only member of the band, make them the admin
+            if Assoc.objects.filter(band=invite.band).count() == 1:
+                assoc.is_admin = True
+                assoc.save()
+
+
             if request.user.is_authenticated:
                 # We'll be redirecting them to their profile page, and we want to display:
                 messages.success(request,

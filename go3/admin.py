@@ -14,27 +14,30 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
 from django.contrib import admin
 
-# Register your models here.
+class Go3AdminSite(admin.AdminSite):
+    site_header = 'Gig-o-Matic Admin'
 
-from .models import Band, Assoc, Section
+    def get_app_list(self, request, app_label=None):
+        """ set a better order for apps in the admin page """
 
-@admin.register(Band)
-class BandAdmin(admin.ModelAdmin):
-    search_fields=['name']
-    list_display = ('name','creation_date')
-    readonly_fields = ("creation_date","last_activity",)
+        if not app_label is None:
+            return super().get_app_list(request, app_label)
 
-def _model_str(obj):
-    return f'{obj}'
+        order = ['Band','Member','Gig', 'Motd']
 
-@admin.register(Assoc)
-class AssocAdmin(admin.ModelAdmin):
-    
-    list_display = (_model_str,'join_date')
-    search_fields=['member__username', 'member__nickname', 'member__email', 'band__name']
-    list_filter = ('is_admin',)
+        app_list = super().get_app_list(request, app_label)
 
-admin.site.register(Section)
+        new_app_list = [None] * len(order)
 
+        for a in app_list:
+            try:
+                i = order.index(a['name'])
+                new_app_list[i] = a
+            except ValueError:
+                new_app_list.append(a)
+
+        return new_app_list
+ 
