@@ -29,8 +29,25 @@ from band.helpers import do_delete_assoc
 from member.util import MemberStatusChoices
 from member.models import Member
 from gig.models import Gig
+import secrets
+from datetime import timedelta
 
+from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+from band.helpers import do_delete_assoc
+from lib.caldav import get_calfeed, make_calfeed, save_calfeed
+from lib.email import prepare_email, send_messages_async
+from member.models import Member
+from member.util import MemberStatusChoices
+from member.views import verify_requester_is_user
+
 
 def superuser_required(func):
     def decorated(request, pk, *args, **kw):
@@ -171,3 +188,20 @@ def stop_watching(request, pk):
         gig.watchers.remove(request.user)
     gig.save()
     return render(request, 'member/watched_gigs.html', {'member':request.user})
+
+@login_required
+def generate_api_key(request):
+    user = request.user
+    verify_requester_is_user(request, user)
+    user.api_key = secrets.token_urlsafe(30)
+    user.save()
+    return redirect('member-detail', pk=user.id)
+    
+
+@login_required
+def revoke_api_key(request):
+    user = request.user
+    verify_requester_is_user(request, user)
+    user.api_key = None
+    user.save()
+    return redirect('member-detail', pk=user.id)

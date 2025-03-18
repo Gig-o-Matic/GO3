@@ -15,10 +15,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from django.contrib.auth.views import (PasswordChangeDoneView,
+                                       PasswordChangeView)
 from django.urls import path
-from . import views
-from . import helpers
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+
+from . import helpers, views
 
 urlpatterns = [
     path('', views.DetailView.as_view(), name='member-detail'),
@@ -50,4 +51,6 @@ urlpatterns = [
 
     path('<int:pk>/stop_watch', helpers.stop_watching, name='member-stop-watching'),
 
+    path('generate-api-key', helpers.generate_api_key, name='member-generate-api-key'),
+    path('revoke-api-key', helpers.revoke_api_key, name='member-revoke-api-key'),
 ]
