@@ -11,7 +11,7 @@ The Gig-o-Matic Team{% endblocktrans %}{% endautoescape %}
 <br><br>
 <ul>
 {% for p in plans %}
-<li>Gig {{p.0.title}} - {{p.1.display_name}} ({{p.1.email}}) is now {{p.2}}</li>
+<li>{{p.0.band.name}}: {{p.0.title}} - {{p.1.display_name}} ({{p.1.email}}) is now {{p.2}}</li>
 {% endfor %}
 </ul>
 <br><br>
