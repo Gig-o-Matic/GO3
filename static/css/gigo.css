@@ -320,26 +320,26 @@ a[name] {
   font-style: italic;
 }
 
-.separator {
+.agenda-separator {
   display: flex;
   align-items: center;
   text-align: center;
   height: 1px;
   margin-bottom: 0px;
-  font-size: .75rem;
+  font-size: 1rem;
 }
 
-.separator::before,
-.separator::after {
+.agenda-separator::before,
+.agenda-separator::after {
   content: '';
   flex: 1;
   border-bottom: 2px solid #000;
 }
 
-.separator:not(:empty)::before {
+.agenda-separator:not(:empty)::before {
   margin-right: .25em;
 }
 
-.separator:not(:empty)::after {
+.agenda-separator:not(:empty)::after {
   margin-left: .25em;
 }
