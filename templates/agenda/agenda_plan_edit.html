@@ -27,9 +27,9 @@
         </span>
         {% with gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
             {% if user.preferences.language == 'en-US' %}
-                {{ gig_date }} {% if gig.is_full_day %}{% trans "Full Day" %}{% else %}{% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}{% endif %}
+                {{ gig_date }} {% if not gig.is_full_day %}{% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}{% endif %}
             {% else %}
-                {{ gig_date }} {% if gig.is_full_day %}{% trans "Full Day" %}{% else %}{{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}{% endif %}
+                {{ gig_date }} {% if not gig.is_full_day %}{{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}{% endif %}
             {% endif %}
         {% endwith %}
     </div>

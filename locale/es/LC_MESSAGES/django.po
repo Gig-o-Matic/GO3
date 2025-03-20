@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-19 03:06+0000\n"
+"POT-Creation-Date: 2025-03-20 16:27+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -505,16 +505,12 @@ msgid "Make this my default view!"
 msgstr "Establecer como mi vista predeterminada"
 
 #: templates/agenda/agenda_gigs.html:16
-#, fuzzy
-#| msgid "Sections"
 msgid "Hide Locations"
-msgstr "Secciones"
+msgstr "Ocultar ubicaciones"
 
 #: templates/agenda/agenda_gigs.html:16
-#, fuzzy
-#| msgid "Sections"
 msgid "Show Locations"
-msgstr "Secciones"
+msgstr "Mostrar ubicaciones"
 
 #: templates/agenda/agenda_gigs.html:36 templates/band/public_gigs.html:25
 msgid "No Gigs!"
@@ -523,11 +519,6 @@ msgstr "¡No hay eventos!"
 #: templates/agenda/agenda_plan_edit.html:28
 msgid "dateformatstring"
 msgstr "d/m D"
-
-#: templates/agenda/agenda_plan_edit.html:30
-#: templates/agenda/agenda_plan_edit.html:32
-msgid "Full Day"
-msgstr ""
 
 #: templates/agenda/agenda_plan_edit.html:76
 #: templates/gig/gig_plan_edit.html:31
