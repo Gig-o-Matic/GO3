@@ -68,7 +68,7 @@ Add the day of week to the short_date_format - can just append D?
                             {% if section == None %}
                                 {% trans "section" %}...  <span class="caret"></span>
                             {% else %}
-                                {{section.name }} <span class="caret"></span>
+                                {{section.display_name }} <span class="caret"></span>
 {% comment %}
 TODO the section name had a 'shorten' filter
 {% endcomment %}
@@ -80,7 +80,7 @@ TODO the section name had a 'shorten' filter
                                    hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
                                    hx-ext="update-dropdown"
                                    hx-target="#sel-{{ plan.id }}">
-                                    {{ section.name }}
+                                    {{ section.display_name }}
                                 </a>
 {% comment %}
 TODO the section name had a 'shorten' filter

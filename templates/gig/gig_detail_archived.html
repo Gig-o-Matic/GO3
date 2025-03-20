@@ -181,10 +181,10 @@
                     <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5;' %}">
                         {% if band.sections.all|length > 1 %}
                             <div class="col-lg-2 col-md-2 col-sm-12 col-12 gomlabel">
-                                {% if section.name is None %}
+                                {% if section.display_name is None %}
                                     {% trans "No Section" %}
                                 {% else %}
-                                    {{ section.name }}
+                                    {{ section.display_name }}
                                 {% endif %}
                             </div>
                         {% endif %}

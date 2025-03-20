@@ -27,7 +27,7 @@
             <div class="col-md-2">
                 <div class="dropdown">
                     <a class="btn btn-outline-secondary btn-sm dropdown-toggle" href="#" role="button" data-toggle="dropdown" id="dropdownMenu{{forloop.counter}}" aria-haspopup="true" aria-expanded="false">
-                        {{ the_assoc.default_section.name | truncatechars:8 }}
+                        {{ the_assoc.default_section.display_name | truncatechars:8 }}
                     </a>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenu{{forloop.counter}}">
                         {% for a_section in the_assoc.band.sections.all %}
@@ -35,7 +35,7 @@
                                hx-ext="update-dropdown"
                                hx-target="#dropdownMenu{{forloop.parentloop.counter}}"
                                hx-put="{% url 'assoc-section' ak=the_assoc.id sk=a_section.id %}">
-                                {{ a_section.name }}
+                                {{ a_section.display_name }}
                             </a>
                          {% endfor %}
                     </div>
