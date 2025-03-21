@@ -49,6 +49,7 @@ class GigSchema(ModelSchema):
             "address",
             "is_archived",
             "is_private",
+            "hide_from_calendar",
         ]
 
     @staticmethod
