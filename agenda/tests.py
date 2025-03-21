@@ -126,6 +126,7 @@ class AgendaTest(GigTestBase):
         self.assertEqual(len(response.context["yearly_plans"][2029]), 1)
         self.assertEqual(response.context["yearly_plans"][2029][0].gig, future_gig)
         # only show year if not the first year in the list
+        self.assertContains(response, "2028", count=0, html=True)
         self.assertContains(response, "2029", count=1, html=True)
         self.assertContains(response, "xyzzy", count=1)
         self.assertContains(response, "future gig", count=1)
