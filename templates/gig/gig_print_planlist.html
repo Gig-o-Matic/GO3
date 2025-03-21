@@ -46,11 +46,7 @@
                     <tr>
                         <td width="20%">
                             {% if forloop.first %}
-                                {% if section.name is None %}
-                                    {% trans "No Section" %}
-                                {% else %}
-                                    {{ section.name }}
-                                {% endif %}
+                                {{ section.display_name }}
                             {% endif %}
                         </td>
                         <td width="50%">
