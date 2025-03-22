@@ -319,3 +319,27 @@ a[name] {
 .calendar-preferences-info {
   font-style: italic;
 }
+
+.agenda-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  height: 1px;
+  margin-bottom: 0px;
+  font-size: 1rem;
+}
+
+.agenda-separator::before,
+.agenda-separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 2px solid #000;
+}
+
+.agenda-separator:not(:empty)::before {
+  margin-right: .25em;
+}
+
+.agenda-separator:not(:empty)::after {
+  margin-left: .25em;
+}
