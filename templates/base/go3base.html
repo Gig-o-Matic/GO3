@@ -28,13 +28,14 @@
 
         <!-- Bootstrap core CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
-        {% compress css %}
         <!-- font awesome -->
         <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
         <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
         <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
         <!-- Custom styles for this template -->
         <link href="{% static 'css/gigo_20250321.css' %}" rel="stylesheet">
+        {% compress css %}
+        <link href="{% static 'css/compress_test.css' %}" rel="stylesheet">
         {% endcompress %}
         
         <!--[if lt IE 9]>

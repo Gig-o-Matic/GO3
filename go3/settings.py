@@ -247,7 +247,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-COMPRESS_ENABLED=False
+COMPRESS_ENABLED=True
 
 # Use ManifestStaticFilesStorage when not in debug mode
 if not DEBUG:
