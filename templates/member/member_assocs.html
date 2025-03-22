@@ -28,7 +28,7 @@
                             <div class="col-6">
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='sbk-{{assoc.band.id}}'>
-                                        {{assoc.default_section.name}}
+                                        {{assoc.default_section.display_name}}
                                     </button>
                                     <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
                                         {% for section in assoc.band.sections.all %}
@@ -36,7 +36,7 @@
                                             hx-ext="update-dropdown"
                                             hx-put="{% url 'assoc-section' ak=assoc.id sk=section.id %}"
                                             hx-target="#sbk-{{assoc.band.id}}"
-                                            >{{ section.name }}</a>
+                                            >{{ section.display_name }}</a>
                                         {% endfor %}
                                     </div>
                                 </div>

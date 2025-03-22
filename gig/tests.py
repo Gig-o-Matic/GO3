@@ -1410,7 +1410,9 @@ class TestGigAPI(GigTestBase):
         data = response.json()
         self.assertEqual(data.get("count"), 1)
         self.assertEqual(data.get("gigs")[0].get("gig_status"), status_label)
-        self.assertEqual(data.get("gigs")[0].get("title"), f"{status_label} Gig-xyzzy")
+        self.assertEqual(data.get("gigs")[0].get("title"), f"{status_label} Gig-xyzzy")        
+        self.assertIn("hide_from_calendar", data.get("gigs")[0])
+        self.assertEqual(data.get("gigs")[0].get("hide_from_calendar"), False)
 
     def test_gig_status_filter(self):
         for status in GigStatusChoices.choices:

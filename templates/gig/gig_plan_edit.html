@@ -30,7 +30,7 @@
                                 {% if section == None %}
                                     {% trans "section" %}...  <span class="caret"></span>
                                 {% else %}
-                                    {{section.name }} <span class="caret"></span>
+                                    {{section.display_name }} <span class="caret"></span>
                                     {% comment %}
                                     TODO the section name had a 'shorten' filter
                                     {% endcomment %}
@@ -47,7 +47,7 @@
                                 hx-ext="update-dropdown"
                                 hx-target="#sel-{{ plan.id }} span"
                                 hx-indicator="#sel-{{ plan.id }}">
-                                    {{ section.name }}
+                                    {{ section.display_name }}
                                 </a>
                     {% comment %}
                     TODO the section name had a 'shorten' filter

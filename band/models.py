@@ -26,6 +26,7 @@ from django.utils import timezone
 import pytz
 import uuid
 from go3.settings import LANGUAGES
+from django.utils.translation import gettext_lazy as _
 
 
 class Band(models.Model):
@@ -167,6 +168,12 @@ class Section(models.Model):
             else:
                 self.order = band_sections.aggregate(models.Max('order'))['order__max']+1
         return super().save(*args, **kwargs)
+
+    @property
+    def display_name(self):
+        if self.is_default:
+            return _("No Section")
+        return self.name
 
     def __str__(self):
         return '{0} in {1}'.format(self.name if self.name else 'No Section', self.band.name)

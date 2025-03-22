@@ -230,7 +230,7 @@ def grid_section_members(request, *args, **kw):
             mbs[a.default_section.id]['members'].append(info)
         else:
             mbs[a.default_section.id] = {
-                'name': a.default_section.name, 'members': [info]}
+                'name': str(a.default_section.display_name), 'members': [info]}
 
     # convert to just a list
     data = [{"id": x, "name": mbs[x]['name'], "members":mbs[x]['members']}

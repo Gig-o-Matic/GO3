@@ -249,7 +249,7 @@ def member_spreadsheet(request, pk):
     for assoc in band.confirmed_assocs:
         member = assoc.member
         writer.writerow([member.username, member.nickname,
-                         member.email, member.phone, assoc.section.name])
+                         member.email, member.phone, assoc.section.display_name])
 
     return response
 
