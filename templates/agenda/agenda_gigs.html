@@ -1,25 +1,36 @@
-{% load i18n %}
-{% load static %}
+{% load i18n static %}
 <div class="mx-auto col-md-10 col-12">
     <span hx-get="{% url 'plans-count' the_type=0 the_band=0 %}" hx-target="#needplan-badge" hx-trigger="load"></span>
 
     <div class="card mb-4">
         <div class="card-header">
             <div class="row titlerow">
-                <div class="col-12">
+                <div class="col-12 col-md-6">
                     {{ title }}
                     <i class="fas fa-spinner fa-pulse fa-lg htmx-indicator" id="indicator"></i>
+                </div>
+                <div class="col-12 col-md-6 text-md-right">
+                    <input 
+                        class="btn btn-sm btn-primary"
+                        type="button"
+                        value="{% if show_locations %}{% trans 'Hide Locations' %}{% else %}{% trans 'Show Locations' %}{% endif %}"
+                        id="show-locations"
+                        hx-get="{{ request.path }}{% if show_locations %}?show_locations=False{% else %}?show_locations=True{% endif %}" hx-target="#the-list" hx-trigger="click"
+                    >
                 </div>
             </div>
         </div>
         <div class="card-body">
-            {% if plans|length %}
-                {% for plan in plans %}
-                    <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
-                        <div class="col-12">
-                            {% include "agenda/agenda_plan_edit.html" with plan=plan %}
+            {% if yearly_plans|length %}
+                {% for year, plans in yearly_plans.items %}
+                    {% if not forloop.first %}<h3 class="agenda-separator my-3">{{ year }}</h3>{% endif %}
+                    {% for plan in plans %}
+                        <div class="row" style="padding-top: 5px; padding-bottom: 5px; {% cycle '' 'background:#f5f5f5' %}">
+                            <div class="col-12">
+                                {% include "agenda/agenda_plan_edit.html" with plan=plan show_locations=show_locations %}
+                            </div>
                         </div>
-                    </div>
+                    {% endfor %}
                 {% endfor %}
             {% else %}
                 {% trans "No Gigs!" %}

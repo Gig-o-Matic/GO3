@@ -1,6 +1,4 @@
-{% load i18n %}
-{% load humanize %}
-{% load tz %}
+{% load i18n humanize tz agenda_tags %}
 
 {% comment %}
 {% with assoc=plan.assoc %}
@@ -17,15 +15,7 @@
 {% else %}
     <div class="row" style="position:relative; left:5px;">
 {% endif %}
-    <div class="col-sm-12 col-md-3">
-        {{ gig.date|timezone:user.preferences.current_timezone|naturalday:"SHORT_DATE_FORMAT"|capfirst }} {{ gig.date|date:"D" }}
-{% comment %}
-Add the day of week to the short_date_format - can just append D?
-{% endcomment %}
-
-        {% if gig.has_call_time %}
-            {{ gig.date|time:"TIME_FORMAT" }}
-        {% endif %}
+    <div class="col-sm-12 col-md-3 pr-0">
         <span style="display: inline-block; vertical-align: middle;">
         {% if gig.status == 1 %}
             <i class="fas fa-check-circle float-md-right" style="color:green"></i>
@@ -35,8 +25,15 @@ Add the day of week to the short_date_format - can just append D?
             <i class="fas fa-question-circle float-md-right" style="color:orange"></i>
         {% endif %}
         </span>
+        {% with gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
+            {% if user.preferences.language == 'en-US' %}
+                {{ gig_date }} {% if not gig.is_full_day %}{% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}{% endif %}
+            {% else %}
+                {{ gig_date }} {% if not gig.is_full_day %}{{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}{% endif %}
+            {% endif %}
+        {% endwith %}
     </div>
-    <div class="col-sm-12 col-md-5">
+    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}6{% endif %} pr-0">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
@@ -49,7 +46,17 @@ Add the day of week to the short_date_format - can just append D?
         {% endif %}
     </div>
     {% if gig.status != 2 %}
-        <div class="col-12 col-md-4 btn-group" role="group">
+        {% if show_locations %}
+            <div class="col-12 col-md-3 pr-0">
+                {% is_url gig.address as address_is_url %}
+                {% if address_is_url %}
+                    <a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a>
+                {% else %}
+                    {{ gig.address }}
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="col-12 col-md-3 btn-group" role="group">
             {% if gig.plans_locked and not the_user_is_band_admin %}
                 <span class="mr-2">
                     {% include "gig/plan_icon.html" with plan_value=plan.status %}

@@ -248,6 +248,7 @@ class MemberPreferences(models.Model):
     calendar_show_only_confirmed = models.BooleanField(default=False, verbose_name=_('Calendar shows only confirmed gigs'))
     calendar_show_only_committed = models.BooleanField(default=False, verbose_name=_('Calendar shows only gigs I can do (or maybe can do)'))
     agenda_show_time = models.BooleanField(default=True, verbose_name=_('Show gig time on schedule'))
+    agenda_show_location = models.BooleanField(default=False)
     agenda_layout = models.IntegerField(choices=AgendaLayoutChoices.choices, 
                                         default=AgendaLayoutChoices.ONE_LIST,
                                         verbose_name=_('Schedule page layout'))
