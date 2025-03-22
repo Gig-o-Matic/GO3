@@ -217,6 +217,10 @@ class Member(AbstractUser):
         self.set_unusable_password()
         self.save()
 
+    @property
+    def watching_by_band(self):
+        return self.watching.order_by('band')
+
     objects = MemberManager()
 
     USERNAME_FIELD = 'email'
