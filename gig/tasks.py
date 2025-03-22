@@ -48,7 +48,11 @@ def archive_old_gigs():
         is_archived=False)
 
     num = over_gigs.count()
-    over_gigs.update(is_archived=True)
+    for g in over_gigs:
+        g.is_archived=True
+        g.watchers.clear()
+        g.save()
+
     return f'archived {num} gigs'
 
 def send_snooze_reminders():
