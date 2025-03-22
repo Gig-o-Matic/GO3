@@ -1,4 +1,4 @@
-{% load i18n compress static %}
+{% load i18n static %}
 
 {% load static %}
 <!DOCTYPE html>
@@ -33,10 +33,7 @@
         <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
         <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
         <!-- Custom styles for this template -->
-        <link href="{% static 'css/gigo_20250321.css' %}" rel="stylesheet">
-        {% compress css %}
-        <link href="{% static 'css/compress_test.css' %}" rel="stylesheet">
-        {% endcompress %}
+        <link href="{% static 'css/gigo.css' %}" rel="stylesheet">
         
         <!--[if lt IE 9]>
             <script src="../../assets/js/html5shiv.js"></script>

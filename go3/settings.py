@@ -104,7 +104,6 @@ INSTALLED_APPS = [
     "graphene_django",
     "fontawesomefree",
     "markdownify.apps.MarkdownifyConfig",
-    "compressor",
 ]
 
 MIDDLEWARE = [
@@ -241,13 +240,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
-)
-
-COMPRESS_ENABLED=True
 
 # Use ManifestStaticFilesStorage when not in debug mode
 if not DEBUG:
