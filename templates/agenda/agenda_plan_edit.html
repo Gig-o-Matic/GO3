@@ -47,7 +47,7 @@
     </div>
     {% if gig.status != 2 %}
         {% if show_locations %}
-            <div class="col-12 col-md-3 pr-0">
+            <div class="col-12 col-md-{% if assoc.is_multisectional %}3{% else %}4{% endif %} pr-0">
                 {% is_url gig.address as address_is_url %}
                 {% if address_is_url %}
                     <a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a>
@@ -56,7 +56,7 @@
                 {% endif %}
             </div>
         {% endif %}
-        <div class="col-12 col-md-3 btn-group" role="group">
+        <div class="col-12 col-md-{% if assoc.is_multisectional %}3{% else %}2{% endif %} btn-group" role="group">
             {% if gig.plans_locked and not the_user_is_band_admin %}
                 <span class="mr-2">
                     {% include "gig/plan_icon.html" with plan_value=plan.status %}
