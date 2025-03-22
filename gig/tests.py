@@ -1293,6 +1293,21 @@ class GigWatchTest(GigTestBase):
         self.assertIn('joeuser', message.body)
         self.assertIn('is now Definitely', message.body)
 
+    def test_watch_archived(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.joeuser.is_beta_tester = True
+        self.joeuser.save()
+        g.watchers.add(self.joeuser)
+        self.assertEqual(len(g.watchers.all()),1)
+        self.assertEqual(len(self.joeuser.watching.all()),1)
+        g.date=datetime(2024,1,1,tzinfo=dttimezone.utc)
+        self.assertFalse(g.is_archived)
+        g.save()
+        archive_old_gigs()
+        g.refresh_from_db()
+        self.assertTrue(g.is_archived)
+        self.assertEqual(len(g.watchers.all()), 0)
+        self.assertEqual(len(self.joeuser.watching.all()), 0)
 
 
 class GigSecurityTest(GigTestBase):
