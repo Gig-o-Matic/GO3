@@ -247,6 +247,8 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
+COMPRESS_ENABLED=False
+
 # Use ManifestStaticFilesStorage when not in debug mode
 if not DEBUG:
     STORAGES["staticfiles"] =  {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}
