@@ -256,7 +256,7 @@ class MemberPreferences(models.Model):
     agenda_layout = models.IntegerField(choices=AgendaLayoutChoices.choices, 
                                         default=AgendaLayoutChoices.ONE_LIST,
                                         verbose_name=_('Schedule page layout'))
-    agenda_band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
+    agenda_band = models.ForeignKey(Band, null=True, blank=True, on_delete=models.SET_NULL)
     agenda_use_classic = models.BooleanField(default=False, verbose_name=_('Use old schedule page layout'))
     current_timezone = models.CharField(max_length=200, default=None, null=True, choices=[(x, x) for x in pytz.common_timezones])
     auto_update_timezone = models.BooleanField(default=True, verbose_name=_('Automatically Update Timezone'))
