@@ -14,6 +14,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from django.http import HttpResponse, HttpResponseForbidden
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404, redirect, render
+from datetime import timedelta
+from member.models import Member
+from lib.email import prepare_email, send_messages_async
+from lib.caldav import make_calfeed, save_calfeed, get_calfeed
+from django.core.exceptions import ValidationError
+from django.conf import settings
+from band.helpers import do_delete_assoc
+from member.util import MemberStatusChoices
+from member.models import Member
+from gig.models import Gig
 import secrets
 from datetime import timedelta
 
@@ -166,6 +181,13 @@ def has_comment_permission(user, gig):
 def has_manage_band_permission(user, band):
     return user and has_band_admin(user,band)
 
+@login_required
+def stop_watching(request, pk):
+    gig = get_object_or_404(Gig, pk=pk)
+    if request.user in gig.watchers.all():
+        gig.watchers.remove(request.user)
+    gig.save()
+    return render(request, 'member/watched_gigs.html', {'member':request.user})
 
 @login_required
 def generate_api_key(request):

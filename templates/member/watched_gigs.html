@@ -1,0 +1,25 @@
+{% if member.watching.all %}
+    {% regroup member.watching_by_band by band as watch_list %}
+    {% for watched in watch_list %}
+        <div class="row">
+            <div class="col-12">
+                {{watched.grouper}}
+            </div>
+        </div>
+        {% for gig in watched.list %}
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-6">
+                    <a href="{% url 'gig-detail' pk=gig.id %}">{{gig}}</a>
+            </div>
+            <div class="col-4">
+                <a href='#' hx-get='{% url "member-stop-watching" pk=gig.id %}' hx-target='#watched' hx-swap='innerHTML'>
+                <i class="fas fa-sm fa-square-xmark"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% endfor %}
+{% else %}
+    <span>None!</span>
+{% endif %}

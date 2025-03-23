@@ -171,6 +171,20 @@
                 </div>
             </div>
 
+            {% if member.watching.all %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="row titlerow">
+                        <div class="col-12">
+                            {% trans "Watched Gigs" %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="watched">
+                    {% include "member/watched_gigs.html" with member=member %}
+                </div>
+            </div>
+            {% endif %}
             <div class="card mt-4">
                 <div class="card-header">
                     <div class="row titlerow">
