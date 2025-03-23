@@ -34,8 +34,6 @@ from gig.tasks import alert_watchers
 @login_required
 def AgendaSelector(request):
 
-    alert_watchers()
-
     if request.user.band_count == 0:
         return redirect("/member")
 
