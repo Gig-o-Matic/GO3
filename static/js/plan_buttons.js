@@ -1,6 +1,6 @@
 // CODE FOR COMMENTS ON AGENDA PAGE
 function show_comment(the_plan) {
-    $('#comment-init-'+the_plan).hide();
+    $('#comment-init-'+the_plan).css('opacity', '0');
     $('#comment-row-'+the_plan).show();
     setTimeout(function(){
         $('#comment-'+the_plan).click();
@@ -9,7 +9,7 @@ function show_comment(the_plan) {
 
 function closed_comment(thing) {
     if ($('#comment-'+thing).text()=='') {
-        $('#comment-init-'+thing).show();
+        $('#comment-init-'+thing).css('opacity', '1');
         $('#comment-row-'+thing).hide();
     }
 }
