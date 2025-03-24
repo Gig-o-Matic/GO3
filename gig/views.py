@@ -153,7 +153,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     def test_func(self):
         # can only edit the gig if you're logged in and in the band
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return has_manage_gig_permission(self.request.user, gig.band) or (self.object.creator==self.request.user)
+        return has_manage_gig_permission(self.request.user, gig.band) or (gig.creator==self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -181,7 +181,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
 
 
     def form_valid(self, form):
-        if not (has_manage_gig_permission(self.request.user, self.object.band) or (gig.creator==self.request.user)):
+        if not (has_manage_gig_permission(self.request.user, self.object.band) or (self.object.creator==self.request.user)):
             return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
