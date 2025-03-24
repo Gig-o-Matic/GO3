@@ -21,9 +21,9 @@ from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email, create_gig_series
+from .helpers import send_reminder_email, create_gig_series, gig_toggle_watching
 from .tasks import send_snooze_reminders
-from .tasks import archive_old_gigs
+from .tasks import archive_old_gigs, alert_watchers
 from datetime import timedelta, datetime, timezone as dttimezone
 from django.urls import reverse
 from django.utils import timezone
@@ -1125,7 +1125,7 @@ class GigTest(GigTestBase):
 
     def test_gig_trash(self):
         g, _, _ = self.assoc_joe_and_create_gig()
-        self.client.force_login(self.joeuser)
+        self.client.force_login(self.janeuser)
         resp = self.client.post(reverse("gig-trash", args=[g.id]))
         # should fail - joeuser is not an admin
         self.assertEqual(resp.status_code, 403)
@@ -1235,6 +1235,79 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.date.day,1)
         self.assertEqual(g.enddate.day,2)
+
+
+class GigWatchTest(GigTestBase):
+    def test_watch_gig(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        c = Client()
+        c.force_login(self.joeuser)
+        self.assertEqual(self.joeuser.watching.count(), 0)
+
+        #start watching
+        response = c.get(reverse("gig-toggle-watching", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.joeuser.watching.count(), 1)
+        self.assertTrue(g in self.joeuser.watching.all())
+        self.assertEqual(g.watchers.count(), 1)
+        self.assertTrue(self.joeuser in g.watchers.all())
+
+        # stop watching
+        response = c.get(reverse("gig-toggle-watching", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.joeuser.watching.count(), 0)
+        self.assertEqual(g.watchers.count(), 0)
+
+        #start watching
+        response = c.get(reverse("gig-toggle-watching", args=[g.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.joeuser.watching.count(), 1)
+        self.assertTrue(g in self.joeuser.watching.all())
+        self.assertEqual(g.watchers.count(), 1)
+        self.assertTrue(self.joeuser in g.watchers.all())
+
+    def test_watch_email(self):
+        # set up a couple of gigs and watch 'em
+        g1, _, p1 = self.assoc_joe_and_create_gig()
+        self.joeuser.is_beta_tester = True
+        self.joeuser.save()
+        c = Client()
+        c.force_login(self.joeuser)
+
+        g2 = self.create_gig(the_member=self.joeuser, title='gig2')
+
+        #start watching
+        c.get(reverse("gig-toggle-watching", args=[g1.id]))
+        c.get(reverse("gig-toggle-watching", args=[g2.id]))
+
+        self.assertTrue(len(self.joeuser.watching.all())==2)
+
+        mail.outbox=[]
+        p1.set_status(PlanStatusChoices.DEFINITELY)
+
+        alert_watchers()
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('Watched Gigs Alert', message.subject)
+        self.assertIn('New Gig', message.body)
+        self.assertIn('joeuser', message.body)
+        self.assertIn('is now Definitely', message.body)
+
+    def test_watch_archived(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.joeuser.is_beta_tester = True
+        self.joeuser.save()
+        g.watchers.add(self.joeuser)
+        self.assertEqual(len(g.watchers.all()),1)
+        self.assertEqual(len(self.joeuser.watching.all()),1)
+        g.date=datetime(2024,1,1,tzinfo=dttimezone.utc)
+        self.assertFalse(g.is_archived)
+        g.save()
+        archive_old_gigs()
+        g.refresh_from_db()
+        self.assertTrue(g.is_archived)
+        self.assertEqual(len(g.watchers.all()), 0)
+        self.assertEqual(len(self.joeuser.watching.all()), 0)
 
 
 class GigSecurityTest(GigTestBase):

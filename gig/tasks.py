@@ -15,7 +15,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from gig.models import Gig, Plan
-from gig.helpers import send_emails_from_plans
+from gig.helpers import send_emails_from_plans, send_watcher_email
+from member.models import Member
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.db.models import Q
@@ -47,7 +48,11 @@ def archive_old_gigs():
         is_archived=False)
 
     num = over_gigs.count()
-    over_gigs.update(is_archived=True)
+    for g in over_gigs:
+        g.is_archived=True
+        g.watchers.clear()
+        g.save()
+
     return f'archived {num} gigs'
 
 def send_snooze_reminders():
@@ -64,3 +69,17 @@ def send_snooze_reminders():
     send_emails_from_plans(unsnooze, 'email/gig_reminder.md')
     unsnooze.update(snooze_until=None)
 
+
+def alert_watchers():
+    """ alert members who are watching gigs that plans have changed """
+
+    # first, get all the members who need to be alerted and tell them what's up
+    members = set(Member.objects.filter(watching__isnull=False))
+
+    for m in members:
+        m_plans = Plan.objects.filter(status_changed=True, gig__in=m.watching.all())
+        if m_plans:
+            send_watcher_email(m, m_plans)
+
+    # finally, mark the plans seen
+    Plan.objects.all().update(status_changed=False)

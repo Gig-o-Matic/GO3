@@ -71,6 +71,7 @@ class Plan(models.Model):
     assoc = models.ForeignKey("band.Assoc", verbose_name="assoc", related_name="plans", on_delete=models.CASCADE)
 
     status = models.IntegerField(choices=PlanStatusChoices.choices, default=PlanStatusChoices.NO_PLAN)
+    status_changed = models.BooleanField(default=False)
 
     @property
     def status_string(self):
@@ -79,6 +80,11 @@ class Plan(models.Model):
     @property
     def attending(self):
         return self.status in [PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
+    
+    def set_status(self, status):
+        self.status = status
+        self.status_changed = True
+        self.save()
 
     feedback_value = models.IntegerField(null=True, blank=True)
     @property
@@ -130,6 +136,8 @@ class AbstractEvent(models.Model):
     status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNCONFIRMED)
 
     email_changes = models.BooleanField(default=True)
+
+    watchers = models.ManyToManyField('member.Member',related_name='watching')
 
     @property
     def is_canceled(self):

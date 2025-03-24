@@ -1,0 +1,9 @@
+{% load i18n %}
+<span class="btn btn-sm btn-info" role="button" hx-get='{% url "gig-toggle-watching" pk=gig.id %}' hx-swap='outerHTML'>
+    <i class="fas fa-glasses"></i>
+    {% if request.user in gig.watchers.all %}
+        {% trans "Unwatch" %}
+    {% else %}
+        {% trans "Watch" %}
+    {% endif %}
+</span>

@@ -32,6 +32,7 @@ urlpatterns = [
     path('<int:pk>/remind', helpers.gig_remind, name='gig-remind'),
     path('<int:pk>/lock_plans', helpers.gig_lock_plans, name='gig-lock-plans'),
     path('<int:pk>/unlock_plans', helpers.gig_unlock_plans, name='gig-unlock-plans'),
+    path('<int:pk>/watch_gig', helpers.gig_toggle_watching, name='gig-toggle-watching'),
     path('<int:pk>/printallplans', views.PrintPlansView.as_view(), {'all':True}, name='gig-print-all-plans'),
     path('<int:pk>/printconfirmedplans', views.PrintPlansView.as_view(), {'all':False}, name='gig-print-confirmed-plans'),
     path('<int:pk>/printsetlist', views.PrintSetlistView.as_view(), name='gig-print-setlist'),

@@ -39,7 +39,7 @@ import calendar
 def band_editor_required(func):
     def decorated(request, pk, *args, **kw):
         g = get_object_or_404(Gig, pk=pk)
-        if not g.band.is_editor(request.user):
+        if not (g.band.is_editor(request.user) or (request.user==g.contact)):
             return HttpResponseForbidden()
         return func(request, g, *args, **kw)
     return decorated
@@ -62,7 +62,7 @@ def plan_editor_required(func):
 def update_plan(request, plan, val):
     if plan.gig.plans_locked and not plan.assoc.band.is_admin(request.user):
         return HttpResponseForbidden()
-    plan.status = val
+    plan.set_status(val) # this will also set the plan 'dirty'
     plan.save()
     return render(request, 'gig/plan_icon.html', {'plan_value': val})
 
@@ -205,6 +205,13 @@ def notify_new_gig(gig, created, dates=None):
         async_task('gig.helpers.send_email_from_gig', gig,
                 'email/new_gig.md' if created else 'email/edited_gig.md')
 
+def send_watcher_email(member, plans):
+    context = {
+        'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
+    }
+    msg = prepare_email(member.as_email_recipient(), 'email/watcher_email.md', context)
+    send_messages_async([msg])
+
 @login_required
 @band_editor_required
 def gig_lock_plans(request, gig):
@@ -218,6 +225,16 @@ def gig_unlock_plans(request, gig):
     gig.plans_locked = False
     gig.save()
     return redirect('gig-detail', pk=gig.id)
+
+@login_required
+@band_editor_required
+def gig_toggle_watching(request, gig):
+    if request.user in gig.watchers.all():
+        gig.watchers.remove(request.user)
+    else:
+        gig.watchers.add(request.user)
+    gig.save()
+    return render(request, 'gig/watching.html', {'gig':gig})
 
 @login_required
 @band_editor_required

@@ -48,6 +48,9 @@ urlpatterns = [
     path('email/<uuid:pk>', views.confirm_email, name='member-confirm-email'),
 
     path('<int:pk>/delete', helpers.delete_member, name='member-delete'),
+
+    path('<int:pk>/stop_watch', helpers.stop_watching, name='member-stop-watching'),
+
     path('generate-api-key', helpers.generate_api_key, name='member-generate-api-key'),
     path('revoke-api-key', helpers.revoke_api_key, name='member-revoke-api-key'),
 ]

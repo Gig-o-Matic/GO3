@@ -210,7 +210,7 @@
             <a id="member-plans" name="member-plans"></a>
             <div class="card-header">
                 <div class="row titlerow">
-                    <div class="col-4">
+                    <div class="col-lg-2 col-md-2 col-12">
                         {% trans "Member Plans" %}
                     </div>
                     <div class="ml-auto"">
@@ -236,7 +236,12 @@
                             	<small>{% trans "Reminder Sent" %}</small>
                         	</span>
                         {% endif %}
-                        {% if request.user.is_superuser or the_user_is_band_admin %}
+                        {% if request.user == gig.contact or request.user.is_superuser or the_user_is_band_admin %}
+                            {% if request.user.is_beta_tester %}
+                            <span id="watch_gig">
+                                {% include "gig/watching.html" %}
+                            </span>
+                            {% endif %}
                             <span id="lock_plans">
                             {% if gig.plans_locked %}
                                 <a href="{% url 'gig-unlock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
