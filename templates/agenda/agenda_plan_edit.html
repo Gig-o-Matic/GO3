@@ -33,7 +33,7 @@
             {% endif %}
         {% endwith %}
     </div>
-    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}6{% endif %} pr-0">
+    <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}{% if assoc.is_multisectional %}6{% else %}7{% endif %}{% endif %} pr-0">
         <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
             <a href="/band/{{ band.id }}">
@@ -47,7 +47,7 @@
     </div>
     {% if gig.status != 2 %}
         {% if show_locations %}
-            <div class="col-12 col-md-3 pr-0">
+            <div class="col-12 col-md-{% if assoc.is_multisectional %}3{% else %}4{% endif %} pr-0">
                 {% is_url gig.address as address_is_url %}
                 {% if address_is_url %}
                     <a href="{{ gig.address }}" target="_blank">{{ gig.address }}</a>
@@ -55,8 +55,38 @@
                     {{ gig.address }}
                 {% endif %}
             </div>
-        {% endif %}
-        <div class="col-12 col-md-3 btn-group" role="group">
+            {% endif %}
+            <div class="col-12 col-md-{% if assoc.is_multisectional %}3{% else %}2{% endif %} btn-group justify-content-end" role="group">
+            {% if assoc.is_multisectional %}
+                {% if band.sections.all|length > 1 %}
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
+                            {% if section == None %}
+                                {% trans "section" %}...  <span class="caret"></span>
+                            {% else %}
+                                {{section.display_name }} <span class="caret"></span>
+    {% comment %}
+    TODO the section name had a 'shorten' filter
+    {% endcomment %}
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
+                            {% for section in band.sections.all %}
+                                <a class="dropdown-item"
+                                   hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
+                                   hx-ext="update-dropdown"
+                                   hx-target="#sel-{{ plan.id }}">
+                                    {{ section.display_name }}
+                                </a>
+    {% comment %}
+    TODO the section name had a 'shorten' filter
+    {% endcomment %}
+    
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
             {% if gig.plans_locked and not the_user_is_band_admin %}
                 <span class="mr-2">
                     {% include "gig/plan_icon.html" with plan_value=plan.status %}
@@ -68,37 +98,7 @@
             {% if band.plan_feedback %}
                 {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
             {% endif %}
-            {% if assoc.is_multisectional %}
-                {% if band.sections.all|length > 1 %}
-                    <div class="dropdown mr-2">
-                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" role="button" data-toggle="dropdown" id="sel-{{plan.id}}" aria-haspopup="true" aria-expanded="false">
-                            {% if section == None %}
-                                {% trans "section" %}...  <span class="caret"></span>
-                            {% else %}
-                                {{section.display_name }} <span class="caret"></span>
-{% comment %}
-TODO the section name had a 'shorten' filter
-{% endcomment %}
-                            {% endif %}
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="sel-{{plan.id}}">
-                            {% for section in band.sections.all %}
-                                <a class="dropdown-item"
-                                   hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
-                                   hx-ext="update-dropdown"
-                                   hx-target="#sel-{{ plan.id }}">
-                                    {{ section.display_name }}
-                                </a>
-{% comment %}
-TODO the section name had a 'shorten' filter
-{% endcomment %}
-
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-            {% endif %}
-            <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}display:none;{% endif %}" href="#" id="comment-init-{{plan.id}}"
+            <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}opacity: 0;{% endif %}" href="#" id="comment-init-{{plan.id}}"
                 onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
         </div>
     {% else %}
