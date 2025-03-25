@@ -206,6 +206,7 @@ def notify_new_gig(gig, created, dates=None):
                 'email/new_gig.md' if created else 'email/edited_gig.md')
 
 def send_watcher_email(member, plans):
+    plans = plans.order_by('gig__band','gig')
     context = {
         'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
     }
