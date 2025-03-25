@@ -181,7 +181,7 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
 
 
     def form_valid(self, form):
-        if not has_manage_gig_permission(self.request.user, self.object.band):
+        if not (has_manage_gig_permission(self.request.user, self.object.band) or (self.object.creator==self.request.user)):
             return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
