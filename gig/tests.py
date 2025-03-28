@@ -21,7 +21,7 @@ from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email, create_gig_series, gig_toggle_watching
+from .helpers import send_reminder_email, create_gig_series, gig_toggle_watching, _prepare_plans_for_watcher_email
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs, alert_watchers
 from datetime import timedelta, datetime, timezone as dttimezone
