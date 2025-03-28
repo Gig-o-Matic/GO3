@@ -9,7 +9,7 @@ Thanks,
 The Gig-o-Matic Team{% endblocktrans %}{% endautoescape %}
 
 <br><br>
-{{data}}
+
 {% for band in data %}
 {{band.0.name}}<br>
 
