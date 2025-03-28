@@ -205,10 +205,43 @@ def notify_new_gig(gig, created, dates=None):
         async_task('gig.helpers.send_email_from_gig', gig,
                 'email/new_gig.md' if created else 'email/edited_gig.md')
 
+def _prepare_plans_for_watcher_email(plans):
+    the_data = {}
+    for plan in plans:
+        band = plan.gig.band
+        gig = plan.gig
+        if not band in the_data:
+            the_data[band] = {}
+        if not gig in the_data[band]:
+            the_data[band][gig] = []
+        the_data[band][gig].append([plan.assoc.member.display_name,PlanStatusChoices.choices[plan.status][1]])
+        
+    # convert this into a list of list of lists
+    final_data = []
+    for band, band_gigs in the_data.items():
+        giglist = []
+        for gig, plan_list in band_gigs.items():
+            giglist.append([gig, plan_list])
+        final_data.append([band, giglist])
+    return final_data
+
 def send_watcher_email(member, plans):
-    plans = plans.order_by('gig__band','gig')
+    # organize the plans for ease of presentation:
+    # [
+    #     [band, [
+    #              [gig [[plan member, plan value], plan]],
+    #              [gig [plan, plan]],
+    #            ]
+    #     ],
+    # ]
+
+    plans = plans.order_by('gig__band','gig__date','gig')
+
+    the_data = _prepare_plans_for_watcher_email(plans)
+
     context = {
-        'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
+        # 'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
+        'data' : the_data
     }
     msg = prepare_email(member.as_email_recipient(), 'email/watcher_email.md', context)
     send_messages_async([msg])
