@@ -25,11 +25,6 @@ The Gig-o-Matic Team{% endblocktrans %}{% endautoescape %}
 <br><br>
 {% endfor %}
 
-<ul>
-{% for p in plans %}
-<li>{{p.0.band.name}}: {{p.0.title}} - {{p.1.display_name}} ({{p.1.email}}) is now {{p.2}}</li>
-{% endfor %}
-</ul>
 <br><br>
 {% blocktrans %}
 You can stop watching gigs from your profile page.
