@@ -32,8 +32,6 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 import pytz
 from pytz import timezone as pytz_timezone
-from graphene.test import Client as graphQLClient
-from go3.schema import schema
 import json
 import os
 from django.conf import settings
@@ -829,84 +827,6 @@ class BandCalfeedTest(FSTestCase):
         g.save()
         self.band.refresh_from_db()
         self.assertTrue(self.band.pub_cal_feed_dirty)
-
-
-class GraphQLTest(TestCase):
-    def setUp(self):
-        self.super = Member.objects.create_user(
-            email='super@b.c', is_superuser=True)
-        self.band_admin = Member.objects.create_user(email='admin@e.f')
-        self.joeuser = Member.objects.create_user(email='joe@h.i')
-        self.janeuser = Member.objects.create_user(email='jane@k.l')
-        self.band = Band.objects.create(name='test band', hometown='Seattle')
-        Assoc.objects.create(member=self.band_admin, band=self.band,
-                             is_admin=True, status=AssocStatusChoices.CONFIRMED)
-        """ set context for test graphene requests """
-        self.request_factory = RequestFactory()
-        self.context_value = self.request_factory.get('/api/')
-
-    def tearDown(self):
-        """ make sure we get rid of anything we made """
-        Member.objects.all().delete()
-        Band.objects.all().delete()
-        Assoc.objects.all().delete()
-
-    # test band queries
-
-    def test_all_bands_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.super
-
-        executed = client.execute(
-            """{ allBands {
-                    band {
-                        name,
-                        hometown
-                    }
-                } }""", context_value=self.context_value)
-
-        assert executed == {
-            "data": {'allBands': [{'band': {'name': 'test band', 'hometown': 'Seattle'}}]}
-        }
-
-    def test_all_bands_not_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.joeuser
-
-        executed = client.execute(
-            """{ allBands {
-                    band {
-                        name,
-                        hometown
-                    }
-                } }""", context_value=self.context_value)
-        assert executed == {
-            "data": {'allBands': []}
-        }
-
-    def test_band_by_name_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.super
-        executed = client.execute(
-            """{ bandByName(name:"test band") {
-            name,
-            hometown
-            } }""", context_value=self.context_value
-        )
-        assert executed == {
-            "data": {"bandByName": {"name": "test band", "hometown": "Seattle"}}
-        }
-
-    def test_band_by_name_not_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.joeuser
-        executed = client.execute(
-            """{ bandByName(name:"test band") {
-            name,
-            hometown
-            } }""", context_value=self.context_value
-        )
-        assert "errors" in executed
 
 class ActiveBandTests(TestCase):
     def test_active_band_list(self):

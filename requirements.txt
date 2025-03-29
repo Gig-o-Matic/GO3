@@ -25,10 +25,6 @@ django-widget-tweaks==1.4.8
 fontawesomefree==6.5.1
 freezegun==1.5.1
 future==0.18.3
-graphene==3.3
-graphene-django==3.2.0
-graphql-core==3.2.3
-graphql-relay==3.2.0
 gunicorn==23.0.0
 icalendar==5.0.12
 idna==3.7

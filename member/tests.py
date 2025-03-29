@@ -28,7 +28,6 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.test import Client, RequestFactory, TestCase
 from django.urls import reverse
 from django.utils import timezone
-from graphene.test import Client as graphQLClient
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from pytz import timezone as pytz_timezone
 
@@ -36,7 +35,6 @@ from band.models import Assoc, AssocStatusChoices, Band
 from gig.models import Gig, Plan
 from gig.tests import GigTestBase
 from gig.util import GigStatusChoices, PlanStatusChoices
-from go3.schema import schema
 from lib.email import DEFAULT_SUBJECT, prepare_email
 from lib.template_test import MISSING, TemplateTestCase, flag_missing_vars
 
@@ -1239,72 +1237,6 @@ class MemberEditTest(TemplateTestCase):
         m.username=''
         m.save()
         self.assertEqual(m.display_name, 'a@b.com')
-
-
-          
-class GraphQLTest(TestCase):
-    def setUp(self):
-        self.super = Member.objects.create_user(
-            email='super@b.c', is_superuser=True)
-        self.band_admin = Member.objects.create_user(email='admin@e.f')
-        self.joeuser = Member.objects.create_user(email='joe@h.i')
-        self.janeuser = Member.objects.create_user(email='jane@k.l')
-        """ set context for test graphene requests """
-        self.request_factory = RequestFactory()
-        self.context_value = self.request_factory.get('/api/')
-
-    def tearDown(self):
-        """ make sure we get rid of anything we made """
-        Member.objects.all().delete()
-          
-    # test member queries
-    def test_all_members_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.super
-        executed = client.execute(
-            """{ allMembers{
-            email,
-            username
-            } }""", context_value=self.context_value
-        )
-        assert executed == {'data': {'allMembers': [{'email': 'super@b.c', 'username': ''}, {
-            'email': 'admin@e.f', 'username': ''}, {'email': 'joe@h.i', 'username': ''}, {'email': 'jane@k.l', 'username': ''}]}}
-
-    def test_all_members_not_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.joeuser
-        executed = client.execute(
-            """{ allMembers{
-            email,
-            username
-            } }""", context_value=self.context_value
-        )
-        assert "errors" in executed
-
-    def test_member_by_email_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.super
-        executed = client.execute(
-            """{ memberByEmail(email:"joe@h.i") {
-            email,
-            username
-            } }""", context_value=self.context_value
-        )
-        assert executed == {
-            "data": {"memberByEmail": {"email": "joe@h.i", "username": ""}}
-        }
-
-    def test_member_by_email_not_superuser(self):
-        client = graphQLClient(schema)
-        self.context_value.user = self.joeuser
-        executed = client.execute(
-            """{ memberByEmail(email:"joe@h.i") {
-            email,
-            username
-            } }""", context_value=self.context_value
-        )
-        assert "errors" in executed
-
 
 class MemberSecurityTest(GigTestBase):
     def test_member_detail_access(self):

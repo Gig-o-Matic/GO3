@@ -96,23 +96,6 @@ Run the project locally and open [http://127.0.0.1:8000/api/docs](http://127.0.0
 
 Log in and navigate to the [member profile](http://127.0.0.1:8000/member/) page to generate a token.
 
-## GraphQL API
-
-To test the GraphQL endpoint, run the project locally and navigate to `http://127.0.0.1:8000/graphql` in your browser. 
-
-Queries in the GUI are formatted as such:
-```
-query {
-	allBands {
-		band {
-      		name,
-		  	hometown,
-		  	creation_date
-		}
-	}
-}
-```
-
 ## Formatting standards
 
 We are converting the project to `autopep8`.

@@ -101,7 +101,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_q",
     "simple_history",
-    "graphene_django",
     "fontawesomefree",
     "markdownify.apps.MarkdownifyConfig",
 ]
@@ -322,9 +321,6 @@ MESSAGE_TAGS = {
     messages.WARNING: "alert-warning",
     messages.ERROR: "alert-danger",
 }
-
-# Graphene GraphQL settings
-GRAPHENE = {"SCHEMA": "go3.schema.schema"}
 
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
