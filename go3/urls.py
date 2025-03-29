@@ -36,11 +36,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
 from django.views.i18n import JavaScriptCatalog
-from graphene_django.views import GraphQLView
 from ninja import NinjaAPI
 
-from agenda.views import PrivateGraphQLView
-from go3.schema import schema
 from member.helpers import go2_id_calfeed
 from member.views import LanguageLoginView
 
@@ -59,7 +56,6 @@ urlpatterns = [
     path('stats/', include('stats.urls')),
     path('admin/', admin.site.urls),
     path('migration/', include('migration.urls')),
-    path('graphql', PrivateGraphQLView.as_view(graphiql=True, schema=schema)),
     path('404',test404.as_view()),
     path('jsi18n/', JavaScriptCatalog.as_view(), name="javascript-catalog"),
     # Backward compatibility with old GO2 cal feed
