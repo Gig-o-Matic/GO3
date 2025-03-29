@@ -25,7 +25,6 @@ from band.models import Assoc
 from band.util import AssocStatusChoices
 from datetime import datetime
 import json
-from graphene_django.views import GraphQLView
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
@@ -153,7 +152,3 @@ class GridViewHeatmap(LoginRequiredMixin, TemplateView):
             'year', None) or datetime.now().year
 
         return context
-
-
-class PrivateGraphQLView(LoginRequiredMixin, GraphQLView):
-    pass
