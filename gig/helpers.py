@@ -243,6 +243,11 @@ def send_watcher_email(member, plans):
         # 'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
         'data' : the_data
     }
+
+    # since the plans might involve different bands from different places, use the
+    # member's timezone for now. Eventually localize each gig to its own zone.
+    timezone.activate(member.preferences.current_timezone)
+
     msg = prepare_email(member.as_email_recipient(), 'email/watcher_email.md', context)
     send_messages_async([msg])
 

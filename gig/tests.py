@@ -1309,6 +1309,25 @@ class GigWatchTest(GigTestBase):
         self.assertEqual(len(g.watchers.all()), 0)
         self.assertEqual(len(self.joeuser.watching.all()), 0)
 
+    def test_watch_timezones(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.joeuser.is_beta_tester = True
+        self.joeuser.save()
+        self.joeuser.preferences.current_timezone="US/Eastern"
+        self.joeuser.preferences.save()
+        g.watchers.add(self.joeuser)
+        self.assertEqual(len(g.watchers.all()),1)
+        self.assertEqual(len(self.joeuser.watching.all()),1)
+        g.date=datetime(2024,1,1,16,30,0,tzinfo=utc)
+        g.save()
+
+        # generate a watchers email
+        mail.outbox=[]
+        p.set_status(PlanStatusChoices.DEFINITELY)
+        alert_watchers()
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertIn('1:30', message.body)
 
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):
