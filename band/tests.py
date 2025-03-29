@@ -688,7 +688,7 @@ class PublicBandPageTest(GigTestBase):
             reverse('band-public-page', args=["xyzzy"]))
         self.assertEqual(resp.status_code, 404)
 
-        resp = self.client.get(reverse('logout'))
+        resp = self.client.post(reverse('logout'))
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.url, '/accounts/login')
 
