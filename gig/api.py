@@ -34,6 +34,7 @@ class GigSchema(ModelSchema):
     set_time: Optional[str] = None
     end_time: Optional[str] = None
     gig_status: Optional[str] = None
+    is_in_trash: bool
 
     class Meta:
         model = Gig
@@ -101,6 +102,10 @@ class GigSchema(ModelSchema):
             return next((str(choice[1]) for choice in GigStatusChoices.choices if choice[0] == obj.status))
         except StopIteration:
             raise CannotResolveGigStatus
+        
+    @staticmethod
+    def resolve_is_in_trash(obj):
+        return obj.is_in_trash
 
 
 class GigListResponse(Schema):
