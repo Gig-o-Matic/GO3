@@ -12,9 +12,9 @@ The Gig-o-Matic Team{% endblocktrans %}{% endautoescape %}
 
 {% for band in data %}
 {{band.0.name}}<br>
-
++++{{url_base}}+++
 {% for gig in band.1 %}
-{{ gig.0.date }} - <a href="{% url 'gig-detail' pk=gig.0.id %}">{{gig.0.title}}</a><br>
+{{ gig.0.date }} - <a href="{{url_base}}{% url 'gig-detail' pk=gig.0.id %}">{{gig.0.title}}</a><br>
 <ul>
 {% for plan in gig.1 %}
 <li>{{plan.0}} is now {{plan.1}}

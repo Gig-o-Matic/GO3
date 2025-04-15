@@ -35,6 +35,7 @@ from datetime import timedelta
 from collections import Counter
 import uuid
 import calendar
+from go3.settings import URL_BASE
 
 def band_editor_required(func):
     def decorated(request, pk, *args, **kw):
@@ -241,7 +242,8 @@ def send_watcher_email(member, plans):
 
     context = {
         # 'plans': [[p.gig, p.assoc.member, PlanStatusChoices.choices[p.status][1]] for p in plans],
-        'data' : the_data
+        'data' : the_data,
+        'url_base' : URL_BASE,
     }
 
     # since the plans might involve different bands from different places, use the
