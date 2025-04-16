@@ -90,7 +90,7 @@ class AgendaView(AgendaBaseView):
             context['the_buttons'] = [
                 [AgendaLayoutChoices.ONE_LIST, _("All Upcoming Gigs"), 0,
                  layout==AgendaLayoutChoices.ONE_LIST, False],
-                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Reponse'), 0,
+                [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Response'), 0,
                     layout==AgendaLayoutChoices.NEED_RESPONSE, True],
             ]
 
