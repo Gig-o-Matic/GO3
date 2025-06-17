@@ -37,7 +37,7 @@ mccabe==0.6.1
 packaging==23.2
 platformdirs==4.2.0
 promise==2.3
-protobuf==3.18.3
+protobuf==4.25.8
 psycopg==3.1.18
 psycopg-binary==3.1.18
 pycodestyle==2.11.1
