@@ -19,15 +19,14 @@ from icalendar import Calendar, Event
 from datetime import timedelta, datetime
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
-import os
 from gig.util import GigStatusChoices
 from django.conf import settings
-from go3.settings import URL_BASE, BASE_DIR
-import pytz
+from go3.settings import URL_BASE
 
 if default_storage.__class__ == FileSystemStorage:
     default_storage.location = f'{settings.CALFEED_BASEDIR}calfeeds'
     default_storage.base_url = 'calfeeds'
+
 
 def save_calfeed(tag, content):
     file_path = f'{tag}.txt'
@@ -61,6 +60,7 @@ def _make_calfeed_metadata(the_source):
             '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_source))
     return cal
 
+
 def _make_calfeed_event(gig, is_for_band):
     def _make_summary(gig):
         """ makes the summary: the title, plus band name and status """
@@ -79,7 +79,7 @@ def _make_calfeed_event(gig, is_for_band):
     event.add('summary', _make_summary(gig))
     if gig.is_full_day:
         date = gig.date.date()
-        startdate = datetime.combine(date,datetime.min.time())
+        startdate = datetime.combine(date, datetime.min.time())
         event.add('dtstart', startdate, {'value': 'DATE'})
         # To make the event use the full final day, icalendar clients expect the end date
         # to be the date after the event ends. So we add 1 day.
@@ -87,7 +87,7 @@ def _make_calfeed_event(gig, is_for_band):
         # "The "DTEND" property for a "VEVENT" calendar component specifies
         # the non-inclusive end of the event."
         enddate = (gig.enddate if gig.enddate else gig.date).date() + timedelta(days=1)
-        enddate = datetime.combine(enddate,datetime.min.time())
+        enddate = datetime.combine(enddate, datetime.min.time())
         event.add('dtend', enddate, {'value': 'DATE'})
     else:
         setdate = gig.setdate if (is_for_band and gig.setdate) else gig.date
@@ -101,6 +101,7 @@ def _make_calfeed_event(gig, is_for_band):
     # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
     return event
 
+
 def make_member_calfeed(member, the_plans):
     """ construct an ical-compliant stream from a list of plans """
 
@@ -112,6 +113,7 @@ def make_member_calfeed(member, the_plans):
             event = _make_calfeed_event(plan.gig, is_for_band=False)
             cal.add_component(event)
     return cal.to_ical()
+
 
 def make_band_calfeed(band, the_gigs):
     """ construct an ical-compliant stream from a list of gigs """
