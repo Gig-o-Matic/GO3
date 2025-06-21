@@ -22,7 +22,7 @@ from lib.email import send_messages_async
 from gig.models import Gig
 from member.models import Member
 from band.models import Band, Assoc
-from lib.caldav import save_calfeed, get_calfeed, make_calfeed, delete_calfeed
+from lib.caldav import save_calfeed, get_calfeed, make_calfeed, make_member_calfeed, make_band_calfeed, delete_calfeed
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 import os
 from datetime import timedelta, timezone as dttimezone
@@ -53,6 +53,7 @@ class CaldavTest(TestCase):
         self.janeuser = Member.objects.create_user(email='j@k.l')
         self.band = Band.objects.create(name='test band')
         Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
+        Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=False)
         self.testgig = self.create_gig()
 
     def tearDown(self):
@@ -71,7 +72,7 @@ class CaldavTest(TestCase):
         )
 
     def test_calfeed(self):
-        cf = make_calfeed(self.joeuser, [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_member_calfeed(self.joeuser, [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
         self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
         self.assertTrue(cf.find(str(self.joeuser).encode('ASCII'))>0)
         self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
@@ -98,8 +99,8 @@ class CaldavTest(TestCase):
         # for member feeds, the start date should be the call time; for band feeds, the start should be the set time
 
         # first, a gig without a set time should show the call time
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
-                          self.band.pub_cal_feed_id, is_for_band=True)
+        cf = make_band_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
+                               self.band.pub_cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for member feeds, should show the call time
@@ -109,8 +110,8 @@ class CaldavTest(TestCase):
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for band feeds, should show the set time
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
-                          self.band.pub_cal_feed_id, is_for_band=True)
+        cf = make_band_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
+                               self.band.pub_cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')==-1)
         self.assertTrue(cf.find(b'DTSTART:20200229T153000')>0)
 
@@ -156,14 +157,14 @@ class CaldavTest(TestCase):
         self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n',cf)
 
     def test_calfeed_timezone(self):
-        cf = make_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language,
-                          self.joeuser.cal_feed_id, is_for_band=True)
+        cf = make_band_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language,
+                               self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         self.band.timezone='America/New_York'
         self.band.save()
-        cf = make_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language, 
-                          self.joeuser.cal_feed_id, is_for_band=True)
+        cf = make_band_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language, 
+                               self.joeuser.cal_feed_id)
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
 
