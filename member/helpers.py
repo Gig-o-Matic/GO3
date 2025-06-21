@@ -108,7 +108,7 @@ def send_email_conf(confirmation):
     send_messages_async([prepare_email(confirmation.as_email_recipient(), template, context)])
 
 
-def prepare_calfeed(member):
+def prepare_member_calfeed(member):
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
     the_plans = member.calendar_plans.filter(gig__date__gt=date_earliest)
@@ -118,14 +118,14 @@ def prepare_calfeed(member):
 
 def update_member_calfeed(id):
     m = Member.objects.get(id=id)
-    cf = prepare_calfeed(m)
+    cf = prepare_member_calfeed(m)
     save_calfeed(m.cal_feed_id, cf)
 
 def calfeed(request, pk):
     try:
         if settings.DYNAMIC_CALFEED:
             # if the dynamic calfeed is set, just create the calfeed right now and return it
-            tf = prepare_calfeed(Member.objects.get(cal_feed_id=pk))
+            tf = prepare_member_calfeed(Member.objects.get(cal_feed_id=pk))
         else:
             # if using the task queue, get the calfeed from the disk cache
             tf = get_calfeed(pk)
