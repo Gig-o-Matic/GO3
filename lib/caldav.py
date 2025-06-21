@@ -101,23 +101,23 @@ def _make_calfeed_event(gig, is_for_band):
     # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
     return event
 
-def make_calfeed(member, the_plans, the_language, the_uid, is_for_band=False):
-    pass
-
-def make_member_calfeed(member, the_plans, the_language, the_uid):
+def make_member_calfeed(member, the_plans):
     """ construct an ical-compliant stream from a list of plans """
 
-    with translation.override(the_language):
+    # member.cal_feed_id # TODO uid
+
+    with translation.override(member.preferences.language):
         cal = _make_calfeed_metadata(member)
         for plan in the_plans:
             event = _make_calfeed_event(plan.gig, is_for_band=False)
             cal.add_component(event)
     return cal.to_ical()
 
-def make_band_calfeed(band, the_gigs, the_language, the_uid):
+def make_band_calfeed(band, the_gigs):
     """ construct an ical-compliant stream from a list of gigs """
+    # band.pub_cal_feed_id  TODO use uid?
 
-    with translation.override(the_language):
+    with translation.override(band.default_language):
         cal = _make_calfeed_metadata(band)
         for gig in the_gigs:
             event = _make_calfeed_event(gig, is_for_band=True)
