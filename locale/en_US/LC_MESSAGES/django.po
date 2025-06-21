@@ -1618,10 +1618,6 @@ msgstr ""
 msgid "Preferences"
 msgstr ""
 
-#: templates/member/member_detail.html:204
-msgid "Lanuage"
-msgstr ""
-
 #: templates/member/member_detail.html:210
 msgid "Timezone"
 msgstr ""
