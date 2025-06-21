@@ -22,7 +22,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from datetime import timedelta
 from member.models import Member
 from lib.email import prepare_email, send_messages_async
-from lib.caldav import make_calfeed, save_calfeed, get_calfeed
+from lib.caldav import make_member_calfeed, save_calfeed, get_calfeed
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from band.helpers import do_delete_assoc
@@ -125,9 +125,8 @@ def prepare_calfeed(member):
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
     the_plans = member.calendar_plans.filter(gig__date__gt=date_earliest)
-    the_gigs = [p.gig for p in the_plans]
-    cf = make_calfeed(member, the_gigs,
-                      member.preferences.language, member.cal_feed_id)
+    cf = make_member_calfeed(member, the_plans,
+                             member.preferences.language, member.cal_feed_id)
     return cf
 
 
