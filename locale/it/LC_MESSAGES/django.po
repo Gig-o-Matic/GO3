@@ -1697,12 +1697,6 @@ msgstr "Info suonata archiviata"
 msgid "Preferences"
 msgstr "Preferenze"
 
-#: templates/member/member_detail.html:204
-#, fuzzy
-#| msgid "Language"
-msgid "Lanuage"
-msgstr "Lingua"
-
 #: templates/member/member_detail.html:210
 msgid "Timezone"
 msgstr ""

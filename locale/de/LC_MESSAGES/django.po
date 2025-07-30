@@ -1693,12 +1693,6 @@ msgstr "Archivierte Termine Info"
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: templates/member/member_detail.html:204
-#, fuzzy
-#| msgid "Language"
-msgid "Lanuage"
-msgstr "Sprache"
-
 #: templates/member/member_detail.html:210
 msgid "Timezone"
 msgstr ""

@@ -1697,12 +1697,6 @@ msgstr "Infos du concert (archive)"
 msgid "Preferences"
 msgstr "Préférences"
 
-#: templates/member/member_detail.html:204
-#, fuzzy
-#| msgid "Language"
-msgid "Lanuage"
-msgstr "Langue"
-
 #: templates/member/member_detail.html:210
 msgid "Timezone"
 msgstr ""
