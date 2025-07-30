@@ -28,7 +28,9 @@
 {% endcomment %}
             </div>
         	<div class="col-md-7 ml-md-0 col-10 ml-2">
-        		<a href="mailto:{{the_member.email}}">{{ the_member.email }}</a>
+                {% if the_member.preferences.share_email or the_user_is_band_admin or request.user.is_superuser %}
+            		<a href="mailto:{{the_member.email}}">{{ the_member.email }}</a>
+                {% endif %}
         	</div>
         </div>
         {% endwith %}
