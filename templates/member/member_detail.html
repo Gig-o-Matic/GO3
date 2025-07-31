@@ -200,54 +200,67 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <div class="col-sm-12"><h5>Localization</h5></div>
+                    </div>
+                    <div class="row">
                         {% get_language_info for member.preferences.language as lang %}
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Language" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Language" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{{ lang.name_local|title }}</div>
                         <div class="col-12 d-sm-none">{% trans "Language" %}: {{ lang.name_local|title }}</div>
                     </div>
-                    <br>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Timezone" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Timezone" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{{ member.preferences.current_timezone }}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Auto Update" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Auto Update" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{{ member.preferences.auto_update_timezone }}</div>
                     </div>
                     <br>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Share my profile" %}:</div>
+                        <div class="col-sm-12"><h5>Sharing</h5></div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Share my profile" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.share_profile %}</div>
                         <div class="col-12 d-sm-none">{% trans "Share my profile" %}: {% include "base/tf.html" with value=member.preferences.share_profile %}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Share my email" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Share my email" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.share_email %}</div>
                         <div class="col-12 d-sm-none">{% trans "Share my email" %}: {% include "base/tf.html" with value=member.preferences.share_email %}</div>
                     </div>
                     <br>
                     <div class="row">
-                        {% comment %}
-                        TODO
-                        {% endcomment %}
-                        <div class="col-sm-6 col-12">{% trans "Calendar URL for My Bands" %}</div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-12"><h5>Calendar</h5></div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="col-sm-5 col-12">{% trans "Calendar URL for My Bands" %}</div>
+                        <div class="col-sm-6 col-12">
                                 <a href="{% url 'member-calfeed' pk=member.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="{% url 'help-calfeed' pk=user.id %}">{% trans "click here for help" %}</a>]
                         </div>
                     </div>
-                    <br>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Calendar shows only confirmed gigs" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Calendar shows only confirmed gigs" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only confirmed gigs" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-6">{% trans "Hide canceled gigs" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Hide canceled gigs" %}:</div>
                         <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                         <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                     </div>
@@ -256,8 +269,8 @@
                         <br>
                         <div class="row">
                             <div class="col-sm-6 col-12">Verified:</div>
-                            <div class="col-sm-9 col-12">
-                                {{  member.verified }}
+                            <div class="col-sm-6 col-12">
+                                {{ member.verified }}
                                 {% if  member.verified == False %}
                                     <a class="btn btn-primary btn-sm" href="/verify_member?mk={{  member.id }}">verify</a>
                                 {% endif %}
