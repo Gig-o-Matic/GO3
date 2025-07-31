@@ -30,8 +30,8 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-sm-3 col-12">{% trans "Name" %}</div>
-                    <div class="col-sm-9 col-12">{{  member.username|escape }}
+                    <div class="col-sm-5 col-12">{% trans "Name" %}</div>
+                    <div class="col-sm-7 col-12">{{  member.username|escape }}
                         {% if  member.nickname %}
                             ({{  member.nickname | escape }})
                         {% endif %}
@@ -42,8 +42,8 @@
                 </div>
                 {% if show_email %}
                     <div class="row">
-                        <div class="col-sm-3 col-12">{% trans "Email" %}</div>
-                        <div class="col-sm-9 col-12"><a href="mailto:{{ member.email}}">{{  member.email }}</a>
+                        <div class="col-sm-5 col-12">{% trans "Email" %}</div>
+                        <div class="col-sm-7 col-12"><a href="mailto:{{ member.email}}">{{  member.email }}</a>
                             {% if member_is_me or user.is_superuser %}
                             <span class="btn btn-primary btn-sm" hx-get='{% url "member-test-email" %}' hx-swap='outerHTML'>
                                 {% trans "Test" %}
@@ -56,8 +56,8 @@
                     </div>
                     {% if email_change_msg %}
                     <div class="row">
-                        <div class="col-sm-3 col-12"></div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-5 col-12"></div>
+                        <div class="col-sm-7 col-12">
                             {{ email_change_msg }}
                         </div>
                     </div>
@@ -65,8 +65,8 @@
                 {% endif %}
                 {% if member_is_me %}
                     <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "Password" %}</div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-5 col-12">{% trans "Password" %}</div>
+                        <div class="col-sm-7 col-12">
                             <a class="btn btn-primary btn-sm" href="{% url 'member-password-change' %}">{% trans "Change Password" %}
                             </a>
                         </div>
@@ -74,20 +74,20 @@
                 {% endif %}
                 {% if  member.phone %}
                     <div class="row">
-                        <div class="col-sm-3 col-12">{% trans "Phone" %}</div>
-                        <div class="col-sm-9 col-12">{{  member.phone|escape }}</div>
+                        <div class="col-sm-5 col-12">{% trans "Phone" %}</div>
+                        <div class="col-sm-7 col-12">{{  member.phone|escape }}</div>
                     </div>
                 {% endif %}
                 {% if member.statement %}
                     <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "Personal Statement" %}</div>
-                        <div class="col-sm-9 col-12">{{  member.statement|escape }}</div>
+                        <div class="col-sm-5 col-12">{% trans "Personal Statement" %}</div>
+                        <div class="col-sm-7 col-12">{{  member.statement|escape }}</div>
                     </div>
                 {% endif %}
                 {% if not member_is_me  %}
                     <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-5 col-12">{% trans "My Bands" %}</div>
+                        <div class="col-sm-7 col-12">
                             {% for the_band in the_member_bands %}
                                 <a href="{% url 'band-detail' pk=the_band.id %}">{{ the_band.name }}</a>{% if forloop.last == False %}, {% endif %}
                             {% endfor %}
@@ -306,10 +306,11 @@
                             </div>
                         </div>
                         <div class="row mt-4">
-                            <div class="col-sm-3 col-12">
+                            <div class="col-sm-1 col-12"></div>
+                            <div class="col-sm-5 col-12">
                                 <p>{% trans "API Key" %}</p>
                             </div>
-                            <div class="col-sm-9 col-12">
+                            <div class="col-sm-6 col-12">
                                 {% if member.api_key %}
                                     <p><a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a> <code class="ml-3">{{ member.api_key }}</code></p>
                                 {% else %}
