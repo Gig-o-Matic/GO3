@@ -30,8 +30,8 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-sm-3 col-12">{% trans "Name" %}</div>
-                    <div class="col-sm-9 col-12">{{  member.username|escape }}
+                    <div class="col-sm-5 col-12">{% trans "Name" %}</div>
+                    <div class="col-sm-7 col-12">{{  member.username|escape }}
                         {% if  member.nickname %}
                             ({{  member.nickname | escape }})
                         {% endif %}
@@ -42,8 +42,8 @@
                 </div>
                 {% if show_email %}
                     <div class="row">
-                        <div class="col-sm-3 col-12">{% trans "Email" %}</div>
-                        <div class="col-sm-9 col-12"><a href="mailto:{{ member.email}}">{{  member.email }}</a>
+                        <div class="col-sm-5 col-12">{% trans "Email" %}</div>
+                        <div class="col-sm-7 col-12"><a href="mailto:{{ member.email}}">{{  member.email }}</a>
                             {% if member_is_me or user.is_superuser %}
                             <span class="btn btn-primary btn-sm" hx-get='{% url "member-test-email" %}' hx-swap='outerHTML'>
                                 {% trans "Test" %}
@@ -56,8 +56,8 @@
                     </div>
                     {% if email_change_msg %}
                     <div class="row">
-                        <div class="col-sm-3 col-12"></div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-5 col-12"></div>
+                        <div class="col-sm-7 col-12">
                             {{ email_change_msg }}
                         </div>
                     </div>
@@ -65,8 +65,8 @@
                 {% endif %}
                 {% if member_is_me %}
                     <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "Password" %}</div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-5 col-12">{% trans "Password" %}</div>
+                        <div class="col-sm-7 col-12">
                             <a class="btn btn-primary btn-sm" href="{% url 'member-password-change' %}">{% trans "Change Password" %}
                             </a>
                         </div>
@@ -74,20 +74,20 @@
                 {% endif %}
                 {% if  member.phone %}
                     <div class="row">
-                        <div class="col-sm-3 col-12">{% trans "Phone" %}</div>
-                        <div class="col-sm-9 col-12">{{  member.phone|escape }}</div>
+                        <div class="col-sm-5 col-12">{% trans "Phone" %}</div>
+                        <div class="col-sm-7 col-12">{{  member.phone|escape }}</div>
                     </div>
                 {% endif %}
                 {% if member.statement %}
                     <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "Personal Statement" %}</div>
-                        <div class="col-sm-9 col-12">{{  member.statement|escape }}</div>
+                        <div class="col-sm-5 col-12">{% trans "Personal Statement" %}</div>
+                        <div class="col-sm-7 col-12">{{  member.statement|escape }}</div>
                     </div>
                 {% endif %}
                 {% if not member_is_me  %}
                     <div class="row mt-4">
-                        <div class="col-sm-3 col-12">{% trans "My Bands" %}</div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-5 col-12">{% trans "My Bands" %}</div>
+                        <div class="col-sm-7 col-12">
                             {% for the_band in the_member_bands %}
                                 <a href="{% url 'band-detail' pk=the_band.id %}">{{ the_band.name }}</a>{% if forloop.last == False %}, {% endif %}
                             {% endfor %}
@@ -200,64 +200,77 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <div class="col-sm-12"><h5>{% trans "Localization" %}</h5></div>
+                    </div>
+                    <div class="row">
                         {% get_language_info for member.preferences.language as lang %}
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Language" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-9">{{ lang.name_local|title }}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Language" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{{ lang.name_local|title }}</div>
                         <div class="col-12 d-sm-none">{% trans "Language" %}: {{ lang.name_local|title }}</div>
                     </div>
-                    <br>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Timezone" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-9">{{ member.preferences.current_timezone }}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Timezone" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{{ member.preferences.current_timezone }}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Auto Update" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-9">{{ member.preferences.auto_update_timezone }}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Auto Update" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{{ member.preferences.auto_update_timezone }}</div>
                     </div>
                     <br>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Share my profile" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.share_profile %}</div>
+                        <div class="col-sm-12"><h5>{% trans "Sharing" %}</h5></div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Share my profile" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.share_profile %}</div>
                         <div class="col-12 d-sm-none">{% trans "Share my profile" %}: {% include "base/tf.html" with value=member.preferences.share_profile %}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Share my email" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.share_email %}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Share my email" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.share_email %}</div>
                         <div class="col-12 d-sm-none">{% trans "Share my email" %}: {% include "base/tf.html" with value=member.preferences.share_email %}</div>
                     </div>
                     <br>
                     <div class="row">
-                        {% comment %}
-                        TODO
-                        {% endcomment %}
-                        <div class="col-sm-3 col-12">{% trans "Calendar URL for My Bands" %}</div>
-                        <div class="col-sm-9 col-12">
+                        <div class="col-sm-12"><h5>{% trans "Calendar" %}</h5></div>
+                    </div>
+                    <div class="row">
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="col-sm-5 col-12">{% trans "Calendar URL for My Bands" %}</div>
+                        <div class="col-sm-6 col-12">
                                 <a href="{% url 'member-calfeed' pk=member.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="{% url 'help-calfeed' pk=user.id %}">{% trans "click here for help" %}</a>]
                         </div>
                     </div>
-                    <br>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Calendar shows only confirmed gigs" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Calendar shows only confirmed gigs" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only confirmed gigs" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_confirmed %}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-3">{% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                         <div class="col-12 d-sm-none">{% trans "Calendar shows only gigs I can do (or maybe can do)" %}: {% include "base/tf.html" with value=member.preferences.calendar_show_only_committed %}</div>
                     </div>
                     <div class="row">
-                        <div class="d-none d-sm-inline col-sm-3">{% trans "Hide canceled gigs" %}:</div>
-                        <div class="d-none d-sm-inline col-sm-9">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
+                        <div class="d-none d-sm-inline col-sm-1"></div>
+                        <div class="d-none d-sm-inline col-sm-5">{% trans "Hide canceled gigs" %}:</div>
+                        <div class="d-none d-sm-inline col-sm-6">{% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                         <div class="col-12 d-sm-none">{% trans "Hide canceled gigs" %}: {% include "base/tf.html" with value=member.preferences.hide_canceled_gigs %}</div>
                     </div>
 
                     {% if user.is_superuser %}
                         <br>
                         <div class="row">
-                            <div class="col-sm-3 col-12">Verified:</div>
-                            <div class="col-sm-9 col-12">
-                                {{  member.verified }}
+                            <div class="col-sm-6 col-12">Verified:</div>
+                            <div class="col-sm-6 col-12">
+                                {{ member.verified }}
                                 {% if  member.verified == False %}
                                     <a class="btn btn-primary btn-sm" href="/verify_member?mk={{  member.id }}">verify</a>
                                 {% endif %}
@@ -265,8 +278,8 @@
                         </div>
                         <br>
                         <div class="row">
-                            <div class="col-sm-3 col-12">{% trans "Last Activity:" %}</div>
-                            <div class="col-sm-9 col-12">
+                            <div class="col-sm-6 col-12">{% trans "Last Activity:" %}</div>
+                            <div class="col-sm-6 col-12">
                                 {% if  member.last_login %}
                                     {{  member.last_login }}
                                 {% else %}
@@ -293,10 +306,11 @@
                             </div>
                         </div>
                         <div class="row mt-4">
-                            <div class="col-sm-3 col-12">
+                            <div class="col-sm-1 col-12"></div>
+                            <div class="col-sm-5 col-12">
                                 <p>{% trans "API Key" %}</p>
                             </div>
-                            <div class="col-sm-9 col-12">
+                            <div class="col-sm-6 col-12">
                                 {% if member.api_key %}
                                     <p><a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a> <code class="ml-3">{{ member.api_key }}</code></p>
                                 {% else %}
