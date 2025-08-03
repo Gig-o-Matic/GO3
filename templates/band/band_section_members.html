@@ -13,7 +13,7 @@
         {% with the_member=the_assoc.member %}
         <div class="row">
         	<div class="col-md-5 col-sm-12">
-                {% if the_user_is_band_admin or request.user.is_superuser %}
+                {% if the_user_is_band_admin %}
                     <a href="{% url 'member-detail' pk=the_member.id %}"><span class="the_nickname">{{the_member.display_name}}</span><span class="the_longname" style="display:none;">{{ the_member.member_name }}</span></a>
                 {% else %}
                     <a href="{% url 'member-detail' pk=the_member.id %}">{{the_member.display_name}}</a>
@@ -28,7 +28,7 @@
 {% endcomment %}
             </div>
         	<div class="col-md-7 ml-md-0 col-10 ml-2">
-                {% if the_member.preferences.share_email or the_user_is_band_admin or request.user.is_superuser %}
+                {% if the_member.preferences.share_email or the_user_is_band_admin %}
             		<a href="mailto:{{the_member.email}}">{{ the_member.email }}</a>
                 {% endif %}
         	</div>
