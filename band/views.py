@@ -16,7 +16,7 @@ from .forms import BandForm
 from .util import AssocStatusChoices, _get_active_bands
 from member.models import Invite
 from member.util import MemberStatusChoices
-from member.helpers import has_manage_band_permission
+from member.helpers import has_manage_band_permission, has_band_admin
 from gig.models import Gig
 from stats.helpers import get_band_stats, get_gigs_over_time_stats
 from stats.util import dateconverter
@@ -78,7 +78,6 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         assoc = None if the_user.is_superuser else Assoc.objects.get(band=the_band, member=the_user)
             
         context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
-
         context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
         context['the_invited_members'] = Invite.objects.filter(band=the_band)
 
@@ -177,6 +176,8 @@ class SectionMembersView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateVi
         if u.is_superuser is False and not b.has_member(u):
             raise ValueError(
                 'user {0} accessing section members for non-member band'.format(u.email))
+
+        context['the_user_is_band_admin'] = has_band_admin(u, b)
 
         if self.kwargs['sk']:
             s = Section.objects.filter(id=self.kwargs['sk'])
