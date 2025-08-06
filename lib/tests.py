@@ -16,12 +16,13 @@
 """
 from django.core import mail
 from django.test import TestCase
-
 from lib.email import send_messages_async
-
+from band.util import AssocStatusChoices
 from gig.models import Gig
 from member.models import Member
 from band.models import Band, Assoc
+from gig.models import Plan
+from gig.util import PlanStatusChoices
 from lib.caldav import save_calfeed, get_calfeed, make_band_calfeed, make_member_calfeed, make_band_calfeed, delete_calfeed
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 import os
@@ -51,10 +52,17 @@ class CaldavTest(TestCase):
         self.band_admin = Member.objects.create_user(email='d@e.f')
         self.joeuser = Member.objects.create_user(email='g@h.i')
         self.janeuser = Member.objects.create_user(email='j@k.l')
+
         self.band = Band.objects.create(name='test band')
-        Assoc.objects.create(member=self.band_admin, band=self.band, is_admin=True)
-        Assoc.objects.create(member=self.joeuser, band=self.band, is_admin=False)
+        self.admin_assoc = Assoc.objects.create(member=self.band_admin, band=self.band, status=AssocStatusChoices.CONFIRMED, is_admin=True)
+        self.joeuser_assoc = Assoc.objects.create(member=self.joeuser, band=self.band, status=AssocStatusChoices.CONFIRMED)
+
         self.testgig = self.create_gig()
+        self.testgigplan = Plan.objects.create(
+            assoc=self.joeuser_assoc,
+            gig=self.testgig,
+            status=PlanStatusChoices.DEFINITELY,
+        )
 
     def tearDown(self):
         """ make sure we get rid of anything we made """
@@ -62,6 +70,7 @@ class CaldavTest(TestCase):
         Band.objects.all().delete()
         Assoc.objects.all().delete()
         Gig.objects.all().delete()
+        Plan.objects.all().delete()
 
     def create_gig(self):
         the_date = timezone.datetime(year=2020, month=2, day=29, hour=14, minute=30,tzinfo=dttimezone.utc)
@@ -72,101 +81,166 @@ class CaldavTest(TestCase):
         )
 
     def test_calfeed(self):
-        cf = make_member_calfeed(self.joeuser, [], self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_band_calfeed(self.band, [])
+        self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
+        self.assertTrue(cf.find(str(self.band).encode('ASCII'))>0)
+        self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
+
+        cf = make_member_calfeed(self.joeuser, [])
         self.assertTrue(cf.startswith(b'BEGIN:VCALENDAR'))
         self.assertTrue(cf.find(str(self.joeuser).encode('ASCII'))>0)
         self.assertTrue(cf.endswith(b'END:VCALENDAR\r\n'))
 
     def test_calfeed_event(self):
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'EVENT')>0)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
         self.assertTrue(cf.find(b'EVENT')>0)
 
     def test_calfeed_event_no_enddate(self):
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+        # with no end date set, calfeed should show an end date of an hour after start
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
-        # with no end date set, caldeef should show an end date of an hour after start
+        self.assertTrue(cf.find(b'DTEND:20200229T153000')>0)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
         self.assertTrue(cf.find(b'DTEND:20200229T153000')>0)
 
     def test_calfeed_event_enddate(self):
         # set the end date and make sure the calfeed is updated
         self.testgig.enddate = self.testgig.date + timedelta(hours=2)
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTEND:20200229T153000')<0)
+        self.assertTrue(cf.find(b'DTEND:20200229T163000')>0)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTEND:20200229T153000')<0)
         self.assertTrue(cf.find(b'DTEND:20200229T163000')>0)
 
     def test_calfeed_event_start(self):
-        # for member feeds, the start date should be the call time; for band feeds, the start should be the set time
+        # for member feeds, the start date should be the call time;
+        # for band feeds, the start should be the set time
 
         # first, a gig without a set time should show the call time
-        cf = make_band_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
-                               self.band.pub_cal_feed_id)
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
         self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
-        # for member feeds, should show the call time
+        # update the set time
         self.testgig.setdate = self.testgig.date + timedelta(hours=1)
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
         # for band feeds, should show the set time
-        cf = make_band_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, 
-                               self.band.pub_cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000')==-1)
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')<0)
         self.assertTrue(cf.find(b'DTSTART:20200229T153000')>0)
 
+        # for member feeds, should show the call time
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+        self.assertTrue(cf.find(b'DTSTART:20200229T153000')<0)
 
     def test_calfeed_event_full_day(self):
         self.testgig.is_full_day = True
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200301')>0)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
         self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
         self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200301')>0)
 
     def test_calfeed_description(self):
         self.testgig.details = 'test desc'
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertIn(b'DESCRIPTION:test desc\r\n',cf)
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertIn(b'DESCRIPTION:test desc\r\n', cf)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertIn(b'DESCRIPTION:test desc\r\n', cf)
 
     def test_calfeed_setlist(self):
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertIn(b'DESCRIPTION:test set\r\n',cf)
+
+        # TODO no setlist on band feed?
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertIn(b'DESCRIPTION:test set\r\n', cf)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertIn(b'DESCRIPTION:test set\r\n', cf)
 
     def test_calfeed_details_setlist(self):
         self.testgig.details = 'test details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n',cf)
+
+        # TODO no setlist on band feed?
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)
 
     def test_calfeed_summary(self):
         self.testgig.details = 'test details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),self.joeuser.preferences.language, self.joeuser.cal_feed_id)
-        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n',cf)
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n', cf)
     
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n', cf)
+
+    def test_calfeed_timezone(self):
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+
+        # first assert that setting timezone to NY is a change
+        self.assertTrue(self.band.timezone != 'America/New_York')
+        self.band.timezone='America/New_York'
+        self.band.save()
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+
+        # TODO member timezone instead?
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
+
     def test_calfeed_translation(self):
         self.testgig.details = 'test details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
-        cf = make_calfeed(self.joeuser, self.band.gigs.all(),'de', self.joeuser.cal_feed_id)
-        self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n',cf)
-
-    def test_calfeed_timezone(self):
-        cf = make_band_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language,
-                               self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
-
-        self.band.timezone='America/New_York'
+        self.band.default_language = 'de'
         self.band.save()
-        cf = make_band_calfeed(self.band, self.band.gigs.all(),self.joeuser.preferences.language, 
-                               self.joeuser.cal_feed_id)
-        self.assertTrue(cf.find(b'DTSTART:20200229T143000')>0)
 
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n', cf)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n', cf)
+
+        self.joeuser.preferences.language = 'es'
+        self.joeuser.preferences.save()
+        self.joeuser.save()
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n', cf)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertIn(b'SUMMARY:New Gig (No confirmado) - test band\r\n', cf)
 
 
 @pytest.mark.django_db
