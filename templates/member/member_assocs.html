@@ -3,11 +3,12 @@
     {% for assoc in assocs %}
         <div class="row assoc-band-row" id="band-{{ assoc.band.id }}" style="{% cycle '' 'background:#f5f5f5;' %}">
             {% if assoc.is_pending %}
-                <div class="col-3 hidden-bands-list">
+                <div class="col-12 hidden-bands-list">
                     {{assoc.band.name}}
                     ({% trans "pending" %})
                 </div>
-                <div class="col-9">
+                <div class="col-1"></div>
+                <div class="col-6">
                     <button class="btn btn-secondary btn-sm"
                         id="leave-{{ assoc.id }}"
                         hx-ext="reload"
@@ -19,10 +20,11 @@
                     </button>
                 </div>
             {% elif assoc.is_confirmed %}
-                <div class="col-3">
+                <div class="col-12">
                     <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
                 </div>
-                <div class="col-9">
+                <div class="col-1"></div>
+                <div class="col-11">
                     {% if assoc.band.sections.all|length > 0 %}
                         <div class="row" style="padding-bottom: 5px;">
                             <div class="col-6">
@@ -116,7 +118,7 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                </div>
+                        </div>
                         <div class="col-6">
                             <button class="btn btn-secondary btn-sm"
                                 id="leave-{{ assoc.id }}"
@@ -131,11 +133,12 @@
                     </div>
                 </div>
             {% elif assoc.is_alum %}
-                <div class="col-3">
+                <div class="col-12">
                     {{assoc.band.name}}
                     ({% trans "alumni" %})
                 </div>
-                <div class="col-9">
+                <div class="col-1"></div>
+                <div class="col-6">
                     <button class="btn btn-secondary btn-sm"
                         id="rejoin-{{ assoc.id }}"
                         hx-ext="reload"
@@ -149,6 +152,7 @@
 
             {% endif %}
         </div>
+        <br>
     {% endfor %}
 {% else %}
     {% trans "You need to add a band!" %}
