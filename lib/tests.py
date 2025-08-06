@@ -22,7 +22,7 @@ from lib.email import send_messages_async
 from gig.models import Gig
 from member.models import Member
 from band.models import Band, Assoc
-from lib.caldav import save_calfeed, make_member_calfeed, make_band_calfeed, delete_calfeed
+from lib.caldav import save_calfeed, get_calfeed, make_member_calfeed, make_band_calfeed, delete_calfeed
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 import os
 from datetime import timedelta, timezone as dttimezone
