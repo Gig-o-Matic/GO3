@@ -62,10 +62,6 @@ def _make_calfeed_metadata(the_source):
 
 
 def _make_calfeed_event(gig, is_for_band):
-    def _make_summary(gig):
-        """ makes the summary: the title, plus band name and status """
-        return f'{gig.title} ({GigStatusChoices(gig.status).label}) - {gig.band.name}'
-
     def _make_description(gig):
         """ description is the details, plus the setlist """
         deets = gig.details if gig.details else ''
@@ -76,7 +72,8 @@ def _make_calfeed_event(gig, is_for_band):
     event = Event()
     event.add('dtstamp', timezone.now())
     event.add('uid', gig.cal_feed_id)
-    event.add('summary', _make_summary(gig))
+    summary = f'{gig.title} ({GigStatusChoices(gig.status).label}) - {gig.band.name}'
+    event.add('summary', summary)
     if gig.is_full_day:
         date = gig.date.date()
         startdate = datetime.combine(date, datetime.min.time())
