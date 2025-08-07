@@ -213,7 +213,7 @@
                     <div class="col-lg-2 col-md-2 col-12">
                         {% trans "Member Plans" %}
                     </div>
-                    <div class="ml-auto"">
+                    <div class="ml-auto">
                         <span id="printall"><a href="{% url 'gig-print-all-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
                         {% trans "Print" %}
                         </a></span>
@@ -278,7 +278,7 @@
                 {% endif %}
                 {% if gig.plans_locked %}
                     <div class="row">
-                        <div class="col-12 alert alert-warning"">
+                        <div class="col-12 alert alert-warning">
                             <h3>{% trans "Gig plans are locked" %} <i class="fas fa-lock text-info"></i></h3>
                             <p>
                                 {% if the_user_is_band_admin %}
