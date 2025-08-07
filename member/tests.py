@@ -38,7 +38,7 @@ from gig.util import GigStatusChoices, PlanStatusChoices
 from lib.email import DEFAULT_SUBJECT, prepare_email
 from lib.template_test import MISSING, TemplateTestCase, flag_missing_vars
 
-from .helpers import calfeed, prepare_calfeed, update_member_calfeed
+from .helpers import calfeed, prepare_member_calfeed, update_member_calfeed
 from .models import Invite, Member
 from .util import MemberStatusChoices
 from .views import AssocsView, OtherBandsView
@@ -282,7 +282,7 @@ class MemberCalfeedTest(FSTestCase):
         p.status = plan_answer
         p.save()
 
-        return prepare_calfeed(self.joeuser)
+        return prepare_member_calfeed(self.joeuser)
 
     def test_member_caldav_stream(self):
         # if we're filtering nothing, make sure we see the gig

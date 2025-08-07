@@ -27,7 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from band.util import AssocStatusChoices
 import json
-from lib.caldav import make_calfeed, save_calfeed, get_calfeed, delete_calfeed
+from lib.caldav import make_band_calfeed, save_calfeed, get_calfeed, delete_calfeed
 from lib.email import send_messages_async, prepare_email
 from django.utils import timezone
 from pytz import timezone as zone
@@ -266,7 +266,7 @@ def prepare_band_calfeed(band):
     }
 
     the_gigs = Gig.objects.filter(**filter_args)
-    cf = make_calfeed(band, the_gigs, band.default_language, band.pub_cal_feed_id,is_for_band=True)
+    cf = make_band_calfeed(band, the_gigs)
     return cf
 
 

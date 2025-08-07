@@ -19,15 +19,14 @@ from icalendar import Calendar, Event
 from datetime import timedelta, datetime
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
-import os
 from gig.util import GigStatusChoices
 from django.conf import settings
-from go3.settings import URL_BASE, BASE_DIR
-import pytz
+from go3.settings import URL_BASE
 
 if default_storage.__class__ == FileSystemStorage:
     default_storage.location = f'{settings.CALFEED_BASEDIR}calfeeds'
     default_storage.base_url = 'calfeeds'
+
 
 def save_calfeed(tag, content):
     file_path = f'{tag}.txt'
@@ -52,56 +51,74 @@ def delete_calfeed(tag):
             default_storage.delete(file_path)
 
 
-def make_calfeed(the_source, the_events, the_language, the_uid, is_for_band=False):
-    """ construct an ical-compliant stream from a list of events """
+def _make_calfeed_metadata(the_source):
+    cal = Calendar()
+    cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//')
+    cal.add('version', '3.0')
+    cal.add('X-WR-CALNAME', the_source)
+    cal.add('X-WR-CALDESC',
+            '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_source))
+    return cal
 
-    def _make_summary(event):
-        """ makes the summary: the title, plus band name and status """
-        return f'{event.title} ({GigStatusChoices(event.status).label}) - {event.band.name}'
 
-    def _make_description(event):
+def _make_calfeed_event(gig, is_for_band):
+    def _make_description(gig):
         """ description is the details, plus the setlist """
-        deets = event.details if event.details else ''
-        setlist = event.setlist if event.setlist else ''
+        deets = gig.details if gig.details else ''
+        setlist = gig.setlist if gig.setlist else ''
         space = '\n\n' if deets and setlist else ''
         return f'{deets}{space}{setlist}'
 
-    # set up language
-    cal = Calendar()
-    
-    with translation.override(the_language):
-        cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//')
-        cal.add('version', '2.0')
-        cal.add('X-WR-CALNAME', the_source)
-        cal.add('X-WR-CALDESC',
-                '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_source))
-        for e in the_events:
-            event = Event()
-            event.add('dtstamp', timezone.now())
-            event.add('uid', e.cal_feed_id)
-            event.add('summary', _make_summary(e))
-            if e.is_full_day:
-                date = e.date.date()
-                startdate = datetime.combine(date,datetime.min.time())
-                event.add('dtstart', startdate, {'value': 'DATE'})
-                # To make the event use the full final day, icalendar clients expect the end date
-                # to be the date after the event ends. So we add 1 day.
-                # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
-                # "The "DTEND" property for a "VEVENT" calendar component specifies
-                # the non-inclusive end of the event."
-                enddate = (e.enddate if e.enddate else e.date).date() + timedelta(days=1)
-                enddate = datetime.combine(enddate,datetime.min.time())
-                event.add('dtend', enddate, {'value': 'DATE'})
-            else:
-                setdate = e.setdate if (is_for_band and e.setdate) else e.date
-                event.add('dtstart', setdate)
-                enddate = e.enddate if e.enddate else e.date + timedelta(hours=1)
-                event.add('dtend', enddate)
-            event.add('description', _make_description(e))
-            event.add('location', e.address)
-            event.add(
-                'url', f'{URL_BASE}/gig/{e.id}')
-            # todo don't hardwire the URL
-            # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
+    event = Event()
+    event.add('dtstamp', timezone.now())
+    event.add('uid', gig.cal_feed_id)
+    summary = f'{gig.title} ({GigStatusChoices(gig.status).label}) - {gig.band.name}'
+    event.add('summary', summary)
+    if gig.is_full_day:
+        date = gig.date.date()
+        startdate = datetime.combine(date, datetime.min.time())
+        event.add('dtstart', startdate, {'value': 'DATE'})
+        # To make the event use the full final day, icalendar clients expect the end date
+        # to be the date after the event ends. So we add 1 day.
+        # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
+        # "The "DTEND" property for a "VEVENT" calendar component specifies
+        # the non-inclusive end of the event."
+        enddate = (gig.enddate if gig.enddate else gig.date).date() + timedelta(days=1)
+        enddate = datetime.combine(enddate, datetime.min.time())
+        event.add('dtend', enddate, {'value': 'DATE'})
+    else:
+        setdate = gig.setdate if (is_for_band and gig.setdate) else gig.date
+        event.add('dtstart', setdate)
+        enddate = gig.enddate if gig.enddate else gig.date + timedelta(hours=1)
+        event.add('dtend', enddate)
+    event.add('description', _make_description(gig))
+    event.add('location', gig.address)
+    event.add('url', f'{URL_BASE}/gig/{gig.id}')
+    # todo don't hardwire the URL
+    # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
+    return event
+
+
+def make_member_calfeed(member, the_plans):
+    """ construct an ical-compliant stream from a list of plans """
+
+    # member.cal_feed_id # TODO uid
+
+    with translation.override(member.preferences.language):
+        cal = _make_calfeed_metadata(member)
+        for plan in the_plans:
+            event = _make_calfeed_event(plan.gig, is_for_band=False)
+            cal.add_component(event)
+    return cal.to_ical()
+
+
+def make_band_calfeed(band, the_gigs):
+    """ construct an ical-compliant stream from a list of gigs """
+    # band.pub_cal_feed_id  TODO use uid?
+
+    with translation.override(band.default_language):
+        cal = _make_calfeed_metadata(band)
+        for gig in the_gigs:
+            event = _make_calfeed_event(gig, is_for_band=True)
             cal.add_component(event)
     return cal.to_ical()
