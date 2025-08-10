@@ -1,58 +1,72 @@
 {% load i18n %}
 {% if assocs|length %}
     {% for assoc in assocs %}
-        <div class="row assoc-band-row" id="band-{{ assoc.band.id }}" style="{% cycle '' 'background:#f5f5f5;' %}">
+        <div class="assoc-band-row" id="band-{{ assoc.band.id }}" style="{% cycle '' 'background:#f5f5f5;' %}">
             {% if assoc.is_pending %}
-                <div class="col-12 hidden-bands-list">
-                    {{assoc.band.name}}
-                    ({% trans "pending" %})
+                <div class="row">
+                    <div class="col-sm-12"><h5>{{assoc.band.name}}({% trans "pending" %})</h5></div>
                 </div>
-                <div class="col-1"></div>
-                <div class="col-6">
-                    <button class="btn btn-secondary btn-sm"
-                        id="leave-{{ assoc.id }}"
-                        hx-ext="reload"
-                        hx-post="{% url 'assoc-delete' ak=assoc.id %}"
-                        hx-trigger="bootstrap-confirm"
-                        hx-target="#bandlist"
-                        onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
-                        {% trans "Cancel" %}
-                    </button>
+                <div class="row">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-5">
+                        <button class="btn btn-secondary btn-sm"
+                            id="leave-{{ assoc.id }}"
+                            hx-ext="reload"
+                            hx-post="{% url 'assoc-delete' ak=assoc.id %}"
+                            hx-trigger="bootstrap-confirm"
+                            hx-target="#bandlist"
+                            onclick="leave_band('{{assoc.id}}','{{assoc.band.name}}')">
+                            {% trans "Cancel" %}
+                        </button>
+                    </div>
                 </div>
             {% elif assoc.is_confirmed %}
-                <div class="col-12">
-                    <a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h5><a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a></h5>
+                    </div>
                 </div>
                 {% if assoc.band.sections.all|length > 0 %}
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-1"></div>
+                        <div class="col-sm-5">
                             <div class="dropdown">
-                                {% trans "color coding" %}
-                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
-                                    {% include "member/color.html" %}
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='sbk-{{assoc.band.id}}'>
+                                    {{assoc.default_section.display_name}}
                                 </button>
-                                <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
-                                    {% for c in the_colors %}
-                                        <a class="dropdown-item" id="color-{{forloop.counter0}}"
-                                            hx-post="{% url 'assoc-color' ak=assoc.id colorindex=forloop.counter0 %}"
-                                            hx-trigger="click"
-                                            hx-target="#cbk-{{ assoc.id }}"
-                                        >{% if forloop.first %}
-                                            <i class="far fa-square"></i>
-                                        {% else %}
-                                            <i class="fas fa-square" style="color:{{ c }};"></i>
-                                        {% endif %}</a>
+                                <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
+                                    {% for section in assoc.band.sections.all %}
+                                        <a class="dropdown-item"
+                                        hx-ext="update-dropdown"
+                                        hx-put="{% url 'assoc-section' ak=assoc.id sk=section.id %}"
+                                        hx-target="#sbk-{{assoc.band.id}}"
+                                        >{{ section.display_name }}</a>
                                     {% endfor %}
                                 </div>
                             </div>
                         </div>
+                        <div class="col-sm-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
+                                        name="email_me" hx-ext="checkbox"
+                                        hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                        {% if assoc.email_me %}
+                                        checked
+                                        {% endif %}
+                                        >
+                                <label class="form-check-label" for="mailbk-{{assoc.id}}">{% trans "email notifications" %}</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
+                {% endif %}
+                    <div class="row">
+                        <div class="col-sm-1"></div>
+                        <div class="col-sm-5">
+
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}'
-                                       name="is_multisectional" hx-ext="checkbox"
-                                       hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                    name="is_multisectional" hx-ext="checkbox"
+                                    hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                 {% if assoc.is_multisectional %}
                                     checked
                                 {% endif %}
@@ -60,24 +74,7 @@
                                 <label class="form-check-label" for="msbk-{{assoc.id}}">{% trans "I play in other sections too" %}</label>
                             </div>
                         </div>
-                    </div>
-                {% endif %}
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
-                                name="is_occasional" hx-ext="checkbox"
-                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
-                                {% if assoc.is_occasional %}
-                                    checked
-                                {% endif %}
-                                >
-                                <label class="form-check-label" for="oak-{{assoc.id}}">{% trans "occasional member" %}</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
+                        <div class="col-sm-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
                                 name="hide_from_schedule" hx-ext="checkbox"
@@ -90,22 +87,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-1"></div>
+                        <div class="col-sm-5">
+
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
-                                       name="email_me" hx-ext="checkbox"
-                                       hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
-                                       {% if assoc.email_me %}
-                                       checked
-                                       {% endif %}
-                                       >
-                                <label class="form-check-label" for="mailbk-{{assoc.id}}">{% trans "email notifications" %}</label>
+                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
+                                name="is_occasional" hx-ext="checkbox"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                {% if assoc.is_occasional %}
+                                    checked
+                                {% endif %}
+                                >
+                                <label class="form-check-label" for="oak-{{assoc.id}}">{% trans "occasional member" %}</label>
                             </div>
+
                         </div>
-                    </div>
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
+                        <div class="col-sm-5">
                             <div class="dropdown">
                                 {% trans "color coding" %}
                                 <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
@@ -127,8 +125,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="w-100" style="padding-bottom: 5px; margin-left: 8.33%">
-                        <div class="col-12">
+                    <div class="row">
+                        <div class="col-sm-1"></div>
+                        <div class="col-sm-5">
                             <button class="btn btn-secondary btn-sm"
                                 id="leave-{{ assoc.id }}"
                                 hx-ext="reload"

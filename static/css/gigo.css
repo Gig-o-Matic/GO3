@@ -303,6 +303,10 @@ ul.errorlist {
 .assoc-band-row {
   padding-top: 5px;
   padding-bottom: 5px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-left: -15px;
+  margin-right: -15px;
 }
 
 /* Offset anchor links down to get below main site nav
@@ -342,4 +346,10 @@ a[name] {
 
 .agenda-separator:not(:empty)::after {
   margin-left: .25em;
+}
+
+.outline {
+  outline-style: solid;
+  outline-width: 1px;
+  outline-color: red;
 }
