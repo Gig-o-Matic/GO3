@@ -2,13 +2,13 @@
     {% regroup member.watching_by_band by band as watch_list %}
     {% for watched in watch_list %}
         <div class="row">
-            <div class="col-12">
+            <div class="col-12"><h5>
                 {{watched.grouper}}
-            </div>
+            </h5></div>
         </div>
         {% for gig in watched.list %}
         <div class="row">
-            <div class="col-1"></div>
+            <div class="col-sm-1"></div>
             <div class="col-5">
                     <a href="{% url 'gig-detail' pk=gig.id %}">{{gig}}</a>
             </div>
