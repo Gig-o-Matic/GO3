@@ -4,7 +4,7 @@
         <div class="assoc-band-row" id="band-{{ assoc.band.id }}" style="{% cycle '' 'background:#f5f5f5;' %}">
             {% if assoc.is_pending %}
                 <div class="row">
-                    <div class="col-sm-12"><h5>{{assoc.band.name}}({% trans "pending" %})</h5></div>
+                    <div class="col-sm-12"><h5>{{assoc.band.name}} ({% trans "pending" %})</h5></div>
                 </div>
                 <div class="row">
                     <div class="col-sm-1"></div>
@@ -141,23 +141,26 @@
                     </div>
                 </div>
             {% elif assoc.is_alum %}
-                <div class="col-12">
-                    {{assoc.band.name}}
-                    ({% trans "alumni" %})
+                <div class="row">
+                    <div class="col-sm-12"><h5>
+                        {{assoc.band.name}}
+                        ({% trans "alumni" %})
+                    </h5></div>
                 </div>
-                <div class="col-1"></div>
-                <div class="col-6">
-                    <button class="btn btn-secondary btn-sm"
-                        id="rejoin-{{ assoc.id }}"
-                        hx-ext="reload"
-                        hx-post="{% url 'assoc-rejoin' ak=assoc.id %}"
-                        hx-trigger="bootstrap-confirm-rejoin"
-                        hx-target="#bandlist"
-                        onclick="rejoin_band('{{assoc.id}}','{{assoc.band.name}}')">
-                        {% trans "Rejoin" %}
-                    </button>
+                <div class="row">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-6">
+                        <button class="btn btn-secondary btn-sm"
+                            id="rejoin-{{ assoc.id }}"
+                            hx-ext="reload"
+                            hx-post="{% url 'assoc-rejoin' ak=assoc.id %}"
+                            hx-trigger="bootstrap-confirm-rejoin"
+                            hx-target="#bandlist"
+                            onclick="rejoin_band('{{assoc.id}}','{{assoc.band.name}}')">
+                            {% trans "Rejoin" %}
+                        </button>
+                    </div>
                 </div>
-
             {% endif %}
         </div>
         <br>
