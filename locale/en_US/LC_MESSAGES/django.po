@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-16 03:07+0000\n"
+"POT-Creation-Date: 2025-07-30 23:21-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -372,35 +372,35 @@ msgstr ""
 msgid "members"
 msgstr "Plans"
 
-#: member/models.py:248 templates/member/member_detail.html:251
-#: templates/member/member_detail.html:253
+#: member/models.py:248 templates/member/member_detail.html:263
+#: templates/member/member_detail.html:265
 msgid "Hide canceled gigs"
 msgstr ""
 
-#: member/models.py:249 templates/member/member_detail.html:206
-#: templates/registration/login.html:50
+#: member/models.py:249 templates/member/member_detail.html:208
+#: templates/member/member_detail.html:210 templates/registration/login.html:50
 msgid "Language"
 msgstr ""
 
-#: member/models.py:250 templates/member/member_detail.html:219
-#: templates/member/member_detail.html:221
+#: member/models.py:250 templates/member/member_detail.html:228
+#: templates/member/member_detail.html:230
 msgid "Share my profile"
 msgstr ""
 
-#: member/models.py:251 templates/member/member_detail.html:224
-#: templates/member/member_detail.html:226
+#: member/models.py:251 templates/member/member_detail.html:234
+#: templates/member/member_detail.html:236
 msgid "Share my email"
 msgstr ""
 
-#: member/models.py:252 templates/member/member_detail.html:241
-#: templates/member/member_detail.html:243
+#: member/models.py:252 templates/member/member_detail.html:251
+#: templates/member/member_detail.html:253
 msgid "Calendar shows only confirmed gigs"
-msgstr ""
+msgstr "Show only confirmed gigs"
 
-#: member/models.py:253 templates/member/member_detail.html:246
-#: templates/member/member_detail.html:248
+#: member/models.py:253 templates/member/member_detail.html:257
+#: templates/member/member_detail.html:259
 msgid "Calendar shows only gigs I can do (or maybe can do)"
-msgstr ""
+msgstr "Show only gigs I can (or maybe can) do"
 
 #: member/models.py:254
 msgid "Show gig time on schedule"
@@ -525,7 +525,7 @@ msgid "section"
 msgstr ""
 
 #: templates/agenda/calendar.html:11 templates/agenda/calendar.html:16
-#: templates/base/navbar.html:18
+#: templates/base/navbar.html:18 templates/member/member_detail.html:240
 msgid "Calendar"
 msgstr ""
 
@@ -624,7 +624,7 @@ msgstr ""
 msgid "Public Gig Calendar Feed"
 msgstr ""
 
-#: templates/band/band_detail.html:96 templates/member/member_detail.html:236
+#: templates/band/band_detail.html:96 templates/member/member_detail.html:246
 msgid "Subscribe using this link's URL"
 msgstr ""
 
@@ -1618,72 +1618,80 @@ msgstr ""
 msgid "Preferences"
 msgstr ""
 
-#: templates/member/member_detail.html:210
-msgid "Timezone"
+#: templates/member/member_detail.html:203
+msgid "Localization"
 msgstr ""
 
 #: templates/member/member_detail.html:214
-msgid "Auto Update"
+msgid "Timezone"
 msgstr ""
 
-#: templates/member/member_detail.html:234
+#: templates/member/member_detail.html:219
+msgid "Auto Update"
+msgstr "Timezone auto update"
+
+#: templates/member/member_detail.html:224
+msgid "Sharing"
+msgstr ""
+
+#: templates/member/member_detail.html:244
 msgid "Calendar URL for My Bands"
 msgstr ""
 
-#: templates/member/member_detail.html:236
+#: templates/member/member_detail.html:246
 msgid "click here for help"
-msgstr ""
+msgstr "Help"
 
-#: templates/member/member_detail.html:269
+#: templates/member/member_detail.html:281
 msgid "Last Activity:"
 msgstr ""
 
-#: templates/member/member_detail.html:286
 #: templates/member/member_detail.html:298
+#: templates/member/member_detail.html:310
 msgid "API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:293
+#: templates/member/member_detail.html:305
 msgid "API Documentation"
 msgstr ""
 
-#: templates/member/member_detail.html:302
+#: templates/member/member_detail.html:314
 msgid "Revoke API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:304
+#: templates/member/member_detail.html:316
 msgid "Generate API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:321
+#: templates/member/member_detail.html:333
 msgid "Confirm Delete"
 msgstr ""
 
-#: templates/member/member_detail.html:325
+#: templates/member/member_detail.html:337
 msgid "Do you really want to leave"
 msgstr ""
 
-#: templates/member/member_detail.html:328
+#: templates/member/member_detail.html:340
 msgid "Don't Leave"
 msgstr ""
 
-#: templates/member/member_detail.html:329
+#: templates/member/member_detail.html:341
 msgid "Yes, Leave"
 msgstr ""
 
-#: templates/member/member_detail.html:339
+#: templates/member/member_detail.html:351
 msgid "Confirm Rejoin"
 msgstr ""
 
-#: templates/member/member_detail.html:343
+#: templates/member/member_detail.html:355
 msgid "Do you really want to rejoin"
 msgstr ""
 
-#: templates/member/member_detail.html:346
+#: templates/member/member_detail.html:358
 msgid "Don't Rejoin"
 msgstr ""
 
-#: templates/member/member_detail.html:347
+#: templates/member/member_detail.html:359
 msgid "Yes, Rejoin"
 msgstr ""
 

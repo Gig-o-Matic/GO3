@@ -16,37 +16,24 @@
 """
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, redirect, render
-from datetime import timedelta
-from member.models import Member
-from lib.email import prepare_email, send_messages_async
-from lib.caldav import make_calfeed, save_calfeed, get_calfeed
-from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.core.exceptions import ValidationError
+
+from datetime import timedelta
+from lib.email import prepare_email, send_messages_async
+from lib.caldav import make_member_calfeed, save_calfeed, get_calfeed
 from band.helpers import do_delete_assoc
 from member.util import MemberStatusChoices
 from member.models import Member
+from member.views import verify_requester_is_user
 from gig.models import Gig
 import secrets
 from datetime import timedelta
 
-from django.conf import settings
-from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
-from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import get_object_or_404, redirect
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-
-from band.helpers import do_delete_assoc
-from lib.caldav import get_calfeed, make_calfeed, save_calfeed
-from lib.email import prepare_email, send_messages_async
-from member.models import Member
-from member.util import MemberStatusChoices
-from member.views import verify_requester_is_user
 
 
 def superuser_required(func):
@@ -121,26 +108,24 @@ def send_email_conf(confirmation):
     send_messages_async([prepare_email(confirmation.as_email_recipient(), template, context)])
 
 
-def prepare_calfeed(member):
+def prepare_member_calfeed(member):
     # we want the gigs as far back as a year ago
     date_earliest = timezone.now() - timedelta(days=365)
     the_plans = member.calendar_plans.filter(gig__date__gt=date_earliest)
-    the_gigs = [p.gig for p in the_plans]
-    cf = make_calfeed(member, the_gigs,
-                      member.preferences.language, member.cal_feed_id)
+    cf = make_member_calfeed(member, the_plans)
     return cf
 
 
 def update_member_calfeed(id):
     m = Member.objects.get(id=id)
-    cf = prepare_calfeed(m)
+    cf = prepare_member_calfeed(m)
     save_calfeed(m.cal_feed_id, cf)
 
 def calfeed(request, pk):
     try:
         if settings.DYNAMIC_CALFEED:
             # if the dynamic calfeed is set, just create the calfeed right now and return it
-            tf = prepare_calfeed(Member.objects.get(cal_feed_id=pk))
+            tf = prepare_member_calfeed(Member.objects.get(cal_feed_id=pk))
         else:
             # if using the task queue, get the calfeed from the disk cache
             tf = get_calfeed(pk)
