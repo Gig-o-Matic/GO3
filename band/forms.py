@@ -37,7 +37,7 @@ class BandForm(forms.ModelForm):
         fields = ['name', 'shortname', 'hometown', 'description', 'member_links', 'website',
             'new_member_message', 'thumbnail_img', 'images', 'default_language', 'timezone',
             'anyone_can_create_gigs', 'anyone_can_manage_gigs', 'share_gigs',
-            'send_updates_by_default', 'rss_feed', 'simple_planning', 'plan_feedback']
+            'send_updates_by_default', 'simple_planning', 'plan_feedback']
 
         widgets = {
             'images': forms.Textarea(attrs={'placeholder': 'put urls to images on their own lines...'}),
