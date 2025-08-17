@@ -235,6 +235,10 @@ class Gig(AbstractEvent):
         else:
             return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE).filter(assoc__status=AssocStatusChoices.CONFIRMED)
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("gig-detail", kwargs={"pk": self.pk})
+
 class GigComment(models.Model):
     gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)
     member = models.ForeignKey("member.Member", verbose_name="member", related_name="comments", on_delete=models.CASCADE)

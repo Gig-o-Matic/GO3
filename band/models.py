@@ -25,7 +25,7 @@ from django.apps import apps
 from django.utils import timezone
 import pytz
 import uuid
-from go3.settings import LANGUAGES
+from go3.settings import LANGUAGES, URL_BASE
 from django.utils.translation import gettext_lazy as _
 
 
@@ -131,6 +131,9 @@ class Band(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse("band-detail", kwargs={"pk": self.pk})
+
+    def get_public_url(self):
+        return f'{URL_BASE}/band/pub/{self.condensed_name}'
 
     def __str__(self):
         return self.name
