@@ -15,8 +15,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from django.contrib.syndication.views import Feed
-from django.utils import timezone
-from datetime import timedelta
+from django.utils import translation, timezone
+from django.template.loader import render_to_string
+from datetime import datetime, timedelta
+import pytz
 from band.models import Band
 from gig.models import Gig
 
@@ -48,7 +50,10 @@ class BandFeed(Feed):
         return item.band.get_public_url()
 
     def item_title(self, item):
-        return item.title
-    
+        with timezone.override(pytz.timezone(item.band.timezone)):
+            with translation.override(item.band.default_language):
+                title = render_to_string('rss/title.html', {'obj':item}).strip()
+        return title
+
     def item_description(self, item):
         return item.public_description
