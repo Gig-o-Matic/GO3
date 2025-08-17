@@ -210,6 +210,13 @@
                 </div>
             </div>
             <div class="row">
+                <div class="form-group col-12">
+                    {{ form.public_description.errors }}
+                    {{ form.public_description.label_tag }}
+                    {% render_field form.public_description class="form-control" %}
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-12">
                     {{ form.invite_occasionals.errors }}
                     {{ form.invite_occasionals }}

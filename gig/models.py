@@ -139,6 +139,8 @@ class AbstractEvent(models.Model):
 
     watchers = models.ManyToManyField('member.Member',related_name='watching')
 
+    public_description = models.TextField(null=True, blank=True)
+
     @property
     def is_canceled(self):
         self.status=GigStatusChoices.CANCELED
@@ -201,8 +203,6 @@ class Gig(AbstractEvent):
 
     # Flag whether band members can change their plans
     plans_locked = models.BooleanField(default=False)
-
-    rss_description = models.TextField(null=True, blank=True)
 
     # for use in calfeeds
     cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
