@@ -300,24 +300,30 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row mt-4">
+                        <div class="row">
                             <div class="col-12">
                                 <p><a href="/api/docs" target="_">{% trans "API Documentation" %}</a></p>
                             </div>
                         </div>
-                        <div class="row mt-4">
-                            <div class="col-sm-1 col-12"></div>
-                            <div class="col-sm-5 col-12">
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div class="col-5">
                                 <p>{% trans "API Key" %}</p>
                             </div>
-                            <div class="col-sm-6 col-12">
+                            <div class="col-6">
                                 {% if member.api_key %}
-                                    <p><a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a> <code class="ml-3">{{ member.api_key }}</code></p>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'member-revoke-api-key' %}">{% trans "Revoke API Key" %}</a>
                                 {% else %}
-                                    <a class="btn btn-primary btn-sm" href="{% url 'member-generate-api-key' %}">{% trans "Generate API Key" %}</a>
+                                    <a class="btn btn-primary btn-sm" href="{% url 'member-generate-api-key' %}">{% trans "Generate API Key" %}
                                 {% endif %}
                             </div>
                         </div>
+                        {% if member.api_key %}
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div class="col-11"><code class="ml-3">{{ member.api_key }}</code></div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             {% endif %}
