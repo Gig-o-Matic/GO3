@@ -20,7 +20,7 @@ from django.template.loader import render_to_string
 from datetime import datetime, timedelta
 import pytz
 from band.models import Band
-from gig.models import Gig
+from gig.models import Gig, GigStatusChoices
 
 class BandFeed(Feed):
 
@@ -43,6 +43,7 @@ class BandFeed(Feed):
                                 trashed_date__isnull=True,
                                 is_archived=False,
                                 is_private=False,
+                                status=GigStatusChoices.CONFIRMED,
                             ).order_by('date')
         return the_gigs
     
