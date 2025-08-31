@@ -38,6 +38,7 @@ from django.conf import settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from freezegun import freeze_time
 import pytest
+from lib.rss import BandFeed
 from gig.tests import GigTestBase
 
 class MemberTests(TestCase):
@@ -827,6 +828,85 @@ class BandCalfeedTest(FSTestCase):
         g.save()
         self.band.refresh_from_db()
         self.assertTrue(self.band.pub_cal_feed_dirty)
+
+
+class RssTests(TestCase):
+    def setUp(self):
+        self.super = Member.objects.create_user(
+            email='super@b.c', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@e.f')
+        self.joeuser = Member.objects.create_user(email='joe@h.i')
+        self.janeuser = Member.objects.create_user(email='jane@k.l')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(member=self.band_admin, band=self.band,
+                             is_admin=True, status=AssocStatusChoices.CONFIRMED)
+        self.create_gigs()
+
+    def tearDown(self):
+        """ make sure we get rid of anything we made """
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+
+    def create_gigs(self):
+        the_date = timezone.datetime(
+            2100, 1, 2, tzinfo=pytz.timezone(self.band.timezone))
+        Gig.objects.create(
+            title="Good Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            details="private details",
+            public_description="public details",
+            status=GigStatusChoices.CONFIRMED
+        )
+        Gig.objects.create(
+            title="Private Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            is_private=True,
+            status=GigStatusChoices.CONFIRMED
+        )
+        Gig.objects.create(
+            title="Canceled Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CANCELED
+        )
+        Gig.objects.create(
+            title="Trashed Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED,
+            trashed_date=datetime.now(pytz_timezone('UTC')),
+        )
+        Gig.objects.create(
+            title="Archived Gig",
+            band_id=self.band.id,
+            date=the_date,
+            setdate=the_date + timedelta(minutes=30),
+            enddate=the_date + timedelta(hours=2),
+            status=GigStatusChoices.CONFIRMED,
+            is_archived=True,
+        )
+
+    def test_band_rss_feed(self):
+        resp = self.client.get(
+            reverse('band-rss', kwargs={'pk':self.band.pub_cal_feed_id})
+        )
+
+        content = resp.content.decode('ascii')
+        self.assertTrue(content.find('item') > 0)
+        self.assertFalse(content.find('private') > 0)
+        self.assertTrue(content.find('public') > 0)
+
 
 class ActiveBandTests(TestCase):
     def test_active_band_list(self):
