@@ -54,7 +54,7 @@ def delete_calfeed(tag):
 def _make_calfeed_metadata(the_source):
     cal = Calendar()
     cal.add('prodid', '-//Gig-o-Matic//gig-o-matic.com//')
-    cal.add('version', '3.0')
+    cal.add('version', '2.0')
     cal.add('X-WR-CALNAME', the_source)
     cal.add('X-WR-CALDESC',
             '{0} {1}'.format(_('Gig-o-Matic calendar for'), the_source))
