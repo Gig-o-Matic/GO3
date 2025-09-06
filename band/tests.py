@@ -747,7 +747,9 @@ class BandCalfeedTest(FSTestCase):
             date=the_date,
             setdate=the_date + timedelta(minutes=30),
             enddate=the_date + timedelta(hours=2),
-            status=GigStatusChoices.CONFIRMED
+            status=GigStatusChoices.CONFIRMED,
+            details="these are private details",
+            public_description="these are public details",
         )
         Gig.objects.create(
             title="Private Gig",
@@ -828,6 +830,17 @@ class BandCalfeedTest(FSTestCase):
         g.save()
         self.band.refresh_from_db()
         self.assertTrue(self.band.pub_cal_feed_dirty)
+
+    def test_band_calfeed_description(self):
+        """ 
+        one of the gigs has 'details' including the word 'private' and a
+        public_description containing the word 'public' so make sure we're seeing
+        the right stuff in the band feed.
+        """
+        cf = prepare_band_calfeed(self.band)
+        self.assertTrue(cf.find(b'Good Gig') >= 0)
+        self.assertFalse(cf.find(b'private details') >= 0)
+        self.assertTrue(cf.find(b'public details') >= 0)
 
 
 class RssTests(TestCase):
