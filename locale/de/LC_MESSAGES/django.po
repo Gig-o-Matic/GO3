@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-30 23:21-0400\n"
+"POT-Creation-Date: 2025-09-06 10:51-0400\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: Christian Neumayer <christian.m.neumayer@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -37,16 +37,16 @@ msgstr "Kommende Termine"
 msgid "Needs Response"
 msgstr "Braucht Antwort"
 
-#: band/models.py:175 templates/band/band_section_members.html:7
+#: band/models.py:177 templates/band/band_section_members.html:7
 #: templates/gig/gig_detail_archived.html:185
 msgid "No Section"
 msgstr "Kein Register"
 
-#: band/views.py:160
+#: band/views.py:159
 msgid "not ever!"
 msgstr ""
 
-#: gig/forms.py:48 gig/forms.py:241
+#: gig/forms.py:48 gig/forms.py:243
 msgid "Email members about this new gig"
 msgstr "Sende Mitgliedern eine Email über diesen neuen Termin"
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Full- or multi-day event"
 msgstr ""
 
-#: gig/forms.py:180 gig/forms.py:227
+#: gig/forms.py:180 gig/forms.py:228
 msgid "Date"
 msgstr "Datum"
 
@@ -99,7 +99,7 @@ msgstr "Termin"
 msgid "End Time"
 msgstr "Ende"
 
-#: gig/forms.py:184 gig/forms.py:228
+#: gig/forms.py:184 gig/forms.py:229
 msgid "End Date"
 msgstr "Enddatum"
 
@@ -165,63 +165,71 @@ msgstr "Wer? Wo? Was? Wann? Wieso?"
 msgid "setlist here"
 msgstr "Änderungen vorbehalten"
 
-#: gig/forms.py:221
+#: gig/forms.py:217
+msgid "Description for public feed & RSS"
+msgstr "Beschreibung für öffentlichen Kalender und RSS"
+
+#: gig/forms.py:222
 msgid "Gig Title"
 msgstr "Terminname"
 
-#: gig/forms.py:222 gig/helpers.py:121 templates/gig/gig_detail.html:77
+#: gig/forms.py:223 gig/helpers.py:121 templates/gig/gig_detail.html:77
 #: templates/gig/gig_detail_archived.html:53
 msgid "Contact"
 msgstr "Kontakt"
 
-#: gig/forms.py:223 gig/helpers.py:119
+#: gig/forms.py:224 gig/helpers.py:119
 msgid "Status"
 msgstr "Status"
 
-#: gig/forms.py:225
+#: gig/forms.py:226
 msgid "Full- or Multi-day"
 msgstr ""
 
-#: gig/forms.py:230
+#: gig/forms.py:231
 #, fuzzy
 #| msgid "Address"
 msgid "Address or URL"
 msgstr "Adresse"
 
-#: gig/forms.py:231 templates/gig/gig_detail.html:138
+#: gig/forms.py:232 templates/gig/gig_detail.html:138
 #: templates/gig/gig_detail_archived.html:103
 msgid "What to Wear"
 msgstr "Adjustierung"
 
-#: gig/forms.py:232 templates/gig/gig_detail.html:145
+#: gig/forms.py:233 templates/gig/gig_detail.html:145
 #: templates/gig/gig_detail_archived.html:110
 msgid "Pay Deal"
 msgstr "Bezahlung"
 
-#: gig/forms.py:234 templates/gig/gig_detail.html:152
+#: gig/forms.py:235 templates/gig/gig_detail.html:152
 #: templates/gig/gig_detail_archived.html:117
 msgid "Leader"
 msgstr "Dirigent"
 
-#: gig/forms.py:235 gig/helpers.py:142 templates/gig/gig_detail.html:159
+#: gig/forms.py:236 gig/helpers.py:142 templates/gig/gig_detail.html:159
 #: templates/gig/gig_detail_archived.html:124
 msgid "Post-gig Plans"
 msgstr "Nach dem Auftritt"
 
-#: gig/forms.py:236 gig/helpers.py:145
+#: gig/forms.py:237 gig/helpers.py:145
 msgid "Details"
 msgstr ""
 
-#: gig/forms.py:237 templates/gig/gig_detail.html:191
+#: gig/forms.py:238 templates/gig/gig_detail.html:191
 #: templates/gig/gig_detail_archived.html:156
 msgid "Setlist"
 msgstr "Programm"
 
 #: gig/forms.py:239
+msgid "Public Description"
+msgstr "Öffentliche Beschreibung"
+
+#: gig/forms.py:241
 msgid "Hide from calendar"
 msgstr "Nicht in meinem Kalender anzeigen"
 
-#: gig/forms.py:240
+#: gig/forms.py:242
 msgid "Include occasional members"
 msgstr "Lade hin-und-wieder-Mitglieder ein"
 
@@ -260,22 +268,22 @@ msgstr "Adjustierung"
 msgid ", "
 msgstr ""
 
-#: gig/models.py:151 gig/util.py:30 templates/gig/gig_detail.html:52
+#: gig/models.py:153 gig/util.py:30 templates/gig/gig_detail.html:52
 #: templates/gig/gig_detail_archived.html:41
 msgid "Unconfirmed"
 msgstr "Nicht fixiert"
 
-#: gig/models.py:151 templates/gig/gig_detail.html:48
+#: gig/models.py:153 templates/gig/gig_detail.html:48
 #: templates/gig/gig_detail_archived.html:37
 msgid "Confirmed!"
 msgstr "Fixiert!"
 
-#: gig/models.py:151 templates/agenda/agenda_plan_edit.html:108
+#: gig/models.py:153 templates/agenda/agenda_plan_edit.html:108
 #: templates/gig/gig_detail.html:50 templates/gig/gig_detail_archived.html:39
 msgid "Canceled!"
 msgstr "Abgesagt!"
 
-#: gig/models.py:151 gig/util.py:33
+#: gig/models.py:153 gig/util.py:33
 msgid "Asking"
 msgstr ""
 
@@ -339,7 +347,7 @@ msgstr ""
 msgid "Tell us a little about the band"
 msgstr "Erzähl ein wenig von deiner Band"
 
-#: lib/caldav.py:77
+#: lib/caldav.py:60
 #, fuzzy
 #| msgid "Gig-o-Matic: Confirmed!"
 msgid "Gig-o-Matic calendar for"
@@ -358,11 +366,11 @@ msgstr ""
 msgid "This email address is already in use."
 msgstr "Diese Emailadresse wird bereits verwendet"
 
-#: member/helpers.py:78
+#: member/helpers.py:65
 msgid "test email sent"
 msgstr ""
 
-#: member/helpers.py:90
+#: member/helpers.py:77
 #, fuzzy
 #| msgid "Members"
 msgid "former member"
@@ -717,10 +725,10 @@ msgstr ""
 "Benötigt Bild-URLs. Um ein Bild von Facebook zu verwenden kannst du via "
 "Rechtsklick die Bild-URL kopieren und hier einfügen."
 
-#: templates/band/band_form.html:171 templates/band/band_section_setup.html:49
-#: templates/gig/gig_form.html:250 templates/gig/gig_form.html:252
+#: templates/band/band_form.html:166 templates/band/band_section_setup.html:49
+#: templates/gig/gig_form.html:257 templates/gig/gig_form.html:259
 #: templates/help/band_request.html:30 templates/member/band_invite.html:36
-#: templates/member/member_assocs.html:18 templates/member/member_form.html:78
+#: templates/member/member_assocs.html:19 templates/member/member_form.html:78
 #: templates/member/memberpreferences_form.html:20
 #: templates/member/signup.html:20
 #: templates/registration/password_change_form.html:49
@@ -728,8 +736,8 @@ msgstr ""
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: templates/band/band_form.html:172 templates/band/band_section_setup.html:50
-#: templates/gig/gig_form.html:254 templates/member/member_form.html:79
+#: templates/band/band_form.html:167 templates/band/band_section_setup.html:50
+#: templates/gig/gig_form.html:261 templates/member/member_form.html:79
 #: templates/member/memberpreferences_form.html:21
 msgid "Save"
 msgstr "Speichern"
@@ -865,8 +873,9 @@ msgstr ""
 "Bandadministrator wird dich legitimieren und du erhältst eine "
 "Bestätigungsmail. Groovy.<br><br>Brauchst du Hilfe? <a href=\"/help\" "
 "class=\"alert-link\">Hier</a> werden hoffentlich alle deine Fragen "
-"beantwortet.<br><br>Das hat nicht geholfen? Kontaktiere die <a href=\"mailto:"
-"superuser@gig-o-matic.com\" class=\"alert-link\">Gig-o-Matic Overlords</a>."
+"beantwortet.<br><br>Das hat nicht geholfen? Kontaktiere die <a "
+"href=\"mailto:superuser@gig-o-matic.com\" class=\"alert-link\">Gig-o-Matic "
+"Overlords</a>."
 
 #: templates/base/welcome.html:13
 msgid "dismiss"
@@ -1041,21 +1050,21 @@ msgstr "Termin bearbeiten"
 msgid "New Gig for "
 msgstr "Neuer Termin für"
 
-#: templates/gig/gig_form.html:244
+#: templates/gig/gig_form.html:251
 msgid "Move to Trash"
 msgstr ""
 
-#: templates/gig/gig_form.html:245
+#: templates/gig/gig_form.html:252
 msgid "Archive"
 msgstr "Archivieren"
 
-#: templates/gig/gig_form.html:456
+#: templates/gig/gig_form.html:463
 #, fuzzy
 #| msgid "Do you really want to archive this gig?"
 msgid "Are you sure you want to trash this gig?"
 msgstr "Willst du diesen Termin wirklich archivieren?"
 
-#: templates/gig/gig_form.html:467
+#: templates/gig/gig_form.html:474
 #, fuzzy
 #| msgid "Do you really want to archive this gig?"
 msgid "Are you sure you want to archive this gig?"
@@ -1578,47 +1587,47 @@ msgid ""
 "The invitation you clicked has expired! Please contact the band for another."
 msgstr ""
 
-#: templates/member/member_assocs.html:8
+#: templates/member/member_assocs.html:7
 msgid "pending"
 msgstr "vorläufig"
 
-#: templates/member/member_assocs.html:53
+#: templates/member/member_assocs.html:57
+msgid "email notifications"
+msgstr ""
+
+#: templates/member/member_assocs.html:74
 #, fuzzy
 #| msgid "other sections, too"
 msgid "I play in other sections too"
 msgstr "auch andere Register"
 
-#: templates/member/member_assocs.html:68
+#: templates/member/member_assocs.html:86
+msgid "hide this band's gigs"
+msgstr ""
+
+#: templates/member/member_assocs.html:102
 #, fuzzy
 #| msgid "Invite occasional members"
 msgid "occasional member"
 msgstr "Lade hin-und-wieder-Mitglieder ein"
 
-#: templates/member/member_assocs.html:80
-msgid "hide this band's gigs"
-msgstr ""
-
-#: templates/member/member_assocs.html:94
-msgid "email notifications"
-msgstr ""
-
-#: templates/member/member_assocs.html:101
+#: templates/member/member_assocs.html:108
 msgid "color coding"
 msgstr ""
 
-#: templates/member/member_assocs.html:128
+#: templates/member/member_assocs.html:138
 msgid "Leave Band"
 msgstr "Band verlassen"
 
-#: templates/member/member_assocs.html:136
+#: templates/member/member_assocs.html:147
 msgid "alumni"
 msgstr ""
 
-#: templates/member/member_assocs.html:146
+#: templates/member/member_assocs.html:160
 msgid "Rejoin"
 msgstr ""
 
-#: templates/member/member_assocs.html:154
+#: templates/member/member_assocs.html:169
 msgid "You need to add a band!"
 msgstr "Du musst eine Band auswählen!"
 
@@ -1725,7 +1734,7 @@ msgid "Last Activity:"
 msgstr ""
 
 #: templates/member/member_detail.html:298
-#: templates/member/member_detail.html:310
+#: templates/member/member_detail.html:311
 msgid "API Key"
 msgstr ""
 
@@ -1733,49 +1742,49 @@ msgstr ""
 msgid "API Documentation"
 msgstr ""
 
-#: templates/member/member_detail.html:314
+#: templates/member/member_detail.html:315
 msgid "Revoke API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:316
+#: templates/member/member_detail.html:317
 msgid "Generate API Key"
 msgstr ""
 
-#: templates/member/member_detail.html:333
+#: templates/member/member_detail.html:340
 msgid "Confirm Delete"
 msgstr "Löschen bestätigen"
 
-#: templates/member/member_detail.html:337
+#: templates/member/member_detail.html:344
 msgid "Do you really want to leave"
 msgstr "Willst du wirklich weg"
 
-#: templates/member/member_detail.html:340
+#: templates/member/member_detail.html:347
 msgid "Don't Leave"
 msgstr "Nicht verlassen"
 
-#: templates/member/member_detail.html:341
+#: templates/member/member_detail.html:348
 msgid "Yes, Leave"
 msgstr "Ja, tschüss"
 
-#: templates/member/member_detail.html:351
+#: templates/member/member_detail.html:358
 #, fuzzy
 #| msgid "Confirmed!"
 msgid "Confirm Rejoin"
 msgstr "Fixiert!"
 
-#: templates/member/member_detail.html:355
+#: templates/member/member_detail.html:362
 #, fuzzy
 #| msgid "Do you really want to leave"
 msgid "Do you really want to rejoin"
 msgstr "Willst du wirklich weg"
 
-#: templates/member/member_detail.html:358
+#: templates/member/member_detail.html:365
 #, fuzzy
 #| msgid "Don't Know"
 msgid "Don't Rejoin"
 msgstr "Weiß ich noch nicht"
 
-#: templates/member/member_detail.html:359
+#: templates/member/member_detail.html:366
 msgid "Yes, Rejoin"
 msgstr ""
 
