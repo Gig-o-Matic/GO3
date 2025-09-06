@@ -202,7 +202,7 @@ class GigForm(forms.ModelForm):
         localized_fields = '__all__'
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date',
-                'address','dress','paid','leader_text', 'postgig', 'details','setlist','rss_description','invite_occasionals',
+                'address','dress','paid','leader_text', 'postgig', 'details','setlist','public_description','invite_occasionals',
                 'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','is_full_day','has_set_time',
                 'has_call_time','has_end_time']
 
@@ -214,6 +214,7 @@ class GigForm(forms.ModelForm):
             'postgig': forms.TextInput(attrs={'placeholder': _('Hit the streets!')}),
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
+            'public_description': forms.Textarea(attrs={'placeholder': _('Description for public feed & RSS')}),
             'leader_text': forms.TextInput(),
         }
 
@@ -235,6 +236,7 @@ class GigForm(forms.ModelForm):
             'postgig': _('Post-gig Plans'),
             'details': _('Details'),
             'setlist': _('Setlist'),
+            'public_description': _('Public Description'),
 
             'hide_from_calendar': _('Hide from calendar'),
             'invite_occasionals': _('Include occasional members'),

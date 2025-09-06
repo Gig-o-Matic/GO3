@@ -1,0 +1,1 @@
+{% load i18n humanize tz agenda_tags %}{% localtime on %}{{ obj.date|date:"SHORT_DATE_FORMAT" }} ({{ obj.date|date:"D" }}) {% if obj.setdate %}{{ obj.setdate|date:"TIME_FORMAT" }}{% else %}{{ obj.date|date:"TIME_FORMAT" }}{% endif %}: {{ obj.title }}{% endlocaltime %}

@@ -139,6 +139,8 @@ class AbstractEvent(models.Model):
 
     watchers = models.ManyToManyField('member.Member',related_name='watching')
 
+    public_description = models.TextField(null=True, blank=True)
+
     @property
     def is_canceled(self):
         self.status=GigStatusChoices.CANCELED
@@ -202,8 +204,6 @@ class Gig(AbstractEvent):
     # Flag whether band members can change their plans
     plans_locked = models.BooleanField(default=False)
 
-    rss_description = models.TextField(null=True, blank=True)
-
     # for use in calfeeds
     cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
 
@@ -234,6 +234,10 @@ class Gig(AbstractEvent):
             return plans
         else:
             return plans.filter(assoc__member__status=MemberStatusChoices.ACTIVE).filter(assoc__status=AssocStatusChoices.CONFIRMED)
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("gig-detail", kwargs={"pk": self.pk})
 
 class GigComment(models.Model):
     gig = models.ForeignKey("Gig", related_name="comments", on_delete=models.CASCADE)

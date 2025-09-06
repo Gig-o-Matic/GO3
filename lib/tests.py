@@ -161,10 +161,11 @@ class CaldavTest(TestCase):
 
     def test_calfeed_description(self):
         self.testgig.details = 'test desc'
+        self.testgig.public_description = 'public desc'
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:test desc\r\n', cf)
+        self.assertIn(b'DESCRIPTION:public desc\r\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
         self.assertIn(b'DESCRIPTION:test desc\r\n', cf)
@@ -182,12 +183,13 @@ class CaldavTest(TestCase):
 
     def test_calfeed_details_setlist(self):
         self.testgig.details = 'test details'
+        self.testgig.public_description = 'test public details'
         self.testgig.setlist = 'test set'
         self.testgig.save()
 
-        # TODO no setlist on band feed?
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)
+        self.assertIn(b'DESCRIPTION:test public details\\n\\ntest set\r\n', cf)
+        self.assertNotIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
         self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)

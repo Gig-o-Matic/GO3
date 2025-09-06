@@ -64,8 +64,11 @@ def _make_calfeed_metadata(the_source):
 def _make_calfeed_event(gig, is_for_band):
     def _make_description(gig):
         """ description is the details, plus the setlist """
-        deets = gig.details if gig.details else ''
-        setlist = gig.setlist if gig.setlist else ''
+        if is_for_band:
+            deets = gig.public_description or ''
+        else:
+            deets = gig.details or ''
+        setlist = gig.setlist or ''
         space = '\n\n' if deets and setlist else ''
         return f'{deets}{space}{setlist}'
 

@@ -16,7 +16,7 @@
 """
 
 from django.urls import path
-
+from lib.rss import BandFeed
 from . import views
 from . import helpers
 
@@ -47,5 +47,5 @@ urlpatterns = [
     path('assoc/<int:ak>/rejoin', helpers.rejoin_assoc, name='assoc-rejoin'),
 
     path('calfeed/<uuid:pk>', helpers.band_calfeed, name='band-calfeed'),
-
+    path('<uuid:pk>/rss', BandFeed(), name='band-rss'),
 ]
