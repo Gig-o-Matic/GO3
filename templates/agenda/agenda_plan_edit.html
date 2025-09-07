@@ -32,11 +32,18 @@
                     {% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}
                 {% else %}
                     {% if user.preferences.current_timezone|utc_offset != gig.band.timezone|utc_offset %}
-                        {% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %} ({% trans "full day" %})
+                        {% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}<br>({% trans "full day" %})
                     {% endif %}
                 {% endif %}
             {% else %}
-                {{ gig_date }} {% if not gig.is_full_day %}{{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}{% endif %}
+                {{ gig_date }}
+                {% if not gig.is_full_day %}
+                    {{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}
+                {% else %}
+                    {% if user.preferences.current_timezone|utc_offset != gig.band.timezone|utc_offset %}
+                        {{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}<br>({% trans "full day" %})
+                    {% endif %}
+                {% endif %}
             {% endif %}
         {% endwith %}
     </div>

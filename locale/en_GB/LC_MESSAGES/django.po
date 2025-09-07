@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-06 10:51-0400\n"
+"POT-Creation-Date: 2025-09-07 15:07-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -264,7 +264,7 @@ msgstr ""
 msgid "Confirmed!"
 msgstr ""
 
-#: gig/models.py:153 templates/agenda/agenda_plan_edit.html:108
+#: gig/models.py:153 templates/agenda/agenda_plan_edit.html:122
 #: templates/gig/gig_detail.html:50 templates/gig/gig_detail_archived.html:39
 msgid "Canceled!"
 msgstr "Cancelled!"
@@ -493,7 +493,12 @@ msgstr ""
 msgid "dateformatstring"
 msgstr "d/m D"
 
-#: templates/agenda/agenda_plan_edit.html:65
+#: templates/agenda/agenda_plan_edit.html:35
+#: templates/agenda/agenda_plan_edit.html:44
+msgid "full day"
+msgstr ""
+
+#: templates/agenda/agenda_plan_edit.html:79
 #: templates/gig/gig_plan_edit.html:31
 msgid "section"
 msgstr ""
