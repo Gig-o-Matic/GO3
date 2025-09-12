@@ -74,6 +74,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
 
         context['url_base'] = URL_BASE
+        context['calfeed_url'] = self.request.build_absolute_uri(reverse('band-calfeed',kwargs={'pk':the_band.pub_cal_feed_id}))
 
         assoc = None if the_user.is_superuser else Assoc.objects.get(band=the_band, member=the_user)
             
