@@ -83,7 +83,7 @@
                     <div class="col-sm-3 col-12">{% trans "Public Profile" %}</div>
                     <div class="col-sm-9 col-12">
                             <a href="{{url_base}}/band/pub/{{band.condensed_name}}" target="new">{{url_base}}/band/pub/{{ band.condensed_name }}</a>
-                    </div>
+                        </div>
                 </div>
                 <div class="row">
                     <div class="col-12">
@@ -92,10 +92,7 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-3 col-12">{% trans "Public Gig Calendar Feed" %}</div>
-                    <div class="col-sm-9 col-12">
-                            <a href="{% url 'band-calfeed' pk=band.pub_cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a>
-                    </div>
-                </div>
+                    <div class="col-sm-9 col-12"><button class="btn btn-primary btn-sm" onclick="copyLinkToClipboard()">{% trans "Copy Calendar URL To Clipboard" %}</button></div>
             </div> <!-- card-body -->
         </div> <!-- card -->
 
@@ -361,5 +358,10 @@ $(document).ready(function() {
     updateUpcoming();
     updatePublic();
 });
+
+function copyLinkToClipboard() {
+  navigator.clipboard.writeText("{{ calfeed_url }}");
+}
+
 </script>
 {% endblock localscripts %}
