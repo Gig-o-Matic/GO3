@@ -63,20 +63,27 @@ def _make_calfeed_metadata(the_source):
 
 def _make_calfeed_event(gig, is_for_band):
     def _make_description(gig):
-        """ description is the details, plus the setlist """
+        parts = []
         if is_for_band:
-            deets = gig.public_description or ''
-        else:
-            deets = gig.details or ''
-        setlist = gig.setlist or ''
-        space = '\n\n' if deets and setlist else ''
-        return f'{deets}{space}{setlist}'
+            if gig.public_description:
+                parts.append(gig.public_description)
+        else: # personalized member calfeed
+            parts.append(f'{GigStatusChoices(gig.status).label}')
+            if gig.details:
+                parts.append(gig.details)
+            if gig.setlist:
+                parts.append(gig.setlist)
+        return "\n\n".join(parts)
 
     event = Event()
     event.add('dtstamp', timezone.now())
     event.add('uid', gig.cal_feed_id)
-    summary = f'{gig.title} ({GigStatusChoices(gig.status).label}) - {gig.band.name}'
+
+    summary = gig.title
+    if not is_for_band: # TODO will be a user option to add band name
+        summary += f' - {gig.band.name}'
     event.add('summary', summary)
+
     if gig.is_full_day:
         date = gig.date.date()
         startdate = datetime.combine(date, datetime.min.time())
@@ -94,6 +101,7 @@ def _make_calfeed_event(gig, is_for_band):
         event.add('dtstart', setdate)
         enddate = gig.enddate if gig.enddate else gig.date + timedelta(hours=1)
         event.add('dtend', enddate)
+
     event.add('description', _make_description(gig))
     event.add('location', gig.address)
     event.add('url', f'{URL_BASE}/gig/{gig.id}')
