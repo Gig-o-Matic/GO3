@@ -242,8 +242,8 @@
                     <div class="row">
                         <div class="d-none d-sm-inline col-sm-1"></div>
                         <div class="col-sm-5 col-12">{% trans "Calendar URL for My Bands" %}</div>
-                        <div class="col-sm-6 col-12">
-                                <a href="{% url 'member-calfeed' pk=member.cal_feed_id %}" onclick="return false;">{% trans "Subscribe using this link's URL" %}</a> [<a href="{% url 'help-calfeed' pk=user.id %}">{% trans "click here for help" %}</a>]
+                        <div class="col-sm-6 col-12"><button class="btn btn-primary btn-sm" onclick="copyLinkToClipboard()">Copy Calendar URL To Clipboard</button>
+                                <a href="{% url 'member-calfeed' pk=member.cal_feed_id %}" onclick="return false;">[<a href="{% url 'help-calfeed' pk=user.id %}">{% trans "click here for help" %}</a>]
                         </div>
                     </div>
                     <div class="row">
@@ -391,6 +391,10 @@ function rejoin_band(ak, bandname) {
 
 function do_rejoin(ak){
     $(`#rejoin-${ak}`)[0].dispatchEvent(new Event('bootstrap-confirm-rejoin'));
+}
+
+function copyLinkToClipboard() {
+  navigator.clipboard.writeText("{{ calfeed_url }}");
 }
 
 </script>
