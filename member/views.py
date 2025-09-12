@@ -120,6 +120,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         else:
             context['member_images'] = []
 
+        context['calfeed_url'] = self.request.build_absolute_uri(reverse('member-calfeed',kwargs={'pk':the_user.cal_feed_id}))
+
         return context
 
     def render_to_response(self, context):
