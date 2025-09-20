@@ -48,7 +48,9 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['the_user_is_band_admin'] = has_band_admin(
             self.request.user, self.object.band)
         context['user_has_manage_gig_permission'] = has_manage_gig_permission(
-            self.request.user, self.object.band) or self.object.creator == self.request.user
+            self.request.user, self.object.band) or \
+                self.object.creator == self.request.user or \
+                self.object.contact == self.request.user
         context['user_has_create_gig_permission'] = has_create_gig_permission(
             self.request.user, self.object.band)
 
@@ -183,7 +185,9 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
 
 
     def form_valid(self, form):
-        if not (has_manage_gig_permission(self.request.user, self.object.band) or (self.object.creator==self.request.user)):
+        if not (has_manage_gig_permission(self.request.user, self.object.band) or \
+                (self.object.creator==self.request.user) or \
+                (self.object.contact==self.request.user)):
             return HttpResponseForbidden()
 
         result = super(UpdateView, self).form_valid(form)
