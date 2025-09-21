@@ -244,12 +244,12 @@
                             {% endif %}
                             <span id="lock_plans">
                             {% if gig.plans_locked %}
-                                <a href="{% url 'gig-unlock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                <a href="{% url 'gig-unlock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button">
                                     <i class="fas fa-unlock"></i>
                                     {% trans "Unlock Plans" %}
                                 </a>
                             {% else %}
-                                <a href="{% url 'gig-lock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button" data-toggle="tooltip" data-placement="top" title="Tooltip on top">
+                                <a href="{% url 'gig-lock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button">
                                     <i class="fas fa-lock"></i>
                                     {% trans "Lock Plans" %}
                                 </a>
