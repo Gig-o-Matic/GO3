@@ -289,7 +289,7 @@ def band_calfeed(request, pk):
         hr.status_code = 404
         return hr
 
-    response = HttpResponse(tf)
+    response = HttpResponse(tf, content_type='text/calendar')
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
