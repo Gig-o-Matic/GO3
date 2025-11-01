@@ -1342,7 +1342,7 @@ class MemberAttendanceViewTests(TestCase):
         """Viewing a member with no plans should show gigs with None for plans"""
         # Create a new member with no plans
         new_member = Member.objects.create_user(email='newmember@test.com')
-        new_assoc = Assoc.objects.create(
+        Assoc.objects.create(
             member=new_member,
             band=self.band,
             is_admin=False,
