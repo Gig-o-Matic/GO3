@@ -61,6 +61,9 @@
                                         </td>
                                         <td>
                                             <a href="{% url 'gig-detail' pk=item.gig.id %}">{{ item.gig.title }}</a>
+                                            {% if item.gig.status == 2 %}
+                                                (Canceled!)
+                                            {% endif %}
                                         </td>
                                         <td>
                                             {% if item.plan %}
