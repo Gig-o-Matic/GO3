@@ -184,7 +184,7 @@ class MemberAttendanceView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             except (ValueError, TypeError):
                 selected_year = available_years[0] if available_years else datetime.now().year
         else:
-            selected_year = available_years[0] if available_years else datetime.now().year
+            selected_year = datetime.now().year
 
         # Query gigs from the selected year
         year_gigs = list(
