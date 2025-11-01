@@ -39,7 +39,7 @@ class BandMemberRequiredMixin(UserPassesTestMixin):
 class BandList(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         return _get_active_bands().order_by('name')
-        
+
     context_object_name = 'bands'
 
 
@@ -77,7 +77,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         context['calfeed_url'] = self.request.build_absolute_uri(reverse('band-calfeed',kwargs={'pk':the_band.pub_cal_feed_id}))
 
         assoc = None if the_user.is_superuser else Assoc.objects.get(band=the_band, member=the_user)
-            
+
         context['the_user_is_band_admin'] = the_user.is_superuser or (assoc and assoc.is_admin)
         context['the_pending_members'] = Assoc.objects.filter(band=the_band, status=AssocStatusChoices.PENDING)
         context['the_invited_members'] = Invite.objects.filter(band=the_band)
@@ -108,11 +108,11 @@ class PublicDetailView(TemplateView):
 
     def get_context_data(self, **kwargs):
         the_band = get_object_or_404(Band, condensed_name=self.kwargs['name'])
-        
+
         context = super().get_context_data(**kwargs)
 
         context['band'] = the_band
-        context['url_base'] = URL_BASE            
+        context['url_base'] = URL_BASE
         context['the_user_is_associated'] = False
 
         if the_band.images:
@@ -143,6 +143,85 @@ class AllMembersView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
         return context
 
 
+class MemberAttendanceView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'band/band_member_attendance.html'
+
+    def test_func(self):
+        # Only band admins or superusers can view member attendance history
+        band = get_object_or_404(Band, id=self.kwargs['pk'])
+        return self.request.user and (
+            self.request.user.is_superuser or
+            band.is_admin(self.request.user)
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        the_band = Band.objects.get(id=self.kwargs['pk'])
+        member_id = self.kwargs['member_id']
+        the_assoc = get_object_or_404(Assoc, member_id=member_id, band=the_band)
+        the_member = the_assoc.member
+
+        from gig.models import Plan
+        from datetime import datetime
+        from django.db.models.functions import ExtractYear
+
+        # Get list of years that have gigs using database aggregation
+        available_years = list(
+            the_band.gigs
+            .filter(date__isnull=False)
+            .annotate(year=ExtractYear('date'))
+            .values_list('year', flat=True)
+            .distinct()
+            .order_by('-year')
+        )
+
+        # Get the selected year from query params, default to most recent year
+        selected_year = self.request.GET.get('year')
+        if selected_year:
+            try:
+                selected_year = int(selected_year)
+            except (ValueError, TypeError):
+                selected_year = available_years[0] if available_years else datetime.now().year
+        else:
+            selected_year = available_years[0] if available_years else datetime.now().year
+
+        # Query gigs from the selected year
+        year_gigs = list(
+            the_band.gigs
+            .filter(date__year=selected_year)
+            .order_by('-date')
+        )
+
+        # Get all plans for these gigs and this member in a single query
+        gig_ids = [gig.id for gig in year_gigs]
+        plans_by_gig = {
+            plan.gig_id: plan
+            for plan in Plan.objects.filter(
+                gig_id__in=gig_ids,
+                assoc=the_assoc
+            ).select_related('gig')
+        }
+
+        # Build list matching gigs with their plans
+        gigs_with_plans = []
+        for gig in year_gigs:
+            plan = plans_by_gig.get(gig.id)
+            gigs_with_plans.append({
+                'gig': gig,
+                'plan': plan
+            })
+
+        context['the_band'] = the_band
+        context['the_member'] = the_member
+        context['gigs_with_plans'] = gigs_with_plans
+        context['available_years'] = available_years
+        context['selected_year'] = selected_year
+        context['the_user_is_band_admin'] = has_band_admin(self.request.user, the_band)
+
+        return context
+
+
 class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
     template_name = 'band/band_stats.html'
 
@@ -151,7 +230,7 @@ class BandStatsView(LoginRequiredMixin, BandMemberRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['the_stats'] = get_band_stats(the_band)
 
-        # get the gigs over time data            
+        # get the gigs over time data
         context['gigs_over_time_data'] = json.dumps(get_gigs_over_time_stats(the_band), default=dateconverter)
 
         if the_band.gigs.count():
