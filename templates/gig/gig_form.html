@@ -238,13 +238,16 @@
                 </div>
             </div>
             <div class="row">
-                <div class="form-group col-12">
-                    {{ form.email_changes.errors }}
-                    {{ form.email_changes }}
-                    {{ form.email_changes.label_tag }}
+                <div class="col-12">
+                    {{ form.notification.label_tag }}
+                    <div class="row">
+                        <div class="col-1"></div>
+                        <div class="col-11">
+                            {{ form.notification }}
+                        </div>
+                    </div>
                 </div>
             </div>
-
             <div class="row">
                 <div class="form-group col-md-6 col-12 ml-auto text-left">
                     {% if gig and not is_dupe%}

@@ -43,6 +43,7 @@ class GigForm(forms.ModelForm):
             band = self.instance.band
 
         instance = kwargs.get('instance',None)
+
         if instance is None:
             """ this is a new gig """
             self.fields['email_changes'].label = _('Email members about this new gig')
@@ -195,6 +196,15 @@ class GigForm(forms.ModelForm):
                                             ('week', _('week')),
                                             ('month', _('month (on same day of the month)')),
                                         ])
+
+    notification = forms.ChoiceField(label="Notification",
+                                      widget=forms.RadioSelect,
+                                      required=True,
+                                      choices=[
+                                        ('everyone','Everyone'),
+                                        ('answered','Answered'),
+                                        ('no_email','None'),
+                                      ])
 
 
     class Meta:
