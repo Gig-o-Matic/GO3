@@ -168,18 +168,18 @@ class CaldavTest(TestCase):
         self.assertIn(b'DESCRIPTION:public desc\r\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:test desc\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest desc\r\n', cf)
 
     def test_calfeed_setlist(self):
         self.testgig.setlist = 'test set'
         self.testgig.save()
 
-        # TODO no setlist on band feed?
+        # no setlist on band feed
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:test set\r\n', cf)
+        self.assertNotIn(b'DESCRIPTION:test set\r\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:test set\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest set\r\n', cf)
 
     def test_calfeed_details_setlist(self):
         self.testgig.details = 'test details'
@@ -188,11 +188,10 @@ class CaldavTest(TestCase):
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:test public details\\n\\ntest set\r\n', cf)
-        self.assertNotIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)
+        self.assertIn(b'DESCRIPTION:test public details\r\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:test details\\n\\ntest set\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\\n\\ntest set\r\n', cf)
 
     def test_calfeed_summary(self):
         self.testgig.details = 'test details'
@@ -200,10 +199,10 @@ class CaldavTest(TestCase):
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n', cf)
+        self.assertIn(b'SUMMARY:New Gig\r\n', cf)
     
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n', cf)
+        self.assertIn(b'SUMMARY:New Gig - test band\r\n', cf)
 
     def test_calfeed_timezone(self):
         cf = make_band_calfeed(self.band, self.band.gigs.all())
@@ -223,26 +222,19 @@ class CaldavTest(TestCase):
 
     def test_calfeed_translation(self):
         self.testgig.details = 'test details'
-        self.testgig.setlist = 'test set'
         self.testgig.save()
         self.band.default_language = 'de'
         self.band.save()
 
-        cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n', cf)
-
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'SUMMARY:New Gig (Unconfirmed) - test band\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\r\n', cf)
 
         self.joeuser.preferences.language = 'es'
         self.joeuser.preferences.save()
         self.joeuser.save()
 
-        cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'SUMMARY:New Gig (Nicht fixiert) - test band\r\n', cf)
-
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'SUMMARY:New Gig (No confirmado) - test band\r\n', cf)
+        self.assertIn(b'DESCRIPTION:No confirmado\\n\\ntest details\r\n', cf)
 
 
 @pytest.mark.django_db
@@ -293,9 +285,3 @@ class CaldavFileTest(FSTestCase):
         delete_calfeed('testfile2')
         with self.assertRaises(ValueError):
             cf = get_calfeed('testfile2')
-
-
-
-
-
-
