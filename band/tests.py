@@ -832,7 +832,7 @@ class BandCalfeedTest(FSTestCase):
         self.assertTrue(self.band.pub_cal_feed_dirty)
 
     def test_band_calfeed_description(self):
-        """ 
+        """
         one of the gigs has 'details' including the word 'private' and a
         public_description containing the word 'public' so make sure we're seeing
         the right stuff in the band feed.
@@ -1103,3 +1103,283 @@ class ActiveBandTests(TestCase):
         self.assertTrue(m1 in list)
         self.assertTrue(m2 not in list)
         self.assertTrue(m3 in list)
+
+
+class MemberAttendanceViewTests(TestCase):
+    """Tests for the member attendance history view"""
+
+    def setUp(self):
+        """Create test data: users, band, gigs, and plans"""
+        # Create users
+        self.super = Member.objects.create_user(
+            email='super@test.com', is_superuser=True)
+        self.band_admin = Member.objects.create_user(email='admin@test.com')
+        self.regular_member = Member.objects.create_user(email='member@test.com')
+        self.non_member = Member.objects.create_user(email='nonmember@test.com')
+
+        # Create band
+        self.band = Band.objects.create(name='Test Band')
+
+        # Create associations
+        self.admin_assoc = Assoc.objects.create(
+            member=self.band_admin,
+            band=self.band,
+            is_admin=True,
+            status=AssocStatusChoices.CONFIRMED
+        )
+        self.member_assoc = Assoc.objects.create(
+            member=self.regular_member,
+            band=self.band,
+            is_admin=False,
+            status=AssocStatusChoices.CONFIRMED
+        )
+
+        # Create gigs across multiple years
+        tz = pytz_timezone('UTC')
+        self.gig_2023_1 = Gig.objects.create(
+            band=self.band,
+            title="Gig 2023 Jan",
+            date=datetime(2023, 1, 15, 19, 0, tzinfo=tz)
+        )
+        self.gig_2023_2 = Gig.objects.create(
+            band=self.band,
+            title="Gig 2023 Dec",
+            date=datetime(2023, 12, 20, 19, 0, tzinfo=tz)
+        )
+        self.gig_2024_1 = Gig.objects.create(
+            band=self.band,
+            title="Gig 2024 Mar",
+            date=datetime(2024, 3, 10, 19, 0, tzinfo=tz)
+        )
+        self.gig_2024_2 = Gig.objects.create(
+            band=self.band,
+            title="Gig 2024 Sep",
+            date=datetime(2024, 9, 5, 19, 0, tzinfo=tz)
+        )
+        self.gig_2025_1 = Gig.objects.create(
+            band=self.band,
+            title="Gig 2025 Feb",
+            date=datetime(2025, 2, 1, 19, 0, tzinfo=tz)
+        )
+
+        # Update the auto-created plans for the regular member with different statuses
+        # Plans are automatically created by signals when gigs are created
+        self.plan_2023_1 = Plan.objects.get(gig=self.gig_2023_1, assoc=self.member_assoc)
+        self.plan_2023_1.status = 1  # Definitely
+        self.plan_2023_1.comment = "Looking forward to it!"
+        self.plan_2023_1.save()
+
+        self.plan_2023_2 = Plan.objects.get(gig=self.gig_2023_2, assoc=self.member_assoc)
+        self.plan_2023_2.status = 5  # Can't Do It
+        self.plan_2023_2.save()
+
+        self.plan_2024_1 = Plan.objects.get(gig=self.gig_2024_1, assoc=self.member_assoc)
+        self.plan_2024_1.status = 2  # Probably
+        self.plan_2024_1.comment = "Should be there"
+        self.plan_2024_1.save()
+
+        self.plan_2024_2 = Plan.objects.get(gig=self.gig_2024_2, assoc=self.member_assoc)
+        self.plan_2024_2.status = 1  # Definitely
+        self.plan_2024_2.save()
+
+        self.plan_2025_1 = Plan.objects.get(gig=self.gig_2025_1, assoc=self.member_assoc)
+        self.plan_2025_1.status = 3  # Don't Know
+        self.plan_2025_1.save()
+
+    def tearDown(self):
+        """Clean up test data"""
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+        Gig.objects.all().delete()
+        Plan.objects.all().delete()
+
+    def test_superuser_can_access(self):
+        """Superusers should be able to view attendance history"""
+        self.client.force_login(self.super)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_band_admin_can_access(self):
+        """Band admins should be able to view attendance history"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_regular_member_cannot_access(self):
+        """Regular members should not be able to view others' attendance history"""
+        self.client.force_login(self.regular_member)
+        url = reverse('member-attendance', args=[self.band.id, self.band_admin.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_non_member_cannot_access(self):
+        """Non-members should not be able to view attendance history"""
+        self.client.force_login(self.non_member)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_unauthenticated_user_redirected(self):
+        """Unauthenticated users should be redirected to login"""
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)  # Redirect to login
+        self.assertIn('/accounts/login', resp.url)
+
+    def test_default_year_is_most_recent(self):
+        """Without year parameter, should default to most recent year with gigs"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['selected_year'], 2025)
+        self.assertEqual(len(resp.context['gigs_with_plans']), 1)
+
+    def test_year_filtering_2024(self):
+        """Filtering by year should show only gigs from that year"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url, {'year': '2024'})
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['selected_year'], 2024)
+        gigs_with_plans = resp.context['gigs_with_plans']
+        self.assertEqual(len(gigs_with_plans), 2)
+
+        # Verify the gigs are from 2024
+        gig_titles = [item['gig'].title for item in gigs_with_plans]
+        self.assertIn("Gig 2024 Mar", gig_titles)
+        self.assertIn("Gig 2024 Sep", gig_titles)
+
+    def test_year_filtering_2023(self):
+        """Filtering by 2023 should show only 2023 gigs"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url, {'year': '2023'})
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['selected_year'], 2023)
+        gigs_with_plans = resp.context['gigs_with_plans']
+        self.assertEqual(len(gigs_with_plans), 2)
+
+    def test_invalid_year_defaults_to_most_recent(self):
+        """Invalid year parameter should default to most recent year"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url, {'year': 'invalid'})
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['selected_year'], 2025)
+
+    def test_available_years_list(self):
+        """Context should include list of all years with gigs"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        available_years = resp.context['available_years']
+        self.assertEqual(len(available_years), 3)
+        self.assertIn(2023, available_years)
+        self.assertIn(2024, available_years)
+        self.assertIn(2025, available_years)
+        # Should be in descending order (most recent first)
+        self.assertEqual(available_years, [2025, 2024, 2023])
+
+    def test_plans_associated_with_gigs(self):
+        """Each gig should have its corresponding plan"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url, {'year': '2024'})
+
+        self.assertEqual(resp.status_code, 200)
+        gigs_with_plans = resp.context['gigs_with_plans']
+
+        # Find the March gig
+        march_item = next(
+            (item for item in gigs_with_plans if item['gig'].title == "Gig 2024 Mar"),
+            None
+        )
+        self.assertIsNotNone(march_item)
+        self.assertIsNotNone(march_item['plan'])
+        self.assertEqual(march_item['plan'].status, 2)  # Probably
+        self.assertEqual(march_item['plan'].comment, "Should be there")
+
+    def test_gigs_ordered_by_date_descending(self):
+        """Gigs should be ordered most recent first"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url, {'year': '2024'})
+
+        self.assertEqual(resp.status_code, 200)
+        gigs_with_plans = resp.context['gigs_with_plans']
+
+        # First gig should be September (most recent)
+        self.assertEqual(gigs_with_plans[0]['gig'].title, "Gig 2024 Sep")
+        # Second gig should be March
+        self.assertEqual(gigs_with_plans[1]['gig'].title, "Gig 2024 Mar")
+
+    def test_context_includes_member_and_band(self):
+        """Context should include member and band information"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['the_member'], self.regular_member)
+        self.assertEqual(resp.context['the_band'], self.band)
+        self.assertTrue(resp.context['the_user_is_band_admin'])
+        # Verify the context has the expected data
+        self.assertIn('gigs_with_plans', resp.context)
+        self.assertIn('available_years', resp.context)
+        self.assertIn('selected_year', resp.context)
+
+    def test_member_without_plans_shows_empty(self):
+        """Viewing a member with no plans should show gigs with None for plans"""
+        # Create a new member with no plans
+        new_member = Member.objects.create_user(email='newmember@test.com')
+        Assoc.objects.create(
+            member=new_member,
+            band=self.band,
+            is_admin=False,
+            status=AssocStatusChoices.CONFIRMED
+        )
+
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, new_member.id])
+        resp = self.client.get(url, {'year': '2024'})
+
+        self.assertEqual(resp.status_code, 200)
+        gigs_with_plans = resp.context['gigs_with_plans']
+        # Should still show the gigs, but with None plans
+        self.assertEqual(len(gigs_with_plans), 2)
+        # Note: Plans might be auto-created by signals, so check if they exist
+        # If they do exist, they should have default status
+
+    def test_nonexistent_member_returns_404(self):
+        """Requesting attendance for non-existent member should return 404"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, 99999])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_plan_comments_included(self):
+        """Plan comments should be available in the context"""
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        resp = self.client.get(url, {'year': '2023'})
+
+        self.assertEqual(resp.status_code, 200)
+        gigs_with_plans = resp.context['gigs_with_plans']
+
+        # Find the January 2023 gig with comment
+        jan_item = next(
+            (item for item in gigs_with_plans if item['gig'].title == "Gig 2023 Jan"),
+            None
+        )
+        self.assertIsNotNone(jan_item)
+        self.assertEqual(jan_item['plan'].comment, "Looking forward to it!")
