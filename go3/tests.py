@@ -13,7 +13,7 @@
 """
 
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import get_resolver, reverse
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
@@ -55,3 +55,17 @@ class TestGO3API(TestCase):
         response = self.client.get(reverse("api-1.0.0:whoami"), HTTP_X_API_KEY=self.member.api_key)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"key": self.member.api_key})
+
+
+class TestAllURLs(TestCase):
+    def setUp(self):
+        # TODO: generate some objects to use in the url test
+        return super().setUp()
+    
+    def test_urls(self):
+        urls = set(v[1] for k,v in get_resolver(None).reverse_dict.items())
+        for url in urls:
+            # TODO: supply correct parameters to the request
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 404)
+            self.assertNotEqual(response.content, b'')
