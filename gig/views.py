@@ -138,10 +138,14 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
         if form.cleaned_data['add_series']:
             the_dates = create_gig_series(form.instance, form.cleaned_data['total_gigs'], form.cleaned_data['repeat'])
             if not form.cleaned_data['notification']=='no_email':
-                notify_new_gig(form.instance, created=True, dates=the_dates)
+                notify_new_gig(form.instance, created=True,
+                               dates=the_dates,
+                               only_answered=(form.cleaned_data['notification']=='answered'))
         else:
             if form.cleaned_data['notification']=='no_email':
-                notify_new_gig(form.instance, created=True)
+                notify_new_gig(form.instance, 
+                               created=True,
+                               only_answered=(form.cleaned_data['notification']=='answered'))
 
         return result
 
@@ -194,7 +198,10 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
 
         # call the super before sending notifications, so the object is saved
         if not form.cleaned_data['notification']=='no_email':
-            notify_new_gig(form.instance, created=False)
+            notify_new_gig(form.instance,
+                           created=False, 
+                           only_answered=(form.cleaned_data['notification']=='answered')
+                           )
 
         return result
 
