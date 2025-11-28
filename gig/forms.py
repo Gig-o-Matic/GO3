@@ -55,7 +55,7 @@ class GigForm(forms.ModelForm):
         else:
             self.fields['notification'].choices = [
                                         ('everyone',_('Notify Everyone')),
-                                        ('answered',_('Notify If Already Answered')),
+                                        ('answered',_('Notify If Attending')),
                                         ('no_email',_('No Notification')),
                                       ]
             self.fields['notification'].label = _('Email members about change')

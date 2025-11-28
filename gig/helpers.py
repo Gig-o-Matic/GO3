@@ -194,7 +194,11 @@ def send_emails_from_plans(plans_query, template, dates=None):
 
 def send_email_from_gig(gig, template, dates=None, only_answered=False):
     if only_answered:
-        plans = gig.member_plans.exclude(status=PlanStatusChoices.NO_PLAN)
+        plans = gig.member_plans.filter(status__in=[
+                                            PlanStatusChoices.DEFINITELY,
+                                            PlanStatusChoices.PROBABLY,
+                                            PlanStatusChoices.DONT_KNOW
+                                        ])
     else:
         plans = gig.member_plans
 
