@@ -142,7 +142,7 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
                                dates=the_dates,
                                only_answered=(form.cleaned_data['notification']=='answered'))
         else:
-            if form.cleaned_data['notification']=='no_email':
+            if not form.cleaned_data['notification']=='no_email':
                 notify_new_gig(form.instance, 
                                created=True,
                                only_answered=(form.cleaned_data['notification']=='answered'))

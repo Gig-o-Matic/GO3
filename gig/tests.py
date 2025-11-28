@@ -133,7 +133,7 @@ class GigTestBase(TestCase):
                 "contact": contact,
                 "status": status,
                 "send_update": send_update,
-                "email_changes": email_changes,
+                "notification": "everyone" if email_changes else "no_email",
                 **kwargs,
             },
         )
@@ -167,7 +167,7 @@ class GigTestBase(TestCase):
             "end_time": end_time,
             "contact": the_gig.contact.id,
             "status": the_gig.status,
-            "email_changes": True,
+            "notification": "everyone",
         }
         for x in kwargs.keys():
             data[x] = kwargs[x]
@@ -926,7 +926,7 @@ class GigTest(GigTestBase):
                 "end_time": end_time,
                 "contact": kwargs.get("contact", self.joeuser).id,
                 "status": GigStatusChoices.UNCONFIRMED,
-                "send_update": True,
+                "notification": 'everyone',
             },
         )
 
