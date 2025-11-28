@@ -46,8 +46,18 @@ class GigForm(forms.ModelForm):
 
         if instance is None:
             """ this is a new gig """
+            self.fields['notification'].choices=[
+                                        ('everyone',_('Notify Everyone')),
+                                        ('no_email',_('No Notification')),
+                                      ]
+
             self.fields['notification'].label = _('Email members about this new gig')
         else:
+            self.fields['notification'].choices = [
+                                        ('everyone',_('Notify Everyone')),
+                                        ('answered',_('Notify If Already Answered')),
+                                        ('no_email',_('No Notification')),
+                                      ]
             self.fields['notification'].label = _('Email members about change')
 
         self.fields['notification'].initial = 'everyone' if band.send_updates_by_default else None
@@ -198,7 +208,6 @@ class GigForm(forms.ModelForm):
                                             ('week', _('week')),
                                             ('month', _('month (on same day of the month)')),
                                         ])
-
     notification = forms.ChoiceField(label="Notification",
                                       widget=forms.RadioSelect,
                                       required=True,
@@ -207,7 +216,6 @@ class GigForm(forms.ModelForm):
                                         ('answered',_('Notify If Already Answered')),
                                         ('no_email',_('No Notification')),
                                       ])
-
 
     class Meta:
         model = Gig
