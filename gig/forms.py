@@ -47,9 +47,11 @@ class GigForm(forms.ModelForm):
         if instance is None:
             """ this is a new gig """
             self.fields['notification'].label = _('Email members about this new gig')
-            # self.fields['notification'].initial = band.send_updates_by_default
         else:
             self.fields['notification'].label = _('Email members about change')
+
+        self.fields['notification'].initial = 'everyone' if band.send_updates_by_default else None
+
 
         if user:
             self.fields['contact'].initial = user
@@ -201,9 +203,9 @@ class GigForm(forms.ModelForm):
                                       widget=forms.RadioSelect,
                                       required=True,
                                       choices=[
-                                        ('everyone','Everyone'),
-                                        ('answered','Answered'),
-                                        ('no_email','None'),
+                                        ('everyone',_('Notify Everyone')),
+                                        ('answered',_('Notify If Already Answered')),
+                                        ('no_email',_('No Notification')),
                                       ])
 
 
