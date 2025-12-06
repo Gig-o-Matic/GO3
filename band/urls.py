@@ -25,6 +25,7 @@ urlpatterns = [
     path('<int:pk>/', views.DetailView.as_view(), name='band-detail'),
     path('<int:pk>/update/', views.UpdateView.as_view(), name='band-update'),
     path('<int:pk>/members/', views.AllMembersView.as_view(), name='all-members'),
+    path('<int:pk>/member/<int:member_id>/attendance/', views.MemberAttendanceView.as_view(), name='member-attendance'),
     path('<int:pk>/stats/', views.BandStatsView.as_view(), name='band-stats'),
     path('<int:pk>/section/<int:sk>', views.SectionMembersView.as_view(), name='section-members'),
     path('<int:pk>/member_spreadsheet', views.member_spreadsheet, name='member-spreadsheet'),
@@ -33,8 +34,8 @@ urlpatterns = [
     path('<int:pk>/trashcan', views.TrashcanView.as_view(), name='band-trashcan'),
     path('<int:pk>/archive', views.ArchiveView.as_view(), name='band-archive'),
     path('<int:pk>/sections', views.SectionSetupView.as_view(), name='band-section-setup'),
-    path('<int:pk>/set_sections', helpers.set_sections, name='band-set-sections'), 
-    path('<int:pk>/public_gigs', helpers.public_gigs, name='band-public-gigs'), 
+    path('<int:pk>/set_sections', helpers.set_sections, name='band-set-sections'),
+    path('<int:pk>/public_gigs', helpers.public_gigs, name='band-public-gigs'),
 
     path('pub/<str:name>/', views.PublicDetailView.as_view(), name='band-public-page'),
 

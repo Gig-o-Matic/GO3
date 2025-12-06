@@ -1,0 +1,100 @@
+{% extends 'base/go3base.html' %}
+{% load i18n %}
+{% load static %}
+{% load tz %}
+{% load humanize %}
+
+{% block title %}{% trans "Attendance History" %}{% endblock title %}
+
+{% block content %}
+<div class="row">
+    <div class="mx-auto col-lg-10 col-md-12 col-12">
+        {% include 'base/messages.html' %}
+
+        <div class="page-header">
+            {% trans "Attendance History" %}: {{ the_member.display_name }}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row titlerow">
+                    <div class="col-6">
+                        {{ the_band.name }}
+                    </div>
+                    <div class="ml-auto">
+                        <a class="btn btn-secondary btn-sm" href="{% url 'band-detail' pk=the_band.id %}">{% trans "Back to Band" %}</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if available_years %}
+                    <div class="mb-3">
+                        <div class="btn-group" role="group" aria-label="{% trans 'Year selector' %}">
+                            {% for year in available_years %}
+                                {% if year == selected_year %}
+                                    <a href="?year={{ year }}" class="btn btn-primary">{{ year }}</a>
+                                {% else %}
+                                    <a href="?year={{ year }}" class="btn btn-outline-primary">{{ year }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if gigs_with_plans %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Date" %}</th>
+                                    <th>{% trans "Gig" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Notes" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in gigs_with_plans %}
+                                    <tr>
+                                        <td>
+                                            {% with item.gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
+                                                {{ gig_date }}
+                                            {% endwith %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'gig-detail' pk=item.gig.id %}">{{ item.gig.title }}</a>
+                                            {% if item.gig.status == 2 %}
+                                                (Canceled!)
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.plan %}
+                                                <span style="display:inline-flex; align-items:center; gap:0.5rem;">
+                                                    {% include "gig/plan_icon.html" with plan_value=item.plan.status %}
+                                                    <span>{{ item.plan.status_string }}</span>
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">
+                                                    {% include "gig/plan_icon.html" with plan_value=0 %}
+                                                    {% trans "No response" %}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.plan and item.plan.comment %}
+                                                <span class="text-muted">{{ item.plan.comment }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif available_years %}
+                    <p class="text-muted">{% trans "No gigs found for" %} {{ selected_year }}.</p>
+                {% else %}
+                    <p class="text-muted">{% trans "No gigs found for this band." %}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
