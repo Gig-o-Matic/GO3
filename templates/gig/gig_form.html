@@ -145,6 +145,25 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-12">
+                    {{ form.rsvp_date.label_tag }}
+                    {{ form.rsvp_date.errors }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-4">
+                    <div class="form-group">
+                        <div class="input-group" id="id_rsvp_date_widget" data-target-input="nearest">
+                            <input type="text" name="rsvp_date" class="form-control datetimepicker-input" id="id_rsvp_date" data-target="#id_rsvp_date_widget"/>
+                            <div class="input-group-append" data-target="#id_rsvp_date_widget" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             {% if is_new %}
                 <div class="row">
@@ -359,6 +378,20 @@ $(document).ready(function () {
                 },
         locale: '{{ user.preferences.language }}',
         defaultDate: '{{ end_date.isoformat }}',
+    });
+    $('#id_rsvp_date_widget').datetimepicker({
+        format: 'L LT',
+        timeZone: '{{ timezone }}',
+        icons: {
+                    date: "fa fa-calendar",
+                    time: "fa fa-clock",
+                    up: "fa fa-arrow-up",
+                    down: "fa fa-arrow-down",
+                },
+        locale: '{{ user.preferences.language }}',
+        {% if gig.rsvp_by_date %}
+        defaultDate: '{{ gig.rsvp_by_date.isoformat }}',
+        {% endif %}
     });
 
 {% comment %}    

@@ -165,6 +165,35 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['setdate'] = setdate
             self.cleaned_data['enddate'] = enddate
 
+        # Handle RSVP date - parse as datetime (both date and time together)
+        rsvp_date_str = self.cleaned_data.get('rsvp_date', '')
+        rsvp_by_date = None
+        if rsvp_date_str:
+            # The datetimepicker sends format 'L LT' which combines date and time
+            # We need to split and parse separately like call_time/set_time
+            # Try to extract date and time parts
+            parts = rsvp_date_str.strip().split(None, 2)  # Split on whitespace, max 3 parts
+            if len(parts) >= 2:
+                # Has both date and time
+                date_part = parts[0]
+                time_part = ' '.join(parts[1:])  # Rejoin in case there are multiple parts
+                rsvp_by_date = _parse(date_part, 'DATE_INPUT_FORMATS')
+                rsvp_time = _parse(time_part, 'TIME_INPUT_FORMATS')
+                if rsvp_by_date:
+                    rsvp_by_date = _mergetime(rsvp_by_date, rsvp_time) if rsvp_time else rsvp_by_date
+            else:
+                # Just a date
+                rsvp_by_date = _parse(rsvp_date_str, 'DATE_INPUT_FORMATS')
+            
+            if rsvp_by_date:
+                z = pytz.timezone(self.band.timezone)
+                rsvp_by_date = timezone.make_aware(rsvp_by_date, z)
+                # Optionally validate that RSVP date is before the gig date
+                # if rsvp_by_date > date:
+                #     self.add_error('rsvp_date', ValidationError(_('RSVP deadline should be before the gig date'), code='invalid rsvp date'))
+        
+        self.cleaned_data['rsvp_by_date'] = rsvp_by_date
+
         super().clean()
 
     def save(self, commit=True):
@@ -172,6 +201,7 @@ class GigForm(forms.ModelForm):
         self.instance.date = self.cleaned_data['date']
         self.instance.setdate = self.cleaned_data['setdate']
         self.instance.enddate = self.cleaned_data['enddate']
+        self.instance.rsvp_by_date = self.cleaned_data.get('rsvp_by_date')
         newgig = super().save(commit)
         return newgig
 
@@ -183,6 +213,7 @@ class GigForm(forms.ModelForm):
     end_time = forms.Field(required=False, label=_('End Time'))
     end_date = forms.Field(required=False, label=_('End Date'))
     datenotes = forms.Field(required=False, label=_('Date Notes'))
+    rsvp_date = forms.Field(required=False, label=_('RSVP By'))
 
 
     is_private = forms.BooleanField(required=False, label=_('Hide from public gig feed'))
@@ -203,7 +234,7 @@ class GigForm(forms.ModelForm):
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date',
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','public_description','invite_occasionals',
-                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','is_full_day','has_set_time',
+                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','rsvp_date','is_full_day','has_set_time',
                 'has_call_time','has_end_time']
 
         widgets = {
