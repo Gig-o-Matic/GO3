@@ -189,8 +189,8 @@ class GigForm(forms.ModelForm):
                 z = pytz.timezone(self.band.timezone)
                 rsvp_by_date = timezone.make_aware(rsvp_by_date, z)
                 # Optionally validate that RSVP date is before the gig date
-                # if rsvp_by_date > date:
-                #     self.add_error('rsvp_date', ValidationError(_('RSVP deadline should be before the gig date'), code='invalid rsvp date'))
+                if rsvp_by_date > date:
+                    self.add_error('rsvp_date', ValidationError(_('RSVP deadline should be before the gig date'), code='invalid rsvp date'))
         
         self.cleaned_data['rsvp_by_date'] = rsvp_by_date
 
