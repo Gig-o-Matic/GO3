@@ -11,6 +11,11 @@
 <div class="row">
     {{ gig.date }} {{ gig.call_time }}
 </div>
+{% if gig.rsvp_by_date %}
+<div class="row">
+    <strong>{% trans "RSVP By" %}:</strong> {{ gig.rsvp_by_date|date:"SHORT_DATETIME_FORMAT" }}
+</div>
+{% endif %}
 <br>
 <div class="panel panel-default">
     <div class="panel-heading">
