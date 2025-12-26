@@ -60,7 +60,8 @@ class GigForm(forms.ModelForm):
                                       ]
             self.fields['notification'].label = _('Email members about change')
 
-        self.fields['notification'].initial = 'everyone' if band.send_updates_by_default else None
+        self.fields['notification'].initial = 'everyone' if band.send_updates_by_default else \
+                                              'no_email'
 
 
         if user:
