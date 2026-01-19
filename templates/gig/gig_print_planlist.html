@@ -13,7 +13,7 @@
 </div>
 {% if gig.rsvp_by_date %}
 <div class="row">
-    <strong>{% trans "RSVP By" %}:</strong> {{ gig.rsvp_by_date|date:"SHORT_DATETIME_FORMAT" }}
+    <strong>{% trans "RSVP By" %}:</strong> {{ gig.rsvp_by_date|date:"SHORT_DATE_FORMAT" }}
 </div>
 {% endif %}
 <br>
