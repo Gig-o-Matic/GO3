@@ -169,21 +169,7 @@ class GigForm(forms.ModelForm):
         rsvp_date_str = self.cleaned_data.get('rsvp_date', '')
         rsvp_by_date = None
         if rsvp_date_str:
-            # The datetimepicker sends format 'L LT' which combines date and time
-            # We need to split and parse separately like call_time/set_time
-            # Try to extract date and time parts
-            parts = rsvp_date_str.strip().split(None, 2)  # Split on whitespace, max 3 parts
-            if len(parts) >= 2:
-                # Has both date and time
-                date_part = parts[0]
-                time_part = ' '.join(parts[1:])  # Rejoin in case there are multiple parts
-                rsvp_by_date = _parse(date_part, 'DATE_INPUT_FORMATS')
-                rsvp_time = _parse(time_part, 'TIME_INPUT_FORMATS')
-                if rsvp_by_date:
-                    rsvp_by_date = _mergetime(rsvp_by_date, rsvp_time) if rsvp_time else rsvp_by_date
-            else:
-                # Just a date
-                rsvp_by_date = _parse(rsvp_date_str, 'DATE_INPUT_FORMATS')
+            rsvp_by_date = _parse(rsvp_date_str, 'DATE_INPUT_FORMATS')
             
             if rsvp_by_date:
                 z = pytz.timezone(self.band.timezone)
@@ -191,6 +177,8 @@ class GigForm(forms.ModelForm):
                 # Optionally validate that RSVP date is before the gig date
                 if rsvp_by_date > date:
                     self.add_error('rsvp_date', ValidationError(_('RSVP deadline should be before the gig date'), code='invalid rsvp date'))
+            else:
+                self.add_error('rsvp_date', ValidationError(_('RSVP By date is not valid'), code='invalid rsvp date'))
         
         self.cleaned_data['rsvp_by_date'] = rsvp_by_date
 
