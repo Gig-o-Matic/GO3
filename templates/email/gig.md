@@ -15,7 +15,7 @@ Subject: {% block subject %}{% endblock %}
 {% trans "Set Time" %}: {{ gig.setdate|date:"TIME_FORMAT" %}{% endif %}{% if gig.enddate %}
 {% trans "End Time" %}: {{ gig.enddate|date:"TIME_FORMAT" %}{% endif %}
 {% endif %}{% if gig.datenotes %}{% trans "Notes" %}: {{ gig.datenotes }}{% endif %}{% if gig.rsvp_by_date %}
-{% trans "RSVP By" %}: {{ gig.rsvp_by_date|date:"SHORT_DATETIME_FORMAT" }}{% endif %}{% endblock gigdates %}
+{% trans "RSVP By" %}: {{ gig.rsvp_by_date|date:"SHORT_DATE_FORMAT" }}{% endif %}{% endblock gigdates %}
 
 {% if gig.address %}
 {% trans "Address" %}: {{ gig.address }}
