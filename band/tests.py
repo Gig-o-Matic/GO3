@@ -1156,10 +1156,10 @@ class MemberAttendanceViewTests(TestCase):
             title="Gig 2024 Sep",
             date=datetime(2024, 9, 5, 19, 0, tzinfo=tz)
         )
-        self.gig_2025_1 = Gig.objects.create(
+        self.gig_thisyear_1 = Gig.objects.create(
             band=self.band,
-            title="Gig 2025 Feb",
-            date=datetime(2025, 2, 1, 19, 0, tzinfo=tz)
+            title="Gig This Year Feb",
+            date=datetime(datetime.now().year, 2, 1, 19, 0, tzinfo=tz)
         )
 
         # Update the auto-created plans for the regular member with different statuses
@@ -1182,9 +1182,9 @@ class MemberAttendanceViewTests(TestCase):
         self.plan_2024_2.status = 1  # Definitely
         self.plan_2024_2.save()
 
-        self.plan_2025_1 = Plan.objects.get(gig=self.gig_2025_1, assoc=self.member_assoc)
-        self.plan_2025_1.status = 3  # Don't Know
-        self.plan_2025_1.save()
+        self.plan_thisyear_1 = Plan.objects.get(gig=self.gig_thisyear_1, assoc=self.member_assoc)
+        self.plan_thisyear_1.status = 3  # Don't Know
+        self.plan_thisyear_1.save()
 
     def tearDown(self):
         """Clean up test data"""
@@ -1236,7 +1236,8 @@ class MemberAttendanceViewTests(TestCase):
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['selected_year'], 2025)
+        this_year = datetime.now().year
+        self.assertEqual(resp.context['selected_year'], this_year)
         self.assertEqual(len(resp.context['gigs_with_plans']), 1)
 
     def test_year_filtering_2024(self):
@@ -1273,7 +1274,7 @@ class MemberAttendanceViewTests(TestCase):
         resp = self.client.get(url, {'year': 'invalid'})
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['selected_year'], 2025)
+        self.assertEqual(resp.context['selected_year'], datetime.now().year)
 
     def test_available_years_list(self):
         """Context should include list of all years with gigs"""
@@ -1286,9 +1287,9 @@ class MemberAttendanceViewTests(TestCase):
         self.assertEqual(len(available_years), 3)
         self.assertIn(2023, available_years)
         self.assertIn(2024, available_years)
-        self.assertIn(2025, available_years)
+        self.assertIn(datetime.now().year, available_years)
         # Should be in descending order (most recent first)
-        self.assertEqual(available_years, [2025, 2024, 2023])
+        self.assertEqual(available_years, [datetime.now().year, 2024, 2023])
 
     def test_plans_associated_with_gigs(self):
         """Each gig should have its corresponding plan"""
