@@ -994,7 +994,7 @@ class MemberDeleteTest(TestCase):
                            'end_time': end_time,
                            'contact': contact,
                            'status': status,
-                           'send_update': send_update,
+                           'notification': 'everyone' if send_update else 'no_email',
                            **kwargs
                            })
 

@@ -133,7 +133,7 @@ class GigTestBase(TestCase):
                 "contact": contact,
                 "status": status,
                 "send_update": send_update,
-                "email_changes": email_changes,
+                "notification": "everyone" if email_changes else "no_email",
                 **kwargs,
             },
         )
@@ -167,7 +167,7 @@ class GigTestBase(TestCase):
             "end_time": end_time,
             "contact": the_gig.contact.id,
             "status": the_gig.status,
-            "email_changes": True,
+            "notification": kwargs.get('notification','everyone'),
         }
         for x in kwargs.keys():
             data[x] = kwargs[x]
@@ -564,7 +564,7 @@ class GigTest(GigTestBase):
 
     @flag_missing_vars
     def test_gig_edit_email(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.status = GigStatusChoices.CONFIRMED
         g.save()
@@ -579,6 +579,20 @@ class GigTest(GigTestBase):
         self.assertNotIn(MISSING, message.subject)
         self.assertNotIn(MISSING, message.body)
 
+        self.update_gig_form(g,notification='no_email')
+        # should not send an email because we said no email
+        self.assertEqual(len(mail.outbox),1)
+
+        self.update_gig_form(g,notification='answered')
+        # we haven't answered
+        self.assertEqual(len(mail.outbox),1)
+        
+        p.status=PlanStatusChoices.DEFINITELY
+        p.save()
+        self.update_gig_form(g,notification='answered')
+        # we have answered
+        self.assertEqual(len(mail.outbox),2)
+        
     def test_gig_edit_status(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -926,7 +940,7 @@ class GigTest(GigTestBase):
                 "end_time": end_time,
                 "contact": kwargs.get("contact", self.joeuser).id,
                 "status": GigStatusChoices.UNCONFIRMED,
-                "send_update": True,
+                "notification": 'everyone',
             },
         )
 
