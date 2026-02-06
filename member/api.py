@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.http import JsonResponse
 from ninja import Router, Schema
+from ninja.throttling import AnonRateThrottle
 
 from member.models import Member
 
@@ -34,7 +35,7 @@ class MemberResponseSchema(Schema):
     phone: Optional[str] = None
 
 
-@router.post("", response={201: MemberResponseSchema, 400: Message, 409: Message})
+@router.post("", response={201: MemberResponseSchema, 400: Message, 409: Message}, throttle=[AnonRateThrottle('15/h')])
 def create_member(request, payload: MemberCreateSchema):
     """
     Create a new member.
