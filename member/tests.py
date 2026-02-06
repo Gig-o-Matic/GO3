@@ -1293,3 +1293,204 @@ class APIKeyTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
 
+
+@pytest.mark.django_db
+class TestMemberAPI(TestCase):
+    def setUp(self):
+        self.member = Member.objects.create_user(email='admin@example.com', api_key='testkey123')
+        self.band = Band.objects.create(name='test band')
+        Assoc.objects.create(
+            member=self.member, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+
+    def tearDown(self):
+        Member.objects.all().delete()
+        Band.objects.all().delete()
+        Assoc.objects.all().delete()
+
+    def test_create_member_minimum_payload(self):
+        """Test creating a member with minimum required fields"""
+        payload = {
+            "email": "newuser@example.com",
+            "username": "New User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data.get("email"), "newuser@example.com")
+        self.assertEqual(data.get("username"), "New User")
+        self.assertIsNone(data.get("nickname"))
+        self.assertIsNone(data.get("phone"))
+        self.assertIn("id", data)
+        
+        # Verify member was created in database
+        member = Member.objects.get(email="newuser@example.com")
+        self.assertEqual(member.username, "New User")
+        self.assertTrue(member.check_password("SecurePassword123!"))
+
+    def test_create_member_with_optional_fields(self):
+        """Test creating a member with all optional fields"""
+        payload = {
+            "email": "fulluser@example.com",
+            "username": "Full User",
+            "password": "SecurePassword123!",
+            "nickname": "FullU",
+            "phone": "555-1234"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data.get("email"), "fulluser@example.com")
+        self.assertEqual(data.get("username"), "Full User")
+        self.assertEqual(data.get("nickname"), "FullU")
+        self.assertEqual(data.get("phone"), "555-1234")
+        
+        # Verify member was created in database
+        member = Member.objects.get(email="fulluser@example.com")
+        self.assertEqual(member.nickname, "FullU")
+        self.assertEqual(member.phone, "555-1234")
+
+    def test_create_member_duplicate_email(self):
+        """Test creating a member with an email that already exists"""
+        payload = {
+            "email": "admin@example.com",  # This email already exists
+            "username": "Duplicate User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 409)
+        data = response.json()
+        self.assertIn("already exists", data.get("message"))
+
+    def test_create_member_case_insensitive_email(self):
+        """Test that email comparison is case insensitive"""
+        # Create a member with lowercase email
+        Member.objects.create_user(email="test@example.com")
+        
+        payload = {
+            "email": "TEST@EXAMPLE.COM",  # Same email, different case
+            "username": "Test User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 409)
+        data = response.json()
+        self.assertIn("already exists", data.get("message"))
+
+    def test_create_member_missing_required_fields(self):
+        """Test creating a member without required fields"""
+        # Missing email
+        payload = {
+            "username": "No Email User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 422)
+
+        # Missing username
+        payload = {
+            "email": "nousername@example.com",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 422)
+
+        # Missing password
+        payload = {
+            "email": "nopassword@example.com",
+            "username": "No Password User"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 422)
+
+    def test_create_member_invalid_api_key(self):
+        """Test creating a member with invalid API key"""
+        payload = {
+            "email": "unauthorized@example.com",
+            "username": "Unauthorized User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY="invalid_key"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Invalid API key")
+
+    def test_create_member_missing_api_key(self):
+        """Test creating a member without API key"""
+        payload = {
+            "email": "noauth@example.com",
+            "username": "No Auth User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Missing API key")
+
+    def test_create_member_email_normalization(self):
+        """Test that email is normalized to lowercase"""
+        payload = {
+            "email": "MixedCase@Example.COM",
+            "username": "Mixed Case User",
+            "password": "SecurePassword123!"
+        }
+        response = self.client.post(
+            reverse("api-1.0.0:create_member"),
+            data=payload,
+            content_type="application/json",
+            HTTP_X_API_KEY=self.member.api_key
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        # The email should be lowercase in the response
+        self.assertEqual(data.get("email"), "mixedcase@example.com")
+        
+        # Verify in database
+        member = Member.objects.get(email="mixedcase@example.com")
+        self.assertEqual(member.email, "mixedcase@example.com")
+
