@@ -4,6 +4,7 @@ from ninja.errors import ValidationError
 from ninja.security import APIKeyHeader
 
 from gig.api import router as gig_router
+from member.api import router as member_router
 from member.models import Member
 
 
@@ -63,3 +64,4 @@ def whoami(request):
 
 
 api.add_router("/gigs", gig_router)
+api.add_router("/members", member_router)

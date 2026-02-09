@@ -1265,7 +1265,7 @@ class APIKeyTest(TestCase):
         )
 
     @patch('member.helpers.secrets.token_urlsafe')
-    @patch('member.helpers.verify_requester_is_user')
+    @patch('member.views.verify_requester_is_user')
     def test_generate_api_token_view(self, mock_verify_requester_is_user, mock_token_urlsafe):
         mock_token_urlsafe.return_value = 'super_secret_token'
         self.assertFalse(self.member.api_key)
@@ -1280,7 +1280,7 @@ class APIKeyTest(TestCase):
         self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
 
 
-    @patch('member.helpers.verify_requester_is_user')
+    @patch('member.views.verify_requester_is_user')
     def test_revoke_api_token_view(self, mock_verify_requester_is_user):
         self.member.api_key = "test"
         self.member.save()
