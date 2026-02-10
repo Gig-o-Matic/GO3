@@ -22,14 +22,16 @@ from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.utils.translation import get_language_from_request
 
 from datetime import timedelta
 from lib.email import prepare_email, send_messages_async
 from lib.caldav import make_member_calfeed, save_calfeed, get_calfeed
 from band.helpers import do_delete_assoc
+from band.models import Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
-from member.models import Member
-from member.views import verify_requester_is_user
+from member.models import Member, Invite
 from gig.models import Gig
 import secrets
 from datetime import timedelta
@@ -176,6 +178,7 @@ def stop_watching(request, pk):
 
 @login_required
 def generate_api_key(request):
+    from member.views import verify_requester_is_user
     user = request.user
     verify_requester_is_user(request, user)
     user.api_key = secrets.token_urlsafe(30)
@@ -185,8 +188,122 @@ def generate_api_key(request):
 
 @login_required
 def revoke_api_key(request):
+    from member.views import verify_requester_is_user
     user = request.user
     verify_requester_is_user(request, user)
     user.api_key = None
     user.save()
     return redirect('member-detail', pk=user.id)
+
+
+def create_signup_invite(email, request=None, existing_account_message=None):
+    """
+    Creates a signup invitation for the given email.
+    
+    Returns a dictionary with:
+    - success: bool indicating if the invite was created
+    - message: str with status message
+    - email: str the email address
+    
+    If an account already exists for this email, success will be False.
+    If the email format is invalid, success will be False.
+    
+    Args:
+        email: The email address to send the invitation to
+        request: Optional request object to extract language preference
+        existing_account_message: Optional custom message for when account exists
+    """
+    # Trim whitespace and lowercase
+    email = email.lower().strip()
+    
+    # Validate email format
+    try:
+        validate_email(email)
+    except ValidationError:
+        return {
+            'success': False,
+            'message': f"Invalid email address: {email}",
+            'email': email
+        }
+    
+    if Member.objects.filter(email=email).exists():
+        if existing_account_message is None:
+            existing_account_message = f"An account associated with {email} already exists."
+        return {
+            'success': False,
+            'message': existing_account_message,
+            'email': email
+        }
+    
+    # Determine language from request if available, otherwise default to 'en-US'
+    language = 'en-US'
+    if request:
+        language = get_language_from_request(request)
+    
+    # Create the invitation with band=None for signup
+    Invite.objects.create(band=None, email=email, language=language)
+    
+    return {
+        'success': True,
+        'message': f"Invitation sent to {email}",
+        'email': email
+    }
+
+
+def send_band_invites(band, emails, language='en-US'):
+    """
+    Send invitations to multiple emails for a specific band.
+    
+    Returns a dictionary with:
+    - invited: list of emails that were invited
+    - in_band: list of emails already confirmed in the band
+    - invalid: list of invalid email addresses
+    
+    Args:
+        band: Band object to invite members to
+        emails: List of email addresses to process
+        language: Language code for the invitation (default 'en-US')
+    """
+    invited, in_band, invalid = [], [], []
+    
+    for email in emails:
+        email = email.lower().strip()
+        if not email:
+            continue
+        
+        # Validate email format
+        try:
+            validate_email(email)
+        except ValidationError:
+            invalid.append(email)
+            continue
+        
+        # Check if member is already in the band
+        assocs = Assoc.objects.filter(member__email=email, band=band)
+        in_the_band = False
+        the_assoc = None
+        
+        if assocs.count() > 0:
+            the_assoc = assocs.first()
+            if the_assoc.status == AssocStatusChoices.CONFIRMED:
+                in_the_band = True
+        
+        if in_the_band:
+            in_band.append(email)
+        else:
+            # Create the invitation
+            Invite.objects.create(band=band, email=email, language=language)
+            invited.append(email)
+            
+            # Update assoc status if it exists
+            if the_assoc is not None:
+                the_assoc.status = AssocStatusChoices.INVITED
+                the_assoc.save()
+    
+    return {
+        'invited': invited,
+        'in_band': in_band,
+        'invalid': invalid
+    }
+
+
