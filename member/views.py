@@ -18,7 +18,7 @@
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
 from .models import Member, MemberPreferences, Invite, EmailConfirmation
-from .helpers import create_signup_invite
+from .helpers import create_signup_invite, send_band_invites
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
 from lib.translation import join_trans
@@ -250,32 +250,10 @@ class InviteView(LoginRequiredMixin, FormView):
         if not band.is_admin(self.request.user):
             raise PermissionDenied
 
-        invited, in_band, invalid = [], [], []
-        for email in emails:
-            email=email.lower()
-            
-            try:
-                validate_email(email)
-            except ValidationError:
-                invalid.append(email)
-                continue
-
-            assocs = Assoc.objects.filter(member__email=email, band=band)
-            in_the_band = False
-            the_assoc = None
-            if assocs.count() > 0:
-                the_assoc = assocs.first()
-                if the_assoc.status == AssocStatusChoices.CONFIRMED:
-                    in_the_band = True
-
-            if in_the_band:
-                in_band.append(email)
-            else:
-                Invite.objects.create(band=band, email=email, language=self.request.user.preferences.language)
-                invited.append(email)
-                if the_assoc is not None:
-                    the_assoc.status = AssocStatusChoices.INVITED
-                    the_assoc.save()
+        result = send_band_invites(band, emails, self.request.user.preferences.language)
+        invited = result['invited']
+        in_band = result['in_band']
+        invalid = result['invalid']
 
         self.return_to_form = False
         if invalid:
