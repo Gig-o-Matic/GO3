@@ -202,7 +202,7 @@ class Gig(AbstractEvent):
     leader_text = models.TextField(null=True, blank=True)
 
     # RSVP deadline for event planning
-    rsvp_by_date = models.DateField(null=True, blank=True)
+    rsvp_by_date = models.DateTimeField(null=True, blank=True)
 
     # Flag whether band members can change their plans
     plans_locked = models.BooleanField(default=False)
