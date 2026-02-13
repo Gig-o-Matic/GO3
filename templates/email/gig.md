@@ -12,9 +12,10 @@ Subject: {% block subject %}{% endblock %}
 {% else %}
 {% trans "Date" %}: {{ gig.date|date:"SHORT_DATE_FORMAT" }} ({{ gig.date|date:"D" }})
 {% trans "Call Time" %}: {{ gig.date|date:"TIME_FORMAT" }}{% if gig.setdate %}
-{% trans "Set Time" %}: {{ gig.setdate|date:"TIME_FORMAT" }}{% endif %}{% if gig.enddate %}
-{% trans "End Time" %}: {{ gig.enddate|date:"TIME_FORMAT" }}{% endif %}
-{% endif %}{% if gig.datenotes %}{% trans "Notes" %}: {{ gig.datenotes }}{% endif %}{% endblock gigdates %}
+{% trans "Set Time" %}: {{ gig.setdate|date:"TIME_FORMAT" %}{% endif %}{% if gig.enddate %}
+{% trans "End Time" %}: {{ gig.enddate|date:"TIME_FORMAT" %}{% endif %}
+{% endif %}{% if gig.datenotes %}{% trans "Notes" %}: {{ gig.datenotes }}{% endif %}{% if gig.rsvp_by_date %}
+{% trans "RSVP By" %}: {{ gig.rsvp_by_date|date:"SHORT_DATE_FORMAT" }}{% endif %}{% endblock gigdates %}
 
 {% if gig.address %}
 {% trans "Address" %}: {{ gig.address }}
