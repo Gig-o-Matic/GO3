@@ -187,8 +187,6 @@ msgid "Full- or Multi-day"
 msgstr ""
 
 #: gig/forms.py:231
-#, fuzzy
-#| msgid "Address"
 msgid "Street Address or Map URL"
 msgstr "Dirección Postal o URL de Mapa"
 
