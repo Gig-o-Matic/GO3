@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-12 11:45-0400\n"
+"POT-Creation-Date: 2026-02-14 05:08+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -40,7 +40,7 @@ msgstr "Necesita Respuesta"
 msgid "No Section"
 msgstr "Sin sección"
 
-#: band/views.py:159
+#: band/views.py:239
 msgid "not ever!"
 msgstr "¡nunca!"
 
@@ -79,6 +79,7 @@ msgid "Full- or multi-day event"
 msgstr ""
 
 #: gig/forms.py:180 gig/forms.py:228
+#: templates/band/band_member_attendance.html:48
 msgid "Date"
 msgstr "Fecha"
 
@@ -177,6 +178,7 @@ msgid "Contact"
 msgstr "Contacto"
 
 #: gig/forms.py:224 gig/helpers.py:119
+#: templates/band/band_member_attendance.html:50
 msgid "Status"
 msgstr "Estado"
 
@@ -185,10 +187,8 @@ msgid "Full- or Multi-day"
 msgstr ""
 
 #: gig/forms.py:231
-#, fuzzy
-#| msgid "Address"
-msgid "Address or URL"
-msgstr "Dirección o URL"
+msgid "Street Address or Map URL"
+msgstr "Dirección Postal o URL de Mapa"
 
 #: gig/forms.py:232 templates/gig/gig_detail.html:138
 #: templates/gig/gig_detail_archived.html:103
@@ -532,6 +532,7 @@ msgid "No Gigs!"
 msgstr "¡No hay eventos!"
 
 #: templates/agenda/agenda_plan_edit.html:28
+#: templates/band/band_member_attendance.html:58
 msgid "dateformatstring"
 msgstr "d/m D"
 
@@ -576,22 +577,30 @@ msgstr "¡No hay eventos!"
 msgid "Bands hidden from view:"
 msgstr ""
 
-#: templates/band/band_all_members.html:22
+#: templates/band/band_all_members.html:6
+msgid "View attendance history"
+msgstr ""
+
+#: templates/band/band_all_members.html:7
+msgid "Attendance"
+msgstr ""
+
+#: templates/band/band_all_members.html:25
 #: templates/band/band_section_members.html:22
 msgid "occasional"
 msgstr "ocasional"
 
-#: templates/band/band_all_members.html:56
+#: templates/band/band_all_members.html:59
 msgid "others"
 msgstr "otros"
 
-#: templates/band/band_all_members.html:74
-#: templates/band/band_all_members.html:97
+#: templates/band/band_all_members.html:77
+#: templates/band/band_all_members.html:100
 msgid "admin"
 msgstr "admin"
 
-#: templates/band/band_all_members.html:82
-#: templates/band/band_all_members.html:102
+#: templates/band/band_all_members.html:85
+#: templates/band/band_all_members.html:105
 msgid "remove from band"
 msgstr "retirar de la banda"
 
@@ -647,65 +656,65 @@ msgstr "Perfil público"
 msgid "Public Gig Calendar Feed"
 msgstr "Calendario de eventos públicos"
 
-#: templates/band/band_detail.html:96
-msgid "Subscribe using this link's URL"
-msgstr "Suscríbete a través de este enlace"
+#: templates/band/band_detail.html:95 templates/member/member_detail.html:245
+msgid "Copy Calendar URL To Clipboard"
+msgstr "Copiar la URL del calendario al portapapeles"
 
-#: templates/band/band_detail.html:107 templates/band/band_public.html:61
+#: templates/band/band_detail.html:105 templates/band/band_public.html:61
 msgid "Pictures Of Us"
 msgstr "Fotos de nosotros"
 
-#: templates/band/band_detail.html:138
+#: templates/band/band_detail.html:136
 msgid "Pending Members"
 msgstr "Miembros pendientes"
 
-#: templates/band/band_detail.html:155
+#: templates/band/band_detail.html:153
 msgid "yes, confirm member!"
 msgstr "sí, ¡confirmo al miembro!"
 
-#: templates/band/band_detail.html:164
+#: templates/band/band_detail.html:162
 msgid "no, reject!"
 msgstr "no, ¡rechazo el pedido!"
 
-#: templates/band/band_detail.html:180
+#: templates/band/band_detail.html:178
 msgid "Invited Members"
 msgstr "Miembros invitados"
 
-#: templates/band/band_detail.html:190
+#: templates/band/band_detail.html:188
 msgid "forget the invite"
 msgstr "olvidar la invitación"
 
-#: templates/band/band_detail.html:202 templates/band/band_detail.html:212
+#: templates/band/band_detail.html:200 templates/band/band_detail.html:210
 msgid "Members"
 msgstr "Miembros"
 
-#: templates/band/band_detail.html:209
+#: templates/band/band_detail.html:207
 #: templates/band/band_section_setup.html:29
 msgid "Sections"
 msgstr "Secciones"
 
-#: templates/band/band_detail.html:220 templates/band/band_detail.html:261
+#: templates/band/band_detail.html:218 templates/band/band_detail.html:259
 #: templates/member/band_invite.html:6
 msgid "Invite Members"
 msgstr "Invitar a los miembros"
 
-#: templates/band/band_detail.html:244
+#: templates/band/band_detail.html:242
 msgid "Set Up Sections"
 msgstr "Configurar secciones"
 
-#: templates/band/band_detail.html:255
+#: templates/band/band_detail.html:253
 msgid "Member Admin"
 msgstr "Admin de miembros"
 
-#: templates/band/band_detail.html:262
+#: templates/band/band_detail.html:260
 msgid "Download Member List"
 msgstr "Descargar lista de miembros"
 
-#: templates/band/band_detail.html:263
+#: templates/band/band_detail.html:261
 msgid "Get Member Emails"
 msgstr "Conseguir los correos electrónicos de los miembros"
 
-#: templates/band/band_detail.html:279
+#: templates/band/band_detail.html:277
 #, fuzzy
 #| msgid "Band Sections"
 msgid "Band Statistics"
@@ -771,6 +780,46 @@ msgstr "¡No hay eventos en la papelera!"
 #: templates/band/band_list.html:5 templates/band/band_list.html:11
 msgid "Band Navigator"
 msgstr "Navegador de bandas"
+
+#: templates/band/band_member_attendance.html:7
+#: templates/band/band_member_attendance.html:15
+msgid "Attendance History"
+msgstr ""
+
+#: templates/band/band_member_attendance.html:25
+#, fuzzy
+#| msgid "By Band"
+msgid "Back to Band"
+msgstr "Por Banda"
+
+#: templates/band/band_member_attendance.html:32
+msgid "Year selector"
+msgstr ""
+
+#: templates/band/band_member_attendance.html:49
+#: templates/gig/gig_detail.html:40 templates/gig/gig_detail_archived.html:29
+msgid "Gig"
+msgstr "Evento"
+
+#: templates/band/band_member_attendance.html:51
+#, fuzzy
+#| msgid "Date Notes"
+msgid "Notes"
+msgstr "Notas sobre la fecha"
+
+#: templates/band/band_member_attendance.html:77
+#, fuzzy
+#| msgid "Needs Reponse"
+msgid "No response"
+msgstr "Necesita Respuesta"
+
+#: templates/band/band_member_attendance.html:92
+msgid "No gigs found for"
+msgstr ""
+
+#: templates/band/band_member_attendance.html:94
+msgid "No gigs found for this band."
+msgstr ""
 
 #: templates/band/band_section_setup.html:5
 msgid "Band Sections"
@@ -950,10 +999,6 @@ msgstr "Archivar"
 #: templates/gig/gig_detail.html:33
 msgid "Duplicate"
 msgstr "Duplicar"
-
-#: templates/gig/gig_detail.html:40 templates/gig/gig_detail_archived.html:29
-msgid "Gig"
-msgstr "Evento"
 
 #: templates/gig/gig_detail.html:55 templates/gig/gig_detail_archived.html:44
 #, fuzzy
@@ -1889,10 +1934,6 @@ msgstr ""
 msgid "Calendar URL for My Bands"
 msgstr "URL del calendario de mis bandas"
 
-#: templates/member/member_detail.html:245
-msgid "Copy Calendar URL To Clipboard"
-msgstr "Copiar la URL del calendario al portapapeles"
-
 #: templates/member/member_detail.html:246
 #, fuzzy
 #| msgid "clic here for help"
@@ -2189,6 +2230,9 @@ msgstr "Datos"
 #| msgid "Gig-O-Matic Credits"
 msgid "Gig-O-Matic Stats"
 msgstr "Datos de Gig-o-Matic"
+
+#~ msgid "Subscribe using this link's URL"
+#~ msgstr "Suscríbete a través de este enlace"
 
 #, fuzzy
 #~| msgid "Must be in the future!"
