@@ -47,9 +47,6 @@ def invite_to_band(request, band_id: int, payload: InviteRequest):
     api_key = request.auth.get("key")
     member = Member.objects.filter(api_key=api_key).first()
     
-    if not member:
-        return JsonResponse({"message": "Unauthorized"}, status=401)
-    
     band = get_object_or_404(Band, pk=band_id)
     
     # Check if user is admin of the band
