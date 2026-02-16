@@ -196,60 +196,6 @@ def revoke_api_key(request):
     return redirect('member-detail', pk=user.id)
 
 
-def create_signup_invite(email, request=None, existing_account_message=None):
-    """
-    Creates a signup invitation for the given email.
-    
-    Returns a dictionary with:
-    - success: bool indicating if the invite was created
-    - message: str with status message
-    - email: str the email address
-    
-    If an account already exists for this email, success will be False.
-    If the email format is invalid, success will be False.
-    
-    Args:
-        email: The email address to send the invitation to
-        request: Optional request object to extract language preference
-        existing_account_message: Optional custom message for when account exists
-    """
-    # Trim whitespace and lowercase
-    email = email.lower().strip()
-    
-    # Validate email format
-    try:
-        validate_email(email)
-    except ValidationError:
-        return {
-            'success': False,
-            'message': f"Invalid email address: {email}",
-            'email': email
-        }
-    
-    if Member.objects.filter(email=email).exists():
-        if existing_account_message is None:
-            existing_account_message = f"An account associated with {email} already exists."
-        return {
-            'success': False,
-            'message': existing_account_message,
-            'email': email
-        }
-    
-    # Determine language from request if available, otherwise default to 'en-US'
-    language = 'en-US'
-    if request:
-        language = get_language_from_request(request)
-    
-    # Create the invitation with band=None for signup
-    Invite.objects.create(band=None, email=email, language=language)
-    
-    return {
-        'success': True,
-        'message': f"Invitation sent to {email}",
-        'email': email
-    }
-
-
 def send_band_invites(band, emails, language='en-US'):
     """
     Send invitations to multiple emails for a specific band.

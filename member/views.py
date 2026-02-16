@@ -18,7 +18,7 @@
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
 from .models import Member, MemberPreferences, Invite, EmailConfirmation
-from .helpers import create_signup_invite, send_band_invites
+from .helpers import send_band_invites
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
 from lib.translation import join_trans
@@ -400,14 +400,12 @@ class SignupView(FormView):
             return redirect('home')
 
         email = form.cleaned_data['email']
-        # Use custom message with "Forgot Password?" link for web interface
-        existing_msg = f'An account associated with {email} already exists. You can recover this account via the "Forgot Password?" link below.'
-        result = create_signup_invite(email, self.request, existing_account_message=existing_msg)
-        
-        if not result['success']:
-            messages.info(self.request, result['message'])
+        if Member.objects.filter(email=email).count() > 0:
+            messages.info(self.request, format_lazy(_('An account associated with {email} already exists.  You can recover this account via the "Forgot Password?" link below.'), email=email))
             return redirect('home')
 
+        # put the language in the invitation - this will end up in the users's preferences
+        Invite.objects.create(band=None, email=email, language=get_language_from_request(self.request))
         return render(self.request, 'member/signup_pending.html', {'email': email})
 
 
