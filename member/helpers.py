@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.validators import validate_email
 from django.utils.translation import get_language_from_request
 
@@ -176,9 +176,26 @@ def stop_watching(request, pk):
     gig.save()
     return render(request, 'member/watched_gigs.html', {'member':request.user})
 
+def verify_requester_is_user(request, user):
+    if not (request.user.id==user.id or request.user.is_superuser):
+        raise PermissionDenied
+
+def verify_requestor_is_in_user_band(request, user):
+    """
+        make sure that whoever is requesting to see a member's details
+        is in the band with that member
+    """
+    if request.user.id == user.id or request.user.is_superuser:
+        return True
+    
+    rbands = [a.band for a in request.user.confirmed_assocs]
+    ubands = [a.band for a in user.confirmed_assocs]
+    if len(set(rbands) & set(ubands)) == 0:
+        raise PermissionDenied
+    return True
+
 @login_required
 def generate_api_key(request):
-    from member.views import verify_requester_is_user
     user = request.user
     verify_requester_is_user(request, user)
     user.api_key = secrets.token_urlsafe(30)
@@ -188,7 +205,6 @@ def generate_api_key(request):
 
 @login_required
 def revoke_api_key(request):
-    from member.views import verify_requester_is_user
     user = request.user
     verify_requester_is_user(request, user)
     user.api_key = None

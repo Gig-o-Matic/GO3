@@ -18,7 +18,7 @@
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from .forms import MemberCreateForm, InviteForm, SignupForm, MemberChangeForm
 from .models import Member, MemberPreferences, Invite, EmailConfirmation
-from .helpers import send_band_invites
+from .helpers import send_band_invites, verify_requester_is_user, verify_requestor_is_in_user_band
 from band.models import Band, Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
 from lib.translation import join_trans
@@ -44,24 +44,6 @@ from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404
 from lib.captcha import verify_captcha, get_captcha_site_key
-
-def verify_requester_is_user(request, user):
-    if not (request.user.id==user.id or request.user.is_superuser):
-        raise PermissionDenied
-
-def verify_requestor_is_in_user_band(request, user):
-    """
-        make sure that whoever is requesting to see a member's details
-        is in the band with that member
-    """
-    if request.user.id == user.id or request.user.is_superuser:
-        return True
-    
-    rbands = [a.band for a in request.user.confirmed_assocs]
-    ubands = [a.band for a in user.confirmed_assocs]
-    if len(set(rbands) & set(ubands)) == 0:
-        raise PermissionDenied
-    return True
 
 
 class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
