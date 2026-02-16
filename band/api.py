@@ -45,7 +45,7 @@ def invite_to_band(request, band_id: int, payload: InviteRequest):
     """
     # Get the authenticated member from the API key
     api_key = request.auth.get("key")
-    member = Member.objects.filter(api_key=api_key).first()
+    member = Member.objects.get(api_key=api_key)
     
     band = get_object_or_404(Band, pk=band_id)
     
