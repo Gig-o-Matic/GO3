@@ -19,7 +19,7 @@ class InvalidAPIKeyError(Exception):
 class MissingAPIKeyError(Exception):
     pass
 
-class BandAPIKey(APIKeyHeader):
+class MemberAPIKey(APIKeyHeader):
     param_name = "X-API-Key"
 
     def authenticate(self, request, key):
@@ -43,7 +43,7 @@ class BandAPIKey(APIKeyHeader):
 
 
 
-api = NinjaAPI(title="Gig-O-Matic API", auth=BandAPIKey())
+api = NinjaAPI(title="Gig-O-Matic API", auth=MemberAPIKey())
 
 
 @api.exception_handler(InvalidAPIKeyError)
