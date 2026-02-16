@@ -1,4 +1,5 @@
 from ninja import Router, Schema
+from ninja.throttling import AnonRateThrottle
 from member.helpers import create_signup_invite
 
 
@@ -15,7 +16,7 @@ class SignupResponse(Schema):
     email: str
 
 
-@router.post("/signup", response={200: SignupResponse, 422: dict})
+@router.post("/signup", response={200: SignupResponse, 422: dict}, throttle=[AnonRateThrottle('10/h')])
 def signup(request, payload: SignupRequest):
     """
     Create a signup invitation for a new member.

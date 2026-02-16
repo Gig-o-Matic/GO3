@@ -1,5 +1,6 @@
 from typing import List
 from ninja import Router, Schema
+from ninja.throttling import AuthRateThrottle
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from member.helpers import send_band_invites
@@ -24,7 +25,7 @@ class Message(Schema):
     message: str
 
 
-@router.post("/{band_id}/invites", response={200: InviteResponse, 401: Message, 404: Message, 403: Message})
+@router.post("/{band_id}/invites", response={200: InviteResponse, 401: Message, 404: Message, 403: Message}, throttle=[AuthRateThrottle('20/h')])
 def invite_to_band(request, band_id: int, payload: InviteRequest):
     """
     Send invitations to multiple members for a specific band.
