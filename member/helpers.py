@@ -32,6 +32,7 @@ from band.helpers import do_delete_assoc
 from band.models import Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
 from member.models import Member, Invite
+from member.views import verify_requester_is_user
 from gig.models import Gig
 import secrets
 from datetime import timedelta
@@ -178,7 +179,6 @@ def stop_watching(request, pk):
 
 @login_required
 def generate_api_key(request):
-    from member.views import verify_requester_is_user
     user = request.user
     verify_requester_is_user(request, user)
     user.api_key = secrets.token_urlsafe(30)
@@ -188,7 +188,6 @@ def generate_api_key(request):
 
 @login_required
 def revoke_api_key(request):
-    from member.views import verify_requester_is_user
     user = request.user
     verify_requester_is_user(request, user)
     user.api_key = None
