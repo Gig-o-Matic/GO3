@@ -81,6 +81,7 @@
                 <a class="btn btn-primary btn-sm"
                    href="#"
                    hx-ext="reload-page"
+                   hx-confirm="{% trans 'Are you sure you want to remove this member from the band?' %}"
                    hx-post="{% url 'assoc-delete' ak=the_assoc.id %}">
                     {% trans "remove from band" %}
                 </a>
