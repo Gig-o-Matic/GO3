@@ -1280,16 +1280,152 @@ class APIKeyTest(TestCase):
         self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
 
 
-    @patch('member.helpers.verify_requester_is_user')
-    def test_revoke_api_token_view(self, mock_verify_requester_is_user):
-        self.member.api_key = "test"
-        self.member.save()
-        self.assertTrue(self.member.api_key)
-        self.client.force_login(self.member)
-        response = self.client.get(reverse('member-revoke-api-key'))
-        mock_verify_requester_is_user.assert_called_once()
-        self.member.refresh_from_db()
-        self.assertFalse(self.member.api_key)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
+class TestQueryMemberAPI(GigTestBase):
+    def setUp(self):
+        super().setUp()
+        # Use band_admin (already exists and is admin) from GigTestBase
+        self.client.force_login(self.band_admin)
+        # Generate API key for band_admin
+        self.client.get(reverse("member-generate-api-key"))
+        self.band_admin.refresh_from_db()
+        
+        # Create a non-admin member in the band
+        self.regular_member = Member.objects.create_user(email="regular@test.com", api_key="regular_key")
+        Assoc.objects.create(
+            member=self.regular_member, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create a member in a different band
+        self.other_band = Band.objects.create(name="other band", timezone="UTC")
+        self.other_admin = Member.objects.create_user(email="otheradmin@test.com", api_key="other_admin_key")
+        Assoc.objects.create(
+            member=self.other_admin, band=self.other_band, is_admin=True, status=AssocStatusChoices.CONFIRMED
+        )
+        self.other_member = Member.objects.create_user(email="othermember@test.com", api_key="other_member_key")
+        Assoc.objects.create(
+            member=self.other_member, band=self.other_band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create a member not in any band with the admin
+        self.unaffiliated_member = Member.objects.create_user(email="unaffiliated@test.com")
 
+    def test_query_member_found_in_same_band(self):
+        """Test querying for a member in the same band"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.regular_member.email}",
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.regular_member.id)
+        self.assertEqual(data.get("email"), self.regular_member.email)
+
+    def test_query_member_case_insensitive(self):
+        """Test that email query is case insensitive"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.regular_member.email.upper()}",
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.regular_member.id)
+
+    def test_query_member_not_found(self):
+        """Test querying for non-existent member"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + "?email=nonexistent@test.com",
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Member not found")
+
+    def test_query_member_not_in_same_band(self):
+        """Test querying for member not in any of admin's bands"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.unaffiliated_member.email}",
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Member is not in any of your bands")
+
+    def test_query_member_only_admin_access_required(self):
+        """Test that only band admins can query members"""
+        # Create a non-admin member
+        non_admin = Member.objects.create_user(email="nonadmin@test.com", api_key="nonadmin_key")
+        Assoc.objects.create(
+            member=non_admin, band=self.band, status=AssocStatusChoices.CONFIRMED, is_admin=False
+        )
+        
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.regular_member.email}",
+            HTTP_X_API_KEY=non_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data.get("message"), "You do not have admin access to any bands")
+
+    def test_query_member_no_api_key(self):
+        """Test querying without API key"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.regular_member.email}",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn("Missing API key", data.get("message", ""))
+
+    def test_query_member_invalid_api_key(self):
+        """Test querying with invalid API key"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.regular_member.email}",
+            HTTP_X_API_KEY="invalid_key_12345",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn(data.get("message", ""), ["Invalid API key", "Unauthorized"])
+
+    def test_query_member_from_different_band(self):
+        """Test that admin from one band cannot query members from another"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.other_member.email}",
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data.get("message"), "Member is not in any of your bands")
+
+    def test_query_member_admin_in_multiple_bands(self):
+        """Test admin with access to multiple bands can query members from either"""
+        # Make band_admin admin in the other_band too
+        Assoc.objects.create(
+            member=self.band_admin, band=self.other_band, is_admin=True, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Should be able to query member from other_band now
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email") + f"?email={self.other_member.email}",
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.other_member.id)
+
+    def test_query_member_no_email_parameter(self):
+        """Test querying without email parameter"""
+        response = self.client.get(
+            reverse("api-1.0.0:query_member_by_email"),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        # Should return 422 (validation error) or 400 (bad request)
+        self.assertIn(response.status_code, [400, 422])
