@@ -1280,6 +1280,20 @@ class APIKeyTest(TestCase):
         self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
 
 
+    @patch('member.helpers.verify_requester_is_user')
+    def test_revoke_api_token_view(self, mock_verify_requester_is_user):
+        self.member.api_key = "test"
+        self.member.save()
+        self.assertTrue(self.member.api_key)
+        self.client.force_login(self.member)
+        response = self.client.get(reverse('member-revoke-api-key'))
+        mock_verify_requester_is_user.assert_called_once()
+        self.member.refresh_from_db()
+        self.assertFalse(self.member.api_key)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('member-detail', args=[self.member.id]))
+
+
 class TestQueryMemberAPI(GigTestBase):
     def setUp(self):
         super().setUp()
