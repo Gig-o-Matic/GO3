@@ -19,6 +19,7 @@ class Message(Schema):
 class MemberQueryResponse(Schema):
     member_id: int
     email: str
+    username: str
 
 
 @router.get("/query", response={200: MemberQueryResponse, 401: Message, 404: Message, 403: Message}, throttle=[AuthRateThrottle('20/h')])
@@ -33,7 +34,7 @@ def query_member_by_email(request, email: str):
     - email: The email address to search for
     
     Returns:
-    - 200: Member ID and email
+    - 200: Member ID, email, username
     - 401: Unauthorized (invalid API key)
     - 404: Member not found
     - 403: User is not a band admin or member is not in same band
@@ -69,5 +70,6 @@ def query_member_by_email(request, email: str):
     
     return {
         'member_id': target_member.id,
-        'email': target_member.email
+        'email': target_member.email,
+        'username': target_member.username
     }

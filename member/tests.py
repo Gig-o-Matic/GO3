@@ -1334,6 +1334,7 @@ class TestQueryMemberAPI(GigTestBase):
         data = response.json()
         self.assertEqual(data.get("member_id"), self.regular_member.id)
         self.assertEqual(data.get("email"), self.regular_member.email)
+        self.assertEqual(data.get("username"), self.regular_member.username)
 
     def test_query_member_case_insensitive(self):
         """Test that email query is case insensitive"""
@@ -1345,6 +1346,7 @@ class TestQueryMemberAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("member_id"), self.regular_member.id)
+        self.assertEqual(data.get("username"), self.regular_member.username)
 
     def test_query_member_not_found(self):
         """Test querying for non-existent member"""
@@ -1433,6 +1435,7 @@ class TestQueryMemberAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data.get("member_id"), self.other_member.id)
+        self.assertEqual(data.get("username"), self.other_member.username)
 
     def test_query_member_no_email_parameter(self):
         """Test querying without email parameter"""
