@@ -1566,3 +1566,170 @@ class TestBandInviteAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data.get("invited")), 2)
+
+class TestToggleOccasionalAPI(GigTestBase):
+    def setUp(self):
+        super().setUp()
+        # Use band_admin (already exists and is admin) from GigTestBase
+        self.client.force_login(self.band_admin)
+        # Generate API key for band_admin
+        self.client.get(reverse("member-generate-api-key"))
+        self.band_admin.refresh_from_db()
+        
+        # Create a non-admin member
+        self.non_admin = Member.objects.create_user(email="nonadmin@test.com", api_key="nonadmin_key")
+        self.non_admin_assoc = Assoc.objects.create(
+            member=self.non_admin, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create another regular member
+        self.regular_member = Member.objects.create_user(email="regular@test.com", api_key="regular_key")
+        self.regular_assoc = Assoc.objects.create(
+            member=self.regular_member, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create a member in a different band
+        self.other_band = Band.objects.create(name="other band", timezone="UTC")
+        self.other_member = Member.objects.create_user(email="otherband@test.com", api_key="other_key")
+        Assoc.objects.create(
+            member=self.other_member, band=self.other_band, status=AssocStatusChoices.CONFIRMED
+        )
+
+    def test_toggle_occasional_true_to_false(self):
+        """Test toggling occasional status from true to false"""
+        # Set initial status to true
+        self.regular_assoc.is_occasional = True
+        self.regular_assoc.save()
+        
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.regular_member.id)
+        self.assertEqual(data.get("band_id"), self.band.id)
+        self.assertFalse(data.get("is_occasional"))
+        
+        # Verify in database
+        self.regular_assoc.refresh_from_db()
+        self.assertFalse(self.regular_assoc.is_occasional)
+
+    def test_toggle_occasional_false_to_true(self):
+        """Test toggling occasional status from false to true"""
+        # Ensure initial status is false
+        self.regular_assoc.is_occasional = False
+        self.regular_assoc.save()
+        
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.regular_member.id)
+        self.assertEqual(data.get("band_id"), self.band.id)
+        self.assertTrue(data.get("is_occasional"))
+        
+        # Verify in database
+        self.regular_assoc.refresh_from_db()
+        self.assertTrue(self.regular_assoc.is_occasional)
+
+    def test_toggle_occasional_toggle_multiple_times(self):
+        """Test that toggling multiple times works correctly"""
+        # Toggle 1: False -> True
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json().get("is_occasional"))
+        
+        # Toggle 2: True -> False
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json().get("is_occasional"))
+
+    def test_toggle_occasional_not_band_admin(self):
+        """Test that non-admin cannot toggle occasional status"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.non_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data.get("message"), "You do not have permission to modify members in this band")
+
+    def test_toggle_occasional_band_not_found(self):
+        """Test toggling for non-existent band"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[9999, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_occasional_member_not_found(self):
+        """Test toggling for non-existent member"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, 9999]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_occasional_member_not_in_band(self):
+        """Test toggling for member not in band"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.other_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_occasional_no_api_key(self):
+        """Test toggling without API key"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn("Missing API key", data.get("message", ""))
+
+    def test_toggle_occasional_invalid_api_key(self):
+        """Test toggling with invalid API key"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY="invalid_key_12345",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn(data.get("message", ""), ["Invalid API key", "Unauthorized"])
+
+    def test_toggle_occasional_admin_can_toggle_self(self):
+        """Test that a band admin can toggle their own occasional status"""
+        # Create admin assoc if needed
+        admin_assoc, created = Assoc.objects.get_or_create(
+            member=self.band_admin, band=self.band,
+            defaults={'is_admin': True, 'status': AssocStatusChoices.CONFIRMED}
+        )
+        
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.band_admin.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.band_admin.id)
+        self.assertEqual(data.get("band_id"), self.band.id)
