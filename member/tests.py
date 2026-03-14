@@ -581,9 +581,22 @@ class InviteTest(TemplateTestCase):
     def test_test_email(self):
         self.client.force_login(self.joeuser)
         self.assertEqual(len(mail.outbox), 0)
-        _ = self.client.get(reverse('member-test-email'))
+
+        # make sure I can send email to myself
+        _ = self.client.get(reverse('member-test-email', args=[self.joeuser.id]))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['joe@example.com'])
+
+        # make sure I can't send email to someone else
+        mail.outbox = []
+        _ = self.client.get(reverse('member-test-email', args=[self.janeuser.id]))
+        self.assertEqual(len(mail.outbox), 0)
+
+        # make sure I can send email to someone else if I'm a superuser
+        self.joeuser.is_superuser = True
+        self.joeuser.save()
+        _ = self.client.get(reverse('member-test-email', args=[self.janeuser.id]))
+        self.assertEqual(len(mail.outbox), 1)
 
     @flag_missing_vars
     def test_invite_new_email(self):
