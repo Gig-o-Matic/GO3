@@ -1719,7 +1719,7 @@ class TestToggleOccasionalAPI(GigTestBase):
     def test_toggle_occasional_admin_can_toggle_self(self):
         """Test that a band admin can toggle their own occasional status"""
         # Create admin assoc if needed
-        admin_assoc, created = Assoc.objects.get_or_create(
+        _, _ = Assoc.objects.get_or_create(
             member=self.band_admin, band=self.band,
             defaults={'is_admin': True, 'status': AssocStatusChoices.CONFIRMED}
         )
