@@ -60,8 +60,14 @@ def motd_seen(request, pk):
 
 
 @login_required
-def send_test_email(request):
+def send_test_email(request, pk):
     template = 'email/email_test.md'
+
+    # if the pk isn't the requestion member, make sure we're a superuser
+
+    if not pk == request.user.id and not request.user.is_superuser:
+        raise PermissionDenied
+
     send_messages_async([prepare_email(request.user.as_email_recipient(), template)])
 
     return HttpResponse(_("test email sent"))
