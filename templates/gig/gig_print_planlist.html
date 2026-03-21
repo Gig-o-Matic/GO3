@@ -47,6 +47,7 @@
                 <tr>
                 </tr>
                 {% for plan in plans_by_section|lookup_plans:section %}
+                    {% if forloop.first or plan.attending or all is True %}
                     <tr>
                         <td width="20%">
                             {% if forloop.first %}
@@ -65,6 +66,7 @@
                             <td></td><td></td>
                         {% endif %}
                     </tr>
+                    {% endif %}
                 {% endfor %}
             {% endfor %}
         </table>
