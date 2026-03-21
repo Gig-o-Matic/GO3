@@ -47,22 +47,24 @@
                 <tr>
                 </tr>
                 {% for plan in plans_by_section|lookup_plans:section %}
-                    {% if all is True or plan.attending %}
                     <tr>
                         <td width="20%">
                             {% if forloop.first %}
                                 {{ section.display_name }}
                             {% endif %}
                         </td>
-                        <td width="50%">
-                            {{ plan.assoc.member.display_name }}
-                            ({{plan.status_string }})
-                        </td>
-                        <td width="30%">
-                            {{ plan.assoc.member.phone }}
-                        </td>
+                        {% if all is True or plan.attending %}
+                            <td width="50%">
+                                {{ plan.assoc.member.display_name }}
+                                ({{plan.status_string }})
+                            </td>
+                            <td width="30%">
+                                {{ plan.assoc.member.phone }}
+                            </td>
+                        {% else %}
+                            <td></td><td></td>
+                        {% endif %}
                     </tr>
-                    {% endif %}
                 {% endfor %}
             {% endfor %}
         </table>
