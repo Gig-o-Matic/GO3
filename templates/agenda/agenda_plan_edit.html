@@ -21,8 +21,10 @@
             <i class="fas fa-check-circle float-md-right" style="color:green"></i>
         {% elif gig.status == 2 %}
             <i class="fas fa-times-circle float-md-right" style="color:red"></i>
+        {% elif gig.status == 3 %}
+            <i class="fa-regular fa-question-circle" style="color:blue"></i>
         {% else %}
-            <i class="fas fa-question-circle float-md-right" style="color:orange"></i>
+            <i class="fa-solid fa-question-circle float-md-right" style="color:orange"></i>
         {% endif %}
         </span>
         {% with gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
