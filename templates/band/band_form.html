@@ -145,7 +145,26 @@
                     <div class="form-group">
                         {{ form.simple_planning.errors }}
                         {% render_field form.simple_planning %}
-                        {{ form.simple_planning.label_tag }}
+                        <label for="{{ form.simple_planning.id_for_label }}"
+                               id="simple_planning_label">
+                            Check to disable 'Probably', 'Probably Not' and `Not Interested' attendance options.
+                        </label>
+
+                        <script>
+                          const cb     = document.getElementById("{{ form.simple_planning.id_for_label }}");
+                          const label  = document.getElementById("simple_planning_label");
+                          boiler  = "&nbsp;<span class=\"far fa-circle\" style=\"color:green\"></span>&nbsp;<strong><em>Probably</em></strong>,"
+                          boiler += "&nbsp;<span class=\"far fa-square\" style=\"color:red\"></span>&nbsp;<strong><em>Probably Not</em></strong>, and"
+                          boiler += "&nbsp;<span class=\"fas fa-times\" style=\"color:black\"></span>&nbsp;<strong><em>Not Interested</em></strong>"
+                          boiler += "&nbsp;attendance options."
+                          function toggleAttendance() {
+                            label.innerHTML  = cb.checked ? "Uncheck to ENABLE" : "Check to DISABLE";
+                            label.innerHTML += boiler;
+                          }
+
+                          cb.addEventListener("change", toggleAttendance);
+                          toggleAttendance();
+                        </script>
                     </div>
                     <div class="form-group">
                         {{ form.plan_feedback.errors }}
