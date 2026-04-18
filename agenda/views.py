@@ -57,7 +57,11 @@ def AgendaSelector(request):
 class AgendaBaseView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["hidden_bands"] = [assoc.band for assoc in self.request.user.assocs.filter(hide_from_schedule=True)]
+        context["hidden_bands"] = \
+            [assoc.band for assoc in 
+             self.request.user.assocs.filter(hide_from_schedule=True, 
+                                             status=AssocStatusChoices.CONFIRMED)
+            ]
         return context
 
 class AgendaView(AgendaBaseView):
