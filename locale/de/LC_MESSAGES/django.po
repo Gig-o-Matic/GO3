@@ -48,7 +48,7 @@ msgstr ""
 
 #: gig/forms.py:50 gig/forms.py:57 gig/forms.py:242
 msgid "Notify Everyone"
-msgstr ""
+msgstr "Alle benachrichtigen"
 
 #: gig/forms.py:51 gig/forms.py:59 gig/forms.py:244
 msgid "No Notification"
