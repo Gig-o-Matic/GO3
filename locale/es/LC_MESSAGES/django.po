@@ -1122,11 +1122,11 @@ msgstr "Lista de canciones para el evento"
 
 #: templates/gig/watching.html:5
 msgid "Unwatch"
-msgstr ""
+msgstr "No ver"
 
 #: templates/gig/watching.html:7
 msgid "Watch"
-msgstr ""
+msgstr "Ver"
 
 #: templates/help/band_request.html:5
 msgid "New Band!"
