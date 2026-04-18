@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.db.models.functions import Lower
 from django.shortcuts import redirect
+from django.utils.formats import date_format, time_format
+from pytz import timezone as pytz_timezone
 from .models import Band, Assoc, Section
 from .forms import BandForm
 from .util import AssocStatusChoices, _get_active_bands
@@ -349,12 +351,17 @@ def archive_spreadsheet(request, pk):
             raise PermissionDenied
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{band.shortname or band.name} archive.csv"'
+    response['Content-Disposition'] = f'attachment; filename="{band.name} archive.csv"'
     writer = csv.writer(response)
-    writer.writerow(['date ', 'gig', 'contact'])
-    for gig in Gig.objects.filter(band=band, is_archived=True):
-        date = gig.date.strftime('%x')
-        writer.writerow([date, gig.title, gig.contact.username])
+    writer.writerow(['date ', 'gig', 'contact','call time', 'set time', 'end time', 'pay deal','status'])
+    zone = pytz_timezone(band.timezone)
+    for gig in Gig.objects.filter(band=band, is_archived=True).order_by('date'):
+        date = date_format(gig.date.astimezone(zone))
+        calltime = time_format(gig.date.astimezone(zone)) if gig.has_call_time else ''
+        settime = time_format(gig.setdate.astimezone(zone)) if gig.has_set_time else ''
+        endtime = time_format(gig.enddate.astimezone(zone)) if gig.has_end_time else ''
+        writer.writerow([date, gig.title, gig.contact.username, calltime, settime, endtime,
+                          gig.paid, gig.status_string()])
 
     return response
 

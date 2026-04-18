@@ -64,6 +64,8 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             context['set_time'] = self.object.setdate if self.object.has_set_time else None
             context['end_time'] = self.object.enddate if self.object.has_end_time else None
 
+        context['rsvp_by_date'] = self.object.rsvp_by_date
+
         context['plan_list'] = [x.value for x in PlanStatusChoices]
 
         # filter the plans so we only see plans for regular users, or occasionals who have registered,
@@ -281,9 +283,9 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_planlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band
+        # can only see the gig if you're logged in and in the band (or superuser)
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user)
+        return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -299,9 +301,9 @@ class PrintSetlistView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_setlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band
+        # can only see the gig if you're logged in and in the band (or superuser)
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user)
+        return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

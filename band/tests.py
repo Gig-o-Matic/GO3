@@ -22,7 +22,7 @@ from django.core import mail
 from .models import Band, Assoc, Section
 from .helpers import prepare_band_calfeed, band_calfeed, update_band_calfeed, do_delete_assoc
 from .util import _get_active_bands, _get_inactive_bands, _get_active_band_members
-from member.models import Member
+from member.models import Member, Invite
 from gig.models import Gig, Plan
 from gig.util import GigStatusChoices
 from band import helpers
@@ -1156,10 +1156,10 @@ class MemberAttendanceViewTests(TestCase):
             title="Gig 2024 Sep",
             date=datetime(2024, 9, 5, 19, 0, tzinfo=tz)
         )
-        self.gig_2025_1 = Gig.objects.create(
+        self.gig_thisyear_1 = Gig.objects.create(
             band=self.band,
-            title="Gig 2025 Feb",
-            date=datetime(2025, 2, 1, 19, 0, tzinfo=tz)
+            title="Gig This Year Feb",
+            date=datetime(datetime.now().year, 2, 1, 19, 0, tzinfo=tz)
         )
 
         # Update the auto-created plans for the regular member with different statuses
@@ -1182,9 +1182,9 @@ class MemberAttendanceViewTests(TestCase):
         self.plan_2024_2.status = 1  # Definitely
         self.plan_2024_2.save()
 
-        self.plan_2025_1 = Plan.objects.get(gig=self.gig_2025_1, assoc=self.member_assoc)
-        self.plan_2025_1.status = 3  # Don't Know
-        self.plan_2025_1.save()
+        self.plan_thisyear_1 = Plan.objects.get(gig=self.gig_thisyear_1, assoc=self.member_assoc)
+        self.plan_thisyear_1.status = 3  # Don't Know
+        self.plan_thisyear_1.save()
 
     def tearDown(self):
         """Clean up test data"""
@@ -1236,7 +1236,8 @@ class MemberAttendanceViewTests(TestCase):
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['selected_year'], 2025)
+        this_year = datetime.now().year
+        self.assertEqual(resp.context['selected_year'], this_year)
         self.assertEqual(len(resp.context['gigs_with_plans']), 1)
 
     def test_year_filtering_2024(self):
@@ -1273,7 +1274,7 @@ class MemberAttendanceViewTests(TestCase):
         resp = self.client.get(url, {'year': 'invalid'})
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['selected_year'], 2025)
+        self.assertEqual(resp.context['selected_year'], datetime.now().year)
 
     def test_available_years_list(self):
         """Context should include list of all years with gigs"""
@@ -1286,9 +1287,9 @@ class MemberAttendanceViewTests(TestCase):
         self.assertEqual(len(available_years), 3)
         self.assertIn(2023, available_years)
         self.assertIn(2024, available_years)
-        self.assertIn(2025, available_years)
+        self.assertIn(datetime.now().year, available_years)
         # Should be in descending order (most recent first)
-        self.assertEqual(available_years, [2025, 2024, 2023])
+        self.assertEqual(available_years, [datetime.now().year, 2024, 2023])
 
     def test_plans_associated_with_gigs(self):
         """Each gig should have its corresponding plan"""
@@ -1383,3 +1384,352 @@ class MemberAttendanceViewTests(TestCase):
         )
         self.assertIsNotNone(jan_item)
         self.assertEqual(jan_item['plan'].comment, "Looking forward to it!")
+
+
+class TestBandInviteAPI(GigTestBase):
+    def setUp(self):
+        super().setUp()
+        # Use band_admin (already exists and is admin) from GigTestBase
+        self.client.force_login(self.band_admin)
+        # Generate API key for band_admin
+        self.client.get(reverse("member-generate-api-key"))
+        self.band_admin.refresh_from_db()
+        
+        # Create a non-admin member
+        self.non_admin = Member.objects.create_user(email="nonadmin@test.com", api_key="nonadmin_key")
+        Assoc.objects.create(
+            member=self.non_admin, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create a member already in band
+        self.existing_member = Member.objects.create_user(email="existing@test.com")
+        Assoc.objects.create(
+            member=self.existing_member, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+
+    def test_invite_single_member(self):
+        """Test inviting a single new member to band"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["newmember@test.com"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("invited"), ["newmember@test.com"])
+        self.assertEqual(data.get("in_band"), [])
+        self.assertEqual(data.get("invalid"), [])
+        
+        # Verify invite was created
+        self.assertTrue(Invite.objects.filter(email="newmember@test.com", band=self.band).exists())
+
+    def test_invite_multiple_members(self):
+        """Test inviting multiple new members"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["new1@test.com", "new2@test.com", "new3@test.com"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data.get("invited")), 3)
+        self.assertEqual(data.get("in_band"), [])
+        self.assertEqual(data.get("invalid"), [])
+
+    def test_invite_existing_member(self):
+        """Test inviting a member already in band"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["existing@test.com"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("invited"), [])
+        self.assertEqual(data.get("in_band"), ["existing@test.com"])
+        self.assertEqual(data.get("invalid"), [])
+
+    def test_invite_invalid_email(self):
+        """Test inviting with invalid email addresses"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["not-an-email", "also@invalid@", "bad"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("invited"), [])
+        self.assertEqual(data.get("in_band"), [])
+        self.assertEqual(len(data.get("invalid")), 3)
+
+    def test_invite_mixed(self):
+        """Test with mix of new, existing, and invalid emails"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["new@test.com", "existing@test.com", "invalid-email"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("invited"), ["new@test.com"])
+        self.assertEqual(data.get("in_band"), ["existing@test.com"])
+        self.assertEqual(data.get("invalid"), ["invalid-email"])
+
+    def test_invite_not_band_admin(self):
+        """Test that non-admin cannot invite members"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["newmember@test.com"]},
+            HTTP_X_API_KEY=self.non_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data.get("message"), "You do not have permission to invite members to this band")
+
+    def test_invite_band_not_found(self):
+        """Test inviting to non-existent band"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[9999]),
+            {"emails": ["newmember@test.com"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_invite_no_api_key(self):
+        """Test inviting without API key"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["newmember@test.com"]},
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn("Missing API key", data.get("message", ""))
+
+    def test_invite_invalid_api_key(self):
+        """Test inviting with invalid API key"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["newmember@test.com"]},
+            HTTP_X_API_KEY="invalid_key_12345",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        # Check for either message variant
+        self.assertIn(data.get("message", ""), ["Invalid API key", "Unauthorized"])
+
+    def test_invite_empty_email_list(self):
+        """Test inviting with empty email list"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": []},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("invited"), [])
+        self.assertEqual(data.get("in_band"), [])
+        self.assertEqual(data.get("invalid"), [])
+
+    def test_invite_case_insensitive(self):
+        """Test that email addresses are lowercased"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["NewMember@TEST.COM"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("invited"), ["newmember@test.com"])
+        
+        # Verify invite was created with lowercase email
+        self.assertTrue(Invite.objects.filter(email="newmember@test.com", band=self.band).exists())
+
+    def test_invite_whitespace_trimmed(self):
+        """Test that whitespace is trimmed from emails"""
+        response = self.client.post(
+            reverse("api-1.0.0:invite_to_band", args=[self.band.id]),
+            {"emails": ["  newmember@test.com  ", " another@test.com\n"]},
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data.get("invited")), 2)
+
+class TestToggleOccasionalAPI(GigTestBase):
+    def setUp(self):
+        super().setUp()
+        # Use band_admin (already exists and is admin) from GigTestBase
+        self.client.force_login(self.band_admin)
+        # Generate API key for band_admin
+        self.client.get(reverse("member-generate-api-key"))
+        self.band_admin.refresh_from_db()
+        
+        # Create a non-admin member
+        self.non_admin = Member.objects.create_user(email="nonadmin@test.com", api_key="nonadmin_key")
+        self.non_admin_assoc = Assoc.objects.create(
+            member=self.non_admin, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create another regular member
+        self.regular_member = Member.objects.create_user(email="regular@test.com", api_key="regular_key")
+        self.regular_assoc = Assoc.objects.create(
+            member=self.regular_member, band=self.band, status=AssocStatusChoices.CONFIRMED
+        )
+        
+        # Create a member in a different band
+        self.other_band = Band.objects.create(name="other band", timezone="UTC")
+        self.other_member = Member.objects.create_user(email="otherband@test.com", api_key="other_key")
+        Assoc.objects.create(
+            member=self.other_member, band=self.other_band, status=AssocStatusChoices.CONFIRMED
+        )
+
+    def test_toggle_occasional_true_to_false(self):
+        """Test toggling occasional status from true to false"""
+        # Set initial status to true
+        self.regular_assoc.is_occasional = True
+        self.regular_assoc.save()
+        
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.regular_member.id)
+        self.assertEqual(data.get("band_id"), self.band.id)
+        self.assertFalse(data.get("is_occasional"))
+        
+        # Verify in database
+        self.regular_assoc.refresh_from_db()
+        self.assertFalse(self.regular_assoc.is_occasional)
+
+    def test_toggle_occasional_false_to_true(self):
+        """Test toggling occasional status from false to true"""
+        # Ensure initial status is false
+        self.regular_assoc.is_occasional = False
+        self.regular_assoc.save()
+        
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.regular_member.id)
+        self.assertEqual(data.get("band_id"), self.band.id)
+        self.assertTrue(data.get("is_occasional"))
+        
+        # Verify in database
+        self.regular_assoc.refresh_from_db()
+        self.assertTrue(self.regular_assoc.is_occasional)
+
+    def test_toggle_occasional_toggle_multiple_times(self):
+        """Test that toggling multiple times works correctly"""
+        # Toggle 1: False -> True
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json().get("is_occasional"))
+        
+        # Toggle 2: True -> False
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json().get("is_occasional"))
+
+    def test_toggle_occasional_not_band_admin(self):
+        """Test that non-admin cannot toggle occasional status"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY=self.non_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data.get("message"), "You do not have permission to modify members in this band")
+
+    def test_toggle_occasional_band_not_found(self):
+        """Test toggling for non-existent band"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[9999, self.regular_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_occasional_member_not_found(self):
+        """Test toggling for non-existent member"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, 9999]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_occasional_member_not_in_band(self):
+        """Test toggling for member not in band"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.other_member.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_toggle_occasional_no_api_key(self):
+        """Test toggling without API key"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn("Missing API key", data.get("message", ""))
+
+    def test_toggle_occasional_invalid_api_key(self):
+        """Test toggling with invalid API key"""
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.regular_member.id]),
+            HTTP_X_API_KEY="invalid_key_12345",
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertIn(data.get("message", ""), ["Invalid API key", "Unauthorized"])
+
+    def test_toggle_occasional_admin_can_toggle_self(self):
+        """Test that a band admin can toggle their own occasional status"""
+        # Create admin assoc if needed
+        _, _ = Assoc.objects.get_or_create(
+            member=self.band_admin, band=self.band,
+            defaults={'is_admin': True, 'status': AssocStatusChoices.CONFIRMED}
+        )
+        
+        response = self.client.patch(
+            reverse("api-1.0.0:toggle_occasional_member", args=[self.band.id, self.band_admin.id]),
+            HTTP_X_API_KEY=self.band_admin.api_key,
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data.get("member_id"), self.band_admin.id)
+        self.assertEqual(data.get("band_id"), self.band.id)

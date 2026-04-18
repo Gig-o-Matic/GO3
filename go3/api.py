@@ -4,6 +4,8 @@ from ninja.errors import ValidationError
 from ninja.security import APIKeyHeader
 
 from gig.api import router as gig_router
+from band.api import router as band_router
+from member.api import router as member_router
 from member.models import Member
 
 
@@ -17,7 +19,7 @@ class InvalidAPIKeyError(Exception):
 class MissingAPIKeyError(Exception):
     pass
 
-class BandAPIKey(APIKeyHeader):
+class MemberAPIKey(APIKeyHeader):
     param_name = "X-API-Key"
 
     def authenticate(self, request, key):
@@ -41,7 +43,7 @@ class BandAPIKey(APIKeyHeader):
 
 
 
-api = NinjaAPI(title="Gig-O-Matic API", auth=BandAPIKey())
+api = NinjaAPI(title="Gig-O-Matic API", auth=MemberAPIKey())
 
 
 @api.exception_handler(InvalidAPIKeyError)
@@ -63,3 +65,5 @@ def whoami(request):
 
 
 api.add_router("/gigs", gig_router)
+api.add_router("/bands", band_router)
+api.add_router("/members", member_router)

@@ -21,15 +21,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import validate_email
+from django.utils.translation import get_language_from_request
 
 from datetime import timedelta
 from lib.email import prepare_email, send_messages_async
 from lib.caldav import make_member_calfeed, save_calfeed, get_calfeed
 from band.helpers import do_delete_assoc
+from band.models import Assoc, AssocStatusChoices
 from member.util import MemberStatusChoices
-from member.models import Member
-from member.views import verify_requester_is_user
+from member.models import Member, Invite
 from gig.models import Gig
 import secrets
 from datetime import timedelta
@@ -58,8 +60,14 @@ def motd_seen(request, pk):
 
 
 @login_required
-def send_test_email(request):
+def send_test_email(request, pk):
     template = 'email/email_test.md'
+
+    # if the pk isn't the requestion member, make sure we're a superuser
+
+    if not pk == request.user.id and not request.user.is_superuser:
+        raise PermissionDenied
+
     send_messages_async([prepare_email(request.user.as_email_recipient(), template)])
 
     return HttpResponse(_("test email sent"))
@@ -174,6 +182,24 @@ def stop_watching(request, pk):
     gig.save()
     return render(request, 'member/watched_gigs.html', {'member':request.user})
 
+def verify_requester_is_user(request, user):
+    if not (request.user.id==user.id or request.user.is_superuser):
+        raise PermissionDenied
+
+def verify_requestor_is_in_user_band(request, user):
+    """
+        make sure that whoever is requesting to see a member's details
+        is in the band with that member
+    """
+    if request.user.id == user.id or request.user.is_superuser:
+        return True
+    
+    rbands = [a.band for a in request.user.confirmed_assocs]
+    ubands = [a.band for a in user.confirmed_assocs]
+    if len(set(rbands) & set(ubands)) == 0:
+        raise PermissionDenied
+    return True
+
 @login_required
 def generate_api_key(request):
     user = request.user
@@ -190,3 +216,62 @@ def revoke_api_key(request):
     user.api_key = None
     user.save()
     return redirect('member-detail', pk=user.id)
+
+
+def send_band_invites(band, emails, language='en-US'):
+    """
+    Send invitations to multiple emails for a specific band.
+    
+    Returns a dictionary with:
+    - invited: list of emails that were invited
+    - in_band: list of emails already confirmed in the band
+    - invalid: list of invalid email addresses
+    
+    Args:
+        band: Band object to invite members to
+        emails: List of email addresses to process
+        language: Language code for the invitation (default 'en-US')
+    """
+    invited, in_band, invalid = [], [], []
+    
+    for email in emails:
+        email = email.lower().strip()
+        if not email:
+            continue
+        
+        # Validate email format
+        try:
+            validate_email(email)
+        except ValidationError:
+            invalid.append(email)
+            continue
+        
+        # Check if member is already in the band
+        assocs = Assoc.objects.filter(member__email=email, band=band)
+        in_the_band = False
+        the_assoc = None
+        
+        if assocs.count() > 0:
+            the_assoc = assocs.first()
+            if the_assoc.status == AssocStatusChoices.CONFIRMED:
+                in_the_band = True
+        
+        if in_the_band:
+            in_band.append(email)
+        else:
+            # Create the invitation
+            Invite.objects.create(band=band, email=email, language=language)
+            invited.append(email)
+            
+            # Update assoc status if it exists
+            if the_assoc is not None:
+                the_assoc.status = AssocStatusChoices.INVITED
+                the_assoc.save()
+    
+    return {
+        'invited': invited,
+        'in_band': in_band,
+        'invalid': invalid
+    }
+
+

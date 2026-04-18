@@ -130,14 +130,14 @@ class AbstractEvent(models.Model):
 
     date = models.DateTimeField(null=True, blank=True)
     datenotes = models.TextField(null=True, blank=True)
-    safe_date = models.DateTimeField(null=True)
+    safe_date = models.DateTimeField(null=True, blank=True)
 
     address = models.TextField(null=True, blank=True)
     status = models.IntegerField(choices=GigStatusChoices.choices, default=GigStatusChoices.UNCONFIRMED)
 
     email_changes = models.BooleanField(default=True)
 
-    watchers = models.ManyToManyField('member.Member',related_name='watching')
+    watchers = models.ManyToManyField('member.Member',related_name='watching',blank=True)
 
     public_description = models.TextField(null=True, blank=True)
 
@@ -185,8 +185,8 @@ class Gig(AbstractEvent):
 
     setdate = models.DateTimeField(null=True, blank=True)
     enddate = models.DateTimeField(null=True, blank=True)
-    safe_setdate = models.DateTimeField(null=True)
-    safe_enddate = models.DateTimeField(null=True)
+    safe_setdate = models.DateTimeField(null=True, blank=True)
+    safe_enddate = models.DateTimeField(null=True, blank=True)
 
 
     is_full_day = models.BooleanField(default=False)
@@ -200,6 +200,9 @@ class Gig(AbstractEvent):
 
     leader = models.ForeignKey('member.Member', blank=True, null=True, related_name="leader_gigs", on_delete=models.SET_NULL)
     leader_text = models.TextField(null=True, blank=True)
+
+    # RSVP deadline for event planning
+    rsvp_by_date = models.DateTimeField(null=True, blank=True)
 
     # Flag whether band members can change their plans
     plans_locked = models.BooleanField(default=False)

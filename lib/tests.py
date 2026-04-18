@@ -165,10 +165,10 @@ class CaldavTest(TestCase):
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:public desc\r\n', cf)
+        self.assertIn(b'DESCRIPTION:public desc\\n\\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest desc\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest desc\\n\\n', cf)
 
     def test_calfeed_setlist(self):
         self.testgig.setlist = 'test set'
@@ -176,10 +176,11 @@ class CaldavTest(TestCase):
 
         # no setlist on band feed
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertNotIn(b'DESCRIPTION:test set\r\n', cf)
+        self.assertNotIn(b'DESCRIPTION:test set\n\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest set\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest set\\n\\n', cf)
+        self.assertIn(f'gig/{self.testgig.id}'.encode(), cf)
 
     def test_calfeed_details_setlist(self):
         self.testgig.details = 'test details'
@@ -188,10 +189,10 @@ class CaldavTest(TestCase):
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:test public details\r\n', cf)
+        self.assertIn(b'DESCRIPTION:test public details\\n\\n', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\\n\\ntest set\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\\n\\ntest set\\n\\n', cf)
 
     def test_calfeed_summary(self):
         self.testgig.details = 'test details'
@@ -227,14 +228,14 @@ class CaldavTest(TestCase):
         self.band.save()
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\r\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\\n\\n', cf)
 
         self.joeuser.preferences.language = 'es'
         self.joeuser.preferences.save()
         self.joeuser.save()
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:No confirmado\\n\\ntest details\r\n', cf)
+        self.assertIn(b'DESCRIPTION:No confirmado\\n\\ntest details\\n\\n', cf)
 
 
 @pytest.mark.django_db
