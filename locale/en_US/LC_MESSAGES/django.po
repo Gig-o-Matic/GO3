@@ -58,7 +58,7 @@ msgstr ""
 
 #: gig/forms.py:58
 msgid "Notify If Attending"
-msgstr ""
+msgstr "Notify Only Members Plannning to Attend or Undecided"
 
 #: gig/forms.py:61
 msgid "Email members about change"
