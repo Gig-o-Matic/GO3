@@ -124,12 +124,12 @@ msgstr "Data fine"
 
 #: gig/forms.py:224
 msgid "Date Notes"
-msgstr ""
+msgstr "Note"
 
 #: gig/forms.py:225 templates/gig/gig_detail.html:133
 #: templates/gig/gig_print_planlist.html:16
 msgid "RSVP By"
-msgstr ""
+msgstr "Conferma tramite"
 
 #: gig/forms.py:228
 msgid "Hide from public gig feed"
