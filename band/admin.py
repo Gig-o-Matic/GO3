@@ -35,6 +35,7 @@ class AssocAdmin(admin.ModelAdmin):
     list_display = (_model_str,'join_date')
     search_fields=['member__username', 'member__nickname', 'member__email', 'band__name']
     list_filter = ('is_admin',)
+    readonly_fields = ('default_section','member','band',)
 
 admin.site.register(Section)
 
