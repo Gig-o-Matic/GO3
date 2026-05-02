@@ -165,10 +165,12 @@ class CaldavTest(TestCase):
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:public desc\\n\\n', cf)
+        self.assertIn(b'DESCRIPTION:public desc', cf)
+        self.assertNotIn(b'Gig-o-matic:', cf)
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest desc\\n\\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest desc', cf)
+        self.assertIn(b'Gig-o-matic:', cf)
 
     def test_calfeed_setlist(self):
         self.testgig.setlist = 'test set'
@@ -189,10 +191,13 @@ class CaldavTest(TestCase):
         self.testgig.save()
 
         cf = make_band_calfeed(self.band, self.band.gigs.all())
-        self.assertIn(b'DESCRIPTION:test public details\\n\\n', cf)
+        self.assertIn(b'DESCRIPTION:test public details', cf)
+        self.assertNotIn(b'Gig-o-matic:', cf)
+
 
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
-        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\\n\\ntest set\\n\\n', cf)
+        self.assertIn(b'DESCRIPTION:Unconfirmed\\n\\ntest details\\n\\ntest set', cf)
+        self.assertIn(b'Gig-o-matic:', cf)
 
     def test_calfeed_summary(self):
         self.testgig.details = 'test details'
