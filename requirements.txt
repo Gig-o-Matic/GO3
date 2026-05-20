@@ -27,7 +27,7 @@ freezegun==1.5.1
 future==0.18.3
 gunicorn==23.0.0
 icalendar==5.0.12
-idna==3.7
+idna==3.15
 isort==5.9.3
 Jinja2==3.1.6
 lazy-object-proxy==1.12.0
