@@ -673,7 +673,7 @@ class GigTest(GigTestBase):
 
     def test_gig_edit_occasional_default(self):
         self.band.invite_occasionals_by_default = True
-        a = self.assoc_user(self.joeuser)
+        _ = self.assoc_user(self.joeuser)
         self.band.invite_occasionals_by_default = True
         self.band.save()
 
