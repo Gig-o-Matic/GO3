@@ -671,6 +671,30 @@ class GigTest(GigTestBase):
         self.assertIn("(Address)", message.subject)
         self.assertIn("Address: 123 Main St. Anytown, MN 55016", message.body)
 
+    def test_gig_edit_occasional_default(self):
+        self.band.invite_occasionals_by_default = True
+        a = self.assoc_user(self.joeuser)
+        self.band.invite_occasionals_by_default = True
+        self.band.save()
+
+        # now create a gig - invite should be set
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(
+            f"/gig/create/{self.band.id}",
+        )
+        # invite occasionals should be checked
+        self.assertIn('id="id_invite_occasionals" checked',str(response.content))
+
+        self.band.invite_occasionals_by_default = False
+        self.band.save()
+
+        response = c.get(
+            f"/gig/create/{self.band.id}",
+        )
+        # should not be checked
+        self.assertIn('id="id_invite_occasionals">',str(response.content))
+
     def test_gig_edit_trans(self):
         self.joeuser.preferences.language = "de"
         self.joeuser.save()
