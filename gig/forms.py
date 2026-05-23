@@ -52,6 +52,7 @@ class GigForm(forms.ModelForm):
                                       ]
 
             self.fields['notification'].label = _('Email members about this new gig')
+            self.fields['invite_occasionals'].initial = band.invite_occasionals_by_default
         else:
             self.fields['notification'].choices = [
                                         ('everyone',_('Notify Everyone')),

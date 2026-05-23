@@ -143,6 +143,11 @@
                         {{ form.send_updates_by_default.label_tag }}
                     </div>
                     <div class="form-group">
+                        {{ form.invite_occasionals_by_default.errors }}
+                        {% render_field form.invite_occasionals_by_default %}
+                        {{ form.invite_occasionals_by_default.label_tag }}
+                    </div>
+                    <div class="form-group">
                         {{ form.simple_planning.errors }}
                         {% render_field form.simple_planning %}
                         {{ form.simple_planning.label_tag }}

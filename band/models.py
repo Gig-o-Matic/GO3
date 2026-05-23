@@ -53,6 +53,7 @@ class Band(models.Model):
     anyone_can_manage_gigs = models.BooleanField(default=True)
     anyone_can_create_gigs = models.BooleanField(default=True)
     send_updates_by_default = models.BooleanField(default=True)
+    invite_occasionals_by_default = models.BooleanField(default=True)
     
     simple_planning = models.BooleanField(default=False)
     plan_feedback = models.TextField(max_length=500, blank=True, null=True)
