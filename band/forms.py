@@ -16,6 +16,7 @@
 """
 
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from .models import Band
 
 class BandForm(forms.ModelForm):
@@ -41,4 +42,25 @@ class BandForm(forms.ModelForm):
 
         widgets = {
             'images': forms.Textarea(attrs={'placeholder': 'put urls to images on their own lines...'}),
+        }
+
+        labels = {
+            'name': _('Band Name'),
+            'shortname': _('Short Name'),
+            'hometown': _('Hometown'),
+            'description': _('About the Band'),
+            'member_links': _('Useful Links for Members'),
+            'website': _('Band Website'),
+            'new_member_message': _('Message for New Member Emails'), 
+            'thumbnail_img': _('Thumbnail Image'), 
+            'images': _('Band Images'), 
+            'default_language': _('Language'), 
+            'timezone':_('Timezone'),
+            'anyone_can_create_gigs': ('Anyone Can Create Gigs'), 
+            'anyone_can_manage_gigs': ('Anyone Can Manage Gigs'), 
+            'share_gigs': ('Show Gigs On Public Page'),
+            'send_updates_by_default': ('Send Gig Updates By Default'), 
+            'invite_occasionals_by_default': ('Invite Occasional Members By Default'), 
+            'simple_planning': ('Use Yes/Maybe/No Responses'), 
+            'plan_feedback': ('Use Additional Feedback Options'),
         }
