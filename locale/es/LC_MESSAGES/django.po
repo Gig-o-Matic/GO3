@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-23 22:17+0000\n"
+"POT-Creation-Date: 2026-05-25 16:17+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -39,11 +39,11 @@ msgstr "Necesita Respuesta"
 #, fuzzy
 #| msgid "Band"
 msgid "Band Name"
-msgstr "Banda"
+msgstr "Nombvre del grupo"
 
 #: band/forms.py:49
 msgid "Short Name"
-msgstr ""
+msgstr "Nombre abreviado"
 
 #: band/forms.py:50 templates/band/band_detail.html:49
 #: templates/band/band_public.html:39
@@ -52,43 +52,65 @@ msgstr "Ciudad de domicilio"
 
 #: band/forms.py:51
 msgid "About the Band"
-msgstr ""
+msgstr "Acerca del grupo"
 
 #: band/forms.py:52
 msgid "Useful Links for Members"
-msgstr ""
+msgstr "Enlaces útiles para los miembros"
 
 #: band/forms.py:53
-#, fuzzy
-#| msgid "Website"
 msgid "Band Website"
-msgstr "Sitio web"
+msgstr "Página web del grupo"
 
 #: band/forms.py:54
-#, fuzzy
-#| msgid "Get Member Emails"
 msgid "Message for New Member Emails"
-msgstr "Conseguir los correos electrónicos de los miembros"
+msgstr "Mensaje para los correos electrónicos de los nuevos miembros"
 
 #: band/forms.py:55
 msgid "Thumbnail Image"
-msgstr ""
+msgstr "Imagen en miniatura"
 
 #: band/forms.py:56
-#, fuzzy
-#| msgid "Band Emails"
 msgid "Band Images"
-msgstr "Correos electrónicos de la banda"
+msgstr "Imágenes de la banda"
 
 #: band/forms.py:57 member/models.py:249
 #: templates/member/member_detail.html:208
 #: templates/member/member_detail.html:210 templates/registration/login.html:50
 msgid "Language"
-msgstr ""
+msgstr "Idioma"
 
 #: band/forms.py:58 templates/member/member_detail.html:214
 msgid "Timezone"
 msgstr "Zona horaria"
+
+#: band/forms.py:59
+msgid "Anyone Can Create Gigs"
+msgstr "Cualquiera puede crear conciertos"
+
+#: band/forms.py:60
+msgid "Anyone Can Manage Gigs"
+msgstr "Cualquiera puede gestionar conciertos"
+
+#: band/forms.py:61
+msgid "Show Gigs On Public Page"
+msgstr "Mostrar conciertos en la página pública"
+
+#: band/forms.py:62
+msgid "Send Gig Updates By Default"
+msgstr "Enviar siempre actualizaciones de conciertos"
+
+#: band/forms.py:63
+msgid "Invite Occasional Members By Default"
+msgstr "Invitar siempre a los miembros ocasionales"
+
+#: band/forms.py:64
+msgid "Use Yes/Maybe/No Responses"
+msgstr "Usar respuestas «Sí/Quizás/No»"
+
+#: band/forms.py:65
+msgid "Use Additional Feedback Options"
+msgstr "Usar opciones de comentarios adicionales"
 
 #: band/models.py:178 templates/band/band_section_members.html:7
 #: templates/gig/gig_detail_archived.html:187

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-23 22:17+0000\n"
+"POT-Creation-Date: 2026-05-25 16:17+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: Christian Neumayer <christian.m.neumayer@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -38,14 +38,12 @@ msgid "Needs Response"
 msgstr "Braucht Antwort"
 
 #: band/forms.py:48
-#, fuzzy
-#| msgid "Band"
 msgid "Band Name"
 msgstr "Band"
 
 #: band/forms.py:49
 msgid "Short Name"
-msgstr ""
+msgstr "Kurzname"
 
 #: band/forms.py:50 templates/band/band_detail.html:49
 #: templates/band/band_public.html:39
@@ -54,11 +52,11 @@ msgstr "Heimatort"
 
 #: band/forms.py:51
 msgid "About the Band"
-msgstr ""
+msgstr "Informationen zur Band"
 
 #: band/forms.py:52
 msgid "Useful Links for Members"
-msgstr ""
+msgstr "Nützliche Links für Mitglieder"
 
 #: band/forms.py:53
 #, fuzzy
@@ -68,7 +66,7 @@ msgstr "Webseite"
 
 #: band/forms.py:54
 msgid "Message for New Member Emails"
-msgstr ""
+msgstr "Nachricht für die E-Mail an neue Mitglieder"
 
 #: band/forms.py:55
 msgid "Thumbnail Image"
@@ -90,6 +88,34 @@ msgstr "Sprache"
 msgid "Timezone"
 msgstr "Zeitzone"
 
+#: band/forms.py:59
+msgid "Anyone Can Create Gigs"
+msgstr "Jeder kann Gigs erstellen"
+
+#: band/forms.py:60
+msgid "Anyone Can Manage Gigs"
+msgstr "Jeder kann Gigs verwalten"
+
+#: band/forms.py:61
+msgid "Show Gigs On Public Page"
+msgstr "Gigs auf der öffentlichen Seite anzeigen"
+
+#: band/forms.py:62
+msgid "Send Gig Updates By Default"
+msgstr "Immer Updates zu Gigs senden"
+
+#: band/forms.py:63
+msgid "Invite Occasional Members By Default"
+msgstr "Immer Gelegenheitsmitglieder einladen"
+
+#: band/forms.py:64
+msgid "Use Yes/Maybe/No Responses"
+msgstr "Antworten „Ja/Vielleicht/Nein“ verwenden"
+
+#: band/forms.py:65
+msgid "Use Additional Feedback Options"
+msgstr "Zusätzliche Feedback-Optionen verwenden"
+
 #: band/models.py:178 templates/band/band_section_members.html:7
 #: templates/gig/gig_detail_archived.html:187
 msgid "No Section"
@@ -97,7 +123,7 @@ msgstr "Kein Register"
 
 #: band/views.py:241
 msgid "not ever!"
-msgstr ""
+msgstr "niemals!"
 
 #: gig/forms.py:50 gig/forms.py:58 gig/forms.py:243
 msgid "Notify Everyone"
