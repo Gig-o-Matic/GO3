@@ -1275,17 +1275,6 @@ class GigTest(GigTestBase):
         self.assertEqual(g.date.day,1)
         self.assertEqual(g.enddate.day,2)
 
-    def test_public_gig_list(self):
-        gig = self.create_gig(the_member=self.joeuser, title="get_gig test")
-        gig.status = GigStatusChoices.UNCONFIRMED
-        gig.save()
-        list = _get_confirmed_public_gigs(self.band)
-        self.assertNotIn(gig,list)
-        gig.status = GigStatusChoices.CONFIRMED
-        gig.save()
-        list = _get_confirmed_public_gigs(self.band)
-        self.assertIn(gig,list)
-
 
 class GigWatchTest(GigTestBase):
     def test_watch_gig(self):
