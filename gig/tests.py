@@ -19,9 +19,10 @@ from django.test import TestCase, Client
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
+from band.helpers import _get_confirmed_public_gigs
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email, create_gig_series, gig_toggle_watching, _prepare_plans_for_watcher_email
+from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs, alert_watchers
 from datetime import timedelta, datetime, timezone as dttimezone
@@ -1273,6 +1274,17 @@ class GigTest(GigTestBase):
         )
         self.assertEqual(g.date.day,1)
         self.assertEqual(g.enddate.day,2)
+
+    def test_public_gig_list(self):
+        gig = self.create_gig(the_member=self.joeuser, title="get_gig test")
+        gig.status = GigStatusChoices.UNCONFIRMED
+        gig.save()
+        list = _get_confirmed_public_gigs(self.band)
+        self.assertNotIn(gig,list)
+        gig.status = GigStatusChoices.CONFIRMED
+        gig.save()
+        list = _get_confirmed_public_gigs(self.band)
+        self.assertIn(gig,list)
 
 
 class GigWatchTest(GigTestBase):
