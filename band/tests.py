@@ -636,11 +636,11 @@ class PublicBandPageTest(GigTestBase):
         )
         self.create_gig_form(contact=self.joeuser, title="test1")
         self.create_gig_form(contact=self.joeuser, title="test2", is_private=True)
-        self.create_gig_form(contact=self.joeuser, title="test3")
+        self.create_gig_form(contact=self.joeuser, title="test3", status=GigStatusChoices.CONFIRMED)
 
         response = self.client.post(reverse('band-public-gigs', args=[band.id]))
         content = response.content.decode("ascii")
-        self.assertTrue("test1" in content)
+        self.assertFalse("test1" in content)
         self.assertFalse("test2" in content)
         self.assertTrue("test3" in content)
 

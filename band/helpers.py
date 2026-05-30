@@ -302,19 +302,24 @@ def band_public_page(request, name):
 
     return redirect('band-detail', pk=band.id)
 
-def public_gigs(request, pk):
-    the_band = get_object_or_404(Band, pk=pk)
-
+def _get_confirmed_public_gigs(band):
     threshold_date = timezone.now() - timedelta(hours=4)
-    the_gigs = Gig.objects.filter(band=the_band,
+    the_gigs = Gig.objects.filter(band=band,
                                   date__gt=threshold_date,
                                 trashed_date__isnull=True,
+                                status=GigStatusChoices.CONFIRMED,
                                 is_archived=False,
                                 is_private=False,
                             ).order_by('date')
 
 
-    # the_gigs = Gig.objects.filter(band=the_band, is_private=False, )
+    return the_gigs
+
+
+def public_gigs(request, pk):
+    the_band = get_object_or_404(Band, pk=pk)
+
+    the_gigs = _get_confirmed_public_gigs(the_band)
     timezone.activate(zone(the_band.timezone))
     return render(request, 'band/public_gigs.html',
         {
