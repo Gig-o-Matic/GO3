@@ -1109,43 +1109,35 @@ msgstr "Sollecito già inviato"
 
 #: templates/gig/gig_detail.html:260
 msgid "Unlock Plans"
-msgstr ""
+msgstr "Sblocca piani"
 
 #: templates/gig/gig_detail.html:265
 msgid "Lock Plans"
-msgstr ""
+msgstr "Blocca piani"
 
 #: templates/gig/gig_detail.html:293
 msgid "Gig plans are locked"
-msgstr ""
+msgstr "I programmi dei concerti sono bloccati"
 
 #: templates/gig/gig_detail.html:296
-msgid ""
-"\n"
-"                                    Band members are prevented from making "
-"changes to their plans. As a band admin, you are still able to update plans "
-"on their behalf. To allow members to update their own plans again, use the "
-"\"Unlock Plans\" button above.\n"
-"                                    "
-msgstr ""
+msgid "superuser_lock_msg"
+msgstr "I membri della band non possono apportare modifiche ai propri piani. In qualità di "
+"amministratore della band, puoi comunque aggiornare i piani per loro conto. Per consentire "
+"ai membri di aggiornare nuovamente i propri piani, utilizza il pulsante \"Sblocca piani\" qui "
+"sopra."
 
 #: templates/gig/gig_detail.html:300
-#, python-format
-msgid ""
-"\n"
-"                                    Gig plans have been locked by the band "
-"organizers to manage band attendance. If you need to make changes, contact "
-"%(contact)s about your changing plan.\n"
-"                                    "
+msgid "member_lock_msg"
 msgstr ""
+"Gli organizzatori hanno bloccato i programmi delle esibizioni per gestire la partecipazione "
+"delle band. Se devi apportare modifiche, contatta la tua band per comunicare il cambiamento di "
+"programma."
 
 #: templates/gig/gig_detail.html:329 templates/gig/gig_detail_archived.html:206
 msgid "Comments"
 msgstr "Commenti"
 
 #: templates/gig/gig_detail_archived.html:16
-#, fuzzy
-#| msgid "Gig Archive"
 msgid "Gig Info (Archived)"
 msgstr "Archivio delle suonate"
 
@@ -1185,11 +1177,11 @@ msgstr "Scaletta"
 
 #: templates/gig/watching.html:5
 msgid "Unwatch"
-msgstr ""
+msgstr "Smetti di guardare"
 
 #: templates/gig/watching.html:7
 msgid "Watch"
-msgstr ""
+msgstr "Guarda"
 
 #: templates/help/band_request.html:5
 msgid "New Band!"

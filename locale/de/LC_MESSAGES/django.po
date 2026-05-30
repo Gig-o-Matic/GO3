@@ -1126,24 +1126,19 @@ msgid "Gig plans are locked"
 msgstr "Die Pläne sind gesperrt"
 
 #: templates/gig/gig_detail.html:296
-msgid ""
-"\n"
+msgid "superuser_lock_msg"
+msgstr ""
 "Bandmitglieder können keine Änderungen an ihren Plänen vornehmen. Als Bandadministrator kannst "
 "du die Pläne jedoch weiterhin in ihrem Namen aktualisieren. Um den Mitgliedern wieder die "
 "Möglichkeit zu geben, ihre eigenen Pläne zu aktualisieren, klicke oben auf die Schaltfläche "
-"„Pläne freigeben“.\n"
-"                                    "
-msgstr ""
+"„Entsperren“."
 
 #: templates/gig/gig_detail.html:300
-#, python-format
-msgid ""
-"\n"
-"                                    Gig plans have been locked by the band "
-"organizers to manage band attendance. If you need to make changes, contact "
-"%(contact)s about your changing plan.\n"
-"                                    "
+msgid "member_lock_msg"
 msgstr ""
+"Die Auftrittspläne wurden von den Bandorganisatoren festgelegt, um die Teilnahme der "
+"Bands zu koordinieren. Falls du Änderungen vornehmen musst, wende dich bitte an deine Band, "
+"um deine geänderten Pläne zu besprechen."
 
 #: templates/gig/gig_detail.html:329 templates/gig/gig_detail_archived.html:206
 msgid "Comments"
