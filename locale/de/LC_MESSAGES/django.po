@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 16:17+0000\n"
+"POT-Creation-Date: 2026-05-30 12:37+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: Christian Neumayer <christian.m.neumayer@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -1084,8 +1084,8 @@ msgstr "Hin-und-wieder-Mitglieder sind nicht eingeladen worden"
 msgid "Gig is hidden from calendar."
 msgstr ""
 
-#: templates/gig/gig_detail.html:205 templates/gig/gig_detail.html:228
-#: templates/gig/gig_detail.html:232
+#: templates/gig/gig_detail.html:205 templates/gig/gig_detail.html:245
+#: templates/gig/gig_detail.html:248
 msgid "Print"
 msgstr "Drucken"
 
@@ -1093,45 +1093,49 @@ msgstr "Drucken"
 msgid "Member Plans"
 msgstr "Zu- und Absagen"
 
-#: templates/gig/gig_detail.html:235
-msgid "Show All"
-msgstr "Zeige alle"
+#: templates/gig/gig_detail.html:228
+msgid "Showing All"
+msgstr "Alle anzeigen"
+
+#: templates/gig/gig_detail.html:229
+msgid "Showing All + Occasional"
+msgstr "Alle anzeigen + Gelegentliche"
+
+#: templates/gig/gig_detail.html:230
+msgid "Showing Committed"
+msgstr "fixe Zusagen anzeigen"
 
 #: templates/gig/gig_detail.html:236
-msgid "Show Committed"
-msgstr "Zeige fixe Zusagen"
-
-#: templates/gig/gig_detail.html:242
 msgid "Remind"
 msgstr "Sende Erinnerung"
 
-#: templates/gig/gig_detail.html:246
+#: templates/gig/gig_detail.html:240
 msgid "Reminder Sent"
 msgstr "Erinnerung gesendet"
 
-#: templates/gig/gig_detail.html:259
+#: templates/gig/gig_detail.html:260
 msgid "Unlock Plans"
-msgstr ""
+msgstr "Entsperren"
 
-#: templates/gig/gig_detail.html:264
+#: templates/gig/gig_detail.html:265
 msgid "Lock Plans"
-msgstr ""
+msgstr "Sperren"
 
-#: templates/gig/gig_detail.html:292
+#: templates/gig/gig_detail.html:293
 msgid "Gig plans are locked"
-msgstr ""
+msgstr "Die Pläne sind gesperrt"
 
-#: templates/gig/gig_detail.html:295
+#: templates/gig/gig_detail.html:296
 msgid ""
 "\n"
-"                                    Band members are prevented from making "
-"changes to their plans. As a band admin, you are still able to update plans "
-"on their behalf. To allow members to update their own plans again, use the "
-"\"Unlock Plans\" button above.\n"
+"Bandmitglieder können keine Änderungen an ihren Plänen vornehmen. Als Bandadministrator kannst "
+"du die Pläne jedoch weiterhin in ihrem Namen aktualisieren. Um den Mitgliedern wieder die "
+"Möglichkeit zu geben, ihre eigenen Pläne zu aktualisieren, klicke oben auf die Schaltfläche "
+"„Pläne freigeben“.\n"
 "                                    "
 msgstr ""
 
-#: templates/gig/gig_detail.html:299
+#: templates/gig/gig_detail.html:300
 #, python-format
 msgid ""
 "\n"
@@ -1141,7 +1145,7 @@ msgid ""
 "                                    "
 msgstr ""
 
-#: templates/gig/gig_detail.html:328 templates/gig/gig_detail_archived.html:206
+#: templates/gig/gig_detail.html:329 templates/gig/gig_detail_archived.html:206
 msgid "Comments"
 msgstr "Kommentare"
 
@@ -1183,11 +1187,11 @@ msgstr "Programm"
 
 #: templates/gig/watching.html:5
 msgid "Unwatch"
-msgstr ""
+msgstr "Nicht anschauen"
 
 #: templates/gig/watching.html:7
 msgid "Watch"
-msgstr ""
+msgstr "Anschauen"
 
 #: templates/help/band_request.html:5
 msgid "New Band!"

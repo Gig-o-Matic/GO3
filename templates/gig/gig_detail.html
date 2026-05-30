@@ -220,10 +220,11 @@
             <a id="member-plans" name="member-plans"></a>
             <div class="card-header">
                 <div class="row titlerow">
-                    <div class="col-lg-2 col-md-2 col-12">
+                    <div class="col-12">
                         {% trans "Member Plans" %}
                     </div>
-                    <div class="ml-auto">
+                    <div class="col-12">
+                    <div class="mr-auto">
                         <a href="#" onclick="simpleswitch(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-sync fs-lg"></i>
                         <span id="showing_all" style="display:none">{% trans "Showing All" %}</span>
                         <span id="showing_all_occasional" style="display:none">{% trans "Showing All + Occasional" %}</span>
@@ -267,6 +268,7 @@
                             {% endif %}
                             </span>
                         {% endif %}
+                    </div>
                     </div>
                 </div>
             </div>
