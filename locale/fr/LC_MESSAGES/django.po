@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-25 16:17+0000\n"
+"POT-Creation-Date: 2026-05-30 12:37+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -1077,8 +1077,8 @@ msgstr "Les membres occasionnels ne sont pas invités"
 msgid "Gig is hidden from calendar."
 msgstr "Le concert n'apparît pas dans l'agenda"
 
-#: templates/gig/gig_detail.html:205 templates/gig/gig_detail.html:228
-#: templates/gig/gig_detail.html:232
+#: templates/gig/gig_detail.html:205 templates/gig/gig_detail.html:245
+#: templates/gig/gig_detail.html:248
 msgid "Print"
 msgstr "Imprimer"
 
@@ -1086,55 +1086,53 @@ msgstr "Imprimer"
 msgid "Member Plans"
 msgstr "Plans"
 
-#: templates/gig/gig_detail.html:235
-msgid "Show All"
-msgstr "Tous les membres"
+#: templates/gig/gig_detail.html:228
+msgid "Showing All"
+msgstr "Tout afficher"
+
+#: templates/gig/gig_detail.html:229
+msgid "Showing All + Occasional"
+msgstr "Tout afficher + occasionnels"
+
+#: templates/gig/gig_detail.html:230
+msgid "Showing Committed"
+msgstr "Membres présents afficher"
 
 #: templates/gig/gig_detail.html:236
-msgid "Show Committed"
-msgstr "Membres présents"
-
-#: templates/gig/gig_detail.html:242
 msgid "Remind"
 msgstr "E-mail de rappel"
 
-#: templates/gig/gig_detail.html:246
+#: templates/gig/gig_detail.html:240
 msgid "Reminder Sent"
 msgstr "Rappel Envoyé"
 
-#: templates/gig/gig_detail.html:259
+#: templates/gig/gig_detail.html:260
 msgid "Unlock Plans"
-msgstr ""
+msgstr "Déverrouiller les plans"
 
-#: templates/gig/gig_detail.html:264
+#: templates/gig/gig_detail.html:265
 msgid "Lock Plans"
-msgstr ""
+msgstr "Verrouiller les plans"
 
-#: templates/gig/gig_detail.html:292
+#: templates/gig/gig_detail.html:293
 msgid "Gig plans are locked"
-msgstr ""
+msgstr "Les plans sont verrouillés"
 
-#: templates/gig/gig_detail.html:295
-msgid ""
-"\n"
-"                                    Band members are prevented from making "
-"changes to their plans. As a band admin, you are still able to update plans "
-"on their behalf. To allow members to update their own plans again, use the "
-"\"Unlock Plans\" button above.\n"
-"                                    "
-msgstr ""
+#: templates/gig/gig_detail.html:296
+msgid "superuser_lock_msg"
+msgstr "Les membres du groupe ne peuvent pas modifier leurs plans. En tant qu'administrateur du "
+"groupe, vous pouvez toujours mettre à jour leurs plans à leur place. Pour permettre aux membres "
+"de modifier à nouveau leurs propres plans, cliquez sur le bouton « Déverrouiller les plans » "
+"ci-dessus."
 
-#: templates/gig/gig_detail.html:299
-#, python-format
-msgid ""
-"\n"
-"                                    Gig plans have been locked by the band "
-"organizers to manage band attendance. If you need to make changes, contact "
-"%(contact)s about your changing plan.\n"
-"                                    "
+#: templates/gig/gig_detail.html:300
+msgid "member_lock_msg"
 msgstr ""
+"Les plannings des concerts ont été verrouillés par les organisateurs afin de gérer la présence "
+"des groupes. Si vous devez apporter des modifications, veuillez contacter votre groupe pour lui "
+"faire part de vos changements."
 
-#: templates/gig/gig_detail.html:328 templates/gig/gig_detail_archived.html:206
+#: templates/gig/gig_detail.html:329 templates/gig/gig_detail_archived.html:206
 msgid "Comments"
 msgstr "Commentaires"
 
@@ -1176,11 +1174,11 @@ msgstr "Liste des morceaux pour le concert"
 
 #: templates/gig/watching.html:5
 msgid "Unwatch"
-msgstr ""
+msgstr "Ne pas regarder"
 
 #: templates/gig/watching.html:7
 msgid "Watch"
-msgstr ""
+msgstr "Regarder"
 
 #: templates/help/band_request.html:5
 msgid "New Band!"
