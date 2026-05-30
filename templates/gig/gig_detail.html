@@ -224,16 +224,10 @@
                         {% trans "Member Plans" %}
                     </div>
                     <div class="ml-auto">
-                        <span id="printall"><a href="{% url 'gig-print-all-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
-                        {% trans "Print" %}
-                        </a></span>
-                        <span id="printcomm" style="display:none">
-                            <a href="{% url 'gig-print-confirmed-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
-                            {% trans "Print" %}
-                            </a></span>
                         <a href="#" onclick="simpleswitch(); return false;" class="btn btn-sm btn-secondary"><i class="fas fa-sync fs-lg"></i>
-                        <span id="simpleoff" style="display:none">{% trans "Show All" %}</span>
-                        <span id="simpleon">{% trans "Show Committed" %}</span>
+                        <span id="showing_all" style="display:none">{% trans "Showing All" %}</span>
+                        <span id="showing_all_occasional" style="display:none">{% trans "Showing All + Occasional" %}</span>
+                        <span id="showing_committed" style="display:none">{% trans "Showing Committed" %}</span>
                         </a>
 
                         {% if user_has_manage_gig_permission and not gig.is_archived and not gig.is_in_trash %}
@@ -246,6 +240,13 @@
                             	<small>{% trans "Reminder Sent" %}</small>
                         	</span>
                         {% endif %}
+                        <span id="printcomm" style="display:none">
+                            <a href="{% url 'gig-print-confirmed-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
+                            {% trans "Print" %}
+                            </a></span>
+                        <span id="printall"><a href="{% url 'gig-print-all-plans' gig.id %}" target="new" class="btn btn-sm btn-secondary"><i class="fas fa-print"></i>
+                        {% trans "Print" %}
+                        </a></span>
                         {% if request.user == gig.contact or request.user.is_superuser or the_user_is_band_admin %}
                             {% if request.user.is_beta_tester %}
                             <span id="watch_gig">
@@ -343,33 +344,47 @@
 {% endcomment %}
 <script src="{% url 'javascript-catalog' %}"></script>
 <script>
-var simple=false;
+var display_mode=1; // 1 = show everyone except occasionals; 2 = show everyone + occ; 3 = show committed
 
-function setsimple() {
-    if (simple) {
-        $('#simpleon').hide();
-        $('#simpleoff').show();
-        $('#printcomm').show();
+function setdisplay() {
+    if (display_mode==1) { // show everyone except occasionals
+        $('#showing_all').show();
+        $('#showing_all_occasional').hide();
+        $('#showing_committed').hide();
+        $('#printcomm').hide();
+        $('#printall').show();
+        $('.planattending').show();
+        $('.plannotattending').show();
+        $('.planoccasional').hide();
+        $('.plancomment').show();
+    } else if (display_mode==2) { // show everyone and occasionals}
+        $('#showing_all').hide();
+        $('#showing_all_occasional').show();
+        $('#showing_committed').hide();
         $('#printall').hide();
-        $('.plannotattending').hide();
+        $('#printcomm').show();
+        $('.planattending').show();
+        $('.plannotattending').show();
+        // $('.planoccasional').show();
         $('.plancomment').hide();
     } else {
-        $('#simpleon').show();
-        $('#simpleoff').hide();
+        $('#showing_all').hide();
+        $('#showing_all_occasional').hide();
+        $('#showing_committed').show();
         $('#printall').show();
         $('#printcomm').hide();
-        $('.plannotattending').show();
+        $('.planattending').show();
+        $('.plannotattending').hide();
         $('.plancomment').show();
     }
 }
 
 function simpleswitch() {
-    if (simple) {
-        simple = false;
-    } else {
-        simple = true;
+    display_mode = display_mode + 1;
+    if (display_mode > 3) {
+        display_mode = 1
     }
-    setsimple()
+    setdisplay();
 }
 
 {% if user_has_manage_gig_permission %}
@@ -404,7 +419,7 @@ $(document).ready(function() {
     });
 
     updatecounts();
-    setsimple();
+    setdisplay();
     {% if user_has_manage_gig_permission %}
         {% if not gig.was_reminded %}
         	$('#showremind').show();
