@@ -17,6 +17,7 @@
 
 from django import forms
 from .models import Gig
+from .util import GigStatusChoices
 from band.models import Band
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -190,8 +191,10 @@ class GigForm(forms.ModelForm):
                 z = pytz.timezone(self.band.timezone)
                 rsvp_by_date = timezone.make_aware(rsvp_by_date, z)
                 
-                # Skip the RSVP date validation if the date has not changed
-                if self.instance.rsvp_by_date != rsvp_by_date.date() if rsvp_by_date else None:
+                # Skip the RSVP date validation if the date has not changed or if the gig is cancelled
+                if (self.instance.rsvp_by_date != rsvp_by_date.date() 
+                    if rsvp_by_date else None) and \
+                    (not self.cleaned_data['status']==GigStatusChoices.CANCELED):
                     now = timezone.now()
                     if rsvp_by_date < now:
                         self.add_error('rsvp_date', ValidationError(_('RSVP deadline must be in the future'), code='invalid rsvp date'))
