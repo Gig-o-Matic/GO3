@@ -325,6 +325,15 @@ MESSAGE_TAGS = {
 # base URL
 URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 
+# make sure 'get_absolute_uri' produces https links
+# Source - https://stackoverflow.com/a/68310760
+# Posted by user3486626, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-06-10, License - CC BY-SA 4.0
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+
 # for calling routine tasks in go3.tasks
 ROUTINE_TASK_KEY = env('ROUTINE_TASK_KEY',default=1)
 
@@ -341,3 +350,4 @@ MARKDOWNIFY = {
         ]),
     }
 }
+
