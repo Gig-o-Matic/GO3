@@ -329,8 +329,10 @@ URL_BASE = env('URL_BASE',default='https://www.gig-o-matic.com')
 # Source - https://stackoverflow.com/a/68310760
 # Posted by user3486626, modified by community. See post 'Timeline' for change history
 # Retrieved 2026-06-10, License - CC BY-SA 4.0
-USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# backed out 6/13
+# USE_X_FORWARDED_HOST = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 
