@@ -21,7 +21,10 @@ from go3.settings import FIREWALL_ON
 
 BAD_FILE_EXTENSIONS = ['php','env']
 BAD_FILE_PREFIXES = ['/wp-admin', '/favicon.ico', '/apple-touch-icon']
-PATH_404 = {}
+FIREWALL_STATS = {
+    'filtered files': 0,
+    '404 paths': {},
+}
 
 class FirewallMiddleware:
 
@@ -29,15 +32,19 @@ class FirewallMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        global FILES_FILTERED
+        global PATH_404
 
         if FIREWALL_ON:
             # check for files that should not be requested
             file_extension = request.path.split('/')[-1].split('.')[-1].strip()
             if file_extension in BAD_FILE_EXTENSIONS:
+                FIREWALL_STATS['filtered files'] += 1
                 return HttpResponseForbidden()
 
             for pref in BAD_FILE_PREFIXES:
                 if request.path.startswith(pref):
+                    FIREWALL_STATS['filtered files'] += 1
                     return HttpResponseForbidden()
 
         response = self.get_response(request)
@@ -46,13 +53,13 @@ class FirewallMiddleware:
         if FIREWALL_ON:
             # did we get a 404? If so, remember what it was
             if response.status_code == 404:
-                if request.path in PATH_404:
-                    PATH_404[request.path] += 1
+                if request.path in FIREWALL_STATS['404 paths']:
+                    FIREWALL_STATS['404 paths'][request.path] += 1
                 else:
-                    PATH_404[request.path] = 1
+                    FIREWALL_STATS['404 paths'][request.path] = 1
 
-            while len(PATH_404)>1:
+            while len(FIREWALL_STATS['404 paths'])>200:
                 # just drop some
-                PATH_404.popitem()
+                FIREWALL_STATS['404 paths'].popitem()
 
         return response

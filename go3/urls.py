@@ -55,6 +55,7 @@ urlpatterns = [
     path('help/', include('help.urls')),
     path('stats/', include('stats.urls')),
     path('admin/', admin.site.urls),
+    path('firewall/', include('firewall.urls', namespace='firewall')),
     path('migration/', include('migration.urls')),
     path('404',test404.as_view()),
     path('jsi18n/', JavaScriptCatalog.as_view(), name="javascript-catalog"),

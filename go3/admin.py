@@ -18,6 +18,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.template.response import TemplateResponse
+from firewall.middleware import FIREWALL_STATS
 
 class Go3AdminSite(admin.AdminSite):
     site_header = 'Gig-o-Matic Admin'
@@ -55,5 +56,8 @@ class Go3AdminSite(admin.AdminSite):
         return custom_urls + urls
  
     def firewall_view(self, request):
-        context = {}
+        context = {
+            'bad_paths': [f'{p}: {c}' for p,c in FIREWALL_STATS['404 paths'].items()],
+            'files_filtered': FIREWALL_STATS['filtered files'],
+        }
         return TemplateResponse(request, 'admin/firewall.html', context)

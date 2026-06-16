@@ -1,4 +1,4 @@
-{% extends "admin/base.html" %}
+{% extends "admin/app_index.html" %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
@@ -22,9 +22,23 @@ html[data-theme="light"], :root {
 {% endif %}
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
-
-{% block userlinks %}
-<a href="firewall" class="section">Firewall</a> /
-{{ block.super }}
+{% block content %}
+<div>
+  <a class="button btn-primary" href="{% url 'firewall:reset_firewall_stats' %}">Reset Stats</a>
+</div>
+<br>
+<div>
+  Files Filtered: {{files_filtered}}
+</div>
+<br>
+<div>
+Bad Paths:
+<ul>
+{% for p in bad_paths %}
+<li>{{p}}</li>
+{% endfor %}
+</ul>
+</div>
 {% endblock %}
+
+{% block sidebar %}{% endblock %}
