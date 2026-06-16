@@ -31,6 +31,7 @@ from django.utils import timezone
 from pytz import utc, timezone as pytimezone
 from lib.template_test import MISSING, flag_missing_vars
 from freezegun import freeze_time
+from go3.api import THROTTLE_PER_SECOND
 
 # workaround for freezegun thing where it ignores modules with names
 # that start with "gi" for some reason
@@ -1593,3 +1594,20 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data, [{"id": status[0], "name": status[1]} for status in PlanStatusChoices.choices])
+
+    def test_api_throttle(self):
+        """ make sure we run into throttling if we make too many requests """
+        response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+
+        count = 0
+        done = False
+        while not done:
+            response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+            if not response.status_code == 200:
+                done = True
+            count += 1
+
+        self.assertEqual(response.status_code, 429)
+        self.assertTrue(count <= THROTTLE_PER_SECOND)
+

@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from ninja import NinjaAPI, Schema
 from ninja.errors import ValidationError
 from ninja.security import APIKeyHeader
+from ninja.throttling import AnonRateThrottle, AuthRateThrottle
 
 from gig.api import router as gig_router
 from band.api import router as band_router
@@ -43,7 +44,12 @@ class MemberAPIKey(APIKeyHeader):
 
 
 
-api = NinjaAPI(title="Gig-O-Matic API", auth=MemberAPIKey())
+THROTTLE_PER_SECOND = 1
+api = NinjaAPI(title="Gig-O-Matic API", auth=MemberAPIKey(),
+               throttle=[
+                            AnonRateThrottle(f'{THROTTLE_PER_SECOND}/s'),
+                            AuthRateThrottle(f'{THROTTLE_PER_SECOND}/s'),
+                ],)
 
 
 @api.exception_handler(InvalidAPIKeyError)
