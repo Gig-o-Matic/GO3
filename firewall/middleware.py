@@ -19,6 +19,7 @@
 from datetime import datetime
 from django.http import HttpResponseForbidden
 from go3.settings import START_FIREWALL
+from python_ipware import IpWare
 
 
 BAD_FILE_EXTENSIONS = ['php','env']
@@ -31,6 +32,8 @@ class FirewallMiddleware:
     paths_404 = {}
     ips_404 = {}
     last_reset = datetime.now()
+
+    ipw = IpWare()
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -85,9 +88,11 @@ class FirewallMiddleware:
 
 
     def get_user_ip(self, request):
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0].strip()
-        else:
-            ip = request.META.get('REMOTE_ADDR')
+        # x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        # if x_forwarded_for:
+        #     ip = x_forwarded_for.split(',')[0].strip()
+        # else:
+        #     ip = request.META.get('REMOTE_ADDR')
+        # return ip
+        ip, trusted_route = self.ipw.get_client_ip(request.META)
         return ip
