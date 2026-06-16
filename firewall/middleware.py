@@ -29,6 +29,7 @@ class FirewallMiddleware:
     firewall_on = START_FIREWALL
     filtered_files = 0
     paths_404 = {}
+    ips_404 = {}
     last_reset = datetime.now()
 
     def __init__(self, get_response):
@@ -64,10 +65,29 @@ class FirewallMiddleware:
                         # just drop some
                         self.paths_404.popitem()
 
+                ip = self.get_user_ip(request)
+                if ip in self.ips_404:
+                    self.ips_404[ip] += 1
+                else:
+                    self.ips_404[ip] = 1
+
+                while len(self.ips_404)>200:
+                    # just drop some
+                    self.ips_404.popitem()
+
         return response
 
     def reset(self):
         self.filtered_files = 0
         self.paths_404 = {}
+        self.ips_404 = {}
         self.last_reset = datetime.now()
 
+
+    def get_user_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip

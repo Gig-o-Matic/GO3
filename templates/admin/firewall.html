@@ -46,6 +46,15 @@ Bad Paths:
 {% endfor %}
 </ul>
 </div>
+<br>
+<div>
+Bad IPs:
+<ul>
+{% for p in bad_ips %}
+<li>{{p}}</li>
+{% endfor %}
+</ul>
+</div>
 {% endblock %}
 
 {% block sidebar %}{% endblock %}

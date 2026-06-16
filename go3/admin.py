@@ -58,6 +58,7 @@ class Go3AdminSite(admin.AdminSite):
         firewall = request.firewall
         context = {
             'bad_paths': [f'{p}: {c}' for p,c in firewall.paths_404.items()],
+            'bad_ips': [f'{p}: {c}' for p,c in firewall.ips_404.items()],
             'files_filtered': firewall.filtered_files,
             'has_permission': True,
             'firewall_on': firewall.firewall_on,
