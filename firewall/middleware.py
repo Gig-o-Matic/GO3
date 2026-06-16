@@ -94,5 +94,5 @@ class FirewallMiddleware:
         # else:
         #     ip = request.META.get('REMOTE_ADDR')
         # return ip
-        ip, trusted_route = self.ipw.get_client_ip(request.META)
+        ip, _ = self.ipw.get_client_ip(request.META)
         return ip
