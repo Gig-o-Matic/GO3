@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     "motd.apps.MotdConfig",
     "gig.apps.GigConfig",
     "agenda",
+    "firewall",
     "stats.apps.StatsConfig",
     "widget_tweaks",
     "go3.apps.Go3AdminConfig",
