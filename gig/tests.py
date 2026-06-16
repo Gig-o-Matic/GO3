@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from time import sleep
 from django.core import mail
 from django.test import TestCase, Client
 from member.models import Member
@@ -31,6 +32,7 @@ from django.utils import timezone
 from pytz import utc, timezone as pytimezone
 from lib.template_test import MISSING, flag_missing_vars
 from freezegun import freeze_time
+from go3.api import THROTTLE_PER_SECOND
 
 # workaround for freezegun thing where it ignores modules with names
 # that start with "gi" for some reason
@@ -1513,6 +1515,7 @@ class TestGigAPI(GigTestBase):
     def test_gig_status_filter(self):
         for status in GigStatusChoices.choices:
             self._gig_filter(status[0], status[1])
+            sleep(1) # avoid throttling
 
     def test_gig_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": "INVALID"})
@@ -1541,6 +1544,7 @@ class TestGigAPI(GigTestBase):
             plan.status = status[0]
             plan.save()
             self._plan_status_filter(status[0], status[1], expected_count=1)
+            sleep(1) # avoid throttline
 
     def test_plan_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": "INVALID"})
@@ -1593,3 +1597,20 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data, [{"id": status[0], "name": status[1]} for status in PlanStatusChoices.choices])
+
+    def test_api_throttle(self):
+        """ make sure we run into throttling if we make too many requests """
+        response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+
+        count = 0
+        done = False
+        while not done:
+            response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+            if not response.status_code == 200:
+                done = True
+            count += 1
+
+        self.assertEqual(response.status_code, 429)
+        self.assertTrue(count <= THROTTLE_PER_SECOND)
+
