@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from time import sleep
 from django.core import mail
 from django.test import TestCase, Client
 from member.models import Member
@@ -1514,6 +1515,7 @@ class TestGigAPI(GigTestBase):
     def test_gig_status_filter(self):
         for status in GigStatusChoices.choices:
             self._gig_filter(status[0], status[1])
+            sleep(1) # avoid throttling
 
     def test_gig_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": "INVALID"})
@@ -1542,6 +1544,7 @@ class TestGigAPI(GigTestBase):
             plan.status = status[0]
             plan.save()
             self._plan_status_filter(status[0], status[1], expected_count=1)
+            sleep(1) # avoid throttline
 
     def test_plan_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": "INVALID"})
