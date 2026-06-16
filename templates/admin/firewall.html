@@ -24,11 +24,18 @@ html[data-theme="light"], :root {
 
 {% block content %}
 <div>
+  {% if firewall_on %}
+    <a class="button btn-primary" href="{% url 'firewall:firewall_off' %}">Turn Off</a>
+  {% else %}
+    <a class="button btn-primary" href="{% url 'firewall:firewall_on' %}">Turn On</a>
+  {% endif %}
   <a class="button btn-primary" href="{% url 'firewall:reset_firewall_stats' %}">Reset Stats</a>
 </div>
 <br>
+<div>Last Reset: {{last_reset}}</div>
+<br>
 <div>
-  Files Filtered: {{files_filtered}}
+  Files Filtered {{files_filtered}}
 </div>
 <br>
 <div>

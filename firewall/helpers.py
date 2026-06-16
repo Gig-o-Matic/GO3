@@ -17,7 +17,6 @@
 
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from .middleware import FIREWALL_STATS
 
 def superuser_required(func):
     def decorated(request, *args, **kw):
@@ -29,6 +28,20 @@ def superuser_required(func):
 @login_required
 @superuser_required
 def reset_firewall_stats(request):
-    FIREWALL_STATS['filtered files'] = 0
-    FIREWALL_STATS['404 paths'] = {}
+    firewall = request.firewall
+    firewall.reset()
+    return HttpResponseRedirect('/admin/firewall')
+
+@login_required
+@superuser_required
+def firewall_on(request):
+    firewall = request.firewall
+    firewall.firewall_on = True
+    return HttpResponseRedirect('/admin/firewall')
+
+@login_required
+@superuser_required
+def firewall_off(request):
+    firewall = request.firewall
+    firewall.firewall_on = False
     return HttpResponseRedirect('/admin/firewall')

@@ -18,7 +18,6 @@
 from django.contrib import admin
 from django.urls import path
 from django.template.response import TemplateResponse
-from firewall.middleware import FIREWALL_STATS
 
 class Go3AdminSite(admin.AdminSite):
     site_header = 'Gig-o-Matic Admin'
@@ -56,9 +55,12 @@ class Go3AdminSite(admin.AdminSite):
         return custom_urls + urls
  
     def firewall_view(self, request):
+        firewall = request.firewall
         context = {
-            'bad_paths': [f'{p}: {c}' for p,c in FIREWALL_STATS['404 paths'].items()],
-            'files_filtered': FIREWALL_STATS['filtered files'],
+            'bad_paths': [f'{p}: {c}' for p,c in firewall.paths_404.items()],
+            'files_filtered': firewall.filtered_files,
             'has_permission': True,
+            'firewall_on': firewall.firewall_on,
+            'last_reset': firewall.last_reset,
         }
         return TemplateResponse(request, 'admin/firewall.html', context)

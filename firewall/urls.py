@@ -16,10 +16,12 @@
 """
 
 from django.urls import path
-from .helpers import reset_firewall_stats
+from .helpers import reset_firewall_stats, firewall_on, firewall_off
 
 app_name = 'firewall'
 
 urlpatterns = [
     path('reset_stats', reset_firewall_stats, name='reset_firewall_stats'),
+    path('firewall_on', firewall_on, name='firewall_on'),
+    path('firewall_off', firewall_off, name='firewall_off'),
 ]
