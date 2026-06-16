@@ -59,5 +59,6 @@ class Go3AdminSite(admin.AdminSite):
         context = {
             'bad_paths': [f'{p}: {c}' for p,c in FIREWALL_STATS['404 paths'].items()],
             'files_filtered': FIREWALL_STATS['filtered files'],
+            'has_permission': True,
         }
         return TemplateResponse(request, 'admin/firewall.html', context)
