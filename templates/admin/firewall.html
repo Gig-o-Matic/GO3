@@ -1,0 +1,60 @@
+{% extends "admin/app_index.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+html[data-theme="light"], :root {
+{% if DEBUG %}
+  --header-bg: #800000;
+{% else %}
+  --header-bg: #008000;
+;
+{% endif %}
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div>
+  {% if firewall_on %}
+    <a class="button btn-primary" href="{% url 'firewall:firewall_off' %}">Turn Off</a>
+  {% else %}
+    <a class="button btn-primary" href="{% url 'firewall:firewall_on' %}">Turn On</a>
+  {% endif %}
+  <a class="button btn-primary" href="{% url 'firewall:reset_firewall_stats' %}">Reset Stats</a>
+</div>
+<br>
+<div>Last Reset: {{last_reset}}</div>
+<br>
+<div>
+  Files Filtered {{files_filtered}}
+</div>
+<br>
+<div>
+Bad Paths:
+<ul>
+{% for p in bad_paths %}
+<li>{{p}}</li>
+{% endfor %}
+</ul>
+</div>
+<br>
+<div>
+Bad IPs:
+<ul>
+{% for p in bad_ips %}
+<li>{{p}}</li>
+{% endfor %}
+</ul>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}

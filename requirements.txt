@@ -49,6 +49,7 @@ pytest==9.0.3
 pytest-django==4.8.0
 python-dateutil==2.8.2
 python_http_client==3.3.2
+python-ipware==3.0.0
 pytz==2024.1
 requests==2.33.0
 rollbar==1.0.0

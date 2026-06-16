@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     "motd.apps.MotdConfig",
     "gig.apps.GigConfig",
     "agenda",
+    "firewall",
     "stats.apps.StatsConfig",
     "widget_tweaks",
     "go3.apps.Go3AdminConfig",
@@ -107,6 +108,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "firewall.middleware.FirewallMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -353,3 +355,4 @@ MARKDOWNIFY = {
     }
 }
 
+START_FIREWALL = env('START_FIREWALL',default=True)

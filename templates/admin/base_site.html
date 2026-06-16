@@ -24,3 +24,7 @@ html[data-theme="light"], :root {
 
 {% block nav-global %}{% endblock %}
 
+{% block userlinks %}
+<a href="firewall" class="section">Firewall</a> /
+{{ block.super }}
+{% endblock %}
