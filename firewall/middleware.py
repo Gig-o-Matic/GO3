@@ -51,4 +51,8 @@ class FirewallMiddleware:
                 else:
                     PATH_404[request.path] = 1
 
+            while len(PATH_404)>1:
+                # just drop some
+                PATH_404.popitem()
+
         return response
