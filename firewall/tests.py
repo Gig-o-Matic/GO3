@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 # Create your tests here.
 
-class MemberTests(TestCase):
+class FirewallTests(TestCase):
 
     def test_ip_firewall(self):
 
