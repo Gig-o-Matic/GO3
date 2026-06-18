@@ -18,6 +18,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.template.response import TemplateResponse
+from go3.settings import URL_BASE
 
 class Go3AdminSite(admin.AdminSite):
     site_header = 'Gig-o-Matic Admin'
@@ -57,11 +58,12 @@ class Go3AdminSite(admin.AdminSite):
     def firewall_view(self, request):
         firewall = request.firewall
         context = {
-            'bad_paths': [f'{p}: {c}' for p,c in firewall.paths_404.items()],
-            'bad_ips': [f'{p}: {c}' for p,c in firewall.ips_404.items()],
+            'alltime_blacklist': firewall.alltime_blacklist_ips,
+            'blacklisted_requests': firewall.blacklisted_requests,
             'files_filtered': firewall.filtered_files,
             'has_permission': True,
             'firewall_on': firewall.firewall_on,
             'last_reset': firewall.last_reset,
+            'site_url': URL_BASE,
         }
         return TemplateResponse(request, 'admin/firewall.html', context)

@@ -17,21 +17,27 @@
 
 # A simple firewall middleware meant to ward off standard kinds of attacks
 from datetime import datetime
+from collections import OrderedDict
 from django.http import HttpResponseForbidden
 from go3.settings import START_FIREWALL
 from python_ipware import IpWare
 
 
-BAD_FILE_EXTENSIONS = ['php','env']
-BAD_FILE_PREFIXES = ['/wp-admin', '/favicon.ico', '/apple-touch-icon']
+BAD_FILE_EXTENSIONS = ['php','env','tar','sql','xml','zip']
+BAD_FILE_PREFIXES = ['/wp-admin', '/favicon.ico', '/apple-touch-icon', '/wp-includes', 
+                     '/.well-known,']
+PROBATION_LIMIT = 30
+BLACKLIST_LIMIT = 300
 
 class FirewallMiddleware:
 
     firewall_on = START_FIREWALL
+    blacklisted_requests = 0
     filtered_files = 0
-    paths_404 = {}
-    ips_404 = {}
+    blacklist_ips = {}
+    probation_ips = OrderedDict()
     last_reset = datetime.now()
+    alltime_blacklist_ips = []
 
     ipw = IpWare()
 
@@ -41,6 +47,18 @@ class FirewallMiddleware:
     def __call__(self, request):
 
         if self.firewall_on:
+
+            # are we blacklisted?
+            ip = self.get_user_ip(request)
+
+            if ip in self.blacklist_ips:
+                time_in_list = datetime.now() - self.blacklist_ips[ip]
+                if time_in_list.seconds < BLACKLIST_LIMIT:
+                    return HttpResponseForbidden()
+                else:
+                    self.blacklist_ips.pop(ip)
+
+
             # check for files that should not be requested
             file_extension = request.path.split('/')[-1].split('.')[-1].strip()
             if file_extension in BAD_FILE_EXTENSIONS:
@@ -57,34 +75,39 @@ class FirewallMiddleware:
         response = self.get_response(request)
 
         if self.firewall_on:
-            # did we get a 404? If so, remember what it was
+            # did we get a 404? If so, see if this ip is messing with up
             if response.status_code == 404:
-                if request.path in self.paths_404:
-                    self.paths_404[request.path] += 1
+                if ip in self.probation_ips:
+                    self.probation_ips[ip].append([datetime.now()])
+                    if len(self.probation_ips[ip]) > 2:
+                        time_since_first = datetime.now() - self.probation_ips[ip][0]
+                        if time_since_first.seconds < PROBATION_LIMIT:
+                            self.probation_ips.pop(ip)
+                            self.blacklist_ips[ip] = datetime.now()
+                            self.blacklisted_requests += 1
+                            self.alltime_blacklist_ips.append(ip)
+                            if len(self.alltime_blacklist_ips) > 200:
+                                self.alltime_blacklist_ips.pop(0)
+                            self.blacklisted_requests += 1
+                            return HttpResponseForbidden()
+                        else:
+                            # just pop the first one
+                            self.probation_ips[ip].popitem(last=False)
                 else:
-                    self.paths_404[request.path] = 1
-
-                    while len(self.paths_404)>200:
-                        # just drop some
-                        self.paths_404.popitem()
-
-                ip = self.get_user_ip(request)
-                if ip in self.ips_404:
-                    self.ips_404[ip] += 1
-                else:
-                    self.ips_404[ip] = 1
-
-                while len(self.ips_404)>200:
-                    # just drop some
-                    self.ips_404.popitem()
+                    self.probation_ips[ip] = [datetime.now()]
+            elif ip in self.probation_ips:
+                # they made an OK request, they're off probation
+                self.probation_ips.pop(ip)
 
         return response
 
     def reset(self):
+        self.blacklisted_requests = 0
         self.filtered_files = 0
-        self.paths_404 = {}
-        self.ips_404 = {}
+        self.blacklist_ips = {}
+        self.probation_ips = OrderedDict()
         self.last_reset = datetime.now()
+        self.alltime_blacklist_ips = []
 
 
     def get_user_ip(self, request):

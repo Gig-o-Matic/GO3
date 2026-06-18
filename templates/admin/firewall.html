@@ -35,22 +35,14 @@ html[data-theme="light"], :root {
 <div>Last Reset: {{last_reset}}</div>
 <br>
 <div>
-  Files Filtered {{files_filtered}}
+  Files Filtered {{files_filtered}}<br>
+  Blacklisted Requests {{blacklisted_requests}}
 </div>
 <br>
 <div>
-Bad Paths:
+Last 200 Blacklist:
 <ul>
-{% for p in bad_paths %}
-<li>{{p}}</li>
-{% endfor %}
-</ul>
-</div>
-<br>
-<div>
-Bad IPs:
-<ul>
-{% for p in bad_ips %}
+{% for p in alltime_blacklist %}
 <li>{{p}}</li>
 {% endfor %}
 </ul>
