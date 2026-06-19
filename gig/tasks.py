@@ -82,4 +82,5 @@ def alert_watchers():
             send_watcher_email(m, m_plans)
 
     # finally, mark the plans seen
-    Plan.objects.all().update(status_changed=False)
+    Plan.objects.filter(status_changed=True).update(status_changed=False)
+    
