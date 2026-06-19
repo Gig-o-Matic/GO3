@@ -61,7 +61,7 @@ class FirewallMiddleware:
 
             # check for files that should not be requested
             file_extension = request.path.split('/')[-1].split('.')[-1].strip()
-            if file_extension in BAD_FILE_EXTENSIONS:
+            if file_extension and file_extension in BAD_FILE_EXTENSIONS:
                 self.filtered_files += 1
                 return HttpResponseForbidden()
 
