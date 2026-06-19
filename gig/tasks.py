@@ -81,6 +81,15 @@ def alert_watchers():
         if m_plans:
             send_watcher_email(m, m_plans)
 
-    # finally, mark the plans seen
+    # finally, mark the plans seen.
+    #
+    # 20260619 - this was hanging up and failing - it used to just be...
+    #
+    # Plan.objects.update(status_changed=False)
+    #
+    # ...which I had assumed would just reset everything fine. But at some point
+    # around 20260610 it started to hang up - I guess the database would timeout
+    # trying to update every single plan. Filtering only for changed plans seems
+    # to fix it. But this could fail if there are many many changed plans, I guess
+    # so TODO make sure we do this in batches.
     Plan.objects.filter(status_changed=True).update(status_changed=False)
-    
