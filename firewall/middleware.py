@@ -24,7 +24,7 @@ from python_ipware import IpWare
 
 
 BAD_FILE_EXTENSIONS = ['php','env','tar','sql','xml','zip']
-BAD_FILE_PREFIXES = ['/wp-admin', '/favicon.ico', '/apple-touch-icon', '/wp-includes', 
+BAD_FILE_PREFIXES = ['/wp-admin', '/apple-touch-icon', '/wp-includes', 
                      '/.well-known,']
 PROBATION_LIMIT = 30
 BLACKLIST_LIMIT = 300
