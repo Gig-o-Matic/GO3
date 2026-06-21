@@ -254,6 +254,14 @@
                                 {% include "gig/watching.html" %}
                             </span>
                             {% endif %}
+                            {% if the_user_is_band_admin %}
+                            <span id="take_attendance">
+                                <a href="{% url 'gig-attendance' gig.id %}" class="btn btn-sm btn-info" role="button">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    {% trans "Take Attendance" %}
+                                </a>
+                            </span>
+                            {% endif %}
                             <span id="lock_plans">
                             {% if gig.plans_locked %}
                                 <a href="{% url 'gig-unlock-plans' gig.id %}#member-plans" class="btn btn-sm btn-info" role="button">

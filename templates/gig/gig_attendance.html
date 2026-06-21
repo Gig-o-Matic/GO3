@@ -1,0 +1,180 @@
+{% extends "base/go3base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Attendance" %} &middot; {{ gig.title }}{% endblock title %}
+
+{% block headcontent %}
+<style>
+    .att-header {
+        background-color: #fff;
+        /* Below the site navbar (Bootstrap sticky-top is z-index 1020) so it can never
+           paint over it. Its sticky `top` is set in JS to the navbar's height so it pins
+           flush under the navbar instead of riding up into it. */
+        z-index: 1010;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    }
+    /* big, finger-friendly rows */
+    .att-row {
+        padding: 0.9rem 1rem;
+        border-left: 0;
+        border-right: 0;
+        cursor: pointer;
+    }
+    .att-check i {
+        font-size: 1.5rem;
+        color: #adb5bd;
+        width: 1.6rem;
+        text-align: center;
+    }
+    .att-present {
+        background-color: #eaf7ee;
+    }
+    .att-present .att-check i {
+        color: #28a745;
+    }
+    .att-name {
+        font-size: 1.05rem;
+    }
+    /* Defined after Bootstrap so it beats .d-flex's `display: flex !important`. */
+    .att-hidden {
+        display: none !important;
+    }
+    /* Large, finger-friendly toggle for the attending/all filter. */
+    #att-show-all {
+        min-height: 44px;
+    }
+    #att-show-all.active {
+        color: #fff;
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+</style>
+{% endblock headcontent %}
+
+{% block content %}
+<div class="attendance-page">
+    <div class="att-header sticky-top">
+        <a href="{% url 'gig-detail' gig.id %}#member-plans" class="btn btn-sm btn-link pl-0">
+            <i class="fas fa-chevron-left"></i> {% trans "Back to gig" %}
+        </a>
+        <h5 class="mb-0">{% trans "Attendance" %}</h5>
+        <div class="text-muted small mb-2">{{ gig.title }}{% if gig.date %} &middot; {{ gig.date|date:"DATE_FORMAT" }}{% endif %}</div>
+
+        <input type="search" id="att-search" class="form-control mb-2"
+               placeholder="{% trans 'Search by name…' %}" autocomplete="off" autocapitalize="off">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <button type="button" id="att-show-all" class="btn btn-outline-info" aria-pressed="false">
+                <i class="far fa-square"></i> {% trans "Show all members" %}
+            </button>
+            <div class="att-count text-muted small">
+                <span id="att-present-count">0</span> {% trans "present" %} /
+                <span id="att-visible-count">0</span> {% trans "shown" %}
+            </div>
+        </div>
+    </div>
+
+    <div id="att-list" class="list-group mt-2 mb-4">
+        {% for plan in gig_ordered_member_plans %}
+            {% include 'gig/attendance_row.html' with plan=plan %}
+        {% empty %}
+            <div class="text-muted text-center py-4">{% trans "No members to show." %}</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block localscripts %}
+<script>
+(function () {
+    var list = document.getElementById('att-list');
+    var search = document.getElementById('att-search');
+    var showAll = document.getElementById('att-show-all');
+    var presentCount = document.getElementById('att-present-count');
+    var visibleCount = document.getElementById('att-visible-count');
+    var header = document.querySelector('.att-header');
+    var navbar = document.querySelector('.navbar.sticky-top');
+
+    // Pin the attendance header flush beneath the (sticky) site navbar so it can't
+    // scroll up over it. Re-measure on resize since the navbar height can change.
+    function positionHeader() {
+        if (header && navbar) {
+            header.style.top = navbar.offsetHeight + 'px';
+        }
+    }
+    positionHeader();
+    window.addEventListener('resize', positionHeader);
+
+    function rows() {
+        return Array.prototype.slice.call(list.querySelectorAll('.att-row'));
+    }
+
+    function showingAll() {
+        return showAll.getAttribute('aria-pressed') === 'true';
+    }
+
+    // Search + attending/all filter + running counts, all client-side.
+    function applyFilter() {
+        var term = (search.value || '').trim().toLowerCase();
+        var all = showingAll();
+        var visible = 0, present = 0;
+        rows().forEach(function (row) {
+            var matchName = !term || row.dataset.name.indexOf(term) !== -1;
+            // In the default ("attending only") view, show members planning to attend
+            // (Definitely/Probably) AND anyone already marked present, regardless of plan.
+            var matchAttending = all || row.dataset.attending === '1' || row.classList.contains('att-present');
+            var show = matchName && matchAttending;
+            // Toggle a class (not inline display) so it beats Bootstrap's
+            // `.d-flex { display: flex !important }` on the row.
+            row.classList.toggle('att-hidden', !show);
+            if (show) {
+                visible++;
+                if (row.classList.contains('att-present')) { present++; }
+            }
+        });
+        presentCount.textContent = present;
+        visibleCount.textContent = visible;
+    }
+
+    search.addEventListener('input', applyFilter);
+
+    // Toggle between "attending only" (default) and "all members".
+    showAll.addEventListener('click', function () {
+        var next = !showingAll();
+        showAll.setAttribute('aria-pressed', next ? 'true' : 'false');
+        showAll.classList.toggle('active', next);
+        var icon = showAll.querySelector('i');
+        if (icon) { icon.className = next ? 'fas fa-check-square' : 'far fa-square'; }
+        applyFilter();
+    });
+
+    // Optimistic toggle: flip the visual state immediately on tap; htmx then posts
+    // and swaps in the authoritative row markup. Reverted below if the request fails.
+    list.addEventListener('click', function (e) {
+        var row = e.target.closest('.att-row');
+        if (row) {
+            row.classList.toggle('att-present');
+            applyFilter();
+        }
+    });
+
+    // Server confirmed the change and swapped the row -> recount from the new markup.
+    list.addEventListener('htmx:afterSwap', applyFilter);
+
+    // Save failed (offline / error): undo the optimistic flip.
+    function revert(e) {
+        var row = e.detail && e.detail.elt;
+        if (row && row.classList && row.classList.contains('att-row')) {
+            row.classList.toggle('att-present');
+            applyFilter();
+        }
+    }
+    document.body.addEventListener('htmx:responseError', revert);
+    document.body.addEventListener('htmx:sendError', revert);
+
+    applyFilter();
+})();
+</script>
+{% endblock localscripts %}
