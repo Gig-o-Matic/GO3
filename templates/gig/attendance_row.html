@@ -1,0 +1,16 @@
+{% load i18n %}
+<button type="button"
+        id="attendance-row-{{ plan.id }}"
+        class="att-row list-group-item list-group-item-action d-flex align-items-center text-left{% if plan.attended %} att-present{% endif %}"
+        data-name="{{ plan.assoc.member.display_name|lower }}"
+        data-attending="{% if plan.attending %}1{% else %}0{% endif %}"
+        hx-post="{% url 'plan-attendance-toggle' pk=plan.id %}"
+        hx-target="#att-check-{{ plan.id }}"
+        hx-swap="innerHTML">
+    <span class="att-check mr-3" id="att-check-{{ plan.id }}">{% include 'gig/attendance_check.html' %}</span>
+    <span class="att-name flex-grow-1">{{ plan.assoc.member.display_name }}</span>
+    <span class="att-meta text-muted small text-right">
+        {% if plan.section %}<span class="att-section">{{ plan.section.name }}</span>{% endif %}
+        <span class="att-status ml-1">{% include 'gig/plan_icon.html' with plan_value=plan.status %}</span>
+    </span>
+</button>
