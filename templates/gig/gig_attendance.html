@@ -1,5 +1,5 @@
 {% extends "base/go3base.html" %}
-{% load i18n static %}
+{% load i18n static gig_extras %}
 
 {% block title %}{% trans "Attendance" %} &middot; {{ gig.title }}{% endblock title %}
 
@@ -50,6 +50,26 @@
         background-color: #17a2b8;
         border-color: #17a2b8;
     }
+    /* Section grouping headers, styled to read like the .gomlabel section labels
+       used on the gig detail page. They stick just beneath the (already sticky)
+       attendance header so the current section stays visible while scrolling a
+       long section; its `top` is set in JS to the attendance header's height. */
+    .att-section-header {
+        position: sticky;
+        z-index: 1005;
+        background-color: #f1f3f5;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.03em;
+        padding: 0.5rem 1rem;
+        margin-top: 0.5rem;
+    }
+    .att-section-group.att-hidden {
+        display: none !important;
+    }
 </style>
 {% endblock headcontent %}
 
@@ -76,12 +96,28 @@
         </div>
     </div>
 
-    <div id="att-list" class="list-group mt-2 mb-4">
-        {% for plan in gig_ordered_member_plans %}
-            {% include 'gig/attendance_row.html' with plan=plan %}
+    <div id="att-list" class="mt-2 mb-4">
+        {% regroup gig_ordered_member_plans by section as plans_by_section %}
+        {% with multi_section=gig.band.sections.all|length %}
+        {% for section in gig.band.sections.all %}
+            {% with section_plans=plans_by_section|lookup_plans:section %}
+                {% if section_plans %}
+                    <div class="att-section-group">
+                        {% if multi_section > 1 %}
+                            <div class="att-section-header">{{ section.display_name }}</div>
+                        {% endif %}
+                        <div class="list-group">
+                            {% for plan in section_plans %}
+                                {% include 'gig/attendance_row.html' with plan=plan %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
         {% empty %}
             <div class="text-muted text-center py-4">{% trans "No members to show." %}</div>
         {% endfor %}
+        {% endwith %}
     </div>
 </div>
 {% endblock content %}
@@ -98,11 +134,16 @@
     var navbar = document.querySelector('.navbar.sticky-top');
 
     // Pin the attendance header flush beneath the (sticky) site navbar so it can't
-    // scroll up over it. Re-measure on resize since the navbar height can change.
+    // scroll up over it, and pin each section header just beneath the attendance
+    // header. Re-measure on resize since heights can change with layout/width.
     function positionHeader() {
-        if (header && navbar) {
-            header.style.top = navbar.offsetHeight + 'px';
+        var navH = navbar ? navbar.offsetHeight : 0;
+        if (header) {
+            header.style.top = navH + 'px';
         }
+        var sectionTop = navH + (header ? header.offsetHeight : 0);
+        Array.prototype.slice.call(document.querySelectorAll('.att-section-header'))
+            .forEach(function (h) { h.style.top = sectionTop + 'px'; });
     }
     positionHeader();
     window.addEventListener('resize', positionHeader);
@@ -136,6 +177,15 @@
         });
         presentCount.textContent = present;
         visibleCount.textContent = visible;
+
+        // Hide a section header when the filter has hidden all of its rows.
+        Array.prototype.slice.call(list.querySelectorAll('.att-section-group'))
+            .forEach(function (group) {
+                var anyVisible = Array.prototype.slice
+                    .call(group.querySelectorAll('.att-row'))
+                    .some(function (row) { return !row.classList.contains('att-hidden'); });
+                group.classList.toggle('att-hidden', !anyVisible);
+            });
     }
 
     search.addEventListener('input', applyFilter);

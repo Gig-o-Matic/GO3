@@ -102,7 +102,10 @@ class AttendanceView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['gig_ordered_member_plans'] = self.object.member_plans.all().order_by('assoc__member__display_name')
+        # Order by section then name so the template can regroup by section, just like
+        # the gig detail / print plan list pages. The order MUST group by section.
+        context['gig_ordered_member_plans'] = self.object.member_plans.all().order_by(
+            'section', Lower('assoc__member__display_name'))
         return context
 
 
