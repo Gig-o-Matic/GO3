@@ -10,7 +10,6 @@
     <span class="att-check mr-3" id="att-check-{{ plan.id }}">{% include 'gig/attendance_check.html' %}</span>
     <span class="att-name flex-grow-1">{{ plan.assoc.member.display_name }}</span>
     <span class="att-meta text-muted small text-right">
-        {% if plan.section %}<span class="att-section">{{ plan.section.name }}</span>{% endif %}
         <span class="att-status ml-1">{% include 'gig/plan_icon.html' with plan_value=plan.status %}</span>
     </span>
 </button>
