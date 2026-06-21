@@ -1653,7 +1653,7 @@ class AttendanceTest(GigTestBase):
     def test_attendance_default_roster_marks_attending(self):
         """ The roster rows carry the 'attending' flag for DEFINITELY/PROBABLY plans
             so the client-side default filter can show just those. """
-        g, a, p = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         self._set_status(p, PlanStatusChoices.DEFINITELY)
         self.client.force_login(self.band_admin)
         resp = self.client.get(reverse("gig-attendance", args=[g.id]))
@@ -1664,7 +1664,7 @@ class AttendanceTest(GigTestBase):
     # --- toggle endpoint ---
 
     def test_toggle_attendance_admin(self):
-        g, a, p = self.assoc_joe_and_create_gig()
+        _, _, p = self.assoc_joe_and_create_gig()
         self.assertFalse(p.attended)
         self.client.force_login(self.band_admin)
         resp = self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
@@ -1678,7 +1678,7 @@ class AttendanceTest(GigTestBase):
         self.assertFalse(p.attended)
 
     def test_toggle_attendance_stamps_gig(self):
-        g, a, p = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         self.assertIsNone(g.attendance_taken_at)
         self.assertIsNone(g.attendance_taken_by)
         self.client.force_login(self.band_admin)
@@ -1699,7 +1699,7 @@ class AttendanceTest(GigTestBase):
         self.assertGreater(g.attendance_taken_at, first_stamp)
 
     def test_toggle_attendance_non_admin_forbidden(self):
-        g, a, p = self.assoc_joe_and_create_gig()
+        _, _, p = self.assoc_joe_and_create_gig()
         self.client.force_login(self.joeuser)
         resp = self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
         self.assertEqual(resp.status_code, 403)
