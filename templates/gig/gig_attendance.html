@@ -15,17 +15,21 @@
         padding-bottom: 0.5rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     }
-    /* big, finger-friendly rows */
+    /* Compact but still tappable rows — kept dense so more members fit on screen. */
     .att-row {
-        padding: 0.9rem 1rem;
+        padding: 0.45rem 0.75rem;
         border-left: 0;
         border-right: 0;
         cursor: pointer;
     }
+    /* Tighten the gap between the check icon and the name (overrides .mr-3). */
+    .att-check {
+        margin-right: 0.6rem !important;
+    }
     .att-check i {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         color: #adb5bd;
-        width: 1.6rem;
+        width: 1.3rem;
         text-align: center;
     }
     .att-present {
@@ -35,18 +39,23 @@
         color: #28a745;
     }
     .att-name {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
+        line-height: 1.2;
     }
     /* Defined after Bootstrap so it beats .d-flex's `display: flex !important`. */
     .att-hidden {
         display: none !important;
     }
-    /* Large, finger-friendly toggle for the attending/all filter. */
-    #att-show-all {
-        min-height: 44px;
+    /* Compact toggle switch for the attending/all filter. Slightly enlarged
+       over the Bootstrap default so it stays tappable on a phone. */
+    .att-switch {
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
     }
-    #att-show-all.active {
-        color: #fff;
+    .att-switch .custom-control-label {
+        cursor: pointer;
+    }
+    .att-switch .custom-control-input:checked ~ .custom-control-label::before {
         background-color: #17a2b8;
         border-color: #17a2b8;
     }
@@ -62,10 +71,9 @@
         font-weight: 600;
         color: #6c757d;
         text-transform: uppercase;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         letter-spacing: 0.03em;
-        padding: 0.5rem 1rem;
-        margin-top: 0.5rem;
+        padding: 0.3rem 0.75rem;
     }
     .att-section-group.att-hidden {
         display: none !important;
@@ -79,16 +87,17 @@
         <a href="{% url 'gig-detail' gig.id %}#member-plans" class="btn btn-sm btn-link pl-0">
             <i class="fas fa-chevron-left"></i> {% trans "Back to gig" %}
         </a>
-        <h5 class="mb-0">{% trans "Attendance" %}</h5>
-        <div class="text-muted small mb-2">{{ gig.title }}{% if gig.date %} &middot; {{ gig.date|date:"DATE_FORMAT" }}{% endif %}</div>
+        <h5 class="mb-0">{{ gig.title }}</h5>
+        <div class="text-muted small mb-2">{% trans "Attendance" %}{% if gig.date %} &middot; {{ gig.date|date:"DATE_FORMAT" }}{% endif %}</div>
 
         <input type="search" id="att-search" class="form-control mb-2"
                placeholder="{% trans 'Search by name…' %}" autocomplete="off" autocapitalize="off">
 
         <div class="d-flex justify-content-between align-items-center">
-            <button type="button" id="att-show-all" class="btn btn-outline-info" aria-pressed="false">
-                <i class="far fa-square"></i> {% trans "Show all members" %}
-            </button>
+            <div class="custom-control custom-switch att-switch">
+                <input type="checkbox" class="custom-control-input" id="att-show-all">
+                <label class="custom-control-label" for="att-show-all">{% trans "Show all members" %}</label>
+            </div>
             <div class="att-count text-muted small">
                 <span id="att-present-count">0</span> {% trans "present" %} /
                 <span id="att-visible-count">0</span> {% trans "shown" %}
@@ -153,7 +162,7 @@
     }
 
     function showingAll() {
-        return showAll.getAttribute('aria-pressed') === 'true';
+        return showAll.checked;
     }
 
     // Search + attending/all filter + running counts, all client-side.
@@ -191,14 +200,7 @@
     search.addEventListener('input', applyFilter);
 
     // Toggle between "attending only" (default) and "all members".
-    showAll.addEventListener('click', function () {
-        var next = !showingAll();
-        showAll.setAttribute('aria-pressed', next ? 'true' : 'false');
-        showAll.classList.toggle('active', next);
-        var icon = showAll.querySelector('i');
-        if (icon) { icon.className = next ? 'fas fa-check-square' : 'far fa-square'; }
-        applyFilter();
-    });
+    showAll.addEventListener('change', applyFilter);
 
     // Optimistic toggle: flip the visual state immediately on tap; htmx then posts
     // and swaps in the authoritative row markup. Reverted below if the request fails.
