@@ -78,7 +78,7 @@ class FirewallMiddleware:
             # did we get a 404? If so, see if this ip is messing with up
             if response.status_code == 404:
                 if ip in self.probation_ips:
-                    self.probation_ips[ip].append([datetime.now()])
+                    self.probation_ips[ip].append(datetime.now())
                     if len(self.probation_ips[ip]) > 2:
                         time_since_first = datetime.now() - self.probation_ips[ip][0]
                         if time_since_first.seconds < PROBATION_LIMIT:
