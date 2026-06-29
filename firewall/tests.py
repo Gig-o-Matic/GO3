@@ -30,7 +30,7 @@ class FirewallTests(TestCase):
 
     def test_clear_probation(self):
         c = Client()
-        response = c.get("/xxx")
+        response = c.get('/xxx')
 #        assert response.status_code==404
 #        response = c.get(f"/xxx")
 #        assert response.status_code==404
