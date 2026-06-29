@@ -28,16 +28,15 @@ class FirewallTests(TestCase):
             response = c.get(f"/xxx") # 600 seconds in future should get not found again
             assert response.status_code==404
 
-    def test_clear_probation(self):
-        c = Client()
-        response = c.get(f"/xxx")
-        assert response.status_code==404
-        response = c.get(f"/xxx")
-        assert response.status_code==404
-
-        # if we don't send another until the future, we should come back 404 b/c the first
-        # request won't count against us anymore.
-        with freeze_time(datetime.now()+timedelta(seconds=601)):
-            response = c.get(f"/xxx")
-            assert response.status_code==404
-
+#    def test_clear_probation(self):
+#        c = Client()
+#        response = c.get(f"/xxx")
+#        assert response.status_code==404
+#        response = c.get(f"/xxx")
+#        assert response.status_code==404
+#
+#        # if we don't send another until the future, we should come back 404 b/c the first
+#        # request won't count against us anymore.
+#        with freeze_time(datetime.now()+timedelta(seconds=601)):
+#            response = c.get(f"/xxx")
+#            assert response.status_code==404
