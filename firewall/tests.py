@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from freezegun import freeze_time
 from datetime import datetime, timedelta
+from member.models import Member
 
 # Create your tests here.
 
@@ -10,6 +11,11 @@ class FirewallTests(TestCase):
     def test_ip_firewall(self):
 
         c = Client()
+        superuser = Member.objects.create_user(email='super@b.c', is_superuser=True)
+
+        c.force_login(superuser)
+        response = c.get("/firewall/firewall_on")
+        
         response = c.get(f"/xxx")
         assert response.status_code==404
         response = c.get(f"/xxx")

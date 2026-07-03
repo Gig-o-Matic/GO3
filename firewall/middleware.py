@@ -45,6 +45,7 @@ class FirewallMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        ip = None
 
         if self.firewall_on:
 
@@ -74,7 +75,7 @@ class FirewallMiddleware:
             request.firewall = self # pass this on the request so it can be used later
         response = self.get_response(request)
 
-        if self.firewall_on:
+        if ip and self.firewall_on:
             # did we get a 404? If so, see if this ip is messing with up
             if response.status_code == 404:
                 if ip in self.probation_ips:
