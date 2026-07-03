@@ -9,33 +9,35 @@ from member.models import Member
 class FirewallTests(TestCase):
 
     def test_ip_firewall(self):
-
         c = Client()
-        superuser = Member.objects.create_user(email='super@b.c', is_superuser=True)
+        c.force_login(Member.objects.create_user(email='super@b.c', is_superuser=True))
+        _ = c.get("/firewall/firewall_on")
+        _ = c.get("/firewall/reset_stats")
 
-        c.force_login(superuser)
-        response = c.get("/firewall/firewall_on")
-        
-        response = c.get(f"/xxx")
+        response = c.get("/111")
         assert response.status_code==404
-        response = c.get(f"/xxx")
+        response = c.get("/222")
         assert response.status_code==404
-        response = c.get(f"/xxx") # third time should get permission denied
+        response = c.get("/333") # third time should get permission denied
         assert response.status_code==403
 
-        response = c.get(f"/xxx") # fourth time should get permission denied
+        response = c.get("/444") # fourth time should get permission denied
         assert response.status_code==403
 
         with freeze_time(datetime.now()+timedelta(seconds=100)):
-            response = c.get(f"/xxx") # 100 seconds in future should get permission denied
+            response = c.get("/555") # 100 seconds in future should get permission denied
             assert response.status_code==403
 
-        with freeze_time(datetime.now()+timedelta(seconds=601)):
-            response = c.get(f"/xxx") # 600 seconds in future should get not found again
+        with freeze_time(datetime.now()+timedelta(seconds=600)):
+            response = c.get("/666") # 600 seconds in future should get not found again
             assert response.status_code==404
 
     def test_clear_probation(self):
         c = Client()
+        c.force_login(Member.objects.create_user(email='super@b.c', is_superuser=True))
+        _ = c.get("/firewall/firewall_on")
+        _ = c.get("/firewall/reset_stats")
+
         response = c.get('/xxx')
         assert response.status_code==404
         response = c.get(f"/xxx")

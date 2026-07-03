@@ -93,7 +93,7 @@ class FirewallMiddleware:
                             return HttpResponseForbidden()
                         else:
                             # just pop the first one
-                            self.probation_ips[ip] = self.probation_ips[1:]
+                            self.probation_ips[ip] = self.probation_ips[ip][1:]
                 else:
                     self.probation_ips[ip] = [datetime.now()]
             elif ip in self.probation_ips:
