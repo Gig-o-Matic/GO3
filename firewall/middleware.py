@@ -45,6 +45,7 @@ class FirewallMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        ip = None
 
         if self.firewall_on:
 
@@ -74,11 +75,11 @@ class FirewallMiddleware:
             request.firewall = self # pass this on the request so it can be used later
         response = self.get_response(request)
 
-        if self.firewall_on:
+        if ip and self.firewall_on:
             # did we get a 404? If so, see if this ip is messing with up
             if response.status_code == 404:
                 if ip in self.probation_ips:
-                    self.probation_ips[ip].append([datetime.now()])
+                    self.probation_ips[ip].append(datetime.now())
                     if len(self.probation_ips[ip]) > 2:
                         time_since_first = datetime.now() - self.probation_ips[ip][0]
                         if time_since_first.seconds < PROBATION_LIMIT:
@@ -92,7 +93,7 @@ class FirewallMiddleware:
                             return HttpResponseForbidden()
                         else:
                             # just pop the first one
-                            self.probation_ips[ip].popitem(last=False)
+                            self.probation_ips[ip] = self.probation_ips[ip][1:]
                 else:
                     self.probation_ips[ip] = [datetime.now()]
             elif ip in self.probation_ips:
