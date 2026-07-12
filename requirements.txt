@@ -2,7 +2,7 @@ aniso8601==10.0.1
 annotated-types==0.7.0
 arrow==1.4.0
 asgiref==3.11.1
-astroid==4.1.2
+astroid==4.0.4
 autopep8==2.3.2
 babel==2.18.0
 bleach==6.4.0
