@@ -10,4 +10,4 @@ class DateTimeWithoutTimezoneField(DateTimeField):
         # Since we are not storing timezones, this will be thrown away
         if value:
             value = value.replace(tzinfo=utc)
-        return super().get_prep_value(value)
+        return super().get_prep_value(value) # pylint: disable=E1101
