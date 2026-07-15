@@ -328,12 +328,12 @@ def create_gig_series(the_gig, number_to_copy, period):
         return
 
     last_date = the_gig.date
+    day_of_month = last_date.day
+    delta = 0
     if period == 'day':
         delta = timedelta(days=1)
     elif period == 'week':
         delta = timedelta(weeks=1)
-    else:
-        day_of_month = last_date.day
 
     set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
     end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
