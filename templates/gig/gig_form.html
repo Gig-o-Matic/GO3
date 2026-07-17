@@ -216,15 +216,31 @@
             </div>
             <div class="row">
                 <div class="form-group col-12">
-                {{ form.details.errors }}
-                {{ form.details.label_tag }}
-                {% render_field form.details class="form-control" %}
+                    <div class="row">
+                        <div class="col-6">
+                            {{ form.details.label_tag }}
+                        </div>
+                        <div class="col-6 text-right ml-auto">
+                            {{ form.details_markdown }}
+                            {{ form.details_markdown.label_tag }} <a href="https://daringfireball.net/projects/markdown/basics" target="_blank"><i class="fa-solid fa-circle-question"></i></a>
+                        </div>
+                    </div>
+                    {% render_field form.details class="form-control" %}
                 </div>
             </div>
             <div class="row">
-                <div class="form-group col-12">
-                    {{ form.setlist.errors }}
+                <div class="ml-auto text-right form-group col-12">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
                     {{ form.setlist.label_tag }}
+                </div>
+                <div class="col-6 text-right ml-auto">
+                    {{ form.setlist_markdown }}
+                    {{ form.setlist_markdown.label_tag }} <a href="https://daringfireball.net/projects/markdown/basics" target="_blank"><i class="fa-solid fa-circle-question"></i></a>
+                </div>
+                <div class="form-group col-12">
                     {% render_field form.setlist class="form-control" %}
                 </div>
             </div>

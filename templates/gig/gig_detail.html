@@ -174,7 +174,11 @@
                 {% if gig.details %}
                     <div class="row">
                         <div class="col-md-2 col-sm-2 col-4">{% trans "More Details" %}</div>
-                        <div class="col-md-10 col-sm-10 col-8 trunc">{{ gig.details|urlize | linebreaks }}</div>
+                        {% if gig.details_markdown %}
+                            <div class="col-md-10 col-sm-10 col-8 trunc">{% autoescape off %}{{ gig.details|to_markdown }}{% endautoescape %}</div>
+                        {% else %}
+                            <div class="col-md-10 col-sm-10 col-8 trunc">{{ gig.details|urlize | linebreaks }}</div>
+                        {% endif %}
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
@@ -209,7 +213,11 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12">
-                            {{ gig.setlist | urlize | linebreaks }}
+                            {% if gig.setlist_markdown %}
+                                {% autoescape off %}{{ gig.setlist|to_markdown }}{% endautoescape %}
+                            {% else %}
+                                {{ gig.setlist | urlize | linebreaks }}
+                            {% endif %}
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 from django import template
+from markdown import markdown
 
 register = template.Library()
 
@@ -17,3 +18,7 @@ def lookup(value, index):
         return ''
     else:
         return value[int(index)-1].strip()
+    
+@register.filter
+def to_markdown(value):
+    return markdown(value)

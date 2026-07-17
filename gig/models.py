@@ -125,6 +125,7 @@ class AbstractEvent(models.Model):
                             on_delete=models.CASCADE)
 
     details = models.TextField(null=True, blank=True)
+    details_markdown = models.BooleanField(default=False, blank=False)
     created_date = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
@@ -182,6 +183,7 @@ class Gig(AbstractEvent):
     # todo when a member leaves the band must set their contact_gigs to no contact. Nolo Contacto!
     contact = models.ForeignKey('member.Member', null=True, related_name="contact_gigs", on_delete=models.SET_NULL)
     setlist = models.TextField(null=True, blank=True)
+    setlist_markdown = models.BooleanField(default=False, blank=False)
 
     setdate = models.DateTimeField(null=True, blank=True)
     enddate = models.DateTimeField(null=True, blank=True)

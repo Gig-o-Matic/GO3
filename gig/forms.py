@@ -262,7 +262,7 @@ class GigForm(forms.ModelForm):
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date',
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','public_description','invite_occasionals',
                 'hide_from_calendar','notification','add_series','total_gigs','datenotes','is_full_day','has_set_time',
-                'rsvp_date','has_call_time','has_end_time']
+                'rsvp_date','has_call_time','has_end_time','details_markdown','setlist_markdown']
 
 
         widgets = {
@@ -294,7 +294,9 @@ class GigForm(forms.ModelForm):
             'leader_text': _('Leader'),
             'postgig': _('Post-gig Plans'),
             'details': _('Details'),
+            'details_markdown': _('Markdown'),
             'setlist': _('Setlist'),
+            'setlist_markdown': _('Markdown'),
             'public_description': _('Public Description'),
 
             'hide_from_calendar': _('Hide from calendar'),

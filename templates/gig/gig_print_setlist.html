@@ -16,7 +16,11 @@
     <div class="panel-heading">
     </div>
     <div class="panel-body" style="font-size:30px;">
-        {{ gig.setlist|linebreaks}}
+        {% if gig.setlist_markdown %}
+            {% autoescape off %}{{ gig.setlist|to_markdown}}{% endautoescape %}
+        {% else %}
+            {{ gig.setlist|linebreaks}}
+        {% endif %}
     </div>
 </div>
 {% endblock content %}
