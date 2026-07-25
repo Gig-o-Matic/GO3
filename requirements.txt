@@ -57,7 +57,7 @@ Rx==1.6.1
 sendgrid==6.11.0
 singledispatch==3.6.2
 six==1.16.0
-soupsieve==2.2.1
+soupsieve==2.8.4
 sqlparse==0.5.4
 starkbank-ecdsa==2.0.1
 text-unidecode==1.3
