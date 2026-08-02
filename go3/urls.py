@@ -34,7 +34,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic.base import RedirectView
+from django.views.generic.base import RedirectView, TemplateView
 from django.views.i18n import JavaScriptCatalog
 from ninja import NinjaAPI
 
@@ -63,6 +63,8 @@ urlpatterns = [
     path('cal/m/<slug:go2_id>', go2_id_calfeed),
     path('login', RedirectView.as_view(url='accounts/login', permanent=True)),
     path('api/', api.urls),
+    path('.well-known/security.txt', TemplateView.as_view(template_name='security.txt',
+                                      content_type='text/plain')),
 ]
 
 handler404 = error404
