@@ -97,8 +97,8 @@ class MemberTests(TestCase):
 
         # make sure nobody else can
         request.user = self.janeuser
-        with self.assertRaises(PermissionError):
-            helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
+        result = helpers.join_assoc(request, bk=self.band.id, mk=self.joeuser.id)
+        self.assertEqual(result.status_code, 403)
 
         # make sure we can't have two assocs to the same band
         request.user = self.band_admin
