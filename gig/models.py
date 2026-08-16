@@ -90,7 +90,7 @@ class Plan(models.Model):
     @property
     def feedback_string(self):
         if self.feedback_value and self.gig.band.plan_feedback:
-            return self.gig.band.plan_feedback[self.feedback_value-1]
+            return self.gig.band.feedback_strings[self.feedback_value-1].strip()
         else:
             return ''
 
