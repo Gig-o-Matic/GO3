@@ -36,8 +36,10 @@ urlpatterns = [
     path('<int:pk>/printallplans', views.PrintPlansView.as_view(), {'all':True}, name='gig-print-all-plans'),
     path('<int:pk>/printconfirmedplans', views.PrintPlansView.as_view(), {'all':False}, name='gig-print-confirmed-plans'),
     path('<int:pk>/printsetlist', views.PrintSetlistView.as_view(), name='gig-print-setlist'),
+    path('<int:pk>/attendance', views.AttendanceView.as_view(), name='gig-attendance'),
 
     path('plan/<uuid:pk>/update/<int:val>', helpers.update_plan, name='plan-update'),
+    path('plan/<uuid:pk>/attendance', helpers.toggle_attendance, name='plan-attendance-toggle'),
     path('plan/<uuid:pk>/feedback/<int:val>', helpers.update_plan_feedback, name='plan-update-feedback'),
     path('plan/<uuid:pk>/comment', helpers.update_plan_comment, name='plan-update-comment'),
     path('plan/<uuid:pk>/section/<int:val>', helpers.update_plan_section, name='plan-update-section'),
