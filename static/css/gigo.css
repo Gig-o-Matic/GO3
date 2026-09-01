@@ -26,6 +26,10 @@ body {
   background-color: #f5f5f5;
 }
 
+h1 {
+  font-size: 100%;
+}
+
 /* Custom page CSS
 -------------------------------------------------- */
 /* Not required for template or sticky footer method. */
