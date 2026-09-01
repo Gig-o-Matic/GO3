@@ -127,8 +127,9 @@ def join_assoc(request, bk, mk):
     is_band_admin = Assoc.objects.filter(
         member=request.user, band=b, is_admin=True).count() == 1
     if not (is_self or is_super or is_band_admin):
-        raise PermissionError(
-            'tying to create an assoc which is not owned by user {0}'.format(request.user.username))
+        return HttpResponseForbidden()
+        # raise PermissionError(
+        #     'tying to create an assoc which is not owned by user {0}'.format(request.user.username))
 
     # OK, create the assoc
     Assoc.objects.get_or_create(
@@ -219,7 +220,11 @@ def set_sections(request, *args, **kw):
     band = get_object_or_404(Band, pk=kw['pk'])
 
     # handle the sections as we have them now
-    list = json.loads(request.POST['sectionInfo'])
+    try:
+        list = json.loads(request.POST['sectionInfo'])
+    except KeyError:
+        return HttpResponseForbidden()
+
     for i, s in enumerate(list):
         new_name, id, _old_name = s
         new_name = html.unescape(new_name)
