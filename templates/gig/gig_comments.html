@@ -26,9 +26,11 @@
 </div>
 {% if gig.is_archived is False %}
 <form>
+    
     <div class="row mt-4">
         <div class="col-md-10 col-12">
-            <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" rows="2"></textarea>
+            <textarea class="form-control" id="commentinput" name='commenttext' placeholder="{% trans "say your piece!" %}" name="comment_input" 
+            aria-label="{% trans "Add a comment to the gig" %}" rows="2"></textarea>
         </div>
         <div class="mx-auto">
             <button class="btn btn-primary btn-sm" 

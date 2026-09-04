@@ -231,6 +231,10 @@ a {
     border-color: #007bff;
 }
 
+.btn-info {
+  background-color: #128091 !important;
+}
+
 .card-header[data-toggle="collapse"] {
     cursor: pointer;
 }
