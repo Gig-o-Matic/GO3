@@ -1,6 +1,5 @@
 /* Sticky footer styles
 -------------------------------------------------- */
-
 html,
 body {
   height: 100%;
@@ -114,7 +113,7 @@ code {
 -------------------------------------------------- */
 
 a {
-    color: #428bca;
+    color: #347AB7;
 }
 
 .navbar {
@@ -124,7 +123,7 @@ a {
 }
 
 .navbar.dev {
-  background-color: #800000;
+  background-color: #008000;
 }
 
 .navbar a.dropdown-item {
@@ -177,6 +176,10 @@ a {
     overflow:visible;
 }
 
+.text-muted {
+  color: #5a6472 !important;
+}
+
 .validation-error {
     margin-bottom: 20px;
 }
@@ -224,7 +227,7 @@ a {
 
 .btn-primary {
     color: #fff;
-    background-color: #428bca;
+    background-color: #347AB7;
     border-color: #007bff;
 }
 
