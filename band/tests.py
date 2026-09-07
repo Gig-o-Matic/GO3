@@ -158,7 +158,7 @@ class MemberTests(TestCase):
         a = self.assoc_joe()
         self.client.force_login(self.joeuser)
         resp = self.client.post(
-            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'on', 'off':'is_occasional'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_occasional, True)
@@ -167,7 +167,7 @@ class MemberTests(TestCase):
         a = self.assoc_joe()
         self.client.force_login(self.band_admin)
         resp = self.client.post(
-            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'on', 'off':'is_occasional'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_occasional, True)
@@ -176,7 +176,7 @@ class MemberTests(TestCase):
         a = self.assoc_joe()
         self.client.force_login(self.janeuser)
         resp = self.client.post(
-            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'true'})
+            reverse('assoc-tfparam', args=[a.id]), {'is_occasional': 'on', 'off': 'is_occasional'})
         self.assertEqual(resp.status_code, 403)
         a.refresh_from_db()
         self.assertEqual(a.is_occasional, False)
@@ -185,7 +185,7 @@ class MemberTests(TestCase):
         a = self.assoc_joe()
         self.client.force_login(self.joeuser)
         resp = self.client.post(
-            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'on', 'off': 'is_occasional'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_admin, False)
@@ -194,7 +194,7 @@ class MemberTests(TestCase):
         a = self.assoc_joe()
         self.client.force_login(self.band_admin)
         resp = self.client.post(
-            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'on', 'off': 'is_admin'})
         self.assertEqual(resp.status_code, 204)
         a.refresh_from_db()
         self.assertEqual(a.is_admin, True)
@@ -203,7 +203,7 @@ class MemberTests(TestCase):
         a = self.assoc_joe()
         self.client.force_login(self.janeuser)
         resp = self.client.post(
-            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'true'})
+            reverse('assoc-tfparam', args=[a.id]), {'is_admin': 'on', 'off': 'is_admin'})
         self.assertEqual(resp.status_code, 403)
         a.refresh_from_db()
         self.assertEqual(a.is_admin, False)

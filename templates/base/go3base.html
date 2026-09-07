@@ -113,48 +113,42 @@
     <!-- <script src="/bootstrap3-editable/js/bootstrap-editable.js"></script>     -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
 
-    <script src="https://unpkg.com/htmx.org@0.3.0"></script>
+    <!-- <script src="https://unpkg.com/htmx.org@0.3.0"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc" crossorigin="anonymous"></script>
     <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-        })
 
-        htmx.defineExtension('reload', {
-            onEvent: function(name, event) {
-                if (name === 'htmx:afterOnLoad') {
-                    if (event.detail.xhr.status < 400)
-                        htmx.trigger(event.detail.target, 'reload', {});
-                }
-            }
-        })
+        htmx.on('htmx:config:request', function (evt) {
+            evt.detail.ctx.request.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });        
 
-        htmx.defineExtension('reload-page', {
-            onEvent: function(name, event) {
-                if (name === 'htmx:afterOnLoad') {
-                    if (event.detail.xhr.status < 400)
-                        location.reload();
-                }
-            }
-        })
+        htmx.registerExtension('reload', {
+            htmx_after_cleanup: (elt, detail) => {
+                if (event.detail.xhr.status < 400)
+                    htmx.trigger(event.detail.target, 'reload', {});
+            },
+        });
 
-        htmx.defineExtension('update-dropdown', {
-            onEvent: function(name, event) {
-                if (name === 'htmx:afterOnLoad') {
-                    if (event.detail.xhr.status < 400)
-                        event.detail.target.innerHTML = event.detail.elt.innerHTML;
-                }
-            }
-        })
+        htmx.registerExtension('reload-page', {
+            htmx_after_cleanup: (elt, detail) => {
+                if (event.detail.xhr.status < 400)
+                    location.reload();
+            },
+        });
 
-        htmx.defineExtension('checkbox', {
-            onEvent: function(name, event) {
-                if (name === 'htmx:configRequest') {
-                    let element = event.detail.elt;
-                    if (element.matches('input[type=checkbox]') && element.name)
-                        event.detail.parameters[element.name] = element.checked;
-                }
-            }
-        })
+        htmx.registerExtension('update-dropdown', {
+            htmx_after_cleanup: (elt, detail) => {
+                if (event.detail.xhr.status < 400)
+                    event.detail.target.innerHTML = event.detail.elt.innerHTML;
+            },
+        });
+
+        htmx.registerExtension('checkbox', {
+            htmx_after_cleanup: (elt, detail) => {
+                let element = event.detail.elt;
+                if (element.matches('input[type=checkbox]') && element.name)
+                    event.detail.parameters[element.name] = element.checked;
+            },
+        });
     </script>
 
     {% block localscripts %}
