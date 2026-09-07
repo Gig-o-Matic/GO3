@@ -1,4 +1,5 @@
 from django import template
+from ..util import PlanStatusChoices
 
 register = template.Library()
 
@@ -17,3 +18,7 @@ def lookup(value, index):
         return ''
     else:
         return value[int(index)-1].strip()
+
+@register.filter
+def gig_status_name(value):
+    return PlanStatusChoices(value).label

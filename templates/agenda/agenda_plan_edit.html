@@ -50,9 +50,11 @@
         {% endwith %}
     </div>
     <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}{% if assoc.is_multisectional %}6{% else %}7{% endif %}{% endif %} pr-0">
-        <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
+        <a href="/gig/{{ gig.id }}"
+            aria-label="gig {{gig.title}}"
+        ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
-            <a href="/band/{{ band.id }}">
+            <a href="/band/{{ band.id }}" aria-label="band {{band.name}}">
             {% if band.shortname %}
                 ({{ band.shortname }})
             {% else %}

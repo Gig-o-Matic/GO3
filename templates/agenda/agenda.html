@@ -32,10 +32,13 @@
         <div class="col-md-10 col-12 mx-auto justify-content-start">
             <div class="btn-group btn-group-toggle" data-toggle="buttons" style="flex-wrap: wrap;">
                 {% for button in the_buttons %}
-                    <label class="btn btn-sm btn-outline-secondary filter shadow-none active">
+                    <label class="btn btn-sm btn-outline-secondary filter shadow-none active"
+                        aria-label="gig list tab"
+                    >
                         <input type="radio" name="options" id="option1" {% if button.3 %}checked{% endif %}
                         hx-get="{% url 'agenda-gigs' the_type=button.0 the_band=button.2 %}"
-                        hx-target="#the-list" hx-indicator="#indicator">{{button.1}}
+                        hx-target="#the-list" hx-indicator="#indicator" aria-label="tab selector"
+                        >{{button.1}}
                         {% comment %}
                             For the badge, just use a static value unless it's the "need response"
                             button, in which case do it dynamically from the agenda_gigs.html content
@@ -85,5 +88,10 @@ $(document).ready(function() {
         }
     {% endif %}
 });
+
+function set_aria_for_plan(id, val) {
+    $("#plan-"+id).attr("aria-label",val);
+}
+
 </script>
 {% endblock localscripts %}
