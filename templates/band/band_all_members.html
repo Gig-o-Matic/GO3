@@ -18,6 +18,7 @@
                            name="is_occasional"
                            hx-ext="checkbox"
                            hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
+                           hx-vals='{"off":"is_occasional"}'
                     {% if the_assoc.is_occasional %}
                            checked
                     {% endif %}
@@ -52,6 +53,7 @@
                            name="is_multisectional"
                            hx-ext="checkbox"
                            hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
+                           hx-vals='{"off":"is_multisectional"}'
                     {% if the_assoc.is_multisectional %}
                            checked
                     {% endif %}
@@ -70,6 +72,7 @@
                            name="is_admin"
                            hx-ext="checkbox"
                            hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
+                           hx-vals='{"off":"is_admin"}'
                     {% if the_assoc.is_admin %}
                            checked
                     {% endif %}
