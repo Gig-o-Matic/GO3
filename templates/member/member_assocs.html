@@ -50,6 +50,7 @@
                                 <input class="form-check-input" type="checkbox" id='mailbk-{{assoc.id}}'
                                         name="email_me" hx-ext="checkbox"
                                         hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                        hx-vals='{"off":"email_me"}'
                                         {% if assoc.email_me %}
                                         checked
                                         {% endif %}
@@ -67,6 +68,7 @@
                                 <input class="form-check-input" type="checkbox" id='msbk-{{assoc.id}}'
                                     name="is_multisectional" hx-ext="checkbox"
                                     hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                    hx-vals='{"off":"is_multisectional"}'
                                 {% if assoc.is_multisectional %}
                                     checked
                                 {% endif %}
@@ -79,6 +81,7 @@
                                 <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
                                 name="hide_from_schedule" hx-ext="checkbox"
                                 hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                hx-vals='{"off":"hide_from_schedule"}'
                                 {% if assoc.hide_from_schedule %}
                                     checked
                                 {% endif %}
@@ -95,6 +98,7 @@
                                 <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
                                 name="is_occasional" hx-ext="checkbox"
                                 hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                hx-vals='{"off":"is_occasional"}'                                
                                 {% if assoc.is_occasional %}
                                     checked
                                 {% endif %}

@@ -27,7 +27,7 @@ from django import forms
 from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
 from .forms import GigForm
-from .util import PlanStatusChoices
+from .util import PlanStatusChoices, GigStatusChoices
 from .helpers import create_gig_series
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
@@ -231,7 +231,17 @@ class DuplicateView(CreateView):
         kwargs['initial'] = forms.models.model_to_dict(self.original_gig)
         # ...but replace the title with a 'copy of'
         kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
+        # a duplicated gig is a new, unconfirmed gig - don't carry over the original's status
+        kwargs['initial']['status'] = GigStatusChoices.UNCONFIRMED
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Copy the date & time values from the original gig into context so the templates can reference them
+        context['call_date'] = self.original_gig.date
+        context['set_time'] = self.original_gig.setdate
+        context['end_date'] = self.original_gig.enddate
+        return context
 
     def get_band(self):
         """ for a duplicate where we don't have the band passed in but we have the """
