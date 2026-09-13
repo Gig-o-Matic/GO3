@@ -946,13 +946,17 @@ class GigTest(GigTestBase):
         number=1,
         user=None,
         expect_code=302,
-        call_date="01/02/2100",
-        end_date="",
-        call_time="12:00 pm",
-        set_time="",
-        end_time="",
         **kwargs,
     ):
+        # like update_gig_form, default the date/time fields from the gig being
+        # duplicated - this mirrors what the duplicate form pre-fills in the browser
+        call_date = kwargs.pop("call_date", self._dateformat(gig.date))
+        end_date = kwargs.pop("end_date", self._dateformat(gig.enddate))
+        call_time = kwargs.pop("call_time", self._timeformat(gig.date))
+        set_time = kwargs.pop("set_time", self._timeformat(gig.setdate))
+        end_time = kwargs.pop("end_time", self._timeformat(gig.enddate))
+        status = kwargs.pop("status", GigStatusChoices.UNCONFIRMED)
+        contact = kwargs.pop("contact", self.joeuser)
 
         c = Client()
         c.force_login(user if user else self.joeuser)
@@ -965,9 +969,10 @@ class GigTest(GigTestBase):
                 "call_time": call_time,
                 "set_time": set_time,
                 "end_time": end_time,
-                "contact": kwargs.get("contact", self.joeuser).id,
-                "status": GigStatusChoices.UNCONFIRMED,
+                "contact": contact.id,
+                "status": status,
                 "notification": 'everyone',
+                **kwargs,
             },
         )
 
@@ -991,6 +996,20 @@ class GigTest(GigTestBase):
 
         _ = self.duplicate_gig_form(g1, 1, user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 2)
+
+    def test_duplicate_gig_copies_times_and_resets_status(self):
+        g1, _, _ = self.assoc_joe_and_create_gig(user=self.band_admin)
+        g1.status = GigStatusChoices.CONFIRMED
+        g1.save()
+
+        # leave out the date/time fields entirely - they should default to the
+        # original gig's times, just like a browser duplicating the gig would
+        g2 = self.duplicate_gig_form(g1, user=self.band_admin)
+
+        self.assertEqual(g2.status, GigStatusChoices.UNCONFIRMED)
+        self.assertEqual(g2.date, g1.date)
+        self.assertEqual(g2.setdate, g1.setdate)
+        self.assertEqual(g2.enddate, g1.enddate)
 
     def test_series_of_simple_gigs(self):
         g1, _, _ = self.assoc_joe_and_create_gig()
