@@ -27,7 +27,7 @@ from django import forms
 from django.http import HttpResponseForbidden
 from .models import Gig, Plan, GigComment
 from .forms import GigForm
-from .util import PlanStatusChoices
+from .util import PlanStatusChoices, GigStatusChoices
 from .helpers import create_gig_series
 from band.models import Band, Assoc
 from gig.helpers import notify_new_gig
@@ -72,9 +72,7 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         # or the current user
         # VERY IMPORTANT! The order of these results MUST be group by section, or the template breaks.
         # See https://github.com/Gig-o-Matic/GO3/pull/251
-        context['gig_ordered_member_plans'] = self.object.member_plans.filter(
-            Q(assoc__is_occasional=False) | Q(assoc__member=self.request.user) | ~Q(status=PlanStatusChoices.NO_PLAN)
-            ).order_by('section',Lower('assoc__member__display_name'))
+        context['gig_ordered_member_plans'] = self.object.member_plans.all().order_by('section',Lower('assoc__member__display_name'))
 
         if self.object.address:
             if url_validate(self.object.address):
@@ -139,11 +137,15 @@ class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
 
         if form.cleaned_data['add_series']:
             the_dates = create_gig_series(form.instance, form.cleaned_data['total_gigs'], form.cleaned_data['repeat'])
-            if form.cleaned_data['email_changes']:
-                notify_new_gig(form.instance, created=True, dates=the_dates)
+            if not form.cleaned_data['notification']=='no_email':
+                notify_new_gig(form.instance, created=True,
+                               dates=the_dates,
+                               only_answered=(form.cleaned_data['notification']=='answered'))
         else:
-            if form.cleaned_data['email_changes']:
-                notify_new_gig(form.instance, created=True)
+            if not form.cleaned_data['notification']=='no_email':
+                notify_new_gig(form.instance, 
+                               created=True,
+                               only_answered=(form.cleaned_data['notification']=='answered'))
 
         return result
 
@@ -195,8 +197,11 @@ class UpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
         result = super(UpdateView, self).form_valid(form)
 
         # call the super before sending notifications, so the object is saved
-        if form.cleaned_data['email_changes']:
-            notify_new_gig(form.instance, created=False)
+        if not form.cleaned_data['notification']=='no_email':
+            notify_new_gig(form.instance,
+                           created=False, 
+                           only_answered=(form.cleaned_data['notification']=='answered')
+                           )
 
         return result
 
@@ -226,7 +231,17 @@ class DuplicateView(CreateView):
         kwargs['initial'] = forms.models.model_to_dict(self.original_gig)
         # ...but replace the title with a 'copy of'
         kwargs['initial']['title'] = f'Copy of {kwargs["initial"]["title"]}'
+        # a duplicated gig is a new, unconfirmed gig - don't carry over the original's status
+        kwargs['initial']['status'] = GigStatusChoices.UNCONFIRMED
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Copy the date & time values from the original gig into context so the templates can reference them
+        context['call_date'] = self.original_gig.date
+        context['set_time'] = self.original_gig.setdate
+        context['end_date'] = self.original_gig.enddate
+        return context
 
     def get_band(self):
         """ for a duplicate where we don't have the band passed in but we have the """
@@ -276,9 +291,9 @@ class PrintPlansView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_planlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band
+        # can only see the gig if you're logged in and in the band (or superuser)
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user)
+        return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -294,9 +309,9 @@ class PrintSetlistView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gig/gig_print_setlist.html'
 
     def test_func(self):
-        # can only see the gig if you're logged in and in the band
+        # can only see the gig if you're logged in and in the band (or superuser)
         gig = get_object_or_404(Gig, id=self.kwargs['pk'])
-        return gig.band.has_member(self.request.user)
+        return gig.band.has_member(self.request.user) or self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

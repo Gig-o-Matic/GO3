@@ -14,14 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from time import sleep
 from django.core import mail
 from django.test import TestCase, Client
 from member.models import Member
 from band.models import Band, Section, Assoc
 from band.util import AssocStatusChoices
+from band.helpers import _get_confirmed_public_gigs
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
-from .helpers import send_reminder_email, create_gig_series, gig_toggle_watching, _prepare_plans_for_watcher_email
+from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs, alert_watchers
 from datetime import timedelta, datetime, timezone as dttimezone
@@ -30,6 +32,7 @@ from django.utils import timezone
 from pytz import utc, timezone as pytimezone
 from lib.template_test import MISSING, flag_missing_vars
 from freezegun import freeze_time
+from go3.api import THROTTLE_PER_SECOND
 
 # workaround for freezegun thing where it ignores modules with names
 # that start with "gi" for some reason
@@ -133,7 +136,7 @@ class GigTestBase(TestCase):
                 "contact": contact,
                 "status": status,
                 "send_update": send_update,
-                "email_changes": email_changes,
+                "notification": "everyone" if email_changes else "no_email",
                 **kwargs,
             },
         )
@@ -167,7 +170,7 @@ class GigTestBase(TestCase):
             "end_time": end_time,
             "contact": the_gig.contact.id,
             "status": the_gig.status,
-            "email_changes": True,
+            "notification": kwargs.get('notification','everyone'),
         }
         for x in kwargs.keys():
             data[x] = kwargs[x]
@@ -564,7 +567,7 @@ class GigTest(GigTestBase):
 
     @flag_missing_vars
     def test_gig_edit_email(self):
-        g, _, _ = self.assoc_joe_and_create_gig()
+        g, _, p = self.assoc_joe_and_create_gig()
         mail.outbox = []
         g.status = GigStatusChoices.CONFIRMED
         g.save()
@@ -579,6 +582,20 @@ class GigTest(GigTestBase):
         self.assertNotIn(MISSING, message.subject)
         self.assertNotIn(MISSING, message.body)
 
+        self.update_gig_form(g,notification='no_email')
+        # should not send an email because we said no email
+        self.assertEqual(len(mail.outbox),1)
+
+        self.update_gig_form(g,notification='answered')
+        # we haven't answered
+        self.assertEqual(len(mail.outbox),1)
+        
+        p.status=PlanStatusChoices.DEFINITELY
+        p.save()
+        self.update_gig_form(g,notification='answered')
+        # we have answered
+        self.assertEqual(len(mail.outbox),2)
+        
     def test_gig_edit_status(self):
         g, _, _ = self.assoc_joe_and_create_gig()
         mail.outbox = []
@@ -656,6 +673,30 @@ class GigTest(GigTestBase):
         message = mail.outbox[0]
         self.assertIn("(Address)", message.subject)
         self.assertIn("Address: 123 Main St. Anytown, MN 55016", message.body)
+
+    def test_gig_edit_occasional_default(self):
+        self.band.invite_occasionals_by_default = True
+        _ = self.assoc_user(self.joeuser)
+        self.band.invite_occasionals_by_default = True
+        self.band.save()
+
+        # now create a gig - invite should be set
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(
+            f"/gig/create/{self.band.id}",
+        )
+        # invite occasionals should be checked
+        self.assertIn('id="id_invite_occasionals" checked',str(response.content))
+
+        self.band.invite_occasionals_by_default = False
+        self.band.save()
+
+        response = c.get(
+            f"/gig/create/{self.band.id}",
+        )
+        # should not be checked
+        self.assertIn('id="id_invite_occasionals">',str(response.content))
 
     def test_gig_edit_trans(self):
         self.joeuser.preferences.language = "de"
@@ -905,13 +946,17 @@ class GigTest(GigTestBase):
         number=1,
         user=None,
         expect_code=302,
-        call_date="01/02/2100",
-        end_date="",
-        call_time="12:00 pm",
-        set_time="",
-        end_time="",
         **kwargs,
     ):
+        # like update_gig_form, default the date/time fields from the gig being
+        # duplicated - this mirrors what the duplicate form pre-fills in the browser
+        call_date = kwargs.pop("call_date", self._dateformat(gig.date))
+        end_date = kwargs.pop("end_date", self._dateformat(gig.enddate))
+        call_time = kwargs.pop("call_time", self._timeformat(gig.date))
+        set_time = kwargs.pop("set_time", self._timeformat(gig.setdate))
+        end_time = kwargs.pop("end_time", self._timeformat(gig.enddate))
+        status = kwargs.pop("status", GigStatusChoices.UNCONFIRMED)
+        contact = kwargs.pop("contact", self.joeuser)
 
         c = Client()
         c.force_login(user if user else self.joeuser)
@@ -924,9 +969,10 @@ class GigTest(GigTestBase):
                 "call_time": call_time,
                 "set_time": set_time,
                 "end_time": end_time,
-                "contact": kwargs.get("contact", self.joeuser).id,
-                "status": GigStatusChoices.UNCONFIRMED,
-                "send_update": True,
+                "contact": contact.id,
+                "status": status,
+                "notification": 'everyone',
+                **kwargs,
             },
         )
 
@@ -950,6 +996,20 @@ class GigTest(GigTestBase):
 
         _ = self.duplicate_gig_form(g1, 1, user=self.band_admin)
         self.assertEqual(Gig.objects.count(), 2)
+
+    def test_duplicate_gig_copies_times_and_resets_status(self):
+        g1, _, _ = self.assoc_joe_and_create_gig(user=self.band_admin)
+        g1.status = GigStatusChoices.CONFIRMED
+        g1.save()
+
+        # leave out the date/time fields entirely - they should default to the
+        # original gig's times, just like a browser duplicating the gig would
+        g2 = self.duplicate_gig_form(g1, user=self.band_admin)
+
+        self.assertEqual(g2.status, GigStatusChoices.UNCONFIRMED)
+        self.assertEqual(g2.date, g1.date)
+        self.assertEqual(g2.setdate, g1.setdate)
+        self.assertEqual(g2.enddate, g1.enddate)
 
     def test_series_of_simple_gigs(self):
         g1, _, _ = self.assoc_joe_and_create_gig()
@@ -1474,6 +1534,7 @@ class TestGigAPI(GigTestBase):
     def test_gig_status_filter(self):
         for status in GigStatusChoices.choices:
             self._gig_filter(status[0], status[1])
+            sleep(1) # avoid throttling
 
     def test_gig_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"gig_status": "INVALID"})
@@ -1502,6 +1563,7 @@ class TestGigAPI(GigTestBase):
             plan.status = status[0]
             plan.save()
             self._plan_status_filter(status[0], status[1], expected_count=1)
+            sleep(1) # avoid throttline
 
     def test_plan_status_filter_invalid_type(self):
         response = self.client.get(reverse("api-1.0.0:list_all_gigs"), HTTP_X_API_KEY=self.joeuser.api_key, data={"plan_status": "INVALID"})
@@ -1554,3 +1616,20 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data, [{"id": status[0], "name": status[1]} for status in PlanStatusChoices.choices])
+
+    def test_api_throttle(self):
+        """ make sure we run into throttling if we make too many requests """
+        response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+        self.assertEqual(response.status_code, 200)
+
+        count = 0
+        done = False
+        while not done:
+            response = self.client.get(reverse("api-1.0.0:plan_status_choices"), HTTP_X_API_KEY=self.joeuser.api_key)
+            if not response.status_code == 200:
+                done = True
+            count += 1
+
+        self.assertEqual(response.status_code, 429)
+        self.assertTrue(count <= THROTTLE_PER_SECOND)
+

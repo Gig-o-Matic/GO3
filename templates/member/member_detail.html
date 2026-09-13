@@ -45,7 +45,7 @@
                         <div class="col-sm-5 col-12">{% trans "Email" %}</div>
                         <div class="col-sm-7 col-12"><a href="mailto:{{ member.email}}">{{  member.email }}</a>
                             {% if member_is_me or user.is_superuser %}
-                            <span class="btn btn-primary btn-sm" hx-get='{% url "member-test-email" %}' hx-swap='outerHTML'>
+                            <span class="btn btn-primary btn-sm" hx-get='{% url "member-test-email" pk=member.id %}' hx-swap='outerHTML'>
                                 {% trans "Test" %}
                                 <span class="htmx-indicator">
                                     <i class="fa fa-spinner fa-spin fa-lg"></i>

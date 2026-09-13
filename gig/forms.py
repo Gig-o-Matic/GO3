@@ -17,6 +17,7 @@
 
 from django import forms
 from .models import Gig
+from .util import GigStatusChoices
 from band.models import Band
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -43,12 +44,27 @@ class GigForm(forms.ModelForm):
             band = self.instance.band
 
         instance = kwargs.get('instance',None)
+
         if instance is None:
             """ this is a new gig """
-            self.fields['email_changes'].label = _('Email members about this new gig')
-            self.fields['email_changes'].initial = band.send_updates_by_default
+            self.fields['notification'].choices=[
+                                        ('everyone',_('Notify Everyone')),
+                                        ('no_email',_('No Notification')),
+                                      ]
+
+            self.fields['notification'].label = _('Email members about this new gig')
+            self.fields['invite_occasionals'].initial = band.invite_occasionals_by_default
         else:
-            self.fields['email_changes'].label = _('Email members about change')
+            self.fields['notification'].choices = [
+                                        ('everyone',_('Notify Everyone')),
+                                        ('answered',_('Notify If Attending')),
+                                        ('no_email',_('No Notification')),
+                                      ]
+            self.fields['notification'].label = _('Email members about change')
+
+        self.fields['notification'].initial = 'everyone' if band.send_updates_by_default else \
+                                              'no_email'
+
 
         if user:
             self.fields['contact'].initial = user
@@ -175,8 +191,17 @@ class GigForm(forms.ModelForm):
                 z = pytz.timezone(self.band.timezone)
                 rsvp_by_date = timezone.make_aware(rsvp_by_date, z)
                 
-                # Skip the RSVP date validation if the date has not changed
-                if self.instance.rsvp_by_date != rsvp_by_date.date() if rsvp_by_date else None:
+                # Skip the RSVP date validation if the date has not changed or if the
+                # edit is happening after the RSVP date
+
+
+                # if there is no rsvp date but now there is one
+                # or if these is one and the new one is different
+
+                if self.instance.rsvp_by_date is None or \
+                    self.instance.rsvp_by_date != rsvp_by_date:
+                # if (self.instance.rsvp_by_date) and \
+                #     (self.instance.rsvp_by_date != rsvp_by_date.date() if rsvp_by_date else None):
                     now = timezone.now()
                     if rsvp_by_date < now:
                         self.add_error('rsvp_date', ValidationError(_('RSVP deadline must be in the future'), code='invalid rsvp date'))
@@ -200,7 +225,7 @@ class GigForm(forms.ModelForm):
         newgig = super().save(commit)
         return newgig
 
-    email_changes = forms.BooleanField(required=False, label=_('Email members about change'))
+    # email_changes = forms.BooleanField(required=False, label=_('Email members about change'))
     is_full_day = forms.BooleanField(required=False, label=_('Full- or multi-day event'))
     call_date = forms.Field(required=True, label=_('Date'))
     call_time = forms.Field(required=False, label=_('Call Time'))
@@ -221,7 +246,14 @@ class GigForm(forms.ModelForm):
                                             ('week', _('week')),
                                             ('month', _('month (on same day of the month)')),
                                         ])
-
+    notification = forms.ChoiceField(label="Notification",
+                                      widget=forms.RadioSelect,
+                                      required=True,
+                                      choices=[
+                                        ('everyone',_('Notify Everyone')),
+                                        ('answered',_('Notify If Already Answered')),
+                                        ('no_email',_('No Notification')),
+                                      ])
 
     class Meta:
         model = Gig
@@ -229,8 +261,9 @@ class GigForm(forms.ModelForm):
 
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date',
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','public_description','invite_occasionals',
-                'hide_from_calendar','email_changes','add_series','total_gigs','datenotes','rsvp_date','is_full_day','has_set_time',
-                'has_call_time','has_end_time']
+                'hide_from_calendar','notification','add_series','total_gigs','datenotes','is_full_day','has_set_time',
+                'rsvp_date','has_call_time','has_end_time']
+
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': _('required')}),
@@ -266,5 +299,5 @@ class GigForm(forms.ModelForm):
 
             'hide_from_calendar': _('Hide from calendar'),
             'invite_occasionals': _('Include occasional members'),
-            'email_changes': _('Email members about this new gig')
+            'notification': _('Email members about this')
         }

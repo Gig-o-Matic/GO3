@@ -28,6 +28,7 @@ from .models import Gig, Plan
 from .util import PlanStatusChoices
 from band.models import Section, Assoc, AssocStatusChoices
 from stats.tasks import register_sent_emails
+from gig.util import PlanStatusChoices
 from lib.email import prepare_email, send_messages_async
 from lib.translation import join_trans
 from django_q.tasks import async_task
@@ -191,20 +192,33 @@ def send_emails_from_plans(plans_query, template, dates=None):
     if contactable.count():
         register_sent_emails(contactable.first().gig.band, contactable.count())
 
-def send_email_from_gig(gig, template, dates=None):
-    send_emails_from_plans(gig.member_plans, template, dates)
+def send_email_from_gig(gig, template, dates=None, only_answered=False):
+    if only_answered:
+        plans = gig.member_plans.filter(status__in=[
+                                            PlanStatusChoices.DEFINITELY,
+                                            PlanStatusChoices.PROBABLY,
+                                            PlanStatusChoices.DONT_KNOW
+                                        ])
+    else:
+        plans = gig.member_plans
+
+    if plans:
+        send_emails_from_plans(plans, template, dates)
 
 def send_reminder_email(gig):
     undecided = gig.member_plans.filter(status__in=(PlanStatusChoices.NO_PLAN, PlanStatusChoices.DONT_KNOW))
     send_emails_from_plans(undecided, 'email/gig_reminder.md')
 
 
-def notify_new_gig(gig, created, dates=None):
+def notify_new_gig(gig, created, dates=None, only_answered=False):
     if dates:
-        async_task('gig.helpers.send_email_from_gig', gig, 'email/new_gig_series.md', dates=dates)
+        async_task('gig.helpers.send_email_from_gig', gig, 
+                   'email/new_gig_series.md', dates=dates, only_answered=only_answered)
     else:
         async_task('gig.helpers.send_email_from_gig', gig,
-                'email/new_gig.md' if created else 'email/edited_gig.md')
+                   'email/new_gig.md' if created else 'email/edited_gig.md',
+                   only_answered=only_answered
+                   )
 
 def _prepare_plans_for_watcher_email(plans):
     the_data = {}

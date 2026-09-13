@@ -6,7 +6,6 @@ font-awesome
 *.graffle
 .idea
 Crypto
-.well-known
 *.db
 *.code-workspace
 db.sqlite3

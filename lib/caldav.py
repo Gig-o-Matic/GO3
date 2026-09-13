@@ -73,6 +73,9 @@ def _make_calfeed_event(gig, is_for_band):
                 parts.append(gig.details)
             if gig.setlist:
                 parts.append(gig.setlist)
+        # add the url if this is a member feed
+        if not is_for_band:
+            parts.append(f'Gig-o-matic: {URL_BASE}/gig/{gig.id}')
         return "\n\n".join(parts)
 
     event = Event()
@@ -104,8 +107,13 @@ def _make_calfeed_event(gig, is_for_band):
 
     event.add('description', _make_description(gig))
     event.add('location', gig.address)
-    event.add('url', f'{URL_BASE}/gig/{gig.id}')
-    # todo don't hardwire the URL
+
+    # add the url if this is a member feed
+    # this is also in the description of the gig so maybe don't need it here? Not every cal app
+    # parses it properly
+    if not is_for_band:
+        event.add('url', f'{URL_BASE}/gig/{gig.id}')
+
     # todo go2 also has sequence:0, status:confirmed, and transp:opaque attributes - need those?
     return event
 

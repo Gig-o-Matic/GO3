@@ -14,28 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from django.contrib import admin
 
-# Register your models here.
+from django.urls import path
+from .helpers import reset_firewall_stats, firewall_on, firewall_off
 
-from .models import Band, Assoc, Section
+app_name = 'firewall'
 
-@admin.register(Band)
-class BandAdmin(admin.ModelAdmin):
-    search_fields=['name']
-    list_display = ('name','creation_date')
-    readonly_fields = ("creation_date","last_activity",)
-
-def _model_str(obj):
-    return f'{obj}'
-
-@admin.register(Assoc)
-class AssocAdmin(admin.ModelAdmin):
-    
-    list_display = (_model_str,'join_date')
-    search_fields=['member__username', 'member__nickname', 'member__email', 'band__name']
-    list_filter = ('is_admin',)
-    readonly_fields = ('default_section','member','band',)
-
-admin.site.register(Section)
-
+urlpatterns = [
+    path('reset_stats', reset_firewall_stats, name='reset_firewall_stats'),
+    path('firewall_on', firewall_on, name='firewall_on'),
+    path('firewall_off', firewall_off, name='firewall_off'),
+]

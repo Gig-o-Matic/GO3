@@ -16,6 +16,9 @@
 """
 
 from django.contrib import admin
+from django.urls import path
+from django.template.response import TemplateResponse
+from go3.settings import URL_BASE
 
 class Go3AdminSite(admin.AdminSite):
     site_header = 'Gig-o-Matic Admin'
@@ -40,4 +43,27 @@ class Go3AdminSite(admin.AdminSite):
                 new_app_list.append(a)
 
         return new_app_list
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'firewall/',
+                self.admin_view(self.firewall_view),
+                name='firewall',
+            ),
+        ]
+        return custom_urls + urls
  
+    def firewall_view(self, request):
+        firewall = request.firewall
+        context = {
+            'alltime_blacklist': firewall.alltime_blacklist_ips,
+            'blacklisted_requests': firewall.blacklisted_requests,
+            'files_filtered': firewall.filtered_files,
+            'has_permission': True,
+            'firewall_on': firewall.firewall_on,
+            'last_reset': firewall.last_reset,
+            'site_url': URL_BASE,
+        }
+        return TemplateResponse(request, 'admin/firewall.html', context)

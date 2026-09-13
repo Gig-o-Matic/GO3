@@ -22,6 +22,7 @@ from .util import AssocStatusChoices
 from gig.models import Plan
 from gig.helpers import update_plan_default_section
 from text_unidecode import unidecode
+import re
 
 @receiver(pre_save, sender=Band)
 def set_condensed_name(sender, instance, **kwargs):
@@ -29,6 +30,7 @@ def set_condensed_name(sender, instance, **kwargs):
     # take out non-ascii characters
     cname = ''.join(instance.name.split()).lower()
     cname = unidecode(cname)
+    cname = re.sub(r'[^a-zA-Z0-9-_]', '', cname)
     count = Band.objects.filter(condensed_name=cname)
     if instance.id:
         # make sure we don't mean ourselves - this could happen if we're saving the band for another reason

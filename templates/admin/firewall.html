@@ -1,0 +1,52 @@
+{% extends "admin/app_index.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+html[data-theme="light"], :root {
+{% if DEBUG %}
+  --header-bg: #800000;
+{% else %}
+  --header-bg: #008000;
+;
+{% endif %}
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Gig-o-Matic Admin') }}</a></h1>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div>
+  {% if firewall_on %}
+    <a class="button btn-primary" href="{% url 'firewall:firewall_off' %}">Turn Off</a>
+  {% else %}
+    <a class="button btn-primary" href="{% url 'firewall:firewall_on' %}">Turn On</a>
+  {% endif %}
+  <a class="button btn-primary" href="{% url 'firewall:reset_firewall_stats' %}">Reset Stats</a>
+</div>
+<br>
+<div>Last Reset: {{last_reset}}</div>
+<br>
+<div>
+  Files Filtered {{files_filtered}}<br>
+  Blacklisted Requests {{blacklisted_requests}}
+</div>
+<br>
+<div>
+Last 200 Blacklist:
+<ul>
+{% for p in alltime_blacklist %}
+<li>{{p}}</li>
+{% endfor %}
+</ul>
+</div>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
