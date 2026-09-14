@@ -37,6 +37,7 @@
                                 <div class="dropdown-menu" role="menu" aria-labelledby="sbk-{{assoc.band.id}}">
                                     {% for section in assoc.band.sections.all %}
                                         <a class="dropdown-item"
+                                        role="menuitem"
                                         hx-ext="update-dropdown"
                                         hx-put="{% url 'assoc-section' ak=assoc.id sk=section.id %}"
                                         hx-target="#sbk-{{assoc.band.id}}"
@@ -112,6 +113,7 @@
                                 <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
                                     {% for c in the_colors %}
                                         <a class="dropdown-item" id="color-{{forloop.counter0}}"
+                                            role="menuitem"
                                             hx-post="{% url 'assoc-color' ak=assoc.id colorindex=forloop.counter0 %}"
                                             hx-trigger="click"
                                             hx-target="#cbk-{{ assoc.id }}"
