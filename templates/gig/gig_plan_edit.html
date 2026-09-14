@@ -13,7 +13,7 @@
         {% if plan_member == user or the_user_is_band_admin %}
             <div class="col-8 btn-group" role="group" style="display:flex; align-items:center;" >
                 {% if plan_member == user and not gig.plans_locked or the_user_is_band_admin %}
-                    {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning %}
+                    {% include "gig/plan_icon_button.html" with simple_planning=band.simple_planning plan=plan%}
                 {% else %}
                     <span class="pr-3">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span>
                 {% endif %}
