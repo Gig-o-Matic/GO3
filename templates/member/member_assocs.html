@@ -4,7 +4,7 @@
         <div class="assoc-band-row" id="band-{{ assoc.band.id }}" style="{% cycle '' 'background:#f5f5f5;' %}">
             {% if assoc.is_pending %}
                 <div class="row">
-                    <div class="col-sm-12"><h5>{{assoc.band.name}} ({% trans "pending" %})</h5></div>
+                    <div class="col-sm-12"><h2 class="h5">{{assoc.band.name}} ({% trans "pending" %})</h2></div>
                 </div>
                 <div class="row">
                     <div class="col-sm-1"></div>
@@ -23,7 +23,7 @@
             {% elif assoc.is_confirmed %}
                 <div class="row">
                     <div class="col-sm-12">
-                        <h5><a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a></h5>
+                        <h2 class="h5"><a href="{% url 'band-detail' pk=assoc.band.id %}">{{assoc.band.name}}</a></h2>
                     </div>
                 </div>
                 {% if assoc.band.sections.all|length > 0 %}
@@ -144,10 +144,10 @@
                 </div>
             {% elif assoc.is_alum %}
                 <div class="row">
-                    <div class="col-sm-12"><h5>
+                    <div class="col-sm-12"><h2 class="h5">
                         {{assoc.band.name}}
                         ({% trans "alumni" %})
-                    </h5></div>
+                    </h2></div>
                 </div>
                 <div class="row">
                     <div class="col-sm-1"></div>
