@@ -114,8 +114,8 @@
             {% if band.plan_feedback %}
                 {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
             {% endif %}
-            <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}opacity: 0;{% endif %}" href="#" id="comment-init-{{plan.id}}"
-                onclick='show_comment("{{plan.id}}")' aria-label='{% blocktrans with gig_title=plan.gig.title %}Comment on your status for {{ gig_title }}{% endblocktrans %}'><i class="far fa-comment"></i></a>
+            <a class="fooclass" style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}opacity: 0;{% endif %}" href="#" id="comment-init-{{plan.id}}"
+                onclick='show_comment("{{plan.id}}")' aria-label="{% blocktrans with gig_title=plan.gig.title %}Comment on your status for '{{ gig_title }}'{% endblocktrans %}"><i class="far fa-comment"></i></a>
         </div>
     {% else %}
         <div class="col-12 col-md-4">
@@ -126,7 +126,8 @@
 {% if gig.status != 2 %}
     <div class="row" style="border-left:solid thick {{ assoc.colorval }};{% if not plan.comment %}display:none;{% endif %}" id="comment-row-{{plan.id}}">
         <div class="ml-auto col-12 col-md-9">
-            <a href="#" class="comment-thing" id="comment-{{plan.id}}" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
+            <a href="#" class="comment-thing" aria-label="{% blocktrans with gig_title=plan.gig.title %}Your status for '{{ gig_title }}'. Click to edit.{% endblocktrans %}"
+                id="comment-{{plan.id}}" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" data-title="">{{plan.comment|default_if_none:""}}</a>
         </div>
     </div>
 {% endif %}

@@ -57,7 +57,7 @@
                     </div>
                 {% endif %}
                 <a href="#" class="comment-thing" id="username" data-type="text" data-pk="{{plan.id}}" data-url="/gig/plan/{{ plan.id }}/comment" 
-                    data-title="" aria-label='{% blocktrans with gig_title=plan.gig.title %}Comment on your status for {{ gig_title }}{% endblocktrans %}'>{{plan.comment|default:""}}</a>
+                    data-title="" aria-label='{% blocktrans with gig_title=plan.gig.title %}Comment on your status for '{{ gig_title }}'{% endblocktrans %}'>{{plan.comment|default:""}}</a>
             </div>
         {% else %}
             <div class="col-8" style="display:flex; align-items:center;" >
