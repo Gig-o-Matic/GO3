@@ -106,7 +106,7 @@
                         <div class="col-sm-5">
                             <div class="dropdown">
                                 {% trans "color coding" %}
-                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.id}}'>
+                                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" id='cbk-{{assoc.band.id}}' aria-label="{% blocktrans with band_name=assoc.band.name %}Color coding for band {{band_name}}{% endblocktrans %}">
                                     {% include "member/color.html" %}
                                 </button>
                                 <div class="dropdown-menu" role="menu" aria-labelledby="cbk-{{assoc.band.id}}" style="min-width:10px">
