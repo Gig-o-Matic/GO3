@@ -415,7 +415,7 @@ function updatecounts() {
 }
 
 $(document).ready(function() {
-    htmx.on("htmx:afterSettle", function(evt) {
+    htmx.on("htmx:after:settle", function(evt) {
         init_plan_comments("{{csrf_token}}");
     });
 
