@@ -67,13 +67,24 @@ def band_admin_required(func):
 def set_assoc_tfparam(request, a):
     """ set a true/false parameter on an assoc """
     is_self = (request.user == a.member)
-    for param, value in request.POST.items():
+    vals = request.POST
+    for param, value in vals.items():
         # A user cannot set their own admin status, but a superuser can do anything
-        if param == 'is_admin' and is_self and not request.user.is_superuser:
+        if (param == 'is_admin' or value == 'is_admin') and \
+            is_self and not request.user.is_superuser:
             continue
 
+        # when turning a checkbox off we don't get anything in the POST, so we send
+        # a fake 'off' param which we should ignore if there's anything else in the POST
+        if param == 'off':
+            if len(vals)==1:
+                param = value
+                value = 'off'
+            else:
+                continue
+
         if hasattr(a, param):
-            setattr(a, param, True if value == 'true' else False)
+            setattr(a, param, True if value == 'on' else False)
         else:
             logging.error(
                 f"Trying to set an assoc property that does not exist: {param}")

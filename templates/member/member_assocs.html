@@ -69,6 +69,8 @@
                                         name="is_multisectional" hx-ext="checkbox"
                                         hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
                                     {% if assoc.is_multisectional %}
+                                        hx-vals='{"off":"email_me"}'
+                                        {% if assoc.email_me %}
                                         checked
                                     {% endif %}
                                     >
@@ -123,6 +125,42 @@
                                         {% endfor %}
                                     </div>
                                 </div>
+                                    hx-vals='{"off":"is_multisectional"}'
+                                {% if assoc.is_multisectional %}
+                                    checked
+                                {% endif %}
+                                >
+                                <label class="form-check-label" for="msbk-{{assoc.id}}">{% trans "I play in other sections too" %}</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id='hideak-{{assoc.id}}'
+                                name="hide_from_schedule" hx-ext="checkbox"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                hx-vals='{"off":"hide_from_schedule"}'
+                                {% if assoc.hide_from_schedule %}
+                                    checked
+                                {% endif %}
+                                >
+                                <label class="form-check-label" for="hideak-{{assoc.id}}">{% trans "hide this band's gigs" %}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-1"></div>
+                        <div class="col-sm-5">
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id='oak-{{assoc.id}}'
+                                name="is_occasional" hx-ext="checkbox"
+                                hx-post="{% url 'assoc-tfparam' ak=assoc.id %}"
+                                hx-vals='{"off":"is_occasional"}'                                
+                                {% if assoc.is_occasional %}
+                                    checked
+                                {% endif %}
+                                >
+                                <label class="form-check-label" for="oak-{{assoc.id}}">{% trans "occasional member" %}</label>
                             </div>
                         </div>
                         <div class="row">
