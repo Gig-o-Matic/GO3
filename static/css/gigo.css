@@ -113,7 +113,7 @@ code {
 -------------------------------------------------- */
 
 a {
-    color: #347AB7;
+    color: #3174AF;
 }
 
 .navbar {
@@ -237,6 +237,10 @@ a {
 
 .btn-info {
   background-color: #128091 !important;
+}
+
+.btn-outline-secondary {
+  color: #687178 !important;
 }
 
 .card-header[data-toggle="collapse"] {
