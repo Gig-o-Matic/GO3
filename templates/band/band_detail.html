@@ -147,7 +147,7 @@
                         </div>
                         <div class="col-md-6 col-sm-6 col-12">
                             <button class="btn btn-primary btn-sm"
-                                hx-ext="reload-page"
+                                go-reload-page
                                 hx-post="{% url 'assoc-confirm' ak=assoc.id %}"
                                 hx-swap="none">
                                 {% trans "yes, confirm member!" %}
@@ -156,7 +156,7 @@
                                 </span>
                             </button>
                             <button class="btn btn-secondary btn-sm"
-                                hx-ext="reload-page"
+                                go-reload-page
                                 hx-post="{% url 'assoc-delete' ak=assoc.id %}"
                                 hx-swap="none">
                                 {% trans "no, reject!" %}
