@@ -121,32 +121,29 @@
             evt.detail.ctx.request.headers['X-CSRFToken'] = '{{ csrf_token }}';
         });        
 
-        htmx.registerExtension('reload', {
-            htmx_after_cleanup: (elt, detail) => {
-                if (event.detail.xhr.status < 400)
-                    htmx.trigger(event.detail.target, 'reload', {});
+        let htmxApi;
+
+        htmx.registerExtension('go-reload', {
+            init: (api) => { htmxApi = api; },
+            htmx_after_swap: (elt, detail) => {
+                if (htmxApi.attributeValue(elt, 'go-reload') != null && detail.ctx.response.status < 400)
+                    htmx.trigger(detail.ctx.target, 'reload', {});
             },
         });
 
-        htmx.registerExtension('reload-page', {
-            htmx_after_cleanup: (elt, detail) => {
-                if (event.detail.xhr.status < 400)
+        htmx.registerExtension('go-reload-page', {
+            init: (api) => { htmxApi = api; },
+            htmx_after_swap: (elt, detail) => {
+                if (htmxApi.attributeValue(elt, 'go-reload-page') != null && detail.ctx.response.status < 400)
                     location.reload();
             },
         });
 
-        htmx.registerExtension('update-dropdown', {
-            htmx_after_cleanup: (elt, detail) => {
-                if (event.detail.xhr.status < 400)
-                    event.detail.target.innerHTML = event.detail.elt.innerHTML;
-            },
-        });
-
-        htmx.registerExtension('checkbox', {
-            htmx_after_cleanup: (elt, detail) => {
-                let element = event.detail.elt;
-                if (element.matches('input[type=checkbox]') && element.name)
-                    event.detail.parameters[element.name] = element.checked;
+        htmx.registerExtension('go-update-dropdown', {
+            init: (api) => { htmxApi = api; },
+            htmx_after_swap: (elt, detail) => {
+                if (htmxApi.attributeValue(elt, 'go-update-dropdown') != null && detail.ctx.response.status < 400)
+                    detail.ctx.target.innerHTML = elt.innerHTML;
             },
         });
     </script>
