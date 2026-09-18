@@ -96,6 +96,8 @@ class AgendaView(AgendaBaseView):
                  layout==AgendaLayoutChoices.ONE_LIST, False],
                 [AgendaLayoutChoices.NEED_RESPONSE, _('Needs Response'), 0,
                     layout==AgendaLayoutChoices.NEED_RESPONSE, True],
+                [AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED, AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED.label, 0,
+                    layout==AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED, False],
             ]
 
             bands = [a.band for a in self.request.user.confirmed_assocs if not a.hide_from_schedule]

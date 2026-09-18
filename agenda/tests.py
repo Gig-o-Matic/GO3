@@ -219,6 +219,50 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/noplans/1')
         self.assertEqual(response.content.decode('ascii').count("Canceled Gig-xyzzy"), 0)
 
+    def test_hide_declined_gigs(self):
+        """ The 'Not Canceled or Declined' view drops canceled gigs and Can't Do It / Not Interested plans """
+        self.assoc_user(self.joeuser)
+        self.joeuser.preferences.hide_canceled_gigs = False
+        self.joeuser.preferences.save()
+
+        # one gig per plan status, titled by status value
+        for status in PlanStatusChoices:
+            gig = self.create_gig_form(contact=self.joeuser, title=f"plan{int(status)}-xyzzy")
+            plan = gig.plans.get(assoc__member=self.joeuser)
+            plan.status = status
+            plan.save()
+
+        # a canceled gig the member said they can do is still hidden
+        canceled = self.create_gig_form(contact=self.joeuser, title="canceled-xyzzy",
+                                        status=GigStatusChoices.CANCELED)
+        plan = canceled.plans.get(assoc__member=self.joeuser)
+        plan.status = PlanStatusChoices.DEFINITELY
+        plan.save()
+
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED)}/0')
+        content = response.content.decode('ascii')
+        for status in PlanStatusChoices:
+            expected = 0 if status in (PlanStatusChoices.CANT_DO_IT, PlanStatusChoices.NOT_INTERESTED) else 1
+            self.assertEqual(content.count(f"plan{int(status)}-xyzzy"), expected, status.label)
+        self.assertEqual(content.count("canceled-xyzzy"), 0)
+
+        # the badge count matches the list
+        response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED)}/0')
+        self.assertEqual(response.content.decode('ascii'), str(len(PlanStatusChoices) - 2))
+
+        # choosing the view saves it, and the schedule page shows its button as active
+        self.joeuser.preferences.refresh_from_db()
+        self.assertEqual(self.joeuser.preferences.agenda_layout, AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED)
+        response = c.get(reverse('home'))
+        buttons = response.context['the_buttons']
+        self.assertEqual([b[0] for b in buttons[:3]],
+                         [AgendaLayoutChoices.ONE_LIST, AgendaLayoutChoices.NEED_RESPONSE,
+                          AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED])
+        self.assertTrue(buttons[2][3])
+        self.assertContains(response, "Not Canceled or Declined")
+
     def test_hide_band_from_calendar_preference(self):
         a = self.assoc_user(self.joeuser)
         a.hide_from_schedule = False

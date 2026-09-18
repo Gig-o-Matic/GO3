@@ -32,3 +32,4 @@ class AgendaLayoutChoices(models.IntegerChoices):
     BY_BAND = 1, _("By Band")
     ONE_LIST = 2, _("Single List")
     HAS_RESPONSE = 3, _("Has Response")
+    HIDE_DECLINED_AND_CANCELED = 4, _("Not Canceled or Declined")
