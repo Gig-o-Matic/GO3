@@ -86,6 +86,29 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
         return context
 
 
+class AttendanceView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    """ Mobile-friendly view for band admins to take attendance at a gig.
+
+    The full roster is rendered once; searching, the attending/all toggle, sorting
+    and the running count are all handled client-side so the page works well on a
+    phone with a flaky connection. Marking a member present persists per-tap via htmx.
+    """
+    model = Gig
+    template_name = 'gig/gig_attendance.html'
+
+    def test_func(self):
+        gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+        return has_band_admin(self.request.user, gig.band)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Order by section then name so the template can regroup by section, just like
+        # the gig detail / print plan list pages. The order MUST group by section.
+        context['gig_ordered_member_plans'] = self.object.member_plans.all().order_by(
+            'section', Lower('assoc__member__display_name'))
+        return context
+
+
 class CreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = Gig
     form_class = GigForm

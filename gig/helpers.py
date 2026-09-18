@@ -58,6 +58,19 @@ def plan_editor_required(func):
         return func(request, p, *args, **kw)
     return decorated
 
+def plan_band_admin_required(func):
+    """ Like plan_editor_required, but attendance can only be taken by a band admin
+        (or superuser) -- not by the member themselves. """
+    def decorated(request, pk, *args, **kw):
+        # Imported lazily: a module-load import creates a circular dependency
+        # (member.helpers -> band.helpers -> gig.helpers).
+        from member.helpers import has_band_admin
+        p = get_object_or_404(Plan, pk=pk)
+        if not has_band_admin(request.user, p.assoc.band):
+            return HttpResponseForbidden()
+        return func(request, p, *args, **kw)
+    return decorated
+
 
 @login_required
 @plan_editor_required
@@ -88,6 +101,24 @@ def update_plan_section(request, plan, val):
     plan.plan_section = get_object_or_404(Section, pk=val)
     plan.save()
     return HttpResponse(status=204)
+
+@login_required
+@plan_band_admin_required
+def toggle_attendance(request, plan):
+    """ Toggle whether a member attended the gig. Band-admin only; persists per tap
+        via htmx and returns the refreshed roster row fragment. """
+    plan.attended = not plan.attended
+    plan.save()
+
+    # Record who most recently changed attendance for this gig, and when.
+    gig = plan.gig
+    gig.attendance_taken_by = request.user
+    gig.attendance_taken_at = now()
+    gig.save()
+
+    # Return only the checkmark icon: the row element stays put so its (JS-managed)
+    # visibility/filter state isn't disturbed by the swap.
+    return render(request, 'gig/attendance_check.html', {'plan': plan})
 
 
 # @login_required

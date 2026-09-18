@@ -73,6 +73,11 @@ class Plan(models.Model):
     status = models.IntegerField(choices=PlanStatusChoices.choices, default=PlanStatusChoices.NO_PLAN)
     status_changed = models.BooleanField(default=False)
 
+    # whether the member actually showed up at the gig. Set by a band admin via the
+    # attendance-taking view. False is treated as "absent / not yet marked"; whether
+    # attendance was ever taken at all is recorded on the Gig (attendance_taken_at).
+    attended = models.BooleanField(default=False)
+
     @property
     def status_string(self):
         return PlanStatusChoices(self.status).label
@@ -206,6 +211,12 @@ class Gig(AbstractEvent):
 
     # Flag whether band members can change their plans
     plans_locked = models.BooleanField(default=False)
+
+    # Attendance tracking: who recorded attendance for this gig, and when. These stay
+    # null until a band admin marks the first member present in the attendance view.
+    attendance_taken_by = models.ForeignKey('member.Member', blank=True, null=True,
+                                            related_name='+', on_delete=models.SET_NULL)
+    attendance_taken_at = models.DateTimeField(null=True, blank=True)
 
     # for use in calfeeds
     cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
