@@ -80,6 +80,7 @@
             <div class="col-md-3">
                 <a class="btn btn-primary btn-sm"
                    href="#"
+                   hx-confirm="{% trans 'Are you sure you want to remove this member from the band?' %}"
                    go-reload-page
                    hx-post="{% url 'assoc-delete' ak=the_assoc.id %}">
                     {% trans "remove from band" %}

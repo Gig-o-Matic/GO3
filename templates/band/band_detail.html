@@ -298,6 +298,7 @@
 <!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
 <script src="{% static 'js/highcharts.js' %}"></script>
 <script src="{% static 'js/band_stats.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.4.0/bootbox.min.js"></script>
 {% comment %}
 <script src="/js/jquery.validate.js"></script>
 {% endcomment %}
@@ -364,6 +365,19 @@ $(document).ready(function() {
 function copyLinkToClipboard() {
   navigator.clipboard.writeText("{{ calfeed_url }}");
 }
+
+htmx.on("htmx:confirm", function(evt) {
+    if (evt.detail.ctx.confirm) {
+        evt.preventDefault();
+        bootbox.confirm(evt.detail.ctx.confirm, function(result) {
+            if (result) {
+                evt.detail.issueRequest();
+            } else {
+                evt.detail.dropRequest();
+            }
+        });
+    }
+});
 
 </script>
 {% endblock localscripts %}
