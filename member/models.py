@@ -149,6 +149,18 @@ class Member(AbstractUser):
         plans = plans.exclude(assoc__hide_from_schedule=True)
         plans = plans.exclude(Q(assoc__is_occasional=True) & Q(gig__invite_occasionals=False))
         return plans
+
+    @property
+    def clean_future_plans(self):
+        """ future plans, minus bands the member has hidden from their schedule """
+        return Plan.member_plans.future_plans(self).exclude(assoc__hide_from_schedule=True)
+
+    @property
+    def future_not_declined_plans(self):
+        """ clean future plans, minus canceled gigs and gigs the member can't or won't do """
+        plans = self.clean_future_plans.exclude(gig__status=GigStatusChoices.CANCELED)
+        plans = plans.exclude(status__in=[PlanStatusChoices.CANT_DO_IT, PlanStatusChoices.NOT_INTERESTED])
+        return plans
     
     @property
     def calendar_plans(self):

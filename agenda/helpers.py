@@ -48,14 +48,16 @@ PAGE_LENGTH = 10000
 def _get_agenda_plans(user, the_type, the_band):
     if the_type == AgendaLayoutChoices.ONE_LIST:
         # get all plans except those that should be hidden
-        the_plans = Plan.member_plans.future_plans(user)
-        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
+        the_plans = user.clean_future_plans
         the_title = _("Upcoming Gigs")
     elif the_type == AgendaLayoutChoices.NEED_RESPONSE:
         the_plans = user.future_noplans.all()
         the_title = _("Future Gigs: Weigh In!")
     elif the_type == AgendaLayoutChoices.HAS_RESPONSE:
         the_plans = user.future_plans.all()
+        the_title = _("Upcoming Gigs")
+    elif the_type == AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED:
+        the_plans = user.future_not_declined_plans
         the_title = _("Upcoming Gigs")
     else:
         # the type is actually the band ID
@@ -68,7 +70,7 @@ def _get_agenda_plans(user, the_type, the_band):
         except Band.DoesNotExist:
             return None, None
 
-        the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
+        the_plans = user.clean_future_plans.filter(assoc__band=the_band)
         the_title = band.name
 
     if user.preferences.hide_canceled_gigs:
@@ -193,16 +195,13 @@ def set_default_view(request, val):
 @login_required
 def get_plans_count(request, *args, **kw):
     if kw['the_type'] == AgendaLayoutChoices.ONE_LIST:
-        the_plans = Plan.member_plans.future_plans(request.user)
-        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
-        count = the_plans.count()
+        count = request.user.clean_future_plans.count()
     elif kw['the_type'] == AgendaLayoutChoices.NEED_RESPONSE:
         count = request.user.future_noplans.count()
+    elif kw['the_type'] == AgendaLayoutChoices.HIDE_DECLINED_AND_CANCELED:
+        count = request.user.future_not_declined_plans.count()
     else:
-        the_plans = Plan.member_plans.future_plans(request.user)
-        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
-        the_plans = the_plans.filter(assoc__band=kw['the_band'])
-        count = the_plans.count()
+        count = request.user.clean_future_plans.filter(assoc__band=kw['the_band']).count()
     return HttpResponse(count)
 
 
