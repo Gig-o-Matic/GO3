@@ -43,7 +43,7 @@
                             {% for section in band.sections.all %}
                                 <a class="dropdown-item"
                                 hx-get="{% url 'plan-update-section' pk=plan.id val=section.id %}"
-                                hx-ext="update-dropdown"
+                                go-update-dropdown
                                 hx-target="#sel-{{ plan.id }} span"
                                 hx-indicator="#sel-{{ plan.id }}">
                                     {{ section.display_name }}

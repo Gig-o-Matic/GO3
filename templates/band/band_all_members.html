@@ -16,7 +16,6 @@
                            type="checkbox"
                            id='oak-{{ the_assoc.id}}'
                            name="is_occasional"
-                           hx-ext="checkbox"
                            hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
                            hx-vals='{"off":"is_occasional"}'
                     {% if the_assoc.is_occasional %}
@@ -36,7 +35,7 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenu{{forloop.counter}}">
                         {% for a_section in the_assoc.band.sections.all %}
                             <a class="dropdown-item"
-                               hx-ext="update-dropdown"
+                               go-update-dropdown
                                hx-target="#dropdownMenu{{forloop.parentloop.counter}}"
                                hx-put="{% url 'assoc-section' ak=the_assoc.id sk=a_section.id %}">
                                 {{ a_section.display_name }}
@@ -51,7 +50,6 @@
                            type="checkbox"
                            id='msbk-{{ the_assoc.id }}'
                            name="is_multisectional"
-                           hx-ext="checkbox"
                            hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
                            hx-vals='{"off":"is_multisectional"}'
                     {% if the_assoc.is_multisectional %}
@@ -70,7 +68,6 @@
                            type="checkbox"
                            id='aak-{{ the_assoc.id }}'
                            name="is_admin"
-                           hx-ext="checkbox"
                            hx-post="{% url 'assoc-tfparam' ak=the_assoc.id %}"
                            hx-vals='{"off":"is_admin"}'
                     {% if the_assoc.is_admin %}
@@ -83,7 +80,8 @@
             <div class="col-md-3">
                 <a class="btn btn-primary btn-sm"
                    href="#"
-                   hx-ext="reload-page"
+                   hx-confirm="{% trans 'Are you sure you want to remove this member from the band?' %}"
+                   go-reload-page
                    hx-post="{% url 'assoc-delete' ak=the_assoc.id %}">
                     {% trans "remove from band" %}
                 </a>
