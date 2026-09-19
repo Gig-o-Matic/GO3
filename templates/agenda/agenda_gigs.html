@@ -17,6 +17,13 @@
                         id="show-locations"
                         hx-get="{{ request.path }}{% if show_locations %}?show_locations=False{% else %}?show_locations=True{% endif %}" hx-target="#the-list" hx-trigger="click"
                     >
+                    <input 
+                        class="btn btn-sm btn-primary"
+                        type="button"
+                        value="{% if hide_declined %}{% trans 'Show Canceled or Declined' %}{% else %}{% trans 'Hide Canceled or Declined' %}{% endif %}"
+                        id="hide-declined"
+                        hx-get="{{ request.path }}{% if hide_declined %}?hide_declined=False{% else %}?hide_declined=True{% endif %}" hx-target="#the-list" hx-trigger="click"
+                    >
                 </div>
             </div>
         </div>

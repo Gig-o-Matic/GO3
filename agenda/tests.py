@@ -219,6 +219,63 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/plans/noplans/1')
         self.assertEqual(response.content.decode('ascii').count("Canceled Gig-xyzzy"), 0)
 
+    def test_hide_declined_gigs(self):
+        """ The hide declined toggle drops canceled gigs and Can't Do It / Not Interested plans from every panel """
+        self.assoc_user(self.joeuser)
+        self.joeuser.preferences.hide_canceled_gigs = False
+        self.joeuser.preferences.save()
+
+        # one gig per plan status, titled by status value
+        for status in PlanStatusChoices:
+            gig = self.create_gig_form(contact=self.joeuser, title=f"plan{int(status)}-xyzzy")
+            plan = gig.plans.get(assoc__member=self.joeuser)
+            plan.status = status
+            plan.save()
+
+        # a canceled gig the member said they can do is hidden too
+        canceled = self.create_gig_form(contact=self.joeuser, title="canceled-xyzzy",
+                                        status=GigStatusChoices.CANCELED)
+        plan = canceled.plans.get(assoc__member=self.joeuser)
+        plan.status = PlanStatusChoices.DEFINITELY
+        plan.save()
+
+        declined = (PlanStatusChoices.CANT_DO_IT, PlanStatusChoices.NOT_INTERESTED)
+
+        def check(content, hidden):
+            for status in PlanStatusChoices:
+                expected = 0 if hidden and status in declined else 1
+                self.assertEqual(content.count(f"plan{int(status)}-xyzzy"), expected, status.label)
+            self.assertEqual(content.count("canceled-xyzzy"), 0 if hidden else 1)
+
+        c = Client()
+        c.force_login(self.joeuser)
+        one_list = f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0'
+        by_band = f'/plans/{int(AgendaLayoutChoices.BY_BAND)}/{self.band.id}'
+
+        response = c.get(one_list)
+        check(response.content.decode('ascii'), hidden=False)
+        self.assertContains(response, "Hide Canceled or Declined")
+
+        response = c.get(one_list, {'hide_declined': 'True'})
+        check(response.content.decode('ascii'), hidden=True)
+        self.assertContains(response, "Show Canceled or Declined")
+        self.joeuser.preferences.refresh_from_db()
+        self.assertTrue(self.joeuser.preferences.agenda_hide_declined)
+
+        # the setting sticks, and applies to the band panels too
+        response = c.get(by_band)
+        check(response.content.decode('ascii'), hidden=True)
+
+        # toggling show locations leaves it alone
+        response = c.get(by_band, {'show_locations': 'True'})
+        check(response.content.decode('ascii'), hidden=True)
+
+        response = c.get(by_band, {'hide_declined': 'False'})
+        check(response.content.decode('ascii'), hidden=False)
+        self.joeuser.preferences.refresh_from_db()
+        self.assertFalse(self.joeuser.preferences.agenda_hide_declined)
+        self.assertTrue(self.joeuser.preferences.agenda_show_location)
+
     def test_hide_band_from_calendar_preference(self):
         a = self.assoc_user(self.joeuser)
         a.hide_from_schedule = False
