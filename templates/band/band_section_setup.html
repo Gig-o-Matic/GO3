@@ -10,11 +10,11 @@
 {% block content %}
 <div class="row">
     <div class="page-header mx-auto col-lg-8 col-md-10 col-sm-12">
-        {{ band.name }}
+        <h1>{{ band.name }}
         {% if the_user_is_associated and band.shortname %}
             <br>
             ({% trans "a.k.a." %}&nbsp;{{ band.shortname }})
-        {% endif %}
+        {% endif %}</h1>
     </div> 
 </div>
 

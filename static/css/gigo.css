@@ -1,6 +1,5 @@
 /* Sticky footer styles
 -------------------------------------------------- */
-
 html,
 body {
   height: 100%;
@@ -114,7 +113,7 @@ code {
 -------------------------------------------------- */
 
 a {
-    color: #428bca;
+    color: #3174AF;
 }
 
 .navbar {
@@ -129,6 +128,10 @@ a {
 
 .navbar a.dropdown-item {
   color: #000;
+}
+
+.nav-link {
+  color: #FFFFFF !important;
 }
 
 .dropdown-menu {
@@ -175,6 +178,10 @@ a {
 
 .panel-group .panel-overflowable {
     overflow:visible;
+}
+
+.text-muted {
+  color: #5a6472 !important;
 }
 
 .validation-error {
@@ -224,8 +231,20 @@ a {
 
 .btn-primary {
     color: #fff;
-    background-color: #428bca;
+    background-color: #347AB7;
     border-color: #007bff;
+}
+
+.btn-info {
+  background-color: #128091 !important;
+}
+
+.btn-outline-secondary {
+  color: #687178 !important;
+}
+
+.btn-outline-secondary.active {
+  color: #FCFCFC !important;
 }
 
 .card-header[data-toggle="collapse"] {
@@ -270,7 +289,7 @@ a {
 }
 
 ul.errorlist {
-  color: #ff0000
+  color: firebrick;
 }
 
 /* gig grid

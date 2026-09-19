@@ -13,7 +13,7 @@
 {% block content %}
     <div class="row">
         <div class="page-header page-header mx-auto col-md-10 col-12">
-            {% trans "Calendar" %}
+            <h1>{% trans "Calendar" %}</h1>
             {% if user.preferences.default_view != 2 %}
             <span id='default-sel'>
                 <small>(<a hx-get="{% url 'set-default-view' val=2 %}" hx-target='#default-sel' href="#">{% trans "Make this my default view!" %}</a>)</small>

@@ -17,7 +17,7 @@
 {% block content %}
     <div class="row">
         <div class="page-header page-header mx-auto col-md-10 col-12">
-            {% trans "Grid of Gigs" %}
+            <h1>{% trans "Grid of Gigs" %}</h1>
             {% if user.preferences.default_view != 1 %}
             <span id='default-sel'>
                 <small>(<a hx-get="{% url 'set-default-view' val=1 %}" hx-target='#default-sel' href="#">{% trans "Make this my default view!" %}</a>)</small>
