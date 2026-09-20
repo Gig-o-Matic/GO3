@@ -55,7 +55,7 @@
                                 {% for item in gigs_with_plans %}
                                     <tr>
                                         <td>
-                                            {% with item.gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
+                                            {% with item.gig.date|localtime|naturalday:_("dateformatstring")|capfirst as gig_date %}
                                                 {{ gig_date }}
                                             {% endwith %}
                                         </td>

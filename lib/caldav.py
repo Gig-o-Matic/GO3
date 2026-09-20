@@ -17,6 +17,7 @@
 from django.core.files.storage import default_storage, FileSystemStorage
 from icalendar import Calendar, Event
 from datetime import timedelta, datetime
+from zoneinfo import ZoneInfo
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 from gig.util import GigStatusChoices
@@ -88,7 +89,8 @@ def _make_calfeed_event(gig, is_for_band):
     event.add('summary', summary)
 
     if gig.is_full_day:
-        date = gig.date.date()
+        zone = ZoneInfo(gig.band.timezone)
+        date = gig.date.astimezone(zone).date()
         startdate = datetime.combine(date, datetime.min.time())
         event.add('dtstart', startdate, {'value': 'DATE'})
         # To make the event use the full final day, icalendar clients expect the end date
@@ -96,7 +98,7 @@ def _make_calfeed_event(gig, is_for_band):
         # https://datatracker.ietf.org/doc/html/rfc5545#section-3.6.1:
         # "The "DTEND" property for a "VEVENT" calendar component specifies
         # the non-inclusive end of the event."
-        enddate = (gig.enddate if gig.enddate else gig.date).date() + timedelta(days=1)
+        enddate = (gig.enddate if gig.enddate else gig.date).astimezone(zone).date() + timedelta(days=1)
         enddate = datetime.combine(enddate, datetime.min.time())
         event.add('dtend', enddate, {'value': 'DATE'})
     else:

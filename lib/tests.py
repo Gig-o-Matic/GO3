@@ -27,6 +27,7 @@ from lib.caldav import save_calfeed, get_calfeed, make_band_calfeed, make_member
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 import os
 from datetime import timedelta, timezone as dttimezone
+from zoneinfo import ZoneInfo
 from django.utils import timezone
 import pytz
 from django.conf import settings
@@ -158,6 +159,23 @@ class CaldavTest(TestCase):
         cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
         self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
         self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200301')>0)
+
+    def test_calfeed_event_full_day_band_timezone(self):
+        zone = ZoneInfo('Europe/Berlin')
+        self.testgig.is_full_day = True
+        self.testgig.date = timezone.datetime(2020, 2, 29, tzinfo=zone)
+        self.testgig.enddate = timezone.datetime(2020, 3, 1, tzinfo=zone)
+        self.testgig.save()
+        self.band.timezone = 'Europe/Berlin'
+        self.band.save()
+
+        cf = make_band_calfeed(self.band, self.band.gigs.all())
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200302')>0)
+
+        cf = make_member_calfeed(self.joeuser, self.joeuser.calendar_plans.all())
+        self.assertTrue(cf.find(b'DTSTART;VALUE=DATE:20200229')>0)
+        self.assertTrue(cf.find(b'DTEND;VALUE=DATE:20200302')>0)
 
     def test_calfeed_description(self):
         self.testgig.details = 'test desc'

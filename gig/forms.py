@@ -21,10 +21,10 @@ from .util import GigStatusChoices
 from band.models import Band
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import datetime
-from django.utils.formats import get_format
+from datetime import datetime, timezone as dttimezone
+from zoneinfo import ZoneInfo
+from django.utils.formats import get_format, date_format
 from django.utils import timezone
-import pytz
 
 class GigForm(forms.ModelForm):
     def __init__(self, **kwargs):
@@ -101,12 +101,19 @@ class GigForm(forms.ModelForm):
                 hour = hour.replace(hour=minute.hour, minute=minute.minute)
             return hour
 
-        def _make_aware(c,s,e):
-            z = pytz.timezone(self.band.timezone)
-            c = timezone.make_aware(c,z) if c else None
-            s = timezone.make_aware(s,z) if s else None
-            e = timezone.make_aware(e,z) if e else None
-            return c, s, e
+        def _to_band_time(value, field):
+            """ put a naive local time in the band's time zone, flagging times that don't exist there """
+            if value is None:
+                return None
+            z = ZoneInfo(self.band.timezone)
+            aware = value.replace(tzinfo=z)
+            # a local time skipped by a clock change doesn't survive the round trip through UTC
+            if aware.astimezone(dttimezone.utc).astimezone(z).replace(tzinfo=None) != value:
+                self.add_error(field, ValidationError(
+                    _("This time doesn't exist in %(zone)s on %(date)s because the clocks change."),
+                    code='invalid time',
+                    params={'zone': z.key, 'date': date_format(value, 'SHORT_DATE_FORMAT')}))
+            return aware
  
         date = _parse(self.cleaned_data.get('call_date'), 'DATE_INPUT_FORMATS')
         if date is None:
@@ -124,7 +131,9 @@ class GigForm(forms.ModelForm):
             self.cleaned_data['has_set_time'] = False
             self.cleaned_data['has_end_time'] = False
 
-            date, setdate, enddate = _make_aware(date, None, enddate)
+            date = _to_band_time(date, 'call_date')
+            enddate = _to_band_time(enddate, 'end_date')
+            setdate = None
 
             self.cleaned_data['date'] = date
             self.cleaned_data['setdate'] = setdate
@@ -162,7 +171,9 @@ class GigForm(forms.ModelForm):
             setdate = _mergetime(date, set_time) if set_time else None
             enddate = _mergetime(date, end_time) if end_time else None
 
-            date, setdate, enddate = _make_aware(date, setdate, enddate)
+            date = _to_band_time(date, 'call_time' if call_time else 'call_date')
+            setdate = _to_band_time(setdate, 'set_time')
+            enddate = _to_band_time(enddate, 'end_time')
 
             now = timezone.now()
             if self.initial['date'] != date and date < now:
@@ -188,9 +199,8 @@ class GigForm(forms.ModelForm):
             rsvp_by_date = _parse(rsvp_date_str, 'DATE_INPUT_FORMATS')
             
             if rsvp_by_date:
-                z = pytz.timezone(self.band.timezone)
-                rsvp_by_date = timezone.make_aware(rsvp_by_date, z)
-                
+                rsvp_by_date = _to_band_time(rsvp_by_date, 'rsvp_date')
+
                 # Skip the RSVP date validation if the date has not changed or if the
                 # edit is happening after the RSVP date
 

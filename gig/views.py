@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import datetime
-from pytz import utc
+from zoneinfo import ZoneInfo
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.views.generic.base import TemplateView
@@ -325,10 +325,11 @@ def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.set_status(val)
     if val == PlanStatusChoices.DONT_KNOW:
-        now = datetime.datetime.now()
-        if (future_days := (plan.gig.date.date() - now.date()).days) > 8:
-            plan.snooze_until = now.replace(tzinfo=utc) + datetime.timedelta(days=7)
+        now = timezone.now()
+        zone = ZoneInfo(plan.gig.band.timezone)
+        if (future_days := (plan.gig.date.astimezone(zone).date() - now.astimezone(zone).date()).days) > 8:
+            plan.snooze_until = now + datetime.timedelta(days=7)
         elif future_days > 2:
-            plan.snooze_until = plan.gig.date.replace(tzinfo=utc) - datetime.timedelta(days=2)
+            plan.snooze_until = plan.gig.date - datetime.timedelta(days=2)
         plan.save()
     return render(request, 'gig/answer.html', {'gig_id': plan.gig.id})

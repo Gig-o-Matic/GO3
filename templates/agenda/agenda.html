@@ -68,9 +68,6 @@
 {% block localscripts %}
 <script src="{% static 'js/plan_buttons.js' %}"></script>
 <script src="{% url 'javascript-catalog' %}"></script>
-{% if current_timezone %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstimezonedetect/1.0.7/jstz.min.js"></script>
-{% endif %}
 
 <script>
 $(document).ready(function() {
@@ -78,12 +75,6 @@ $(document).ready(function() {
         init_plan_comments("{{csrf_token}}");
     });
     $('.popcomment').tooltip({ 'trigger':'hover click' });
-    {% if current_timezone %}
-        now_timezone = jstz.determine().name()
-        if ("{{current_timezone}}" != now_timezone) {
-            window.location.replace("/?zone="+jstz.determine().name());
-        }
-    {% endif %}
 });
 </script>
 {% endblock localscripts %}

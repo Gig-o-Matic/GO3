@@ -36,6 +36,7 @@ from datetime import timedelta
 from collections import Counter
 import uuid
 import calendar
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from go3.settings import URL_BASE
 
 def band_editor_required(func):
@@ -262,9 +263,13 @@ def send_watcher_email(member, plans):
 
     # since the plans might involve different bands from different places, use the
     # member's timezone for now. Eventually localize each gig to its own zone.
-    timezone.activate(member.preferences.current_timezone)
+    try:
+        zone = ZoneInfo(member.preferences.current_timezone)
+    except (TypeError, ValueError, ZoneInfoNotFoundError):
+        zone = plans.first().gig.band.timezone
 
-    msg = prepare_email(member.as_email_recipient(), 'email/watcher_email.md', context)
+    with timezone.override(zone):
+        msg = prepare_email(member.as_email_recipient(), 'email/watcher_email.md', context)
     send_messages_async([msg])
 
 @login_required
@@ -327,7 +332,12 @@ def create_gig_series(the_gig, number_to_copy, period):
     if not number_to_copy:
         return
 
-    last_date = the_gig.date
+    # step through local wall-clock times so the copies keep their times across clock changes
+    zone = ZoneInfo(the_gig.band.timezone)
+    def _local(dt):
+        return dt.astimezone(zone).replace(tzinfo=None)
+
+    last_date = _local(the_gig.date)
     if period == 'day':
         delta = timedelta(days=1)
     elif period == 'week':
@@ -335,8 +345,8 @@ def create_gig_series(the_gig, number_to_copy, period):
     else:
         day_of_month = last_date.day
 
-    set_delta = (the_gig.setdate - the_gig.date) if the_gig.setdate else None
-    end_delta = (the_gig.enddate - the_gig.date) if the_gig.enddate else None
+    set_delta = (_local(the_gig.setdate) - last_date) if the_gig.setdate else None
+    end_delta = (_local(the_gig.enddate) - last_date) if the_gig.enddate else None
 
     the_dates = [the_gig.date]
 
@@ -352,13 +362,13 @@ def create_gig_series(the_gig, number_to_copy, period):
             # figure out last day of next month
             last_date = last_date.replace(month=mo, day=min(calendar.monthrange(yr,mo)[1], day_of_month), year=yr)
 
-        the_gig.date = last_date
+        the_gig.date = last_date.replace(tzinfo=zone)
 
         if set_delta is not None:
-            the_gig.setdate = the_gig.date + set_delta
+            the_gig.setdate = (last_date + set_delta).replace(tzinfo=zone)
 
         if end_delta is not None:
-            the_gig.enddate = the_gig.date + end_delta
+            the_gig.enddate = (last_date + end_delta).replace(tzinfo=zone)
 
         the_gig.id = None
         the_gig.pk = None
