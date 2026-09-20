@@ -7,7 +7,7 @@
 {% block content %}
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
-        <div class="page-header">{% trans "Accept Invite?" %}</div>
+        <div class="page-header"><h1>{% trans "Accept Invite?" %}</h1></div>
         {% url 'logout' as logout %}
         {% with band_name=invite.band.name invite_email=invite.email user_email=user.email request_path=request.path path_encoded=request.path|urlencode %}
             <p>{% blocktrans %}This invitation to join {{ band_name }} was sent to <tt>{{ invite_email }}</tt>.  However, you are currently logged in as <tt>{{ user_email }}</tt>.{% endblocktrans %}</p>

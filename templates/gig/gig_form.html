@@ -11,13 +11,13 @@
 {% block content %}
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-sm-12">
-        <div class="page-header">
+        <h1 class="page-header">
             {% if is_new %}
                 {% trans "New Gig for " %} {{ band.name }}
             {% else %}
                 {% trans "Gig Edit" %}
             {% endif %}
-        </div>
+        </h1>
 
         <form method="post" class="form">
             {% csrf_token %}
@@ -260,13 +260,15 @@
                 <div class="col-12">
                     <div class="card" style="margin-top:10px; margin-bottom:15px">
                         <div class="card-body">
-                            {{ form.notification.label_tag }}
-                            <div class="row">
-                                <div class="col-1"></div>
-                                <div class="col-11">
-                                    {{ form.notification }}
+                            <fieldset>
+                                <legend style="font-size:1rem;">{{ form.notification.label }}</legend>
+                                <div class="row">
+                                    <div class="col-1"></div>
+                                    <div class="col-11">
+                                        {{ form.notification }}
+                                    </div>
                                 </div>
-                            </div>
+                            </fieldset>
                         </div>
                     </div>
                 </div>
