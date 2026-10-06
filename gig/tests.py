@@ -1830,3 +1830,76 @@ class AttendanceTest(GigTestBase):
         p.refresh_from_db()
         self.assertFalse(p.attended)
 
+
+    # --- attendance on the archived gig page ---
+
+    def _archived_gig_detail(self, gig, user):
+        gig.is_archived = True
+        gig.save()
+        self.client.force_login(user)
+        resp = self.client.get(reverse("gig-detail", args=[gig.id]))
+        self.assertEqual(resp.status_code, 200)
+        return resp.content.decode("utf-8")
+
+    def test_archived_gig_hides_attendance_until_taken(self):
+        """ nobody has been marked present yet, so don't imply everyone was absent """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("Attendance was not taken for this gig.", content)
+        self.assertNotIn("attendance-verdict", content)
+
+    def test_archived_gig_shows_attended(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("attendance-attended", content)
+        self.assertNotIn("attendance-noshow", content)
+        self.assertIn("1 present", content)
+        self.assertIn(self.band_admin.display_name, content)
+
+    def test_archived_gig_flags_no_show(self):
+        """ said DEFINITELY but was never marked present - called out as a no show """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        # the admin takes attendance, but only marks themselves present
+        admin_plan = g.member_plans.filter(assoc__member=self.band_admin).get()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[admin_plan.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("attendance-noshow", content)
+
+    def test_archived_gig_absence_is_not_a_no_show(self):
+        """ a member who said CANT_DO_IT and wasn't there is absent, not a no show """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.CANT_DO_IT)
+        admin_plan = g.member_plans.filter(assoc__member=self.band_admin).get()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[admin_plan.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("attendance-absent", content)
+        self.assertNotIn("attendance-noshow", content)
+
+    def test_archived_gig_admin_can_edit_attendance(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.band_admin)
+        self.assertIn(reverse("gig-attendance", args=[g.id]), content)
+        self.assertIn("Edit Attendance", content)
+
+    def test_attendance_taken_properties(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.assertFalse(g.attendance_taken)
+        self.assertEqual(g.attended_count, 0)
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        self.assertTrue(g.attendance_taken)
+        self.assertEqual(g.attended_count, 1)

@@ -1,0 +1,21 @@
+{% load i18n %}
+{% comment %}
+    Renders whether a member actually showed up at a gig. Callers MUST guard this with
+    plan.gig.attendance_taken: until an admin has taken attendance every plan's `attended`
+    is False, and rendering that would read as "everybody was absent".
+    Pass show_label=True to get a text label beside the icon.
+{% endcomment %}
+{% if plan.attended %}
+    <span class="attendance-verdict attendance-attended" title="{% trans 'Was at the gig' %}">
+        <i class="fas fa-user-check"></i>{% if show_label %}<span>{% trans "Attended" %}</span>{% endif %}
+    </span>
+{% elif plan.attending %}
+    {% comment %} said they'd be there but wasn't marked present - the mismatch worth seeing {% endcomment %}
+    <span class="attendance-verdict attendance-noshow" title="{% trans 'Said yes, but was not marked present' %}">
+        <i class="fas fa-user-slash"></i>{% if show_label %}<span>{% trans "No show" %}</span>{% endif %}
+    </span>
+{% else %}
+    <span class="attendance-verdict attendance-absent" title="{% trans 'Was not at the gig' %}">
+        <i class="fas fa-user-slash"></i>{% if show_label %}<span>{% trans "Absent" %}</span>{% endif %}
+    </span>
+{% endif %}

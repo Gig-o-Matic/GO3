@@ -1385,6 +1385,66 @@ class MemberAttendanceViewTests(TestCase):
         self.assertIsNotNone(jan_item)
         self.assertEqual(jan_item['plan'].comment, "Looking forward to it!")
 
+    def _take_attendance(self, gig, attended_plans=()):
+        """Mark the gig as having had attendance taken, and who was present"""
+        gig.attendance_taken_by = self.band_admin
+        gig.attendance_taken_at = datetime(2024, 3, 11, 9, 0, tzinfo=pytz_timezone('UTC'))
+        gig.save()
+        for plan in attended_plans:
+            plan.attended = True
+            plan.save()
+
+    def _get_2024(self):
+        self.client.force_login(self.band_admin)
+        url = reverse('member-attendance', args=[self.band.id, self.regular_member.id])
+        return self.client.get(url, {'year': '2024'})
+
+    def test_attendance_column_hidden_when_never_taken(self):
+        """A band that doesn't take attendance shouldn't see an empty column"""
+        resp = self._get_2024()
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.context['any_attendance_taken'])
+        self.assertNotIn('attendance-verdict', resp.content.decode('utf-8'))
+
+    def test_attended_shown_for_gig_with_attendance(self):
+        self._take_attendance(self.gig_2024_1, [self.plan_2024_1])
+        resp = self._get_2024()
+        content = resp.content.decode('utf-8')
+
+        self.assertTrue(resp.context['any_attendance_taken'])
+        self.assertEqual(resp.context['attendance_taken_count'], 1)
+        self.assertEqual(resp.context['attended_count'], 1)
+        self.assertIn('attendance-attended', content)
+
+    def test_no_show_when_member_said_yes_but_was_absent(self):
+        # plan_2024_2 is DEFINITELY, and is not marked attended
+        self._take_attendance(self.gig_2024_2)
+        resp = self._get_2024()
+        content = resp.content.decode('utf-8')
+
+        self.assertEqual(resp.context['attended_count'], 0)
+        self.assertIn('attendance-noshow', content)
+
+    def test_absent_is_not_a_no_show_when_member_said_no(self):
+        self.plan_2024_2.status = 5  # Can't Do It
+        self.plan_2024_2.save()
+        self._take_attendance(self.gig_2024_2)
+        resp = self._get_2024()
+        content = resp.content.decode('utf-8')
+
+        self.assertIn('attendance-absent', content)
+        self.assertNotIn('attendance-noshow', content)
+
+    def test_gig_without_attendance_taken_reads_as_unknown(self):
+        """Mixed year: only the gig that had attendance taken reports a verdict"""
+        self._take_attendance(self.gig_2024_1, [self.plan_2024_1])
+        resp = self._get_2024()
+
+        self.assertEqual(resp.context['attendance_taken_count'], 1)
+        # two gigs in 2024, but only one verdict rendered
+        self.assertEqual(resp.content.decode('utf-8').count('attendance-verdict'), 1)
+
 
 class TestBandInviteAPI(GigTestBase):
     def setUp(self):

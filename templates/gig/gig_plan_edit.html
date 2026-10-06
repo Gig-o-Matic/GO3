@@ -67,7 +67,11 @@
         {% endif %}
     {% else %}
         <div class="col-8" style="display:flex; align-items:center;" >
-            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span> {{ plan.feedback_string }} {{ plan.comment|default:"" }}
+            <span style="padding-right:10px">{% include "gig/plan_icon.html" with plan_value=plan.status %}</span>
+            {% if plan.gig.attendance_taken %}
+                <span style="padding-right:10px">{% include "gig/attendance_icon.html" %}</span>
+            {% endif %}
+            {{ plan.feedback_string }} {{ plan.comment|default:"" }}
         </div>
     {% endif %}
 </div>

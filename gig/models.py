@@ -226,6 +226,18 @@ class Gig(AbstractEvent):
     history = HistoricalRecords(excluded_fields=['band','cal_feed_id'])
 
     @property
+    def attendance_taken(self):
+        """ True once a band admin has recorded attendance for this gig. Until then every
+            plan's `attended` is False only because nobody has marked anyone present, so
+            callers must check this before presenting absences as meaningful. """
+        return self.attendance_taken_at is not None
+
+    @property
+    def attended_count(self):
+        """ how many members were marked present. Meaningless unless attendance_taken. """
+        return self.plans.filter(attended=True).count() # pylint: disable=no-member
+
+    @property
     def member_plans(self):
         """ if this gig is not archived, find any members that don't have plans yet. This is called whenever a new gig is created
             through the signaling system, or when a member joins a band from the assoc signal. """

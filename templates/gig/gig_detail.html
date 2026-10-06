@@ -258,7 +258,7 @@
                             <span id="take_attendance">
                                 <a href="{% url 'gig-attendance' gig.id %}" class="btn btn-sm btn-info" role="button">
                                     <i class="fas fa-clipboard-check"></i>
-                                    {% trans "Take Attendance" %}
+                                    {% if gig.attendance_taken %}{% trans "Edit Attendance" %}{% else %}{% trans "Take Attendance" %}{% endif %}
                                 </a>
                             </span>
                             {% endif %}
@@ -281,6 +281,24 @@
                 </div>
             </div>
             <div class="card-body">
+                {% if gig.is_archived %}
+                    <div class="row">
+                        <div class="col-12 small text-muted mb-3">
+                            {% if gig.attendance_taken %}
+                                <i class="fas fa-clipboard-check"></i>
+                                {% blocktrans with present=gig.attended_count %}{{ present }} present{% endblocktrans %}
+                                &middot;
+                                {% if gig.attendance_taken_by %}
+                                    {% blocktrans with who=gig.attendance_taken_by.display_name when=gig.attendance_taken_at|date:"DATETIME_FORMAT" %}attendance taken by {{ who }} on {{ when }}{% endblocktrans %}
+                                {% else %}
+                                    {% blocktrans with when=gig.attendance_taken_at|date:"DATETIME_FORMAT" %}attendance taken on {{ when }}{% endblocktrans %}
+                                {% endif %}
+                            {% else %}
+                                {% trans "Attendance was not taken for this gig." %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
                 {% if request.user.is_superuser or the_user_is_band_admin %}
                     <div class="row mb-4">
                         {% for p in plan_list %}
