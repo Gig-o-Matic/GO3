@@ -40,6 +40,12 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if any_attendance_taken %}
+                    <div class="mb-3 small text-muted">
+                        <i class="fas fa-clipboard-check"></i>
+                        {% blocktrans with attended=attended_count taken=attendance_taken_count %}Attended {{ attended }} of the {{ taken }} gigs where attendance was taken.{% endblocktrans %}
+                    </div>
+                {% endif %}
                 {% if gigs_with_plans %}
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">
@@ -48,6 +54,7 @@
                                     <th>{% trans "Date" %}</th>
                                     <th>{% trans "Gig" %}</th>
                                     <th>{% trans "Status" %}</th>
+                                    {% if any_attendance_taken %}<th>{% trans "Attendance" %}</th>{% endif %}
                                     <th>{% trans "Notes" %}</th>
                                 </tr>
                             </thead>
@@ -78,6 +85,19 @@
                                                 </span>
                                             {% endif %}
                                         </td>
+                                        {% if any_attendance_taken %}
+                                            <td>
+                                                {% if not item.gig.attendance_taken %}
+                                                    <span class="text-muted" title="{% trans 'Attendance was not taken for this gig' %}">&mdash;</span>
+                                                {% elif item.plan %}
+                                                    {% include "gig/attendance_icon.html" with plan=item.plan show_label=True %}
+                                                {% else %}
+                                                    <span class="attendance-verdict attendance-absent" title="{% trans 'Was not at the gig' %}">
+                                                        <i class="fas fa-user-slash"></i><span>{% trans "Absent" %}</span>
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
                                         <td>
                                             {% if item.plan and item.plan.comment %}
                                                 <span class="text-muted">{{ item.plan.comment }}</span>

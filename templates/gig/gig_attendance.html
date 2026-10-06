@@ -1,0 +1,232 @@
+{% extends "base/go3base.html" %}
+{% load i18n static gig_extras %}
+
+{% block title %}{% trans "Attendance" %} &middot; {{ gig.title }}{% endblock title %}
+
+{% block headcontent %}
+<style>
+    .att-header {
+        background-color: #fff;
+        /* Below the site navbar (Bootstrap sticky-top is z-index 1020) so it can never
+           paint over it. Its sticky `top` is set in JS to the navbar's height so it pins
+           flush under the navbar instead of riding up into it. */
+        z-index: 1010;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    }
+    /* Compact but still tappable rows — kept dense so more members fit on screen. */
+    .att-row {
+        padding: 0.45rem 0.75rem;
+        border-left: 0;
+        border-right: 0;
+        cursor: pointer;
+    }
+    /* Tighten the gap between the check icon and the name (overrides .mr-3). */
+    .att-check {
+        margin-right: 0.6rem !important;
+    }
+    .att-check i {
+        font-size: 1.25rem;
+        color: #adb5bd;
+        width: 1.3rem;
+        text-align: center;
+    }
+    .att-present {
+        background-color: #eaf7ee;
+    }
+    .att-present .att-check i {
+        color: #28a745;
+    }
+    .att-name {
+        font-size: 0.95rem;
+        line-height: 1.2;
+    }
+    /* Defined after Bootstrap so it beats .d-flex's `display: flex !important`. */
+    .att-hidden {
+        display: none !important;
+    }
+    /* Compact toggle switch for the attending/all filter. Slightly enlarged
+       over the Bootstrap default so it stays tappable on a phone. */
+    .att-switch {
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+    }
+    .att-switch .custom-control-label {
+        cursor: pointer;
+    }
+    .att-switch .custom-control-input:checked ~ .custom-control-label::before {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+    /* Section grouping headers, styled to read like the .gomlabel section labels
+       used on the gig detail page. They stick just beneath the (already sticky)
+       attendance header so the current section stays visible while scrolling a
+       long section; its `top` is set in JS to the attendance header's height. */
+    .att-section-header {
+        position: sticky;
+        z-index: 1005;
+        background-color: #f1f3f5;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.03em;
+        padding: 0.3rem 0.75rem;
+    }
+    .att-section-group.att-hidden {
+        display: none !important;
+    }
+</style>
+{% endblock headcontent %}
+
+{% block content %}
+<div class="attendance-page">
+    <div class="att-header sticky-top">
+        <a href="{% url 'gig-detail' gig.id %}#member-plans" class="btn btn-sm btn-link pl-0">
+            <i class="fas fa-chevron-left"></i> {% trans "Back to gig" %}
+        </a>
+        <h5 class="mb-0">{{ gig.title }}</h5>
+        <div class="text-muted small mb-2">{% trans "Attendance" %}{% if gig.date %} &middot; {{ gig.date|date:"DATE_FORMAT" }}{% endif %}</div>
+
+        <input type="search" id="att-search" class="form-control mb-2"
+               placeholder="{% trans 'Search by name…' %}" autocomplete="off" autocapitalize="off">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="custom-control custom-switch att-switch">
+                <input type="checkbox" class="custom-control-input" id="att-show-all">
+                <label class="custom-control-label" for="att-show-all">{% trans "Show all members" %}</label>
+            </div>
+            <div class="att-count text-muted small">
+                <span id="att-present-count">0</span> {% trans "present" %} /
+                <span id="att-visible-count">0</span> {% trans "shown" %}
+            </div>
+        </div>
+    </div>
+
+    <div id="att-list" class="mt-2 mb-4">
+        {% regroup gig_ordered_member_plans by section as plans_by_section %}
+        {% with multi_section=gig.band.sections.all|length %}
+        {% for section in gig.band.sections.all %}
+            {% with section_plans=plans_by_section|lookup_plans:section %}
+                {% if section_plans %}
+                    <div class="att-section-group">
+                        {% if multi_section > 1 %}
+                            <div class="att-section-header">{{ section.display_name }}</div>
+                        {% endif %}
+                        <div class="list-group">
+                            {% for plan in section_plans %}
+                                {% include 'gig/attendance_row.html' with plan=plan %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        {% empty %}
+            <div class="text-muted text-center py-4">{% trans "No members to show." %}</div>
+        {% endfor %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block localscripts %}
+<script>
+(function () {
+    var list = document.getElementById('att-list');
+    var search = document.getElementById('att-search');
+    var showAll = document.getElementById('att-show-all');
+    var presentCount = document.getElementById('att-present-count');
+    var visibleCount = document.getElementById('att-visible-count');
+    var header = document.querySelector('.att-header');
+    var navbar = document.querySelector('.navbar.sticky-top');
+
+    // Pin the attendance header flush beneath the (sticky) site navbar so it can't
+    // scroll up over it, and pin each section header just beneath the attendance
+    // header. Re-measure on resize since heights can change with layout/width.
+    function positionHeader() {
+        var navH = navbar ? navbar.offsetHeight : 0;
+        if (header) {
+            header.style.top = navH + 'px';
+        }
+        var sectionTop = navH + (header ? header.offsetHeight : 0);
+        Array.prototype.slice.call(document.querySelectorAll('.att-section-header'))
+            .forEach(function (h) { h.style.top = sectionTop + 'px'; });
+    }
+    positionHeader();
+    window.addEventListener('resize', positionHeader);
+
+    function rows() {
+        return Array.prototype.slice.call(list.querySelectorAll('.att-row'));
+    }
+
+    function showingAll() {
+        return showAll.checked;
+    }
+
+    // Search + attending/all filter + running counts, all client-side.
+    function applyFilter() {
+        var term = (search.value || '').trim().toLowerCase();
+        var all = showingAll();
+        var visible = 0, present = 0;
+        rows().forEach(function (row) {
+            var matchName = !term || row.dataset.name.indexOf(term) !== -1;
+            // In the default ("attending only") view, show members planning to attend
+            // (Definitely/Probably) AND anyone already marked present, regardless of plan.
+            var matchAttending = all || row.dataset.attending === '1' || row.classList.contains('att-present');
+            var show = matchName && matchAttending;
+            // Toggle a class (not inline display) so it beats Bootstrap's
+            // `.d-flex { display: flex !important }` on the row.
+            row.classList.toggle('att-hidden', !show);
+            if (show) {
+                visible++;
+                if (row.classList.contains('att-present')) { present++; }
+            }
+        });
+        presentCount.textContent = present;
+        visibleCount.textContent = visible;
+
+        // Hide a section header when the filter has hidden all of its rows.
+        Array.prototype.slice.call(list.querySelectorAll('.att-section-group'))
+            .forEach(function (group) {
+                var anyVisible = Array.prototype.slice
+                    .call(group.querySelectorAll('.att-row'))
+                    .some(function (row) { return !row.classList.contains('att-hidden'); });
+                group.classList.toggle('att-hidden', !anyVisible);
+            });
+    }
+
+    search.addEventListener('input', applyFilter);
+
+    // Toggle between "attending only" (default) and "all members".
+    showAll.addEventListener('change', applyFilter);
+
+    // Optimistic toggle: flip the visual state immediately on tap; htmx then posts
+    // and swaps in the authoritative row markup. Reverted below if the request fails.
+    list.addEventListener('click', function (e) {
+        var row = e.target.closest('.att-row');
+        if (row) {
+            row.classList.toggle('att-present');
+            applyFilter();
+        }
+    });
+
+    // Server confirmed the change and swapped the row -> recount from the new markup.
+    list.addEventListener('htmx:afterSwap', applyFilter);
+
+    // Save failed (offline / error): undo the optimistic flip.
+    function revert(e) {
+        var row = e.detail && e.detail.elt;
+        if (row && row.classList && row.classList.contains('att-row')) {
+            row.classList.toggle('att-present');
+            applyFilter();
+        }
+    }
+    document.body.addEventListener('htmx:responseError', revert);
+    document.body.addEventListener('htmx:sendError', revert);
+
+    applyFilter();
+})();
+</script>
+{% endblock localscripts %}

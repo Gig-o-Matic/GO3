@@ -357,3 +357,20 @@ a[name] {
   outline-width: 1px;
   outline-color: red;
 }
+/* Attendance verdicts, shown alongside a member's answer on pages that look back at a
+   gig that has already happened (the archived gig page, the attendance history table). */
+.attendance-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.attendance-attended {
+  color: #28a745;
+}
+.attendance-noshow {
+  color: #dc3545;
+}
+.attendance-absent {
+  color: #adb5bd;
+}
