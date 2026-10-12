@@ -63,10 +63,10 @@
     </div>
 </div>
 
-<div>
+<div align="center">
     {% url 'help-band-request' as band_request_url %}
-    {% blocktrans %}Want your band on the Gig-o? Click <a href="{{ band_request_url }}">here</a>.{% endblocktrans %}
+    {% blocktrans %}<a href="{{ band_request_url }}">Want your band on the Gig-o?</a>.{% endblocktrans %}
     {% url 'help-whatis' as whatis_url %}
-    {% blocktrans %}What is the Gig-o-Matic, anyway? Click <a href="{{ whatis_url }}">here</a>!{% endblocktrans %}
+    {% blocktrans %}<a href="{{ whatis_url }}">What is the Gig-o-Matic, anyway?</a>{% endblocktrans %}
 </div>
 {% endblock pagecontent %}

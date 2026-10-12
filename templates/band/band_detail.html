@@ -14,11 +14,11 @@
         {% include 'base/messages.html' %}
 
         <div class="page-header">
-            {{ band.name }}
+            <h1>{{ band.name }}
             {% if band.shortname %}
                 <br>
                 ({% trans "a.k.a." %}&nbsp;{{ band.shortname }})
-            {% endif %}
+            {% endif %}</h1>
         </div>
 
         <div class="card">

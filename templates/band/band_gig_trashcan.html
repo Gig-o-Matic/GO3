@@ -8,7 +8,7 @@
 <div class="row">
     <div class="mx-auto col-lg-8 col-md-10 col-12">
         <div class="page-header">
-            {% trans "Trashed Gigs for" %} <a href="{% url 'band-detail' pk=band.id %}"> {{ band.name}}</a>
+            <h1>{% trans "Trashed Gigs for" %} <a href="{% url 'band-detail' pk=band.id %}"> {{ band.name}}</a></h1>
         </div>
         {% with trashgigs=band.trash_gigs %}
             {% if trashgigs %}
