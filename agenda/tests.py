@@ -214,7 +214,7 @@ class AgendaTest(GigTestBase):
         self.assertEqual(response.status_code, 200)
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "xyzzy", count=2)
+        self.assertContains(response, "gig: xyzzy", count=2)
 
         self.joeuser.preferences.current_timezone = 'UTC'
         self.joeuser.preferences.save()
