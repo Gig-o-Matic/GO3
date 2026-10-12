@@ -44,7 +44,7 @@ class AgendaTest(GigTestBase):
 
         # get as a single list
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 19)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 19)
 
         # while we're here, check the plans count URL
         response = c.get(f'/schedule/planscount/0/0')
@@ -58,7 +58,7 @@ class AgendaTest(GigTestBase):
         plan.save()
 
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 18)
 
         # while we're here, check the need plans count URL
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
@@ -73,7 +73,7 @@ class AgendaTest(GigTestBase):
         gigs[1].status = GigStatusChoices.CANCELED
         gigs[1].save()
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 17)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 17)
 
         # while we're here, check the plans count URL
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/0')
@@ -87,7 +87,7 @@ class AgendaTest(GigTestBase):
         )
         
         Assoc.objects.create(member=self.joeuser, band=b2, status=AssocStatusChoices.CONFIRMED)
-        self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}", band=b2)
+        self.create_gig_form(contact=self.joeuser, title=f"gig: xyzzy{i}", band=b2)
 
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/{self.band.id}')
         self.assertEqual(response.content.decode('ascii'),"20")
@@ -128,22 +128,22 @@ class AgendaTest(GigTestBase):
         # only show year if not the first year in the list
         self.assertContains(response, "2028", count=0, html=True)
         self.assertContains(response, "2029", count=1, html=True)
-        self.assertContains(response, "xyzzy", count=1)
-        self.assertContains(response, "future gig", count=1)
+        self.assertContains(response, "gig: xyzzy", count=1)
+        self.assertContains(response, "gig: future gig", count=1)
         self.assertContains(response, "04/01", count=2)
 
         # now make it day before the gig
         with freeze_time(g.date - timedelta(days=1)):
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Tomorrow"), 1)
 
         # now make it day of the gig
         with freeze_time(g.date - timedelta(hours=1)):
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Today"), 1)
 
         # now do it again but move me to another timezone
@@ -167,7 +167,7 @@ class AgendaTest(GigTestBase):
             timezone.activate('UTC')
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Today"), 1)
 
         with freeze_time( the_time ):
@@ -175,7 +175,7 @@ class AgendaTest(GigTestBase):
             self.joeuser.save()
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Tomorrow"), 1)
 
     def test_agenda_zone_update(self):
@@ -273,13 +273,13 @@ class AgendaTest(GigTestBase):
         # first 'page' of gigs should show the gig
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
 
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
 
         a.hide_from_schedule = True
         a.save()
         # first 'page' of gigs should not show the gig
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 0)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 0)
 
     def test_agenda_page_types(self):
         """
