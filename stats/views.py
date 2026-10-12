@@ -1,9 +1,13 @@
+from django.db import models
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .helpers import get_all_gigs_over_time_stats, get_emails_for_date, get_emails_for_all_bands
 from .util import dateconverter
-from band.util import _get_active_bands, _get_inactive_bands, _get_active_band_members, _get_joiners
+from band.util import _get_active_bands, _get_inactive_bands, _get_active_band_members, \
+    _get_joiners, _get_orphan_bands, _get_orphan_members
+from member.models import Member
+from band.models import Band
 import json
 from datetime import datetime, timedelta
 from go3.settings import URL_BASE
@@ -19,6 +23,8 @@ class AllStatsView(LoginRequiredMixin, TemplateView):
         context['the_stats'].append(['Members Joined This Week', [_get_joiners(days=7).count()]])
         context['the_stats'].append(['Active Bands Count', [_get_active_bands().count()]])
         context['the_stats'].append(['Active Member Count',[_get_active_band_members().count()]])
+        context['the_stats'].append(['Orphan Members', [_get_orphan_members().count()]])
+        context['the_stats'].append(['Bands with 0/1 Members', [_get_orphan_bands().count()]])
         context['the_stats'].append(['Inactive Bands', [len(_get_inactive_bands())]])
         context['the_stats'].append(['Emails Sent Today',[get_emails_for_date(datetime.now().date())]])
         context['the_stats'].append(['Emails Sent Yesterday',[get_emails_for_date((datetime.now().date())-timedelta(days=1))]])
