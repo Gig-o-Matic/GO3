@@ -73,6 +73,11 @@ class Plan(models.Model):
     status = models.IntegerField(choices=PlanStatusChoices.choices, default=PlanStatusChoices.NO_PLAN)
     status_changed = models.BooleanField(default=False)
 
+    # whether the member actually showed up at the gig. Set by a band admin via the
+    # attendance-taking view. False is treated as "absent / not yet marked"; whether
+    # attendance was ever taken at all is recorded on the Gig (attendance_taken_at).
+    attended = models.BooleanField(default=False)
+
     @property
     def status_string(self):
         return PlanStatusChoices(self.status).label
@@ -207,12 +212,30 @@ class Gig(AbstractEvent):
     # Flag whether band members can change their plans
     plans_locked = models.BooleanField(default=False)
 
+    # Attendance tracking: who recorded attendance for this gig, and when. These stay
+    # null until a band admin marks the first member present in the attendance view.
+    attendance_taken_by = models.ForeignKey('member.Member', blank=True, null=True,
+                                            related_name='+', on_delete=models.SET_NULL)
+    attendance_taken_at = models.DateTimeField(null=True, blank=True)
+
     # for use in calfeeds
     cal_feed_id = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
 
     # We need to exclude the band, lest the reverse query in Band conflict
     # We need to exclude the cal_feed_id, because we want it to be unique and the history table gets a copy of every change
     history = HistoricalRecords(excluded_fields=['band','cal_feed_id'])
+
+    @property
+    def attendance_taken(self):
+        """ True once a band admin has recorded attendance for this gig. Until then every
+            plan's `attended` is False only because nobody has marked anyone present, so
+            callers must check this before presenting absences as meaningful. """
+        return self.attendance_taken_at is not None
+
+    @property
+    def attended_count(self):
+        """ how many members were marked present. Meaningless unless attendance_taken. """
+        return self.plans.filter(attended=True).count() # pylint: disable=no-member
 
     @property
     def member_plans(self):
