@@ -15,7 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import datetime
-from pytz import utc
+from zoneinfo import ZoneInfo
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.views.generic.base import TemplateView
@@ -83,6 +83,29 @@ class DetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
             else:
                 context['address_string'] = f'http://maps.google.com?q={self.object.address}'
 
+        return context
+
+
+class AttendanceView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    """ Mobile-friendly view for band admins to take attendance at a gig.
+
+    The full roster is rendered once; searching, the attending/all toggle, sorting
+    and the running count are all handled client-side so the page works well on a
+    phone with a flaky connection. Marking a member present persists per-tap via htmx.
+    """
+    model = Gig
+    template_name = 'gig/gig_attendance.html'
+
+    def test_func(self):
+        gig = get_object_or_404(Gig, id=self.kwargs['pk'])
+        return has_band_admin(self.request.user, gig.band)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Order by section then name so the template can regroup by section, just like
+        # the gig detail / print plan list pages. The order MUST group by section.
+        context['gig_ordered_member_plans'] = self.object.member_plans.all().order_by(
+            'section', Lower('assoc__member__display_name'))
         return context
 
 
@@ -325,10 +348,11 @@ def answer(request, pk, val):
     plan = get_object_or_404(Plan, pk=pk)
     plan.set_status(val)
     if val == PlanStatusChoices.DONT_KNOW:
-        now = datetime.datetime.now()
-        if (future_days := (plan.gig.date.date() - now.date()).days) > 8:
-            plan.snooze_until = now.replace(tzinfo=utc) + datetime.timedelta(days=7)
+        now = timezone.now()
+        zone = ZoneInfo(plan.gig.band.timezone)
+        if (future_days := (plan.gig.date.astimezone(zone).date() - now.astimezone(zone).date()).days) > 8:
+            plan.snooze_until = now + datetime.timedelta(days=7)
         elif future_days > 2:
-            plan.snooze_until = plan.gig.date.replace(tzinfo=utc) - datetime.timedelta(days=2)
+            plan.snooze_until = plan.gig.date - datetime.timedelta(days=2)
         plan.save()
     return render(request, 'gig/answer.html', {'gig_id': plan.gig.id})

@@ -162,7 +162,7 @@ function toggle_names() {
     };
 }
 
-htmx.on("htmx:afterSettle", function(evt) {
+htmx.on("htmx:after:settle", function(evt) {
     if (evt['target'].id == 'bandstats') {
         initStats('bandcharts');
     }

@@ -23,10 +23,12 @@ from band.util import AssocStatusChoices
 from band.helpers import _get_confirmed_public_gigs
 from gig.util import GigStatusChoices, PlanStatusChoices
 from .models import Gig, Plan, GigComment
+from .forms import GigForm
 from .helpers import send_reminder_email, create_gig_series
 from .tasks import send_snooze_reminders
 from .tasks import archive_old_gigs, alert_watchers
 from datetime import timedelta, datetime, timezone as dttimezone
+from zoneinfo import ZoneInfo
 from django.urls import reverse
 from django.utils import timezone
 from pytz import utc, timezone as pytimezone
@@ -793,6 +795,21 @@ class GigTest(GigTestBase):
         self.assertEqual(p.status, PlanStatusChoices.DONT_KNOW)
         self.assertLessEqual((p.snooze_until.date() - now.date()).days, 7)
 
+    @freeze_time("2027-01-01 12:00:00")
+    def test_answer_snooze_counts_local_days(self):
+        """ days until the gig are counted on the band's local calendar """
+        self.band.timezone = "America/New_York"
+        self.band.save()
+        # 8 local days away, but 9 days away in UTC
+        g, _, p = self.assoc_joe_and_create_gig(call_date="01/09/2027", call_time="8:00 pm")
+        response = self.client.get(
+            reverse("gig-answer", args=[p.id, PlanStatusChoices.DONT_KNOW])
+        )
+        p.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(p.snooze_until, g.date - timedelta(days=2))
+
     def test_answer_snooze_too_short(self):
         g, _, p = self.assoc_joe_and_create_gig()
         g.date = timezone.now() + timedelta(days=1)
@@ -900,6 +917,42 @@ class GigTest(GigTestBase):
             end_time="2:00 pm",
             expect_code=200,
         )
+
+    @freeze_time("2027-01-01")
+    def test_time_in_dst_gap(self):
+        """ times skipped by a spring-forward clock change are rejected on the field they came from """
+        self.assoc_user(self.joeuser)
+        base = {"title": "gap", "contact": self.joeuser.id, "status": GigStatusChoices.UNCONFIRMED, "notification": "no_email"}
+        # America/Havana changes its clocks at midnight, so whole dates can fall in the gap too
+        cases = [
+            ("America/New_York", "call_time", {"call_date": "03/14/2027", "call_time": "2:30 am"}),
+            ("America/New_York", "set_time", {"call_date": "03/14/2027", "call_time": "1:00 am", "set_time": "2:30 am"}),
+            ("America/New_York", "end_time", {"call_date": "03/14/2027", "call_time": "1:00 am", "end_time": "2:30 am"}),
+            ("America/Havana", "call_date", {"is_full_day": True, "call_date": "03/14/2027"}),
+            ("America/Havana", "end_date", {"is_full_day": True, "call_date": "03/13/2027", "end_date": "03/14/2027"}),
+            ("America/Havana", "rsvp_date", {"call_date": "03/20/2027", "call_time": "7:00 pm", "rsvp_date": "03/14/2027"}),
+        ]
+        for zone, field, data in cases:
+            self.band.timezone = zone
+            form = GigForm(band=self.band, user=self.joeuser, data={**base, **data})
+            self.assertFalse(form.is_valid(), field)
+            self.assertEqual(list(form.errors), [field], field)
+            self.assertEqual(form.errors[field],
+                             [f"This time doesn't exist in {zone} on 03/14/2027 because the clocks change."], field)
+
+        self.band.timezone = "America/New_York"
+        self.band.save()
+        before = Gig.objects.count()
+        self.create_gig_form(contact=self.joeuser, call_date="03/14/2027", call_time="2:30 am", expect_code=200)
+        self.assertEqual(Gig.objects.count(), before)
+
+    @freeze_time("2027-01-01")
+    def test_time_in_dst_overlap(self):
+        """ times repeated by a fall-back clock change use the first occurrence """
+        self.band.timezone = "America/New_York"
+        self.band.save()
+        g, _, _ = self.assoc_joe_and_create_gig(call_date="11/07/2027", call_time="1:30 am")
+        self.assertEqual(g.date, datetime(2027, 11, 7, 5, 30, tzinfo=dttimezone.utc))
 
     # testing gig comments
     def send_comment(self, user, gig, text):
@@ -1083,6 +1136,36 @@ class GigTest(GigTestBase):
         self.assertEqual(g3.date - g2.date, timedelta(days=7))
         self.assertEqual(g3.setdate - g2.setdate, timedelta(days=7))
         self.assertEqual(g3.enddate - g2.enddate, timedelta(days=7))
+
+    @freeze_time("2027-01-01")
+    def test_series_across_dst_change(self):
+        """ series copies keep their local wall-clock times across a clock change """
+        self.band.timezone = "America/New_York"
+        self.band.save()
+        self.assoc_user(self.joeuser)
+        zone = ZoneInfo("America/New_York")
+        for repeat, dates in [
+            ("week", ["2027-10-28", "2027-11-04", "2027-11-11"]),
+            ("month", ["2027-10-28", "2027-11-28", "2027-12-28"]),
+            ("day", ["2027-11-06", "2027-11-07", "2027-11-08"]),
+        ]:
+            Gig.objects.all().delete()
+            first = datetime.strptime(dates[0], "%Y-%m-%d")
+            self.create_gig_form(
+                contact=self.joeuser,
+                call_date=first.strftime("%m/%d/%Y"),
+                call_time="7:00 pm",
+                set_time="8:00 pm",
+                end_time="11:00 pm",
+                add_series=True,
+                total_gigs=3,
+                repeat=repeat,
+            )
+            gigs = Gig.objects.order_by("date")
+            self.assertEqual([g.date.astimezone(zone).strftime("%Y-%m-%d %H:%M") for g in gigs],
+                             [f"{d} 19:00" for d in dates], repeat)
+            self.assertEqual([g.setdate.astimezone(zone).strftime("%H:%M") for g in gigs], ["20:00"] * 3, repeat)
+            self.assertEqual([g.enddate.astimezone(zone).strftime("%H:%M") for g in gigs], ["23:00"] * 3, repeat)
 
     def test_address_url(self):
         g, _, _ = self.assoc_joe_and_create_gig(address="http://pbs.org")
@@ -1389,6 +1472,28 @@ class GigWatchTest(GigTestBase):
         message = mail.outbox[0]
         self.assertIn('1:30', message.body)
 
+    def test_watch_no_member_timezone(self):
+        """ without a member time zone, the watcher email uses the band's zone """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.joeuser.preferences.current_timezone = None
+        self.joeuser.preferences.save()
+        g.watchers.add(self.joeuser)
+        g.date = datetime(2024, 1, 1, 16, 30, 0, tzinfo=utc)
+        g.save()
+        g.band.timezone = "America/Chicago"
+        g.band.save()
+
+        mail.outbox = []
+        p.set_status(PlanStatusChoices.DEFINITELY)
+        timezone.activate("Asia/Tokyo")
+        try:
+            alert_watchers()
+            self.assertEqual(timezone.get_current_timezone_name(), "Asia/Tokyo")
+        finally:
+            timezone.deactivate()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('10:30', mail.outbox[0].body)
+
 class GigSecurityTest(GigTestBase):
     def test_gig_detail_access(self):
         g, _, _ = self.assoc_joe_and_create_gig()
@@ -1633,3 +1738,168 @@ class TestGigAPI(GigTestBase):
         self.assertEqual(response.status_code, 429)
         self.assertTrue(count <= THROTTLE_PER_SECOND)
 
+
+class AttendanceTest(GigTestBase):
+    """ Tests for the band-admin attendance-taking view and toggle endpoint. """
+
+    def _set_status(self, plan, status):
+        plan.status = status
+        plan.save()
+        return plan
+
+    # --- attendance page (view) permissions ---
+
+    def test_attendance_view_admin(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.band_admin)
+        resp = self.client.get(reverse("gig-attendance", args=[g.id]))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_attendance_view_superuser(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.super)
+        resp = self.client.get(reverse("gig-attendance", args=[g.id]))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_attendance_view_non_admin_member_forbidden(self):
+        # joe is a confirmed member but not a band admin
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.get(reverse("gig-attendance", args=[g.id]))
+        self.assertEqual(resp.status_code, 403)
+
+    def test_attendance_view_anonymous_redirected(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        resp = self.client.get(reverse("gig-attendance", args=[g.id]))
+        # LoginRequiredMixin redirects anonymous users to login
+        self.assertEqual(resp.status_code, 302)
+
+    def test_attendance_default_roster_marks_attending(self):
+        """ The roster rows carry the 'attending' flag for DEFINITELY/PROBABLY plans
+            so the client-side default filter can show just those. """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        self.client.force_login(self.band_admin)
+        resp = self.client.get(reverse("gig-attendance", args=[g.id]))
+        content = resp.content.decode("utf-8")
+        self.assertIn(f'id="attendance-row-{p.id}"', content)
+        self.assertIn('data-attending="1"', content)
+
+    # --- toggle endpoint ---
+
+    def test_toggle_attendance_admin(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.assertFalse(p.attended)
+        self.client.force_login(self.band_admin)
+        resp = self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertTrue(p.attended)
+        # toggling again flips it back
+        resp = self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        self.assertEqual(resp.status_code, 200)
+        p.refresh_from_db()
+        self.assertFalse(p.attended)
+
+    def test_toggle_attendance_stamps_gig(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.assertIsNone(g.attendance_taken_at)
+        self.assertIsNone(g.attendance_taken_by)
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        self.assertIsNotNone(g.attendance_taken_at)
+        self.assertEqual(g.attendance_taken_by, self.band_admin)
+        first_stamp = g.attendance_taken_at
+        # a later toggle by a different admin updates the stamp to the last editor
+        Assoc.objects.create(
+            member=self.super, band=self.band, is_admin=True,
+            status=AssocStatusChoices.CONFIRMED)
+        with freeze_time(first_stamp + timedelta(minutes=5)):
+            self.client.force_login(self.super)
+            self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        self.assertEqual(g.attendance_taken_by, self.super)
+        self.assertGreater(g.attendance_taken_at, first_stamp)
+
+    def test_toggle_attendance_non_admin_forbidden(self):
+        _, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.joeuser)
+        resp = self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        self.assertEqual(resp.status_code, 403)
+        p.refresh_from_db()
+        self.assertFalse(p.attended)
+
+
+    # --- attendance on the archived gig page ---
+
+    def _archived_gig_detail(self, gig, user):
+        gig.is_archived = True
+        gig.save()
+        self.client.force_login(user)
+        resp = self.client.get(reverse("gig-detail", args=[gig.id]))
+        self.assertEqual(resp.status_code, 200)
+        return resp.content.decode("utf-8")
+
+    def test_archived_gig_hides_attendance_until_taken(self):
+        """ nobody has been marked present yet, so don't imply everyone was absent """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("Attendance was not taken for this gig.", content)
+        self.assertNotIn("attendance-verdict", content)
+
+    def test_archived_gig_shows_attended(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("attendance-attended", content)
+        self.assertNotIn("attendance-noshow", content)
+        self.assertIn("1 present", content)
+        self.assertIn(self.band_admin.display_name, content)
+
+    def test_archived_gig_flags_no_show(self):
+        """ said DEFINITELY but was never marked present - called out as a no show """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.DEFINITELY)
+        # the admin takes attendance, but only marks themselves present
+        admin_plan = g.member_plans.filter(assoc__member=self.band_admin).get()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[admin_plan.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("attendance-noshow", content)
+
+    def test_archived_gig_absence_is_not_a_no_show(self):
+        """ a member who said CANT_DO_IT and wasn't there is absent, not a no show """
+        g, _, p = self.assoc_joe_and_create_gig()
+        self._set_status(p, PlanStatusChoices.CANT_DO_IT)
+        admin_plan = g.member_plans.filter(assoc__member=self.band_admin).get()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[admin_plan.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.joeuser)
+        self.assertIn("attendance-absent", content)
+        self.assertNotIn("attendance-noshow", content)
+
+    def test_archived_gig_admin_can_edit_attendance(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        content = self._archived_gig_detail(g, self.band_admin)
+        self.assertIn(reverse("gig-attendance", args=[g.id]), content)
+        self.assertIn("Edit Attendance", content)
+
+    def test_attendance_taken_properties(self):
+        g, _, p = self.assoc_joe_and_create_gig()
+        self.assertFalse(g.attendance_taken)
+        self.assertEqual(g.attended_count, 0)
+        self.client.force_login(self.band_admin)
+        self.client.post(reverse("plan-attendance-toggle", args=[p.id]))
+        g.refresh_from_db()
+        self.assertTrue(g.attendance_taken)
+        self.assertEqual(g.attended_count, 1)
