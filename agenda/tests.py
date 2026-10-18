@@ -44,7 +44,7 @@ class AgendaTest(GigTestBase):
 
         # get as a single list
         response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 19)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 19)
 
         # while we're here, check the plans count URL
         response = c.get(f'/schedule/planscount/0/0')
@@ -58,7 +58,7 @@ class AgendaTest(GigTestBase):
         plan.save()
 
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 18)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 18)
 
         # while we're here, check the need plans count URL
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
@@ -73,7 +73,7 @@ class AgendaTest(GigTestBase):
         gigs[1].status = GigStatusChoices.CANCELED
         gigs[1].save()
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 17)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 17)
 
         # while we're here, check the plans count URL
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/0')
@@ -87,7 +87,7 @@ class AgendaTest(GigTestBase):
         )
         
         Assoc.objects.create(member=self.joeuser, band=b2, status=AssocStatusChoices.CONFIRMED)
-        self.create_gig_form(contact=self.joeuser, title=f"xyzzy{i}", band=b2)
+        self.create_gig_form(contact=self.joeuser, title=f"gig: xyzzy{i}", band=b2)
 
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/{self.band.id}')
         self.assertEqual(response.content.decode('ascii'),"20")
@@ -128,22 +128,22 @@ class AgendaTest(GigTestBase):
         # only show year if not the first year in the list
         self.assertContains(response, "2028", count=0, html=True)
         self.assertContains(response, "2029", count=1, html=True)
-        self.assertContains(response, "xyzzy", count=1)
-        self.assertContains(response, "future gig", count=1)
+        self.assertContains(response, "gig: xyzzy", count=1)
+        self.assertContains(response, "gig: future gig", count=1)
         self.assertContains(response, "04/01", count=2)
 
         # now make it day before the gig
         with freeze_time(g.date - timedelta(days=1)):
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Tomorrow"), 1)
 
         # now make it day of the gig
         with freeze_time(g.date - timedelta(hours=1)):
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Today"), 1)
 
         # now do it again but move me to another timezone
@@ -167,7 +167,7 @@ class AgendaTest(GigTestBase):
             timezone.activate('UTC')
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Today"), 1)
 
         with freeze_time( the_time ):
@@ -175,8 +175,51 @@ class AgendaTest(GigTestBase):
             self.joeuser.save()
             c.force_login(self.joeuser)
             response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
         self.assertEqual(response.content.decode('ascii').count("Tomorrow"), 1)
+
+    def test_agenda_zone_update(self):
+        """ only valid time zones can be set from the schedule page """
+        self.assoc_user(self.joeuser)
+        self.joeuser.preferences.current_timezone = 'America/New_York'
+        self.joeuser.preferences.save()
+        c = Client()
+        c.force_login(self.joeuser)
+
+        response = c.get(f"{reverse('home')}?zone=Europe/Berlin")
+        self.assertEqual(response.status_code, 200)
+        self.joeuser.preferences.refresh_from_db()
+        self.assertEqual(self.joeuser.preferences.current_timezone, 'Europe/Berlin')
+
+        for bad_zone in ['Not/AZone', '', '../etc']:
+            response = c.get(f"{reverse('home')}?zone={bad_zone}")
+            self.assertEqual(response.status_code, 200)
+            self.joeuser.preferences.refresh_from_db()
+            self.assertEqual(self.joeuser.preferences.current_timezone, 'Europe/Berlin')
+
+    def test_invalid_stored_zone(self):
+        """ a stored time zone that can't be loaded falls back to the default zone """
+        self.assoc_user(self.joeuser)
+        self.create_gig_form(contact=self.joeuser, title="xyzzy")
+        full_day = self.create_gig_form(contact=self.joeuser, title="xyzzy")
+        full_day.is_full_day = True
+        full_day.save()
+        self.joeuser.preferences.current_timezone = 'Not/AZone'
+        self.joeuser.preferences.agenda_layout = AgendaLayoutChoices.ONE_LIST
+        self.joeuser.preferences.save()
+        c = Client()
+        c.force_login(self.joeuser)
+
+        response = c.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "gig: xyzzy", count=2)
+
+        self.joeuser.preferences.current_timezone = 'UTC'
+        self.joeuser.preferences.save()
+        utc_response = c.get(f'/plans/{int(AgendaLayoutChoices.ONE_LIST)}/0')
+        self.assertEqual(response.content, utc_response.content)
 
     def test_agenda_occasionals(self):
         _ = self.assoc_user(self.joeuser)
@@ -242,10 +285,11 @@ class AgendaTest(GigTestBase):
         declined = (PlanStatusChoices.CANT_DO_IT, PlanStatusChoices.NOT_INTERESTED)
 
         def check(content, hidden):
+            # a gig will show up 3 times if you search by title because of the aria-labels and stuff
             for status in PlanStatusChoices:
-                expected = 0 if hidden and status in declined else 1
+                expected = 0 if hidden and status in declined else 3
                 self.assertEqual(content.count(f"plan{int(status)}-xyzzy"), expected, status.label)
-            self.assertEqual(content.count("canceled-xyzzy"), 0 if hidden else 1)
+            self.assertEqual(content.count("canceled-xyzzy"), 0 if hidden else 3)
 
         c = Client()
         c.force_login(self.joeuser)
@@ -287,13 +331,13 @@ class AgendaTest(GigTestBase):
         # first 'page' of gigs should show the gig
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
 
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 1)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 1)
 
         a.hide_from_schedule = True
         a.save()
         # first 'page' of gigs should not show the gig
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("xyzzy"), 0)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 0)
 
     def test_agenda_page_types(self):
         """
@@ -458,6 +502,29 @@ class CalendarTest(GigTestBase):
         data = loads(response.content)
         self.assertEqual(len(data), 1)
 
+    def test_full_day_band_timezone(self):
+        """ full-day gigs land on their local date in the band's time zone """
+        self.band.timezone = 'Europe/Berlin'
+        self.band.save()
+        self.assoc_user(self.joeuser)
+        self.create_gig_form(contact=self.joeuser, title="full day", is_full_day=True)
+        self.create_gig_form(contact=self.joeuser, title="no end")
+
+        c = Client()
+        c.force_login(self.joeuser)
+        startdate = datetime(2099, 12, 1, 0, 0, 0, 0, dttimezone.utc)
+        enddate = datetime(2100, 2, 1, 0, 0, 0, 0, dttimezone.utc)
+        response = c.get(reverse('calendar-events', args=[self.band.id]), data={
+            'start': startdate.isoformat(),
+            'end': enddate.isoformat(),
+        })
+
+        self.assertEqual(response.status_code, 200)
+        data = {event['title']: event for event in loads(response.content)}
+        self.assertEqual(data['full day']['start'], '2100-01-02')
+        self.assertEqual(data['full day']['end'], '2100-01-03')
+        self.assertNotIn('end', data['no end'])
+
 class GridTest(GigTestBase):
     def test_grid(self):
         self.assoc_user(self.joeuser)
@@ -508,6 +575,52 @@ class GridTest(GigTestBase):
         self.assertEqual(response.status_code, 200)
         gigs = loads(response.content)
         self.assertEqual(len(gigs), 3)
+
+    def test_grid_month_boundary(self):
+        """ the grid month runs from local midnight in the band's time zone """
+        self.band.timezone = 'America/New_York'
+        self.band.save()
+        self.assoc_user(self.joeuser)
+        self.create_gig_form(contact=self.joeuser, title="late", call_date="01/31/2100", call_time="11:58 pm")
+        c = Client()
+        c.force_login(self.joeuser)
+
+        titles = {}
+        for month in [0, 1]:
+            response = c.post(reverse('grid-gigs'), data={'band': self.band.id, 'month': month, 'year': 2100})
+            self.assertEqual(response.status_code, 200)
+            titles[month] = [g['title'] for g in loads(response.content)]
+        self.assertEqual(titles[0], ["late"])
+        self.assertEqual(titles[1], [])
+
+    def heatmap_dates(self, year):
+        c = Client()
+        c.force_login(self.joeuser)
+        response = c.post(reverse('grid-heatmap'), data={'band': self.band.id, 'year': year})
+        self.assertEqual(response.status_code, 200)
+        return sorted(d['date'] for d in loads(response.content))
+
+    def test_heatmap_band_timezone_east(self):
+        """ heatmap days are local dates in the band's time zone """
+        self.band.timezone = 'Europe/Berlin'
+        self.band.save()
+        self.assoc_user(self.joeuser)
+        self.create_gig_form(contact=self.joeuser, call_date="01/01/2100", call_time="12:30 am")
+        self.create_gig_form(contact=self.joeuser, call_date="03/01/2100", call_time="12:30 am")
+
+        self.assertEqual(self.heatmap_dates(2100), ["2100-01-01", "2100-03-01"])
+        self.assertEqual(self.heatmap_dates(2099), [])
+
+    def test_heatmap_band_timezone_west(self):
+        """ heatmap days are local dates in the band's time zone """
+        self.band.timezone = 'America/Los_Angeles'
+        self.band.save()
+        self.assoc_user(self.joeuser)
+        self.create_gig_form(contact=self.joeuser, call_date="01/31/2100", call_time="8:00 pm")
+        self.create_gig_form(contact=self.joeuser, call_date="12/31/2100", call_time="8:00 pm")
+
+        self.assertEqual(self.heatmap_dates(2100), ["2100-01-31", "2100-12-31"])
+        self.assertEqual(self.heatmap_dates(2101), [])
 
 class AgendaTagTests(TestCase):
     def test_is_url_valid_url(self):

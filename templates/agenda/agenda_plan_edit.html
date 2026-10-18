@@ -27,32 +27,35 @@
             <i class="fa-solid fa-question-circle float-md-right" style="color:orange"></i>
         {% endif %}
         </span>
-        {% with gig.date|timezone:user.preferences.current_timezone|naturalday:_("dateformatstring")|capfirst as gig_date %}
+        {% get_current_timezone as current_zone %}
+        {% with gig.date|localtime|naturalday:_("dateformatstring")|capfirst as gig_date %}
             {% if user.preferences.language == 'en-US' %}
                 {{ gig_date }}
                 {% if not gig.is_full_day %}
-                    {% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}
+                    {% replace_am_pm gig.date|localtime|date:"P" %}
                 {% else %}
-                    {% if user.preferences.current_timezone|utc_offset != gig.band.timezone|utc_offset %}
-                        {% replace_am_pm gig.date|timezone:user.preferences.current_timezone|date:"P" %}<br>({% trans "full day" %})
+                    {% if current_zone|utc_offset != gig.band.timezone|utc_offset %}
+                        {% replace_am_pm gig.date|localtime|date:"P" %}<br>({% trans "full day" %})
                     {% endif %}
                 {% endif %}
             {% else %}
                 {{ gig_date }}
                 {% if not gig.is_full_day %}
-                    {{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}
+                    {{ gig.date|localtime|date:"H:i" }}
                 {% else %}
-                    {% if user.preferences.current_timezone|utc_offset != gig.band.timezone|utc_offset %}
-                        {{ gig.date|timezone:user.preferences.current_timezone|date:"H:i" }}<br>({% trans "full day" %})
+                    {% if current_zone|utc_offset != gig.band.timezone|utc_offset %}
+                        {{ gig.date|localtime|date:"H:i" }}<br>({% trans "full day" %})
                     {% endif %}
                 {% endif %}
             {% endif %}
         {% endwith %}
     </div>
     <div class="col-sm-12 col-md-{% if show_locations %}3{% else %}{% if assoc.is_multisectional %}6{% else %}7{% endif %}{% endif %} pr-0">
-        <a href="/gig/{{ gig.id }}" ><strong>{{ gig.title }}</strong></a>
+        <a href="/gig/{{ gig.id }}"
+            aria-label="gig {{gig.title}}"
+        ><strong>{{ gig.title }}</strong></a>
         {% if user.band_count > 1 and not single_band %}
-            <a href="/band/{{ band.id }}">
+            <a href="/band/{{ band.id }}" aria-label="band {{band.name}}">
             {% if band.shortname %}
                 ({{ band.shortname }})
             {% else %}
@@ -115,7 +118,7 @@
                 {% include "gig/plan_feedback_button.html" with feedback_strings=band.feedback_strings %}
             {% endif %}
             <a style="color:black; text-decoration: none; border-bottom: dashed 1px #0088cc;{% if plan.comment %}opacity: 0;{% endif %}" href="#" id="comment-init-{{plan.id}}"
-                onclick='show_comment("{{plan.id}}")'><i class="far fa-comment"></i></a>
+                onclick='show_comment("{{plan.id}}")' aria-label='{% trans "Comment on your status" %}'><i class="far fa-comment"></i></a>
         </div>
     {% else %}
         <div class="col-12 col-md-4">

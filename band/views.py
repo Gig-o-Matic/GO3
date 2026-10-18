@@ -214,9 +214,18 @@ class MemberAttendanceView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
                 'plan': plan
             })
 
+        # Whether a member actually showed up is only known for gigs where an admin took
+        # attendance, so only surface that column when some of these gigs have it.
+        gigs_with_attendance = [
+            item for item in gigs_with_plans if item['gig'].attendance_taken]
+
         context['the_band'] = the_band
         context['the_member'] = the_member
         context['gigs_with_plans'] = gigs_with_plans
+        context['any_attendance_taken'] = bool(gigs_with_attendance)
+        context['attendance_taken_count'] = len(gigs_with_attendance)
+        context['attended_count'] = sum(
+            1 for item in gigs_with_attendance if item['plan'] and item['plan'].attended)
         context['available_years'] = available_years
         context['selected_year'] = selected_year
         context['the_user_is_band_admin'] = has_band_admin(self.request.user, the_band)

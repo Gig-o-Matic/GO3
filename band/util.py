@@ -69,3 +69,11 @@ def _get_joiners(days=1):
     m = apps.get_model('member','Member')
     threshold = datetime.now() - timedelta(days=days)
     return m.objects.filter(date_joined__gt=threshold)
+
+def _get_orphan_members():
+    m = apps.get_model('member','Member')
+    return m.objects.annotate(bandcount=models.Count('assocs')).filter(bandcount=0)
+
+def _get_orphan_bands():
+    b = apps.get_model('band','Band')
+    return b.objects.annotate(membercount=models.Count('assocs')).filter(membercount__lt=1)

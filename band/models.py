@@ -93,6 +93,10 @@ class Band(models.Model):
         return member and not member.is_anonymous and (self.is_admin(member) or member.is_superuser)
 
     @property
+    def shortname_or_name(self):
+        return self.shortname if self.shortname else self.name
+
+    @property
     def all_assocs(self):
         return self.assocs.filter(member__status=MemberStatusChoices.ACTIVE).order_by(Lower('member__display_name'))
 
