@@ -73,9 +73,6 @@ def _get_agenda_plans(user, the_type, the_band):
         the_plans = user.clean_future_plans.filter(assoc__band=the_band)
         the_title = band.name
 
-    if user.preferences.hide_canceled_gigs:
-        the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
-
     if user.preferences.agenda_hide_declined:
         the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
         the_plans = the_plans.exclude(status__in=[PlanStatusChoices.CANT_DO_IT, PlanStatusChoices.NOT_INTERESTED])

@@ -68,12 +68,11 @@ class AgendaTest(GigTestBase):
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/0')
         self.assertEqual(response.content.decode('ascii'),"19")
 
-        # now make sure that a gig that is canceled is moved to the "plans" set even
-        # though it has no plans...
+        # even if we cancel a gig it should still be on the agenda page.
         gigs[1].status = GigStatusChoices.CANCELED
         gigs[1].save()
         response = c.get(f'/plans/{int(AgendaLayoutChoices.NEED_RESPONSE)}/0')
-        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 17)
+        self.assertEqual(response.content.decode('ascii').count("gig: xyzzy"), 18)
 
         # while we're here, check the plans count URL
         response = c.get(f'/schedule/planscount/{int(AgendaLayoutChoices.ONE_LIST)}/0')
