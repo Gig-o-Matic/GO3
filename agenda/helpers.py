@@ -113,6 +113,11 @@ def agenda_gigs(request, the_type, the_band=None):
                 assert(p.gig.date.astimezone(user_timezone).year in yearly_plans)
                 yearly_plans[p.gig.date.astimezone(user_timezone).year].append(p)
 
+    if request.user.preferences.agenda_hide_declined:
+        hidden_gig_count = get_hidden_gig_count(request.user)
+    else:
+        hidden_gig_count = 0
+
     return render(request, 'agenda/agenda_gigs.html', 
                     {
                         'the_colors:': the_colors,
@@ -121,6 +126,7 @@ def agenda_gigs(request, the_type, the_band=None):
                         'single_band': the_type == AgendaLayoutChoices.BY_BAND,
                         'show_locations': request.user.preferences.agenda_show_location,
                         'hide_declined': request.user.preferences.agenda_hide_declined,
+                        'hidden_gig_count': hidden_gig_count,
                     }
     )
 
@@ -210,6 +216,14 @@ def get_plans_count(request, *args, **kw):
     else:
         count = request.user.clean_future_plans.filter(assoc__band=kw['the_band']).count()
     return HttpResponse(count)
+
+# count gigs that are either canceled or declined
+def get_hidden_gig_count(user):
+    count = user.future_plans\
+        .filter(Q(gig__status=GigStatusChoices.CANCELED) | 
+                Q(status__in=[PlanStatusChoices.CANT_DO_IT,PlanStatusChoices.NOT_INTERESTED]))\
+        .count()
+    return count
 
 
 @login_required

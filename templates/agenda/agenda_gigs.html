@@ -20,7 +20,7 @@
                     <input 
                         class="btn btn-sm btn-primary"
                         type="button"
-                        value="{% if hide_declined %}{% trans 'Show Canceled or Declined' %}{% else %}{% trans 'Hide Canceled or Declined' %}{% endif %}"
+                        value="{% if hide_declined %}{% trans 'Show Canceled or Declined' %} ({{hidden_gig_count}}){% else %}{% trans 'Hide Canceled or Declined' %}{% endif %}"
                         id="hide-declined"
                         hx-get="{{ request.path }}{% if hide_declined %}?hide_declined=False{% else %}?hide_declined=True{% endif %}" hx-target="#the-list" hx-trigger="click"
                     >
