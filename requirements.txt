@@ -6,7 +6,7 @@ autopep8==1.5.7
 Babel==2.18.0
 bleach==6.4.0
 blessed==1.18.1
-certifi==2024.7.4
+certifi==2026.10.19
 charset-normalizer==3.3.2
 decorator==5.0.9
 dill==0.3.8
