@@ -138,6 +138,11 @@
                         {{ form.share_gigs.label_tag }}
                     </div>
                     <div class="form-group">
+                        {{ form.share_gig_locations.errors }}
+                        {% render_field form.share_gig_locations %}
+                        {{ form.share_gig_locations.label_tag }}
+                    </div>
+                    <div class="form-group">
                         {{ form.send_updates_by_default.errors }}
                         {% render_field form.send_updates_by_default %}
                         {{ form.send_updates_by_default.label_tag }}

@@ -50,6 +50,7 @@ class Band(models.Model):
         max_length=500, null=True, blank=True)
 
     share_gigs = models.BooleanField(default=True)
+    share_gig_locations = models.BooleanField(default=True)
     anyone_can_manage_gigs = models.BooleanField(default=True)
     anyone_can_create_gigs = models.BooleanField(default=True)
     send_updates_by_default = models.BooleanField(default=True)

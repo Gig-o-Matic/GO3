@@ -653,6 +653,24 @@ class PublicBandPageTest(GigTestBase):
         content = response.content.decode("ascii")
         self.assertFalse("other band gig" in content)
 
+    def test_public_gig_locations(self):
+        band = self.band
+        Assoc.objects.create(
+            member=self.joeuser, band=band, status=AssocStatusChoices.CONFIRMED
+        )
+        self.create_gig_form(contact=self.joeuser, title="test1", address="123 Main St", status=GigStatusChoices.CONFIRMED)
+
+        response = self.client.post(reverse('band-public-gigs', args=[band.id]))
+        content = response.content.decode("ascii")
+        self.assertTrue("123 Main St" in content)
+
+        band.share_gig_locations = False
+        band.save()
+        response = self.client.post(reverse('band-public-gigs', args=[band.id]))
+        content = response.content.decode("ascii")
+        self.assertTrue("test1" in content)
+        self.assertFalse("123 Main St" in content)
+
     def test_public_page_access(self):
         """ the public page should be accessible to everyone. The band detail """
         """ page should only be accessible to members """
