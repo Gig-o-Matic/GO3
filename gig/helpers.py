@@ -414,7 +414,7 @@ def create_gig_series(the_gig, number_to_copy, period):
 @login_required
 def delete_gig_comment(request, pk):
     comment = get_object_or_404(GigComment, pk=pk)
-    if comment.member == request.user or requst.user.is_superuser:
+    if comment.member == request.user or request.user.is_superuser:
         # we are allowed to delete the comment
         comment.member = None
         comment.text = _('(Deleted by the author)')
