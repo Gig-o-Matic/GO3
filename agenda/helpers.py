@@ -30,6 +30,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from gig.models import Gig, Plan, GigStatusChoices
+from gig.util import PlanStatusChoices
 from band.models import Band, Assoc, Section
 from band.util import AssocStatusChoices
 from member.util import AgendaChoices, AgendaLayoutChoices
@@ -50,8 +51,7 @@ PAGE_LENGTH = 10000
 def _get_agenda_plans(user, the_type, the_band):
     if the_type == AgendaLayoutChoices.ONE_LIST:
         # get all plans except those that should be hidden
-        the_plans = Plan.member_plans.future_plans(user)
-        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
+        the_plans = user.clean_future_plans
         the_title = _("Upcoming Gigs")
     elif the_type == AgendaLayoutChoices.NEED_RESPONSE:
         the_plans = user.future_noplans.all()
@@ -70,19 +70,18 @@ def _get_agenda_plans(user, the_type, the_band):
         except Band.DoesNotExist:
             return None, None
 
-        the_plans = Plan.member_plans.future_plans(user).filter(assoc__band=the_band, assoc__hide_from_schedule=False)
+        the_plans = user.clean_future_plans.filter(assoc__band=the_band)
         the_title = band.name
 
-    if user.preferences.hide_canceled_gigs:
+    if user.preferences.agenda_hide_declined:
         the_plans = the_plans.exclude(gig__status=GigStatusChoices.CANCELED)
+        the_plans = the_plans.exclude(status__in=[PlanStatusChoices.CANT_DO_IT, PlanStatusChoices.NOT_INTERESTED])
 
     return the_plans, the_title
 
 
 @login_required
 def agenda_gigs(request, the_type, the_band=None):
-
-    the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
 
     # make this the user's preference now
     request.user.preferences.agenda_layout = the_type
@@ -92,7 +91,14 @@ def agenda_gigs(request, the_type, the_band=None):
             request.user.preferences.agenda_show_location = False
         else:
             request.user.preferences.agenda_show_location = True
+    if request.GET.get('hide_declined'):
+        if request.GET.get('hide_declined').lower() != 'true':
+            request.user.preferences.agenda_hide_declined = False
+        else:
+            request.user.preferences.agenda_hide_declined = True
     request.user.preferences.save()
+
+    the_plans, the_title = _get_agenda_plans(request.user, the_type, the_band)
     user_timezone = timezone.get_current_timezone()
 
     # group plans by year
@@ -107,6 +113,11 @@ def agenda_gigs(request, the_type, the_band=None):
                 assert(p.gig.date.astimezone(user_timezone).year in yearly_plans)
                 yearly_plans[p.gig.date.astimezone(user_timezone).year].append(p)
 
+    if request.user.preferences.agenda_hide_declined:
+        hidden_gig_count = get_hidden_gig_count(request.user)
+    else:
+        hidden_gig_count = 0
+
     return render(request, 'agenda/agenda_gigs.html', 
                     {
                         'the_colors:': the_colors,
@@ -114,6 +125,8 @@ def agenda_gigs(request, the_type, the_band=None):
                         'title': the_title,
                         'single_band': the_type == AgendaLayoutChoices.BY_BAND,
                         'show_locations': request.user.preferences.agenda_show_location,
+                        'hide_declined': request.user.preferences.agenda_hide_declined,
+                        'hidden_gig_count': hidden_gig_count,
                     }
     )
 
@@ -197,17 +210,20 @@ def set_default_view(request, val):
 @login_required
 def get_plans_count(request, *args, **kw):
     if kw['the_type'] == AgendaLayoutChoices.ONE_LIST:
-        the_plans = Plan.member_plans.future_plans(request.user)
-        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
-        count = the_plans.count()
+        count = request.user.clean_future_plans.count()
     elif kw['the_type'] == AgendaLayoutChoices.NEED_RESPONSE:
         count = request.user.future_noplans.count()
     else:
-        the_plans = Plan.member_plans.future_plans(request.user)
-        the_plans = the_plans.filter(assoc__hide_from_schedule=False)
-        the_plans = the_plans.filter(assoc__band=kw['the_band'])
-        count = the_plans.count()
+        count = request.user.clean_future_plans.filter(assoc__band=kw['the_band']).count()
     return HttpResponse(count)
+
+# count gigs that are either canceled or declined
+def get_hidden_gig_count(user):
+    count = user.future_plans\
+        .filter(Q(gig__status=GigStatusChoices.CANCELED) | 
+                Q(status__in=[PlanStatusChoices.CANT_DO_IT,PlanStatusChoices.NOT_INTERESTED]))\
+        .count()
+    return count
 
 
 @login_required
