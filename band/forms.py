@@ -37,7 +37,7 @@ class BandForm(forms.ModelForm):
         model = Band
         fields = ['name', 'shortname', 'hometown', 'description', 'member_links', 'website',
             'new_member_message', 'thumbnail_img', 'images', 'default_language', 'timezone',
-            'anyone_can_create_gigs', 'anyone_can_manage_gigs', 'share_gigs',
+            'anyone_can_create_gigs', 'anyone_can_manage_gigs', 'share_gigs', 'gig_discussions_enabled',
             'send_updates_by_default', 'invite_occasionals_by_default', 'simple_planning', 'plan_feedback']
 
         widgets = {
@@ -58,6 +58,7 @@ class BandForm(forms.ModelForm):
             'timezone':_('Timezone'),
             'anyone_can_create_gigs': _('Anyone Can Create Gigs'), 
             'anyone_can_manage_gigs': _('Anyone Can Manage Gigs'), 
+            'gig_discussions_enabled': _('Gig Discussions Enabled'),
             'share_gigs': _('Show Gigs On Public Page'),
             'send_updates_by_default': _('Send Gig Updates By Default'), 
             'invite_occasionals_by_default': _('Invite Occasional Members By Default'), 
