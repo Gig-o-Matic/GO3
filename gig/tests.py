@@ -993,6 +993,53 @@ class GigTest(GigTestBase):
         response = c.get(f"/gig/{g.id}/comments")
         self.assertEqual(response.status_code, 403)
 
+    def test_gig_delete_comment(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(self.joeuser, g, "test")
+        self.assertEqual(GigComment.objects.count(), 1)
+
+        # we have a comment, delete it
+        comment = GigComment.objects.first()
+        self.assertEqual(comment.member, self.joeuser)
+        c = Client()
+        c.force_login(self.joeuser)
+        _ = c.get(f"/gig/gigcomment/{comment.id}/delete")
+        self.assertEqual(GigComment.objects.count(), 1)
+        comment = GigComment.objects.first()
+        self.assertEqual(comment.member, None)
+
+    def test_gig_delete_comment_permission(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(self.joeuser, g, "test")
+        self.assertEqual(GigComment.objects.count(), 1)
+
+        # we have a comment, delete it
+        comment = GigComment.objects.first()
+        self.assertEqual(comment.member, self.joeuser)
+        c = Client()
+        c.force_login(self.janeuser)
+        _ = c.get(f"/gig/gigcomment/{comment.id}/delete")
+        self.assertEqual(GigComment.objects.count(), 1)
+        comment = GigComment.objects.first()
+        self.assertEqual(comment.member, self.joeuser)
+
+    def test_gig_delete_comment_bad_id(self):
+        g, _, _ = self.assoc_joe_and_create_gig()
+        self.assertEqual(GigComment.objects.count(), 0)
+        self.send_comment(self.joeuser, g, "test")
+        self.assertEqual(GigComment.objects.count(), 1)
+
+        # we have a comment, delete it
+        comment = GigComment.objects.first()
+        self.assertEqual(comment.member, self.joeuser)
+        c = Client()
+        c.force_login(self.janeuser)
+        response = c.get(f"/gig/gigcomment/999/delete")
+        self.assertEqual(response.status_code, 404)
+
+
     def duplicate_gig_form(
         self,
         gig,

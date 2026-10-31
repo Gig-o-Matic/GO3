@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 13:12+0000\n"
+"POT-Creation-Date: 2026-10-31 15:17+0000\n"
 "PO-Revision-Date: 2014-02-01 18:13-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -91,26 +91,30 @@ msgid "Anyone Can Manage Gigs"
 msgstr "Tout le monde peut gérer les concerts"
 
 #: band/forms.py:61
+msgid "Gig Discussions Enabled"
+msgstr ""
+
+#: band/forms.py:62
 msgid "Show Gigs On Public Page"
 msgstr "Afficher les concerts sur la page publique"
 
-#: band/forms.py:62
+#: band/forms.py:63
 msgid "Send Gig Updates By Default"
 msgstr "Toujours envoyer les mises à jour des concerts"
 
-#: band/forms.py:63
+#: band/forms.py:64
 msgid "Invite Occasional Members By Default"
 msgstr "Toujours inviter les membres occasionnels"
 
-#: band/forms.py:64
+#: band/forms.py:65
 msgid "Use Yes/Maybe/No Responses"
 msgstr "Utiliser les réponses « Oui / Peut-être / Non »"
 
-#: band/forms.py:65
+#: band/forms.py:66
 msgid "Use Additional Feedback Options"
 msgstr "Utiliser des options de commentaires supplémentaires"
 
-#: band/models.py:182 templates/band/band_section_members.html:7
+#: band/models.py:183 templates/band/band_section_members.html:7
 #: templates/gig/gig_detail_archived.html:187
 msgid "No Section"
 msgstr "Pas de sections"
@@ -376,6 +380,10 @@ msgstr "Constume"
 msgid ", "
 msgstr ""
 
+#: gig/helpers.py:420
+msgid "(Deleted by the author)"
+msgstr ""
+
 #: gig/models.py:158 gig/util.py:30 templates/gig/gig_detail.html:54
 #: templates/gig/gig_detail_archived.html:43
 msgid "Unconfirmed"
@@ -627,7 +635,7 @@ msgstr "Afficher les emplacements"
 msgid "Show Canceled or Declined"
 msgstr "Afficher annulés ou refusés"
 
-#:
+#: templates/agenda/agenda_gigs.html:23
 msgid "Hide Canceled or Declined"
 msgstr "Masquer annulés ou refusés"
 
@@ -838,7 +846,7 @@ msgstr ""
 "facebook, merci de faire un clic doit sur l'image et de copier l'URL, pour "
 "ensuite la coller ici. "
 
-#: templates/band/band_form.html:171 templates/band/band_section_setup.html:49
+#: templates/band/band_form.html:176 templates/band/band_section_setup.html:49
 #: templates/gig/gig_form.html:285 templates/gig/gig_form.html:287
 #: templates/help/band_request.html:30 templates/member/band_invite.html:36
 #: templates/member/member_assocs.html:19 templates/member/member_form.html:78
@@ -849,7 +857,7 @@ msgstr ""
 msgid "Cancel"
 msgstr "Annuler"
 
-#: templates/band/band_form.html:172 templates/band/band_section_setup.html:50
+#: templates/band/band_form.html:177 templates/band/band_section_setup.html:50
 #: templates/gig/gig_form.html:289 templates/member/member_form.html:79
 #: templates/member/memberpreferences_form.html:21
 msgid "Save"
@@ -1110,23 +1118,35 @@ msgstr ""
 msgid "No members to show."
 msgstr ""
 
-#: templates/gig/gig_comments.html:16
+#: templates/gig/gig_comments.html:10
+msgid "You said"
+msgstr "Tu as dit"
+
+#: templates/gig/gig_comments.html:19
 msgid "Somebody"
 msgstr "Quelqu'un"
 
-#: templates/gig/gig_comments.html:18
+#: templates/gig/gig_comments.html:21
 msgid "said"
 msgstr "le"
 
-#: templates/gig/gig_comments.html:32
+#: templates/gig/gig_comments.html:27
+msgid "Are you sure you want to delete this comment?"
+msgstr "Êtes-vous sûr de vouloir supprimer ce commentaire ?"
+
+#: templates/gig/gig_comments.html:30
+msgid "delete"
+msgstr "Supprimer"
+
+#: templates/gig/gig_comments.html:45
 msgid "say your piece!"
 msgstr "quelque chose à dire ?"
 
-#: templates/gig/gig_comments.html:33
+#: templates/gig/gig_comments.html:46
 msgid "Add a comment to the gig"
 msgstr ""
 
-#: templates/gig/gig_comments.html:37
+#: templates/gig/gig_comments.html:50
 msgid "Say it!"
 msgstr "Publier"
 
@@ -1258,7 +1278,7 @@ msgstr ""
 "gérer la présence des groupes. Si vous devez apporter des modifications, "
 "veuillez contacter votre groupe pour lui faire part de vos changements."
 
-#: templates/gig/gig_detail.html:357 templates/gig/gig_detail_archived.html:206
+#: templates/gig/gig_detail.html:358 templates/gig/gig_detail_archived.html:206
 msgid "Comments"
 msgstr "Commentaires"
 

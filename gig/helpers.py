@@ -24,7 +24,7 @@ from django.utils.formats import date_format, time_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import template_localtime, now
 from django.db.models import Q
-from .models import Gig, Plan
+from .models import Gig, Plan, GigComment
 from .util import PlanStatusChoices
 from band.models import Section, Assoc, AssocStatusChoices
 from stats.tasks import register_sent_emails
@@ -410,3 +410,23 @@ def create_gig_series(the_gig, number_to_copy, period):
 
     # return the list of dates for all the gigs
     return the_dates
+
+@login_required
+def delete_gig_comment(request, pk):
+    comment = get_object_or_404(GigComment, pk=pk)
+    if comment.member == request.user or request.user.is_superuser:
+        # we are allowed to delete the comment
+        comment.member = None
+        comment.text = _('(Deleted by the author)')
+        comment.save()
+
+    # now just return all the comments
+    context = {}
+    context['gig'] = comment.gig
+    try:
+        context['comments'] = GigComment.objects.filter(
+            gig__id=comment.gig.id).order_by('created_date')
+    except GigComment.DoesNotExist:
+        context['comments'] = None
+    return render(request, 'gig/gig_comments.html', context=context)
+

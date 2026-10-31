@@ -46,5 +46,7 @@ urlpatterns = [
 
     path('answer/<uuid:pk>/<int:val>', views.answer, name='gig-answer'),
 
+    path('gigcomment/<int:pk>/delete', helpers.delete_gig_comment, name='del-gigcomment')
+
 
 ]

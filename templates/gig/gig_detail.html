@@ -350,6 +350,7 @@
             </div> <!-- card body -->
         </div> <!-- card -->
 
+        {% if gig.band.gig_discussions_enabled %}
         <div class="card mt-4">
             <div class="card-header">
                 <div class="row titlerow"><div class="col-12">
@@ -359,6 +360,7 @@
             <div class="card-body" id="gig_commentcard" hx-get="{% url 'gig-comments' gig.id %}" hx-trigger="load">
             </div> <!-- card body -->
         </div> <!-- card -->
+        {% endif %}
     </div>
 </div> <!-- row -->
 {% endwith %}
