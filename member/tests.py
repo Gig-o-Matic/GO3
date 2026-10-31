@@ -337,6 +337,68 @@ class MemberCalfeedTest(FSTestCase):
         )
         self.assertEqual(cf.find(b'EVENT'), -1)
 
+    def test_member_caldav_stream_no_filters_includes_everything(self):
+        for gig_status in GigStatusChoices:
+            for plan_answer in PlanStatusChoices:
+                with self.subTest(gig_status=gig_status.label, plan_answer=plan_answer.label):
+                    cf = self.make_caldav_stream(
+                        hide_canceled_gigs=False,
+                        calendar_show_only_confirmed=False,
+                        calendar_show_only_committed=False,
+                        gig_status=gig_status,
+                        plan_answer=plan_answer
+                    )
+                    self.assertIn(b'BEGIN:VEVENT', cf)
+
+    def test_member_caldav_stream_confirmed_only_by_gig_status(self):
+        for gig_status in GigStatusChoices:
+            with self.subTest(gig_status=gig_status.label):
+                cf = self.make_caldav_stream(
+                    hide_canceled_gigs=False,
+                    calendar_show_only_confirmed=True,
+                    calendar_show_only_committed=False,
+                    gig_status=gig_status,
+                    plan_answer=PlanStatusChoices.DEFINITELY
+                )
+                if gig_status == GigStatusChoices.CONFIRMED:
+                    self.assertIn(b'BEGIN:VEVENT', cf)
+                else:
+                    self.assertNotIn(b'BEGIN:VEVENT', cf)
+
+    def test_member_caldav_stream_committed_only_by_plan_answer(self):
+        committed = [PlanStatusChoices.DEFINITELY, PlanStatusChoices.PROBABLY]
+        for plan_answer in PlanStatusChoices:
+            with self.subTest(plan_answer=plan_answer.label):
+                cf = self.make_caldav_stream(
+                    hide_canceled_gigs=False,
+                    calendar_show_only_confirmed=False,
+                    calendar_show_only_committed=True,
+                    gig_status=GigStatusChoices.CONFIRMED,
+                    plan_answer=plan_answer
+                )
+                if plan_answer in committed:
+                    self.assertIn(b'BEGIN:VEVENT', cf)
+                else:
+                    self.assertNotIn(b'BEGIN:VEVENT', cf)
+
+    def test_member_caldav_stream_confirmed_and_committed(self):
+        cases = [
+            (GigStatusChoices.CONFIRMED, PlanStatusChoices.DEFINITELY, True),
+            (GigStatusChoices.CONFIRMED, PlanStatusChoices.CANT_DO_IT, False),
+            (GigStatusChoices.UNCONFIRMED, PlanStatusChoices.DEFINITELY, False),
+            (GigStatusChoices.ASKING, PlanStatusChoices.CANT_DO_IT, False),
+        ]
+        for gig_status, plan_answer, included in cases:
+            with self.subTest(gig_status=gig_status.label, plan_answer=plan_answer.label):
+                cf = self.make_caldav_stream(
+                    hide_canceled_gigs=False,
+                    calendar_show_only_confirmed=True,
+                    calendar_show_only_committed=True,
+                    gig_status=gig_status,
+                    plan_answer=plan_answer
+                )
+                self.assertEqual(b'BEGIN:VEVENT' in cf, included)
+
     def test_member_caldav_stream_recent_only(self):
         # test showing only gigs in the last year
         cf = self.make_caldav_stream(
