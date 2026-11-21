@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="icon" type="image/png" href="{% static "images/gigo.png" %}" />
+        <link rel="shortcut icon" href="{% static "images/gigo.png" %}">
+
+        <title>Gig-o-Matic | Screen Reader Test</title>
+
+
+        <!-- Bootstrap core CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+        <!-- font awesome -->
+        <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css">
+        <!-- Custom styles for this template -->
+        <link href="{% static 'css/gigo.css' %}" rel="stylesheet">
+        
+
+        <!-- Don't cache anything. Ever. -->
+        <meta http-equiv="cache-control" content="max-age=0" />
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta http-equiv="cache-control" content="no-store" />
+        <meta http-equiv="expires" content="0" />
+        <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+        <meta http-equiv="pragma" content="no-cache" />
+
+    </head>
+
+    <body>
+        <div id="wrap">
+            <div class="container">
+                <div class="inner-container">
+                        <div class="row">
+                            <div class="mx-auto col-md-10 col-12">
+                                <div class="page-header">
+                                    <h1>Screen Reader Test</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2"></div>
+
+                        <div class="row mt-2"></div>
+                        <div class="row" id="the-list">
+                            <div class="col-md-10 col-12 mx-auto justify-content-start">
+
+
+{% comment %}
+Fist do the navbar style
+{% endcomment %}
+<nav class="navbar navbar-dark navbar-expand-md sticky-top" role="navigation">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item dropdown mr-2">
+                <a class="nav-link dropdown-toggle" href="#" role="button" id="MenuOne" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Menu 1
+                </a>
+                <div class="dropdown-menu" aria-labelledby="MenuOne">
+                    <a class="dropdown-item" href="#">Menu 1 Item 1</a>
+                    <a class="dropdown-item" href="#">Menu 1 Item 2</a>
+                    <a class="dropdown-item" href="#">Menu 1 Item 3</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown mr-2">
+                <a class="nav-link dropdown-toggle" href="#" role="button" id="MenuTwo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Menu 2
+                </a>
+                <div class="dropdown-menu" aria-labelledby="MenuTwo">
+                    <a class="dropdown-item" href="#">Menu 2 Item 1</a>
+                    <a class="dropdown-item" href="#">Menu 2 Item 2</a>
+                    <a class="dropdown-item" href="#">Menu 2 Item 3</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="row">
+&nbsp;&nbsp;
+</div>
+{% comment %} now do the current button-based {% endcomment %}
+<div class="row">
+    <div class="col-sm-12 col-md-3 pr-0">
+        Menu 3:
+        <div class="dropdown mr-2" aria-label="Third Test">
+            <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle text-center plan-button" data-toggle="dropdown" id="ThirdTest" 
+            data-init="1" aria-haspopup="true" aria-expanded="false"
+            aria-label="Third Test" aria-value="value 3">
+                {% include "gig/plan_icon.html" with plan_value=1 %}
+            </button>
+
+            <div class="dropdown-menu" aria-labelledby="ThirdTest">
+                <a class="dropdown-item">Menu 3 Item 1</a>
+                <a class="dropdown-item">Menu 3 Item 2</a>
+                <a class="dropdown-item">Menu 2 Item 3</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+&nbsp;&nbsp;
+</div>
+{% comment %} now do the link-based version {% endcomment %}
+<div class="row">
+    <div class="col-sm-12 col-md-3 pr-0">
+        Menu 4:
+        <div class="dropdown mr-2" aria-label="Fourth Test">
+            <a class="btn btn-outline-secondary btn-sm dropdown-toggle text-center plan-button" 
+            href="#" role="button"
+            data-toggle="dropdown" id="FourthTest" 
+            data-init="1" aria-haspopup="true" aria-expanded="false"
+            aria-label="Test Four" aria-value="value 4">
+                {% include "gig/plan_icon.html" with plan_value=1 %}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="FourthTest">
+                <a class="dropdown-item">Menu 4 Item 1</a>
+                <a class="dropdown-item">Menu 4 Item 2</a>
+                <a class="dropdown-item">Menu 4 Item 3</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+&nbsp;&nbsp;
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-3 pr-0">
+        <a href="#" role="Link">Random Link</a>
+        <button>Random Button</button>
+    </div>
+</div>
+
+                            </div>
+                        </div>
+                </div> <!-- inner container -->
+            </div> <!-- container -->
+        </div> <!-- /.wrap -->
+    </body>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+</html>
