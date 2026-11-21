@@ -154,3 +154,7 @@ class GridViewHeatmap(LoginRequiredMixin, TemplateView):
             'year', None) or datetime.now().year
 
         return context
+
+class ReaderTestView(LoginRequiredMixin, TemplateView):
+    template_name = 'base/reader_test.html'
+

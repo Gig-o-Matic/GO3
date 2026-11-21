@@ -35,4 +35,6 @@ urlpatterns = [
 
     path('defaultview/<int:val>', helpers.set_default_view, name='set-default-view'),
     path('schedule/planscount/<int:the_type>/<int:the_band>', helpers.get_plans_count, name='plans-count'),
+
+    path('readertest', views.ReaderTestView.as_view(), name='readertest'),
 ]
