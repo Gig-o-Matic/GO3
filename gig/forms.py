@@ -272,7 +272,7 @@ class GigForm(forms.ModelForm):
         fields = ['title','contact','status','is_private','call_date','call_time','set_time','end_time','end_date',
                 'address','dress','paid','leader_text', 'postgig', 'details','setlist','public_description','invite_occasionals',
                 'hide_from_calendar','notification','add_series','total_gigs','datenotes','is_full_day','has_set_time',
-                'rsvp_date','has_call_time','has_end_time']
+                'rsvp_date','has_call_time','has_end_time','client_contact']
 
 
         widgets = {
@@ -284,6 +284,7 @@ class GigForm(forms.ModelForm):
             'details': forms.Textarea(attrs={'placeholder': _('who? what? where? when? why?')}),
             'setlist': forms.Textarea(attrs={'placeholder': _('setlist here')}),
             'public_description': forms.Textarea(attrs={'placeholder': _('Description for public feed & RSS')}),
+            'client_contact': forms.Textarea(attrs={'placeholder': _('Contact info for the client')}),
             'leader_text': forms.TextInput(),
         }
 
@@ -306,6 +307,7 @@ class GigForm(forms.ModelForm):
             'details': _('Details'),
             'setlist': _('Setlist'),
             'public_description': _('Public Description'),
+            'client_contact': _('Client Contact Info'),
 
             'hide_from_calendar': _('Hide from calendar'),
             'invite_occasionals': _('Include occasional members'),

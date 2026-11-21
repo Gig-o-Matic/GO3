@@ -178,6 +178,15 @@
                     </div>
                     <div class="row">&nbsp;</div>
                 {% endif %}
+                {% if gig.client_contact %}
+                        {% if request.user.is_superuser or the_user_is_band_admin or request.user == gig.contact %}
+                            <div class="row">
+                                <div class="col-md-2 col-sm-2 col-4">{% trans "Client Contact Details" %}</div>
+                                <div class="col-md-10 col-sm-10 col-8 trunc">{{ gig.client_contact|urlize | linebreaks }}</div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        {% endif %}
+                {% endif %}
                 {% if not gig.invite_occasionals %}
                     <div class="row">
                         <div class="col-md-12 col-sm-12 col-12">{% trans "Occasional members were not invited." %}</div>
