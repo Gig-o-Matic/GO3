@@ -307,7 +307,7 @@ class GigForm(forms.ModelForm):
             'details': _('Details'),
             'setlist': _('Setlist'),
             'public_description': _('Public Description'),
-            'client_contact': _('Client Contact Info'),
+            'client_contact': _('Client Contact Info (for admins and gig contact)'),
 
             'hide_from_calendar': _('Hide from calendar'),
             'invite_occasionals': _('Include occasional members'),
