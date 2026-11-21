@@ -236,6 +236,13 @@
                 </div>
             </div>
             <div class="row">
+                <div class="form-group col-12">
+                    {{ form.client_contact.errors }}
+                    {{ form.client_contact.label_tag }}
+                    {% render_field form.client_contact class="form-control" %}
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-12">
                     {{ form.invite_occasionals.errors }}
                     {{ form.invite_occasionals }}

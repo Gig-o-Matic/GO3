@@ -146,6 +146,8 @@ class AbstractEvent(models.Model):
 
     public_description = models.TextField(null=True, blank=True)
 
+    client_contact = models.TextField(null=True, blank=True)
+
     @property
     def is_canceled(self):
         self.status=GigStatusChoices.CANCELED
